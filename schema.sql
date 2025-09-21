@@ -1,0 +1,391 @@
+-- Enhanced Users table
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  phone TEXT UNIQUE,
+  first_name TEXT NOT NULL,
+  last_name TEXT NOT NULL,
+  date_of_birth DATE,
+  nationality TEXT DEFAULT 'Nigeria',
+  state_of_residence TEXT,
+  occupation TEXT,
+  annual_income DECIMAL,
+  investment_experience TEXT, -- beginner, intermediate, advanced
+  hedera_account_id TEXT,
+  kyc_status TEXT DEFAULT 'pending', -- pending, verified, rejected, expired
+  kyc_level TEXT DEFAULT 'tier_1', -- tier_1, tier_2, tier_3
+  account_status TEXT DEFAULT 'active', -- active, suspended, closed
+  wallet_type TEXT, -- custodial, external, hybrid
+  referral_code TEXT UNIQUE,
+  referred_by UUID REFERENCES users(id),
+  email_verified_at TIMESTAMP,
+  phone_verified_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Enhanced Properties table
+CREATE TABLE properties (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  description TEXT,
+  location JSONB NOT NULL, -- {address, city, state, lat, lng, landmarks}
+  property_type TEXT NOT NULL, -- residential, commercial, industrial, land, mixed_use
+  property_subtype TEXT, -- apartment, house, office, warehouse, etc.
+  land_size DECIMAL, -- square meters
+  built_up_area DECIMAL, -- square meters
+  bedrooms INTEGER,
+  bathrooms INTEGER,
+  year_built INTEGER,
+  condition TEXT, -- excellent, good, fair, needs_renovation
+  amenities JSONB, -- array of amenities
+  estimated_value DECIMAL NOT NULL,
+  market_value DECIMAL, -- current market valuation
+  rental_income_monthly DECIMAL,
+  rental_yield DECIMAL, -- percentage
+  owner_id UUID REFERENCES users(id),
+  property_manager_id UUID REFERENCES users(id),
+  hcs_topic_id TEXT,
+  hfs_file_ids JSONB,
+  approval_status TEXT DEFAULT 'pending', -- pending, approved, rejected, suspended
+  approved_by UUID REFERENCES users(id),
+  approved_at TIMESTAMP,
+  verification_score INTEGER DEFAULT 0, -- 0-100
+  listing_status TEXT DEFAULT 'draft', -- draft, active, sold, withdrawn
+  featured BOOLEAN DEFAULT FALSE,
+  views_count INTEGER DEFAULT 0,
+  favorites_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Property images
+CREATE TABLE property_images (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
+  image_url TEXT NOT NULL,
+  image_type TEXT, -- exterior, interior, amenity, document, floor_plan
+  caption TEXT,
+  is_primary BOOLEAN DEFAULT FALSE,
+  sort_order INTEGER DEFAULT 0,
+  hfs_file_id TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Property documents (enhanced)
+CREATE TABLE property_documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
+  document_type TEXT NOT NULL, -- title_deed, survey, valuation, tax_receipt, insurance, etc.
+  document_name TEXT NOT NULL,
+  file_url TEXT,
+  hfs_file_id TEXT,
+  file_hash TEXT,
+  file_size BIGINT,
+  mime_type TEXT,
+  expiry_date DATE,
+  verification_status TEXT DEFAULT 'pending', -- pending, verified, rejected
+  verified_by UUID REFERENCES users(id),
+  verified_at TIMESTAMP,
+  uploaded_by UUID REFERENCES users(id),
+  uploaded_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Enhanced Tokenizations table
+CREATE TABLE tokenizations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id),
+  token_id TEXT, -- Hedera Token ID
+  token_name TEXT,
+  token_symbol TEXT,
+  total_supply BIGINT NOT NULL,
+  price_per_token DECIMAL NOT NULL,
+  min_investment DECIMAL NOT NULL,
+  max_investment DECIMAL,
+  min_tokens_per_purchase BIGINT DEFAULT 1,
+  max_tokens_per_purchase BIGINT,
+  investment_window_start TIMESTAMP NOT NULL,
+  investment_window_end TIMESTAMP NOT NULL,
+  minimum_raise DECIMAL NOT NULL,
+  target_raise DECIMAL,
+  current_raise DECIMAL DEFAULT 0,
+  tokens_sold BIGINT DEFAULT 0,
+  investor_count INTEGER DEFAULT 0,
+  expected_roi_annual DECIMAL, -- percentage
+  dividend_frequency TEXT, -- monthly, quarterly, annually
+  management_fee_percentage DECIMAL DEFAULT 2.5,
+  platform_fee_percentage DECIMAL DEFAULT 1.0,
+  status TEXT DEFAULT 'draft', -- draft, upcoming, active, closed, minting, completed, failed
+  auto_refund BOOLEAN DEFAULT TRUE,
+  created_by UUID REFERENCES users(id),
+  approved_by UUID REFERENCES users(id),
+  approved_at TIMESTAMP,
+  minting_transaction_id TEXT,
+  minted_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Enhanced Investments table
+CREATE TABLE investments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tokenization_id UUID REFERENCES tokenizations(id),
+  investor_id UUID REFERENCES users(id),
+  amount_ngn DECIMAL NOT NULL,
+  amount_usd DECIMAL, -- converted amount
+  exchange_rate DECIMAL, -- NGN to USD rate at time of investment
+  tokens_requested BIGINT NOT NULL,
+  tokens_allocated BIGINT DEFAULT 0,
+  percentage_ownership DECIMAL, -- calculated percentage of total property
+  paystack_reference TEXT UNIQUE,
+  payment_status TEXT DEFAULT 'pending', -- pending, confirmed, failed, refunded
+  payment_method TEXT, -- paystack, wallet, bank_transfer
+  payment_confirmed_at TIMESTAMP,
+  refund_processed_at TIMESTAMP,
+  refund_amount DECIMAL,
+  investment_source TEXT, -- web, mobile, api
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Chat rooms with enhanced features
+CREATE TABLE chat_rooms (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id),
+  tokenization_id UUID REFERENCES tokenizations(id),
+  name TEXT NOT NULL,
+  description TEXT,
+  room_type TEXT DEFAULT 'investment', -- investment, governance, general, support
+  is_public BOOLEAN DEFAULT FALSE,
+  max_participants INTEGER,
+  auto_join_investors BOOLEAN DEFAULT TRUE, -- auto-add new investors
+  ai_assistant_enabled BOOLEAN DEFAULT TRUE,
+  moderation_enabled BOOLEAN DEFAULT TRUE,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Chat room participants
+CREATE TABLE chat_participants (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_id UUID REFERENCES chat_rooms(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  role TEXT DEFAULT 'member', -- admin, moderator, member, observer
+  joined_at TIMESTAMP DEFAULT NOW(),
+  last_seen_at TIMESTAMP,
+  is_muted BOOLEAN DEFAULT FALSE,
+  notifications_enabled BOOLEAN DEFAULT TRUE,
+  voting_power BIGINT DEFAULT 0, -- based on token holdings
+  UNIQUE(room_id, user_id)
+);
+
+-- Enhanced Chat messages
+CREATE TABLE chat_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_id UUID REFERENCES chat_rooms(id) ON DELETE CASCADE,
+  sender_id UUID REFERENCES users(id),
+  reply_to_id UUID REFERENCES chat_messages(id),
+  message_text TEXT,
+  message_type TEXT DEFAULT 'text', -- text, system, proposal, vote, announcement, ai_response
+  metadata JSONB, -- additional data like proposal_id, vote_data, etc.
+  attachments JSONB, -- array of file URLs/IDs
+  is_pinned BOOLEAN DEFAULT FALSE,
+  is_edited BOOLEAN DEFAULT FALSE,
+  edited_at TIMESTAMP,
+  reactions JSONB DEFAULT '{}', -- {emoji: [user_ids]}
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Enhanced Governance proposals
+CREATE TABLE governance_proposals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id),
+  tokenization_id UUID REFERENCES tokenizations(id),
+  proposer_id UUID REFERENCES users(id),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  proposal_type TEXT NOT NULL, -- maintenance, sale, renovation, dividend, management_change, etc.
+  budget_ngn DECIMAL,
+  budget_usd DECIMAL,
+  supporting_documents JSONB, -- array of document URLs
+  voting_start TIMESTAMP NOT NULL,
+  voting_end TIMESTAMP NOT NULL,
+  quorum_required DECIMAL DEFAULT 50.0, -- percentage of total tokens needed to vote
+  approval_threshold DECIMAL DEFAULT 60.0, -- percentage of votes needed to pass
+  status TEXT DEFAULT 'draft', -- draft, active, passed, rejected, executed, expired
+  total_votes_cast BIGINT DEFAULT 0,
+  votes_for BIGINT DEFAULT 0,
+  votes_against BIGINT DEFAULT 0,
+  votes_abstain BIGINT DEFAULT 0,
+  execution_date DATE,
+  execution_status TEXT, -- pending, in_progress, completed, failed
+  execution_notes TEXT,
+  hcs_record_id TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Enhanced Votes
+CREATE TABLE votes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  proposal_id UUID REFERENCES governance_proposals(id) ON DELETE CASCADE,
+  voter_id UUID REFERENCES users(id),
+  vote_choice TEXT NOT NULL, -- for, against, abstain
+  voting_power BIGINT NOT NULL, -- number of tokens at time of vote
+  vote_weight DECIMAL, -- calculated weight based on token holdings
+  vote_reason TEXT, -- optional explanation
+  vote_transaction_id TEXT, -- blockchain transaction reference
+  cast_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(proposal_id, voter_id)
+);
+
+-- Wallets (enhanced)
+CREATE TABLE wallets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  wallet_type TEXT NOT NULL, -- custodial, external, hardware
+  wallet_name TEXT, -- user-defined name
+  hedera_account_id TEXT UNIQUE,
+  private_key_encrypted TEXT, -- only for custodial wallets
+  public_key TEXT,
+  balance_hbar DECIMAL DEFAULT 0,
+  balance_ngn DECIMAL DEFAULT 0,
+  balance_usd DECIMAL DEFAULT 0,
+  is_primary BOOLEAN DEFAULT FALSE,
+  backup_completed BOOLEAN DEFAULT FALSE,
+  security_level TEXT DEFAULT 'standard', -- basic, standard, high
+  last_sync_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, hedera_account_id)
+);
+
+-- Token holdings (track all user token holdings)
+CREATE TABLE token_holdings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  tokenization_id UUID REFERENCES tokenizations(id),
+  property_id UUID REFERENCES properties(id),
+  token_id TEXT NOT NULL, -- Hedera token ID
+  balance BIGINT NOT NULL DEFAULT 0,
+  locked_balance BIGINT DEFAULT 0, -- tokens locked in governance/staking
+  average_purchase_price DECIMAL, -- average price paid per token
+  total_invested_ngn DECIMAL DEFAULT 0,
+  realized_returns_ngn DECIMAL DEFAULT 0, -- from dividends, sales
+  unrealized_returns_ngn DECIMAL DEFAULT 0, -- current value - invested
+  last_dividend_received_at TIMESTAMP,
+  acquisition_date TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, tokenization_id)
+);
+
+-- Activity logs (comprehensive tracking)
+CREATE TABLE activity_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  property_id UUID REFERENCES properties(id),
+  tokenization_id UUID REFERENCES tokenizations(id),
+  activity_type TEXT NOT NULL, -- investment, vote, proposal, chat, login, kyc, etc.
+  activity_category TEXT, -- financial, governance, social, security
+  description TEXT NOT NULL,
+  metadata JSONB, -- additional activity-specific data
+  ip_address INET,
+  user_agent TEXT,
+  hcs_transaction_id TEXT, -- if logged to Hedera
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Notifications
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  notification_type TEXT NOT NULL, -- investment, governance, system, marketing
+  priority TEXT DEFAULT 'normal', -- low, normal, high, urgent
+  action_url TEXT, -- deep link to relevant page
+  action_data JSONB, -- additional data for action
+  read_at TIMESTAMP,
+  sent_via TEXT[], -- ['email', 'push', 'sms', 'in_app']
+  delivery_status JSONB, -- status for each channel
+  expires_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- User favorites
+CREATE TABLE user_favorites (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  property_id UUID REFERENCES properties(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, property_id)
+);
+
+-- Dividend distributions
+CREATE TABLE dividend_distributions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id),
+  tokenization_id UUID REFERENCES tokenizations(id),
+  distribution_period TEXT, -- "2024-Q1", "2024-03", etc.
+  total_amount_ngn DECIMAL NOT NULL,
+  total_amount_usd DECIMAL,
+  per_token_amount DECIMAL NOT NULL,
+  distribution_date DATE NOT NULL,
+  payment_status TEXT DEFAULT 'pending', -- pending, processing, completed, failed
+  total_recipients INTEGER,
+  successful_payments INTEGER DEFAULT 0,
+  failed_payments INTEGER DEFAULT 0,
+  hcs_record_id TEXT,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Individual dividend payments
+CREATE TABLE dividend_payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  distribution_id UUID REFERENCES dividend_distributions(id),
+  recipient_id UUID REFERENCES users(id),
+  tokenization_id UUID REFERENCES tokenizations(id),
+  tokens_held BIGINT NOT NULL,
+  amount_ngn DECIMAL NOT NULL,
+  amount_usd DECIMAL,
+  payment_method TEXT, -- wallet, bank_transfer
+  payment_reference TEXT,
+  payment_status TEXT DEFAULT 'pending', -- pending, sent, received, failed
+  tax_withheld DECIMAL DEFAULT 0,
+  net_amount DECIMAL,
+  paid_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- System settings/configuration
+CREATE TABLE system_settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  setting_key TEXT UNIQUE NOT NULL,
+  setting_value JSONB NOT NULL,
+  setting_type TEXT, -- number, string, boolean, json
+  description TEXT,
+  is_public BOOLEAN DEFAULT FALSE, -- can be accessed by frontend
+  updated_by UUID REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_hedera_account ON users(hedera_account_id);
+CREATE INDEX idx_properties_status ON properties(approval_status, listing_status);
+CREATE INDEX idx_properties_location ON properties USING GIN(location);
+CREATE INDEX idx_tokenizations_status ON tokenizations(status);
+CREATE INDEX idx_tokenizations_window ON tokenizations(investment_window_start, investment_window_end);
+CREATE INDEX idx_investments_investor ON investments(investor_id);
+CREATE INDEX idx_investments_tokenization ON investments(tokenization_id);
+CREATE INDEX idx_chat_participants_room ON chat_participants(room_id);
+CREATE INDEX idx_chat_participants_user ON chat_participants(user_id);
+CREATE INDEX idx_chat_messages_room ON chat_messages(room_id, created_at);
+CREATE INDEX idx_governance_proposals_property ON governance_proposals(property_id);
+CREATE INDEX idx_votes_proposal ON votes(proposal_id);
+CREATE INDEX idx_token_holdings_user ON token_holdings(user_id);
+CREATE INDEX idx_activity_logs_user ON activity_logs(user_id, created_at);
+CREATE INDEX idx_notifications_user ON notifications(user_id, read_at);

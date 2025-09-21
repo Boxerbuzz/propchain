@@ -36,7 +36,8 @@ export default function Header() {
       message: "Your investment in Luxury Apartment Complex - Ikoyi has been processed",
       time: "2 min ago",
       type: "success",
-      icon: CheckCircle
+      icon: CheckCircle,
+      isRead: false
     },
     {
       id: 2,
@@ -44,7 +45,8 @@ export default function Header() {
       message: "Commercial Plaza - Victoria Island is now available for investment",
       time: "1 hour ago",
       type: "info",
-      icon: Building
+      icon: Building,
+      isRead: true
     },
     {
       id: 3,
@@ -52,7 +54,8 @@ export default function Header() {
       message: "Your next investment installment is due in 3 days",
       time: "2 hours ago",
       type: "warning",
-      icon: AlertTriangle
+      icon: AlertTriangle,
+      isRead: false
     }
   ];
 
@@ -149,35 +152,39 @@ export default function Header() {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-0" align="end">
-              <div className="p-4 border-b">
+              <div className="flex items-center justify-between p-3 border-b">
                 <h3 className="font-semibold text-sm">Notifications</h3>
+                <Button variant="link" size="sm" className="text-xs" onClick={() => alert("Mark all as read clicked")}>Mark all as read</Button>
               </div>
               <div className="max-h-96 overflow-y-auto">
                 {notifications.map((notification) => (
                   <div key={notification.id} className="p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer">
                     <div className="flex items-start gap-3">
-                      <div className={`p-1.5 rounded-full ${
-                        notification.type === "success" ? "bg-success/10 text-success" :
-                        notification.type === "warning" ? "bg-warning/10 text-warning" :
-                        "bg-primary/10 text-primary"
-                      }`}>
+                      <div className={`p-2 rounded-full ${notification.type === "success" ? "bg-emerald-100 text-emerald-600" : notification.type === "warning" ? "bg-amber-100 text-amber-600" : "bg-blue-100 text-blue-600"}`}>
                         <notification.icon className="h-4 w-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">{notification.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{notification.message}</p>
-                        <div className="flex items-center gap-1 mt-2">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">{notification.time}</span>
+                        <div className="flex justify-between items-center">
+                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{notification.title}</p>
+                          <div className="flex items-center gap-2">
+                            {!notification.isRead && (
+                              <span className="h-2 w-2 rounded-full bg-blue-500" />
+                            )}
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{notification.time}</span>
+                          </div>
                         </div>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{notification.message}</p>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="p-3 border-t">
-                <Button variant="ghost" size="sm" className="w-full text-xs">
+              <div className="p-3 border-t flex justify-between">
+                <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => alert("View All Notifications clicked")}>
                   View All Notifications
+                </Button>
+                <Button variant="ghost" size="sm" className="w-full text-xs text-destructive" onClick={() => alert("Clear All Notifications clicked")}>
+                  Clear All
                 </Button>
               </div>
             </PopoverContent>
