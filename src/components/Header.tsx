@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
   Bell, 
   User, 
@@ -14,7 +16,10 @@ import {
   LogOut,
   Home,
   Search,
-  BarChart3
+  BarChart3,
+  Clock,
+  CheckCircle,
+  AlertTriangle
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -22,6 +27,34 @@ export default function Header() {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+
+  // Mock notifications data
+  const notifications = [
+    {
+      id: 1,
+      title: "Investment Completed",
+      message: "Your investment in Luxury Apartment Complex - Ikoyi has been processed",
+      time: "2 min ago",
+      type: "success",
+      icon: CheckCircle
+    },
+    {
+      id: 2,
+      title: "New Property Available",
+      message: "Commercial Plaza - Victoria Island is now available for investment",
+      time: "1 hour ago",
+      type: "info",
+      icon: Building
+    },
+    {
+      id: 3,
+      title: "Payment Due",
+      message: "Your next investment installment is due in 3 days",
+      time: "2 hours ago",
+      type: "warning",
+      icon: AlertTriangle
+    }
+  ];
 
   const navigation = [
     { name: 'Home', href: '/', icon: Home },
@@ -106,65 +139,103 @@ export default function Header() {
           </div>
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative hover:bg-muted/50 transition-colors">
-            <Bell className="h-5 w-5" />
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-destructive">
-              3
-            </Badge>
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative hover:bg-muted/50 transition-colors">
+                <Bell className="h-5 w-5" />
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-destructive">
+                  {notifications.length}
+                </Badge>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0" align="end">
+              <div className="p-4 border-b">
+                <h3 className="font-semibold text-sm">Notifications</h3>
+              </div>
+              <div className="max-h-96 overflow-y-auto">
+                {notifications.map((notification) => (
+                  <div key={notification.id} className="p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer">
+                    <div className="flex items-start gap-3">
+                      <div className={`p-1.5 rounded-full ${
+                        notification.type === "success" ? "bg-success/10 text-success" :
+                        notification.type === "warning" ? "bg-warning/10 text-warning" :
+                        "bg-primary/10 text-primary"
+                      }`}>
+                        <notification.icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">{notification.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{notification.message}</p>
+                        <div className="flex items-center gap-1 mt-2">
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">{notification.time}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="p-3 border-t">
+                <Button variant="ghost" size="sm" className="w-full text-xs">
+                  View All Notifications
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
 
           {/* Profile Menu - Desktop */}
           <div className="hidden md:flex items-center space-x-2">
-            <Sheet>
-              <SheetTrigger asChild>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="hover:bg-muted/50 transition-colors">
                   <User className="h-5 w-5" />
                 </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-80 font-spartan">
-                <div className="flex flex-col h-full">
-                  <div className="border-b pb-4 mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                        <User className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">John Doe</h3>
-                        <p className="text-sm text-muted-foreground">john@example.com</p>
-                      </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-64" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex items-center gap-3 p-2">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">John Doe</p>
+                      <p className="text-xs text-muted-foreground">john@example.com</p>
                     </div>
                   </div>
-                  
-                  <nav className="flex-1 space-y-1">
-                    {userMenuItems.map((item) => (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors"
-                      >
-                        <item.icon className="h-4 w-4" />
-                        {item.name}
-                      </Link>
-                    ))}
-                  </nav>
-                  
-                  <div className="border-t pt-4">
-                    <div className="flex gap-2">
-                      <Link to="/auth/login" className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full">
-                          Login
-                        </Button>
-                      </Link>
-                      <Link to="/auth/signup" className="flex-1">
-                        <Button size="sm" className="w-full">
-                          Sign Up
-                        </Button>
-                      </Link>
-                    </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {userMenuItems.slice(0, -1).map((item) => (
+                  <DropdownMenuItem key={item.name} asChild>
+                    <Link to={item.href} className="flex items-center gap-2 cursor-pointer">
+                      <item.icon className="h-4 w-4" />
+                      {item.name}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="#" className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <div className="p-2">
+                  <div className="flex gap-2">
+                    <Link to="/auth/login" className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link to="/auth/signup" className="flex-1">
+                      <Button size="sm" className="w-full text-xs">
+                        Sign Up
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-              </SheetContent>
-            </Sheet>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Mobile Menu */}

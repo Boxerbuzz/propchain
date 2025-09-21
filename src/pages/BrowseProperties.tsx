@@ -1,13 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PropertyCard from "@/components/PropertyCard";
-import { Search, Filter, MapPin, SlidersHorizontal, Grid, List } from "lucide-react";
+import { Search, Filter, MapPin, SlidersHorizontal, Grid, List, X } from "lucide-react";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function BrowseProperties() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Mock properties data
   const properties = [
@@ -95,6 +100,109 @@ export default function BrowseProperties() {
   const locations = ["All Locations", "Lagos", "Abuja", "Port Harcourt", "Kano", "Ibadan"];
   const returnRanges = ["All Returns", "5-10%", "10-15%", "15-20%", "20%+"];
 
+  // Filter Component
+  const FilterContent = () => (
+    <div className="space-y-6">
+      {/* Search */}
+      <div>
+        <label className="text-sm font-medium text-foreground mb-2 block">
+          Search Properties
+        </label>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name or location..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      {/* Status Filter */}
+      <div>
+        <label className="text-sm font-medium text-foreground mb-3 block">
+          Investment Status
+        </label>
+        <div className="space-y-2">
+          {filters.map((filter, index) => (
+            <div
+              key={index}
+              className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${
+                filter.active 
+                  ? "border-primary bg-primary/5 text-primary" 
+                  : "border-border hover:bg-muted"
+              }`}
+            >
+              <span className="font-medium">{filter.label}</span>
+              <Badge variant={filter.active ? "default" : "secondary"}>
+                {filter.count}
+              </Badge>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Location Filter */}
+      <div>
+        <label className="text-sm font-medium text-foreground mb-3 block">
+          Location
+        </label>
+        <div className="space-y-2">
+          {locations.map((location, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <input
+                type="radio"
+                id={`location-${index}`}
+                name="location"
+                defaultChecked={index === 0}
+                className="w-4 h-4 text-primary"
+              />
+              <label
+                htmlFor={`location-${index}`}
+                className="text-sm text-foreground cursor-pointer"
+              >
+                {location}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Return Range */}
+      <div>
+        <label className="text-sm font-medium text-foreground mb-3 block">
+          Expected Returns
+        </label>
+        <div className="space-y-2">
+          {returnRanges.map((range, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <input
+                type="radio"
+                id={`return-${index}`}
+                name="returns"
+                defaultChecked={index === 0}
+                className="w-4 h-4 text-primary"
+              />
+              <label
+                htmlFor={`return-${index}`}
+                className="text-sm text-foreground cursor-pointer"
+              >
+                {range}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Apply Filters Button */}
+      <Button className="w-full btn-primary" onClick={() => isMobile && setFilterOpen(false)}>
+        <Filter className="h-4 w-4 mr-2" />
+        Apply Filters
+      </Button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -113,127 +221,63 @@ export default function BrowseProperties() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <aside className="lg:w-80">
-            <div className="space-y-6">
-              {/* Search */}
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Search Properties
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by name or location..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
+          {/* Filters - Desktop Sidebar / Mobile Sheet */}
+          {!isMobile ? (
+            <aside className="lg:w-80">
+              <FilterContent />
+            </aside>
+          ) : (
+            <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="lg:hidden mb-4 w-full">
+                  <SlidersHorizontal className="h-4 w-4 mr-2" />
+                  Filters
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold">Filters</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setFilterOpen(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-              </div>
-
-              {/* Status Filter */}
-              <div>
-                <label className="text-sm font-medium text-foreground mb-3 block">
-                  Investment Status
-                </label>
-                <div className="space-y-2">
-                  {filters.map((filter, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${
-                        filter.active 
-                          ? "border-primary bg-primary/5 text-primary" 
-                          : "border-border hover:bg-muted"
-                      }`}
-                    >
-                      <span className="font-medium">{filter.label}</span>
-                      <Badge variant={filter.active ? "default" : "secondary"}>
-                        {filter.count}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Location Filter */}
-              <div>
-                <label className="text-sm font-medium text-foreground mb-3 block">
-                  Location
-                </label>
-                <div className="space-y-2">
-                  {locations.map((location, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        id={`location-${index}`}
-                        name="location"
-                        defaultChecked={index === 0}
-                        className="w-4 h-4 text-primary"
-                      />
-                      <label
-                        htmlFor={`location-${index}`}
-                        className="text-sm text-foreground cursor-pointer"
-                      >
-                        {location}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Return Range */}
-              <div>
-                <label className="text-sm font-medium text-foreground mb-3 block">
-                  Expected Returns
-                </label>
-                <div className="space-y-2">
-                  {returnRanges.map((range, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        id={`return-${index}`}
-                        name="returns"
-                        defaultChecked={index === 0}
-                        className="w-4 h-4 text-primary"
-                      />
-                      <label
-                        htmlFor={`return-${index}`}
-                        className="text-sm text-foreground cursor-pointer"
-                      >
-                        {range}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Apply Filters Button */}
-              <Button className="w-full btn-primary">
-                <Filter className="h-4 w-4 mr-2" />
-                Apply Filters
-              </Button>
-            </div>
-          </aside>
+                <FilterContent />
+              </SheetContent>
+            </Sheet>
+          )}
 
           {/* Main Content */}
           <main className="flex-1">
+            {/* Mobile Filters Tab */}
+            {isMobile && (
+              <Tabs defaultValue="properties" className="mb-6">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="properties">Properties</TabsTrigger>
+                  <TabsTrigger value="filters" onClick={() => setFilterOpen(true)}>Filters</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+
             {/* Results Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
               <div>
                 <p className="text-muted-foreground">
                   Showing {properties.length} properties
                 </p>
               </div>
               
-              <div className="flex items-center space-x-4">
-                {/* Sort */}
-                <select className="border border-border rounded-lg px-3 py-2 text-sm">
-                  <option>Sort by: Featured</option>
+              <div className="flex items-center space-x-2 sm:space-x-4">
+                {/* Sort - Responsive */}
+                <select className="border border-border rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm flex-1 sm:flex-none">
+                  <option>Featured</option>
                   <option>Price: Low to High</option>
                   <option>Price: High to Low</option>
                   <option>Returns: High to Low</option>
-                  <option>Investment Deadline</option>
+                  <option>Deadline</option>
                 </select>
 
                 {/* View Toggle */}
