@@ -11,6 +11,7 @@ import { LoginFormSchema } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +19,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const form = useForm<LoginFormSchema>({
+  const form = useForm<z.infer<typeof LoginFormSchema>>({
     resolver: zodResolver(LoginFormSchema),
     defaultValues: {
       email: "",
@@ -26,7 +27,7 @@ export default function Login() {
     },
   });
 
-  const onSubmit = async (values: LoginFormSchema) => {
+  const onSubmit = async (values: z.infer<typeof LoginFormSchema>) => {
     const errorMessage = await login(values);
     if (errorMessage) {
       toast({

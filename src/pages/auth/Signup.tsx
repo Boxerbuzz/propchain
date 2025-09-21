@@ -11,6 +11,7 @@ import { SignUpFormSchema } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +20,7 @@ export default function Signup() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const form = useForm<SignUpFormSchema>({
+  const form = useForm<z.infer<typeof SignUpFormSchema>>({
     resolver: zodResolver(SignUpFormSchema),
     defaultValues: {
       firstName: "",
@@ -31,7 +32,7 @@ export default function Signup() {
     },
   });
 
-  const onSubmit = async (values: SignUpFormSchema) => {
+  const onSubmit = async (values: z.infer<typeof SignUpFormSchema>) => {
     // You might want to handle terms and marketing consent checkboxes here if they are part of form submission
     const errorMessage = await signup(values);
     if (errorMessage) {

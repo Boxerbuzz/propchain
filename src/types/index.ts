@@ -368,6 +368,8 @@ export const SignUpFormSchema = z
       .regex(/[a-z]/, "Password must contain lowercase letter")
       .regex(/[0-9]/, "Password must contain number"),
     confirmPassword: z.string(),
+    terms: z.boolean().refine((val) => val === true, { message: "You must agree to the terms and conditions" }),
+    marketing: z.boolean().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

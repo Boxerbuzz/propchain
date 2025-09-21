@@ -244,7 +244,7 @@ export default function Header() {
                 </Link>
                 <Link to="/auth/signup">
                   <Button size="sm" className="text-xs">
-                    Sign Up
+                    Get started
                   </Button>
                 </Link>
               </div>
@@ -317,7 +317,7 @@ export default function Header() {
                       </Link>
                       <Link to="/auth/signup" className="flex-1">
                         <Button size="sm" className="w-full">
-                          Sign Up
+                          Get started
                         </Button>
                       </Link>
                     </div>
