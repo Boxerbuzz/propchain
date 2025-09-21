@@ -1,6 +1,7 @@
 import { TokenizationRepository } from "../data/repositories/TokenizationRepository";
 import { HederaIntegrationService } from "../services/integrations/HederaIntegrationService";
 import { Tokenization, TokenizationFormData, Property } from "../types";
+import { PrivateKey } from "@hashgraph/sdk";
 
 export class TokenizationService {
   private tokenizationRepository: TokenizationRepository;

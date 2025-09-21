@@ -26,12 +26,21 @@ export class UserService {
     return this.userRepository.findById(userId);
   }
 
-  async updateProfile(userId: string, data: Partial<User>): Promise<User | null> {
+  async updateProfile(
+    userId: string,
+    data: Partial<User>
+  ): Promise<User | null> {
     return this.userRepository.update(userId, data);
   }
 
-  async submitKYC(userId: string, kycData: KycFormData): Promise<KycRecord["verificationStatus"]> {
-    const mockKycRecord = await this.kycService.submitForVerification(userId, kycData);
+  async submitKYC(
+    userId: string,
+    kycData: KycFormData
+  ): Promise<KycRecord["verificationStatus"]> {
+    const mockKycRecord = await this.kycService.submitForVerification(
+      userId,
+      kycData
+    );
 
     // Update user's KYC status and level based on the mock verification result
     let kycStatus: User["kycStatus"] = "pending";
@@ -42,14 +51,20 @@ export class UserService {
       // Logic to determine kycLevel based on submitted data or mock logic
       if (kycData.idType === "passport") {
         kycLevel = "tier_3";
-      } else if (kycData.idType === "nin" || kycData.idType === "drivers_license") {
+      } else if (
+        kycData.idType === "nin" ||
+        kycData.idType === "drivers_license"
+      ) {
         kycLevel = "tier_2";
       }
     } else if (mockKycRecord.verificationStatus === "rejected") {
       kycStatus = "rejected";
     }
 
-    await this.userRepository.update(userId, { kyc_status: kycStatus, kyc_level: kycLevel });
+    await this.userRepository.update(userId, {
+      kycStatus: kycStatus,
+      kycLevel: kycLevel,
+    });
 
     return kycStatus;
   }

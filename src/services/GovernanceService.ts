@@ -69,8 +69,8 @@ export class GovernanceService {
     try {
       const hcsMessage = JSON.stringify({ proposalId, voterId, voteChoice, votingPower });
       // Assuming proposal.hcsTopicId exists and is managed when proposal is created
-      if (proposal.hcsTopicId) {
-        await this.hederaIntegrationService.submitTopicMessage(proposal.hcsTopicId, hcsMessage);
+      if (proposal.hcsRecordId) {
+        await this.hederaIntegrationService.submitTopicMessage(proposal.hcsRecordId, hcsMessage);
         // You might update the vote record with a hcs_transaction_id
       }
     } catch (error) {

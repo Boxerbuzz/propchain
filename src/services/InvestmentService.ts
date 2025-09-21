@@ -129,7 +129,7 @@ export class InvestmentService {
 
   async recordDividendDistribution(data: Partial<DividendDistribution>): Promise<DividendDistribution | null> {
     // This method would be called by an admin or scheduled job
-    return this.investmentRepository.create(data);
+    return this.investmentRepository.createDividendDistribution(data);
   }
 
   async processDividendPayments(distributionId: string): Promise<boolean> {

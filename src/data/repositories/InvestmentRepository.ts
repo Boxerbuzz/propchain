@@ -34,4 +34,14 @@ export class InvestmentRepository extends BaseRepository<Investment> {
     if (error) throw error;
     return data as DividendPayment[];
   }
+
+  async createDividendDistribution(data: Partial<DividendDistribution>): Promise<DividendDistribution | null> {
+    const { data: newDistribution, error } = await this.supabase
+      .from("dividend_distributions")
+      .insert(data)
+      .select()
+      .single();
+    if (error) throw error;
+    return newDistribution as DividendDistribution;
+  }
 }

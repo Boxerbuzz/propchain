@@ -2,7 +2,7 @@ import { supabase } from "../lib/supabase";
 import { TokenizationRepository } from "../data/repositories/TokenizationRepository";
 import { HederaIntegrationService } from "../services/integrations/HederaIntegrationService";
 import { TokenizationService } from "../services/TokenizationService";
-import { TokenizationFormData, TokenizationFormSchema, Tokenization, ApiResponseSchema, TokenizationSchema, GenericApiResponse } from "../types";
+import { TokenizationFormSchema, Tokenization, ApiResponseSchema, TokenizationSchema, GenericApiResponse } from "../types";
 import { z } from "zod";
 import { PrivateKey } from "@hashgraph/sdk";
 

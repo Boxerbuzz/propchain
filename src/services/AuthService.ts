@@ -34,10 +34,10 @@ export class AuthService {
       const newUser: Partial<User> = {
         id: data.user.id,
         email: data.user.email!,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         phone: formData.phone,
-        email_verified_at: data.user.email_confirmed_at ? new Date() : null,
+        emailVerifiedAt: data.user.email_confirmed_at ? new Date() : null,
         // Other fields will be default or set later
       };
       // Since Supabase auth.signUp creates an entry in auth.users, 
