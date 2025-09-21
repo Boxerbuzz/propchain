@@ -7,6 +7,9 @@ import Header from "./components/Header";
 import Landing from "./pages/Landing";
 import BrowseProperties from "./pages/BrowseProperties";
 import PropertyDetails from "./pages/PropertyDetails";
+import InvestmentFlow from "./pages/InvestmentFlow";
+import Portfolio from "./pages/Portfolio";
+import PortfolioDetail from "./pages/PortfolioDetail";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -24,6 +27,9 @@ import Review from "./pages/kyc/Review";
 import KYCStatus from "./pages/kyc/Status";
 import Dashboard from "./pages/Dashboard";
 import WalletSetup from "./pages/wallet/Setup";
+import Profile from "./pages/settings/Profile";
+import Notifications from "./pages/settings/Notifications";
+import Security from "./pages/settings/Security";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +46,9 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/browse" element={<BrowseProperties />} />
             <Route path="/browse/:id" element={<PropertyDetails />} />
+            <Route path="/browse/:id/invest" element={<InvestmentFlow />} />
+            <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/portfolio/:tokenizationId" element={<PortfolioDetail />} />
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/signup" element={<Signup />} />
             <Route path="/auth/forgot-password" element={<ForgotPassword />} />
@@ -57,6 +66,9 @@ const App = () => (
             <Route path="/kyc/status" element={<KYCStatus />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/wallet/setup" element={<WalletSetup />} />
+            <Route path="/settings/profile" element={<Profile />} />
+            <Route path="/settings/notifications" element={<Notifications />} />
+            <Route path="/settings/security" element={<Security />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
