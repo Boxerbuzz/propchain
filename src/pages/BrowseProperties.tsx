@@ -204,9 +204,9 @@ export default function BrowseProperties() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen bg-background flex flex-col">
       {/* Header */}
-      <section className="bg-background-muted py-12">
+      <section className="bg-background-muted py-12 flex-shrink-0">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold text-foreground mb-4">
@@ -219,12 +219,14 @@ export default function BrowseProperties() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="container mx-auto px-4 py-8 flex-1 overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-8 h-full">
           {/* Filters - Desktop Sidebar / Mobile Sheet */}
           {!isMobile ? (
-            <aside className="lg:w-80">
-              <FilterContent />
+            <aside className="lg:w-80 flex-shrink-0">
+              <div className="h-full overflow-y-auto pr-2">
+                <FilterContent />
+              </div>
             </aside>
           ) : (
             <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
@@ -251,80 +253,82 @@ export default function BrowseProperties() {
           )}
 
           {/* Main Content */}
-          <main className="flex-1">
-            {/* Mobile Filters Tab */}
-            {isMobile && (
-              <Tabs defaultValue="properties" className="mb-6">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="properties">Properties</TabsTrigger>
-                  <TabsTrigger value="filters" onClick={() => setFilterOpen(true)}>Filters</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            )}
+          <main className="flex-1 overflow-hidden">
+            <div className="h-full overflow-y-auto pl-2">
+              {/* Mobile Filters Tab */}
+              {isMobile && (
+                <Tabs defaultValue="properties" className="mb-6">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="properties">Properties</TabsTrigger>
+                    <TabsTrigger value="filters" onClick={() => setFilterOpen(true)}>Filters</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )}
 
-            {/* Results Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-              <div>
-                <p className="text-muted-foreground">
-                  Showing {properties.length} properties
-                </p>
-              </div>
-              
-              <div className="flex items-center space-x-2 sm:space-x-4">
-                {/* Sort - Responsive */}
-                <select className="border border-border rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm flex-1 sm:flex-none">
-                  <option>Featured</option>
-                  <option>Price: Low to High</option>
-                  <option>Price: High to Low</option>
-                  <option>Returns: High to Low</option>
-                  <option>Deadline</option>
-                </select>
+              {/* Results Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                <div>
+                  <p className="text-muted-foreground">
+                    Showing {properties.length} properties
+                  </p>
+                </div>
+                
+                <div className="flex items-center space-x-2 sm:space-x-4">
+                  {/* Sort - Responsive */}
+                  <select className="border border-border rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm flex-1 sm:flex-none">
+                    <option>Featured</option>
+                    <option>Price: Low to High</option>
+                    <option>Price: High to Low</option>
+                    <option>Returns: High to Low</option>
+                    <option>Deadline</option>
+                  </select>
 
-                {/* View Toggle */}
-                <div className="flex border border-border rounded-lg p-1">
-                  <Button
-                    variant={viewMode === "grid" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                    className="rounded-md"
-                  >
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                    className="rounded-md"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
+                  {/* View Toggle */}
+                  <div className="flex border border-border rounded-lg p-1">
+                    <Button
+                      variant={viewMode === "grid" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("grid")}
+                      className="rounded-md"
+                    >
+                      <Grid className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === "list" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("list")}
+                      className="rounded-md"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Properties Grid */}
-            <div className={`grid gap-6 ${
-              viewMode === "grid" 
-                ? "md:grid-cols-2 xl:grid-cols-3" 
-                : "grid-cols-1"
-            }`}>
-              {properties.map((property) => (
-                <PropertyCard key={property.id} {...property} />
-              ))}
-            </div>
+              {/* Properties Grid */}
+              <div className={`grid gap-6 ${
+                viewMode === "grid" 
+                  ? "md:grid-cols-2 xl:grid-cols-3" 
+                  : "grid-cols-1"
+              }`}>
+                {properties.map((property) => (
+                  <PropertyCard key={property.id} {...property} />
+                ))}
+              </div>
 
-            {/* Pagination */}
-            <div className="mt-12 flex justify-center">
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" disabled>
-                  Previous
-                </Button>
-                <Button variant="default">1</Button>
-                <Button variant="outline">2</Button>
-                <Button variant="outline">3</Button>
-                <Button variant="outline">
-                  Next
-                </Button>
+              {/* Pagination */}
+              <div className="mt-12 flex justify-center">
+                <div className="flex items-center space-x-2">
+                  <Button variant="outline" disabled>
+                    Previous
+                  </Button>
+                  <Button variant="default">1</Button>
+                  <Button variant="outline">2</Button>
+                  <Button variant="outline">3</Button>
+                  <Button variant="outline">
+                    Next
+                  </Button>
+                </div>
               </div>
             </div>
           </main>
