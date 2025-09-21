@@ -41,6 +41,8 @@ import WalletSettings from "./pages/wallet/Settings";
 import RegisterProperty from "./pages/properties/Register";
 import UploadDocs from "./pages/properties/UploadDocs";
 import NotFound from "./pages/NotFound";
+import MainLayout from "./layouts/MainLayout";
+import AuthLayout from "./layouts/AuthLayout";
 
 const queryClient = new QueryClient();
 
@@ -50,23 +52,19 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen bg-background font-spartan">
-          <Header />
-          <Routes>
-            <Route path="/" element={<Landing />} />
+        <Routes>
+          {/* Public routes (with main layout) */}
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<Landing />} />
             <Route path="/browse" element={<BrowseProperties />} />
             <Route path="/browse/:id" element={<PropertyDetails />} />
             <Route path="/browse/:id/invest" element={<InvestmentFlow />} />
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/portfolio/:tokenizationId" element={<PortfolioDetail />} />
-            <Route path="/auth/login" element={<Login />} />
-            <Route path="/auth/signup" element={<Signup />} />
-            <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-            <Route path="/auth/reset-password" element={<ResetPassword />} />
-            <Route path="/auth/verify-email" element={<VerifyEmail />} />
-            <Route path="/auth/verify-phone" element={<VerifyPhone />} />
+            {/* Onboarding routes */}
             <Route path="/onboarding/welcome" element={<Welcome />} />
             <Route path="/onboarding/profile-setup" element={<ProfileSetup />} />
+            {/* KYC routes */}
             <Route path="/kyc/start" element={<KYCStart />} />
             <Route path="/kyc/document-type" element={<DocumentType />} />
             <Route path="/kyc/upload-id" element={<UploadID />} />
@@ -74,6 +72,7 @@ const App = () => (
             <Route path="/kyc/address" element={<Address />} />
             <Route path="/kyc/review" element={<Review />} />
             <Route path="/kyc/status" element={<KYCStatus />} />
+            {/* Authenticated routes (MainLayout) */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/wallet/setup" element={<WalletSetup />} />
             <Route path="/wallet/dashboard" element={<WalletDashboard />} />
@@ -89,10 +88,21 @@ const App = () => (
             <Route path="/settings/profile" element={<Profile />} />
             <Route path="/settings/notifications" element={<Notifications />} />
             <Route path="/settings/security" element={<Security />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
+          </Route>
+
+          {/* Auth routes (AuthLayout) */}
+          <Route path="/auth" element={<AuthLayout />}>
+            <Route path="login" element={<Login />} />
+            <Route path="signup" element={<Signup />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="reset-password" element={<ResetPassword />} />
+            <Route path="verify-email" element={<VerifyEmail />} />
+            <Route path="verify-phone" element={<VerifyPhone />} />
+          </Route>
+
+          {/* Catch-all route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

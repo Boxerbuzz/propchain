@@ -1,0 +1,79 @@
+import { PropertyRepository } from "../data/repositories/PropertyRepository";
+import { Property, PropertyImage, PropertyDocument, PropertyFormData } from "../types";
+
+export class PropertyService {
+  private propertyRepository: PropertyRepository;
+
+  constructor(propertyRepository: PropertyRepository) {
+    this.propertyRepository = propertyRepository;
+  }
+
+  async createProperty(ownerId: string, propertyData: PropertyFormData): Promise<Property | null> {
+    const newProperty: Partial<Property> = {
+      ownerId,
+      title: propertyData.title,
+      description: propertyData.description,
+      location: propertyData.location,
+      propertyType: propertyData.propertyType,
+      propertySubtype: propertyData.propertySubtype,
+      landSize: propertyData.landSize,
+      builtUpArea: propertyData.builtUpArea,
+      bedrooms: propertyData.bedrooms,
+      bathrooms: propertyData.bathrooms,
+      yearBuilt: propertyData.yearBuilt,
+      condition: propertyData.condition,
+      amenities: propertyData.amenities,
+      estimatedValue: propertyData.estimatedValue,
+      // Default values from schema or calculated:
+      approvalStatus: "pending",
+      listingStatus: "draft",
+      viewsCount: 0,
+      favoritesCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    return this.propertyRepository.create(newProperty);
+  }
+
+  async updateProperty(propertyId: string, data: Partial<Property>): Promise<Property | null> {
+    return this.propertyRepository.update(propertyId, data);
+  }
+
+  async getPropertyDetails(propertyId: string): Promise<Property | null> {
+    return this.propertyRepository.findById(propertyId);
+  }
+
+  async listProperties(filters?: Partial<Property>): Promise<Property[]> {
+    return this.propertyRepository.find(filters);
+  }
+
+  async uploadPropertyImage(propertyId: string, imageUrl: string, imageType?: string, caption?: string, isPrimary?: boolean): Promise<PropertyImage | null> {
+    const newImage: Partial<PropertyImage> = {
+      propertyId,
+      imageUrl,
+      imageType,
+      caption,
+      isPrimary,
+      createdAt: new Date(),
+    };
+    // For this, we'll need a new BaseRepository or a direct Supabase call for property_images
+    // For simplicity, we'll mock returning the image data for now.
+    console.log(`Mock: Uploading image for property ${propertyId}: ${imageUrl}`);
+    return { id: "mock-image-id-" + Date.now(), ...newImage } as PropertyImage;
+  }
+
+  async uploadPropertyDocument(propertyId: string, documentType: string, documentName: string, fileUrl: string): Promise<PropertyDocument | null> {
+    const newDocument: Partial<PropertyDocument> = {
+      propertyId,
+      documentType,
+      documentName,
+      fileUrl,
+      uploadedAt: new Date(),
+    };
+    // Similarly, direct Supabase call or dedicated repo for property_documents.
+    console.log(`Mock: Uploading document for property ${propertyId}: ${documentName}`);
+    return { id: "mock-doc-id-" + Date.now(), ...newDocument } as PropertyDocument;
+  }
+
+  // Add methods for managing property listings (activate, deactivate, mark as sold)
+}

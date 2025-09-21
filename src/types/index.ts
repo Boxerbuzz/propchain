@@ -511,6 +511,163 @@ export type Vote = z.infer<typeof VoteSchema>;
 export type Wallet = z.infer<typeof WalletSchema>;
 export type KycRecord = z.infer<typeof KycRecordSchema>;
 
+// New types based on schema.sql
+export const PropertyImageSchema = z.object({
+  id: z.string().uuid(),
+  propertyId: z.string().uuid(),
+  imageUrl: z.string().url(),
+  imageType: z.string().nullable(),
+  caption: z.string().nullable(),
+  isPrimary: z.boolean().default(false),
+  sortOrder: z.number().int().min(0).default(0),
+  hfsFileId: z.string().nullable(),
+  createdAt: z.date(),
+});
+
+export const PropertyDocumentSchema = z.object({
+  id: z.string().uuid(),
+  propertyId: z.string().uuid(),
+  documentType: z.string(),
+  documentName: z.string(),
+  fileUrl: z.string().url().nullable(),
+  hfsFileId: z.string().nullable(),
+  fileHash: z.string().nullable(),
+  fileSize: z.number().int().positive().nullable(),
+  mimeType: z.string().nullable(),
+  expiryDate: z.date().nullable(),
+  verificationStatus: z.enum(["pending", "verified", "rejected"]).default("pending"),
+  verifiedBy: z.string().uuid().nullable(),
+  verifiedAt: z.date().nullable(),
+  uploadedBy: z.string().uuid().nullable(),
+  uploadedAt: z.date(),
+});
+
+export const ChatParticipantSchema = z.object({
+  id: z.string().uuid(),
+  roomId: z.string().uuid(),
+  userId: z.string().uuid(),
+  role: z.enum(["admin", "moderator", "member", "observer"]).default("member"),
+  joinedAt: z.date(),
+  lastSeenAt: z.date().nullable(),
+  isMuted: z.boolean().default(false),
+  notificationsEnabled: z.boolean().default(true),
+  votingPower: z.number().int().min(0).default(0),
+});
+
+export const TokenHoldingSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+  tokenizationId: z.string().uuid(),
+  propertyId: z.string().uuid(),
+  tokenId: z.string(),
+  balance: z.number().int().min(0).default(0),
+  lockedBalance: z.number().int().min(0).default(0),
+  averagePurchasePrice: z.number().positive().nullable(),
+  totalInvestedNgn: z.number().min(0).default(0),
+  realizedReturnsNgn: z.number().default(0),
+  unrealizedReturnsNgn: z.number().default(0),
+  lastDividendReceivedAt: z.date().nullable(),
+  acquisitionDate: z.date(),
+  updatedAt: z.date(),
+});
+
+export const ActivityLogSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid().nullable(),
+  propertyId: z.string().uuid().nullable(),
+  tokenizationId: z.string().uuid().nullable(),
+  activityType: z.string(),
+  activityCategory: z.string().nullable(),
+  description: z.string(),
+  metadata: z.record(z.any()).nullable(),
+  ipAddress: z.string().ip().nullable(),
+  userAgent: z.string().nullable(),
+  hcsTransactionId: z.string().nullable(),
+  createdAt: z.date(),
+});
+
+export const NotificationSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid().nullable(),
+  title: z.string(),
+  message: z.string(),
+  notificationType: z.enum(["investment", "governance", "system", "marketing"]),
+  priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
+  actionUrl: z.string().url().nullable(),
+  actionData: z.record(z.any()).nullable(),
+  readAt: z.date().nullable(),
+  sentVia: z.array(z.enum(["email", "push", "sms", "in_app"]) ).nullable(),
+  deliveryStatus: z.record(z.any()).nullable(), // e.g., { email: 'sent', push: 'failed' }
+  expiresAt: z.date().nullable(),
+  createdAt: z.date(),
+});
+
+export const UserFavoriteSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+  propertyId: z.string().uuid(),
+  createdAt: z.date(),
+});
+
+export const DividendDistributionSchema = z.object({
+  id: z.string().uuid(),
+  propertyId: z.string().uuid(),
+  tokenizationId: z.string().uuid(),
+  distributionPeriod: z.string().nullable(),
+  totalAmountNgn: z.number().positive(),
+  totalAmountUsd: z.number().positive().nullable(),
+  perTokenAmount: z.number().positive(),
+  distributionDate: z.date(),
+  paymentStatus: z.enum(["pending", "processing", "completed", "failed"]).default("pending"),
+  totalRecipients: z.number().int().min(0).nullable(),
+  successfulPayments: z.number().int().min(0).default(0),
+  failedPayments: z.number().int().min(0).default(0),
+  hcsRecordId: z.string().nullable(),
+  createdBy: z.string().uuid().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export const DividendPaymentSchema = z.object({
+  id: z.string().uuid(),
+  distributionId: z.string().uuid(),
+  recipientId: z.string().uuid(),
+  tokenizationId: z.string().uuid(),
+  tokensHeld: z.number().int().positive(),
+  amountNgn: z.number().positive(),
+  amountUsd: z.number().positive().nullable(),
+  paymentMethod: z.enum(["wallet", "bank_transfer"]).nullable(),
+  paymentReference: z.string().nullable(),
+  paymentStatus: z.enum(["pending", "sent", "received", "failed"]).default("pending"),
+  taxWithheld: z.number().min(0).default(0),
+  netAmount: z.number().positive().nullable(),
+  paidAt: z.date().nullable(),
+  createdAt: z.date(),
+});
+
+export const SystemSettingSchema = z.object({
+  id: z.string().uuid(),
+  settingKey: z.string(),
+  settingValue: z.record(z.any()), // JSONB type
+  settingType: z.string().nullable(),
+  description: z.string().nullable(),
+  isPublic: z.boolean().default(false),
+  updatedBy: z.string().uuid().nullable(),
+  updatedAt: z.date(),
+});
+
+// Type inference for new schemas
+export type PropertyImage = z.infer<typeof PropertyImageSchema>;
+export type PropertyDocument = z.infer<typeof PropertyDocumentSchema>;
+export type ChatParticipant = z.infer<typeof ChatParticipantSchema>;
+export type TokenHolding = z.infer<typeof TokenHoldingSchema>;
+export type ActivityLog = z.infer<typeof ActivityLogSchema>;
+export type Notification = z.infer<typeof NotificationSchema>;
+export type UserFavorite = z.infer<typeof UserFavoriteSchema>;
+export type DividendDistribution = z.infer<typeof DividendDistributionSchema>;
+export type DividendPayment = z.infer<typeof DividendPaymentSchema>;
+export type SystemSetting = z.infer<typeof SystemSettingSchema>;
+
 // Form types
 export type SignUpFormData = z.infer<typeof SignUpFormSchema>;
 export type LoginFormData = z.infer<typeof LoginFormSchema>;

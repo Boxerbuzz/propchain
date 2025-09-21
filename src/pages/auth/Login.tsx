@@ -18,10 +18,14 @@ export default function Login() {
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-primary-foreground font-bold">PC</span>
             </div>
-            <span className="text-2xl font-bold text-foreground">PropChain</span>
+            <span className="text-2xl font-bold text-foreground">
+              PropChain
+            </span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to your account to continue investing</p>
+
+          <p className="text-muted-foreground">
+            Sign in to your account to continue investing
+          </p>
         </div>
 
         {/* Login Form */}
@@ -29,7 +33,10 @@ export default function Login() {
           <form className="space-y-6">
             {/* Email */}
             <div>
-              <Label htmlFor="email" className="text-sm font-medium text-foreground">
+              <Label
+                htmlFor="email"
+                className="text-sm font-medium text-foreground"
+              >
                 Email Address
               </Label>
               <Input
@@ -43,7 +50,10 @@ export default function Login() {
 
             {/* Password */}
             <div>
-              <Label htmlFor="password" className="text-sm font-medium text-foreground">
+              <Label
+                htmlFor="password"
+                className="text-sm font-medium text-foreground"
+              >
                 Password
               </Label>
               <div className="relative mt-1">
@@ -72,12 +82,15 @@ export default function Login() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Checkbox id="remember" />
-                <Label htmlFor="remember" className="text-sm text-muted-foreground">
+                <Label
+                  htmlFor="remember"
+                  className="text-sm text-muted-foreground"
+                >
                   Remember me
                 </Label>
               </div>
-              <Link 
-                to="/auth/forgot-password" 
+              <Link
+                to="/auth/forgot-password"
                 className="text-sm text-primary hover:text-primary-hover"
               >
                 Forgot password?
@@ -103,9 +116,9 @@ export default function Login() {
           {/* Social Login */}
           <div className="space-y-3">
             <Button variant="outline" className="w-full" size="lg">
-              <img 
-                src="https://developers.google.com/identity/images/g-logo.png" 
-                alt="Google" 
+              <img
+                src="https://developers.google.com/identity/images/g-logo.png"
+                alt="Google"
                 className="w-4 h-4 mr-2"
               />
               Continue with Google
@@ -116,7 +129,10 @@ export default function Login() {
           <div className="text-center mt-6">
             <p className="text-muted-foreground">
               Don't have an account?{" "}
-              <Link to="/auth/signup" className="text-primary hover:text-primary-hover font-medium">
+              <Link
+                to="/auth/signup"
+                className="text-primary hover:text-primary-hover font-medium"
+              >
                 Create account
               </Link>
             </p>
@@ -131,7 +147,10 @@ export default function Login() {
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link to="/privacy" className="text-primary hover:text-primary-hover">
+            <Link
+              to="/privacy"
+              className="text-primary hover:text-primary-hover"
+            >
               Privacy Policy
             </Link>
           </p>
