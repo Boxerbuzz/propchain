@@ -15,6 +15,15 @@ import VerifyEmail from "./pages/auth/VerifyEmail";
 import VerifyPhone from "./pages/auth/VerifyPhone";
 import Welcome from "./pages/onboarding/Welcome";
 import ProfileSetup from "./pages/onboarding/ProfileSetup";
+import KYCStart from "./pages/kyc/Start";
+import DocumentType from "./pages/kyc/DocumentType";
+import UploadID from "./pages/kyc/UploadID";
+import Selfie from "./pages/kyc/Selfie";
+import Address from "./pages/kyc/Address";
+import Review from "./pages/kyc/Review";
+import KYCStatus from "./pages/kyc/Status";
+import Dashboard from "./pages/Dashboard";
+import WalletSetup from "./pages/wallet/Setup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +48,15 @@ const App = () => (
             <Route path="/auth/verify-phone" element={<VerifyPhone />} />
             <Route path="/onboarding/welcome" element={<Welcome />} />
             <Route path="/onboarding/profile-setup" element={<ProfileSetup />} />
+            <Route path="/kyc/start" element={<KYCStart />} />
+            <Route path="/kyc/document-type" element={<DocumentType />} />
+            <Route path="/kyc/upload-id" element={<UploadID />} />
+            <Route path="/kyc/selfie" element={<Selfie />} />
+            <Route path="/kyc/address" element={<Address />} />
+            <Route path="/kyc/review" element={<Review />} />
+            <Route path="/kyc/status" element={<KYCStatus />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/wallet/setup" element={<WalletSetup />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
