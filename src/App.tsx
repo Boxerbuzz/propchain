@@ -50,7 +50,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background font-spartan">
           <Header />
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -77,18 +77,18 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/wallet/setup" element={<WalletSetup />} />
             <Route path="/wallet/dashboard" element={<WalletDashboard />} />
-            <Route path="/property/management" element={<PropertyManagement />} />
-            <Route path="/settings/profile" element={<Profile />} />
-            <Route path="/settings/notifications" element={<Notifications />} />
-            <Route path="/settings/security" element={<Security />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/chat/:roomId" element={<ChatRoom />} />
             <Route path="/wallet/create" element={<CreateWallet />} />
             <Route path="/wallet/connect" element={<ConnectWallet />} />
             <Route path="/wallet/fund" element={<FundWallet />} />
             <Route path="/wallet/settings" element={<WalletSettings />} />
+            <Route path="/property/management" element={<PropertyManagement />} />
             <Route path="/properties/register" element={<RegisterProperty />} />
             <Route path="/properties/upload-docs" element={<UploadDocs />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/chat/:roomId" element={<ChatRoom />} />
+            <Route path="/settings/profile" element={<Profile />} />
+            <Route path="/settings/notifications" element={<Notifications />} />
+            <Route path="/settings/security" element={<Security />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
