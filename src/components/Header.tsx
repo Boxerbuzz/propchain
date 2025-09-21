@@ -22,11 +22,13 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Header() {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
 
   // Mock notifications data
   const notifications = [
@@ -136,113 +138,117 @@ export default function Header() {
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-3">
-          {/* Wallet Connect - Desktop */}
-          <div className="hidden md:block">
-            <ConnectWalletButton />
-          </div>
+          {/* Wallet Connect - Desktop (only when authenticated) */}
+          {isAuthenticated && (
+            <div className="hidden md:block">
+              <ConnectWalletButton />
+            </div>
+          )}
 
-          {/* Notifications */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative hover:bg-muted/50 transition-colors">
-                <Bell className="h-5 w-5" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-destructive">
-                  {notifications.length}
-                </Badge>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-0" align="end">
-              <div className="flex items-center justify-between p-3 border-b">
-                <h3 className="font-semibold text-sm">Notifications</h3>
-                <Button variant="link" size="sm" className="text-xs" onClick={() => alert("Mark all as read clicked")}>Mark all as read</Button>
-              </div>
-              <div className="max-h-96 overflow-y-auto">
-                {notifications.map((notification) => (
-                  <div key={notification.id} className="p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer">
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-full ${notification.type === "success" ? "bg-emerald-100 text-emerald-600" : notification.type === "warning" ? "bg-amber-100 text-amber-600" : "bg-blue-100 text-blue-600"}`}>
-                        <notification.icon className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-center">
-                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{notification.title}</p>
-                          <div className="flex items-center gap-2">
-                            {!notification.isRead && (
-                              <span className="h-2 w-2 rounded-full bg-blue-500" />
-                            )}
-                            <span className="text-xs text-gray-500 dark:text-gray-400">{notification.time}</span>
-                          </div>
+          {/* Notifications (only when authenticated) */}
+          {isAuthenticated && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative hover:bg-muted/50 transition-colors">
+                  <Bell className="h-5 w-5" />
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-destructive">
+                    {notifications.length}
+                  </Badge>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0 bg-background border-border/20 shadow-lg" align="end">
+                <div className="flex items-center justify-between p-3 border-b border-border/10">
+                  <h3 className="font-semibold text-sm text-foreground">Notifications</h3>
+                  <Button variant="link" size="sm" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => alert("Mark all as read clicked")}>Mark all as read</Button>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.map((notification) => (
+                    <div key={notification.id} className="p-4 border-b border-border/10 last:border-b-0 hover:bg-muted/30 transition-colors cursor-pointer">
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-full ${notification.type === "success" ? "bg-success/10 text-success" : notification.type === "warning" ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"}`}>
+                          <notification.icon className="h-4 w-4" />
                         </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{notification.message}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm font-semibold text-foreground">{notification.title}</p>
+                            <div className="flex items-center gap-2">
+                              {!notification.isRead && (
+                                <span className="h-2 w-2 rounded-full bg-primary" />
+                              )}
+                              <span className="text-xs text-muted-foreground">{notification.time}</span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{notification.message}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-              <div className="p-3 border-t flex justify-between">
-                <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => alert("View All Notifications clicked")}>
-                  View All Notifications
-                </Button>
-                <Button variant="ghost" size="sm" className="w-full text-xs text-destructive" onClick={() => alert("Clear All Notifications clicked")}>
-                  Clear All
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
+                  ))}
+                </div>
+                <div className="p-3 border-t border-border/10 flex justify-between">
+                  <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground hover:text-foreground" onClick={() => alert("View All Notifications clicked")}>
+                    View All Notifications
+                  </Button>
+                  <Button variant="ghost" size="sm" className="w-full text-xs text-destructive hover:text-destructive" onClick={() => alert("Clear All Notifications clicked")}>
+                    Clear All
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
 
           {/* Profile Menu - Desktop */}
           <div className="hidden md:flex items-center space-x-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:bg-muted/50 transition-colors">
-                  <User className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex items-center gap-3 p-2">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <User className="h-5 w-5 text-primary" />
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="hover:bg-muted/50 transition-colors">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-64 bg-background border-border/20 shadow-lg" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex items-center gap-3 p-2">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium text-foreground">John Doe</p>
+                        <p className="text-xs text-muted-foreground">john@example.com</p>
+                      </div>
                     </div>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">John Doe</p>
-                      <p className="text-xs text-muted-foreground">john@example.com</p>
-                    </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {userMenuItems.slice(0, -1).map((item) => (
-                  <DropdownMenuItem key={item.name} asChild>
-                    <Link to={item.href} className="flex items-center gap-2 cursor-pointer">
-                      <item.icon className="h-4 w-4" />
-                      {item.name}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-border/20" />
+                  {userMenuItems.slice(0, -1).map((item) => (
+                    <DropdownMenuItem key={item.name} asChild>
+                      <Link to={item.href} className="flex items-center gap-2 cursor-pointer text-foreground hover:text-foreground">
+                        <item.icon className="h-4 w-4" />
+                        {item.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator className="bg-border/20" />
+                  <DropdownMenuItem asChild>
+                    <Link to="#" className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive">
+                      <LogOut className="h-4 w-4" />
+                      Logout
                     </Link>
                   </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="#" className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive">
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <div className="p-2">
-                  <div className="flex gap-2">
-                    <Link to="/auth/login" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full text-xs">
-                        Login
-                      </Button>
-                    </Link>
-                    <Link to="/auth/signup" className="flex-1">
-                      <Button size="sm" className="w-full text-xs">
-                        Sign Up
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex gap-2">
+                <Link to="/auth/login">
+                  <Button variant="outline" size="sm" className="text-xs">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/auth/signup">
+                  <Button size="sm" className="text-xs">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu */}
@@ -254,10 +260,12 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="w-80 font-spartan">
               <div className="flex flex-col h-full">
-                {/* Mobile Wallet Connect */}
-                <div className="border-b pb-4 mb-4">
-                  <ConnectWalletButton />
-                </div>
+                {/* Mobile Wallet Connect (only when authenticated) */}
+                {isAuthenticated && (
+                  <div className="border-b pb-4 mb-4">
+                    <ConnectWalletButton />
+                  </div>
+                )}
 
                 {/* Mobile Navigation */}
                 <nav className="flex-1 space-y-1">
@@ -281,36 +289,40 @@ export default function Header() {
                   })}
                 </nav>
 
-                {/* Mobile User Menu */}
-                <div className="border-t pt-4 space-y-1">
-                  {userMenuItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {item.name}
-                    </Link>
-                  ))}
-                </div>
-                
-                {/* Mobile Auth Buttons */}
-                <div className="border-t pt-4">
-                  <div className="flex gap-2">
-                    <Link to="/auth/login" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        Login
-                      </Button>
-                    </Link>
-                    <Link to="/auth/signup" className="flex-1">
-                      <Button size="sm" className="w-full">
-                        Sign Up
-                      </Button>
-                    </Link>
+                {/* Mobile User Menu (only when authenticated) */}
+                {isAuthenticated && (
+                  <div className="border-t pt-4 space-y-1">
+                    {userMenuItems.map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors"
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.name}
+                      </Link>
+                    ))}
                   </div>
-                </div>
+                )}
+                
+                {/* Mobile Auth Buttons (only when not authenticated) */}
+                {!isAuthenticated && (
+                  <div className="border-t pt-4">
+                    <div className="flex gap-2">
+                      <Link to="/auth/login" className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full">
+                          Login
+                        </Button>
+                      </Link>
+                      <Link to="/auth/signup" className="flex-1">
+                        <Button size="sm" className="w-full">
+                          Sign Up
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </div>
             </SheetContent>
           </Sheet>
