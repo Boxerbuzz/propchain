@@ -61,8 +61,6 @@ const App = () => (
               <Route path="/browse" element={<BrowseProperties />} />
               <Route path="/browse/:id" element={<PropertyDetails />} />
               <Route path="/browse/:id/invest" element={<InvestmentFlow />} />
-              <Route path="/portfolio" element={<Portfolio />} />
-              <Route path="/portfolio/:tokenizationId" element={<PortfolioDetail />} />
               {/* Onboarding routes */}
               <Route path="/onboarding/welcome" element={<Welcome />} />
               <Route path="/onboarding/profile-setup" element={<ProfileSetup />} />
@@ -78,6 +76,8 @@ const App = () => (
               {/* Authenticated routes (MainLayout) */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/portfolio" element={<Portfolio />} />
+                <Route path="/portfolio/:tokenizationId" element={<PortfolioDetail />} />
                 <Route path="/wallet/setup" element={<WalletSetup />} />
                 <Route path="/wallet/dashboard" element={<WalletDashboard />} />
                 <Route path="/wallet/create" element={<CreateWallet />} />
