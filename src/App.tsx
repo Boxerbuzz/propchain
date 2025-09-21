@@ -32,6 +32,12 @@ import PropertyManagement from "./pages/property/Management";
 import Profile from "./pages/settings/Profile";
 import Notifications from "./pages/settings/Notifications";
 import Security from "./pages/settings/Security";
+import Chat from "./pages/chat/Chat";
+import ChatRoom from "./pages/chat/ChatRoom";
+import CreateWallet from "./pages/wallet/Create";
+import ConnectWallet from "./pages/wallet/Connect";
+import FundWallet from "./pages/wallet/Fund";
+import WalletSettings from "./pages/wallet/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -73,6 +79,12 @@ const App = () => (
             <Route path="/settings/profile" element={<Profile />} />
             <Route path="/settings/notifications" element={<Notifications />} />
             <Route path="/settings/security" element={<Security />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/chat/:roomId" element={<ChatRoom />} />
+            <Route path="/wallet/create" element={<CreateWallet />} />
+            <Route path="/wallet/connect" element={<ConnectWallet />} />
+            <Route path="/wallet/fund" element={<FundWallet />} />
+            <Route path="/wallet/settings" element={<WalletSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
