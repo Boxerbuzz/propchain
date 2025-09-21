@@ -205,21 +205,7 @@ export default function BrowseProperties() {
 
   return (
     <div className="h-screen bg-background flex flex-col">
-      {/* Header */}
-      <section className="bg-background-muted py-12 flex-shrink-0">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              Browse Properties
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Discover premium real estate investment opportunities across Nigeria
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <div className="container mx-auto px-4 py-8 flex-1 overflow-hidden">
+      <div className="container mx-auto flex-1 overflow-hidden">
         <div className="flex flex-col lg:flex-row gap-8 h-full">
           {/* Filters - Desktop Sidebar / Mobile Sheet */}
           {!isMobile ? (
@@ -274,15 +260,6 @@ export default function BrowseProperties() {
                 </div>
                 
                 <div className="flex items-center space-x-2 sm:space-x-4">
-                  {/* Sort - Responsive */}
-                  <select className="border border-border rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm flex-1 sm:flex-none">
-                    <option>Featured</option>
-                    <option>Price: Low to High</option>
-                    <option>Price: High to Low</option>
-                    <option>Returns: High to Low</option>
-                    <option>Deadline</option>
-                  </select>
-
                   {/* View Toggle */}
                   <div className="flex border border-border rounded-lg p-1">
                     <Button
