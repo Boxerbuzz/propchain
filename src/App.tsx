@@ -43,6 +43,7 @@ import NotFound from "./pages/NotFound";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -73,22 +74,25 @@ const App = () => (
               <Route path="/kyc/address" element={<Address />} />
               <Route path="/kyc/review" element={<Review />} />
               <Route path="/kyc/status" element={<KYCStatus />} />
+
               {/* Authenticated routes (MainLayout) */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/wallet/setup" element={<WalletSetup />} />
-              <Route path="/wallet/dashboard" element={<WalletDashboard />} />
-              <Route path="/wallet/create" element={<CreateWallet />} />
-              <Route path="/wallet/connect" element={<ConnectWallet />} />
-              <Route path="/wallet/fund" element={<FundWallet />} />
-              <Route path="/wallet/settings" element={<WalletSettings />} />
-              <Route path="/property/management" element={<PropertyManagement />} />
-              <Route path="/properties/register" element={<RegisterProperty />} />
-              <Route path="/properties/upload-docs" element={<UploadDocs />} />
-              <Route path="/chat" element={<Chat />} />
-              <Route path="/chat/:roomId" element={<ChatRoom />} />
-              <Route path="/settings/profile" element={<Profile />} />
-              <Route path="/settings/notifications" element={<Notifications />} />
-              <Route path="/settings/security" element={<Security />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/wallet/setup" element={<WalletSetup />} />
+                <Route path="/wallet/dashboard" element={<WalletDashboard />} />
+                <Route path="/wallet/create" element={<CreateWallet />} />
+                <Route path="/wallet/connect" element={<ConnectWallet />} />
+                <Route path="/wallet/fund" element={<FundWallet />} />
+                <Route path="/wallet/settings" element={<WalletSettings />} />
+                <Route path="/property/management" element={<PropertyManagement />} />
+                <Route path="/properties/register" element={<RegisterProperty />} />
+                <Route path="/properties/upload-docs" element={<UploadDocs />} />
+                <Route path="/chat" element={<Chat />} />
+                <Route path="/chat/:roomId" element={<ChatRoom />} />
+                <Route path="/settings/profile" element={<Profile />} />
+                <Route path="/settings/notifications" element={<Notifications />} />
+                <Route path="/settings/security" element={<Security />} />
+              </Route>
             </Route>
 
             {/* Auth routes (AuthLayout) */}

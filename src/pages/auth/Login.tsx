@@ -45,7 +45,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <AuthCard title="Sign in to your account">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Email */}

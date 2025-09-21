@@ -47,7 +47,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <AuthCard title="Forgot Password?">
         <p className="text-muted-foreground text-center mb-6">
           Enter your email address and we'll send you a reset link

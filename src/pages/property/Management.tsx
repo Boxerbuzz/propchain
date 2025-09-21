@@ -1,29 +1,22 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Building2, 
-  DollarSign, 
-  TrendingUp, 
-  Users, 
+import {
+  DollarSign,
+  TrendingUp,
   Calendar,
-  Settings,
   Eye,
   Edit,
   Plus,
   Filter,
   Download,
   BarChart3,
-  Home,
   Wrench,
   MessageSquare,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -54,10 +47,10 @@ const PropertyManagement = () => {
       investors: 156,
       avgMonthlyReturn: 8.5,
       maintenanceRequests: 2,
-      pendingIssues: 1
+      pendingIssues: 1,
     },
     {
-      id: "prop2", 
+      id: "prop2",
       title: "Tech District Office Building",
       location: "San Francisco, CA",
       totalValue: 3200000,
@@ -76,8 +69,8 @@ const PropertyManagement = () => {
       investors: 203,
       avgMonthlyReturn: 7.2,
       maintenanceRequests: 1,
-      pendingIssues: 0
-    }
+      pendingIssues: 0,
+    },
   ];
 
   const maintenanceRequests = [
@@ -90,7 +83,8 @@ const PropertyManagement = () => {
       status: "pending",
       reportedDate: "2024-09-18",
       estimatedCost: 850,
-      description: "Tenant reports inconsistent heating and cooling. May need professional inspection."
+      description:
+        "Tenant reports inconsistent heating and cooling. May need professional inspection.",
     },
     {
       id: "req2",
@@ -101,7 +95,7 @@ const PropertyManagement = () => {
       status: "in-progress",
       reportedDate: "2024-09-15",
       estimatedCost: 1200,
-      description: "Scheduled quarterly maintenance for elevator system."
+      description: "Scheduled quarterly maintenance for elevator system.",
     },
     {
       id: "req3",
@@ -112,8 +106,8 @@ const PropertyManagement = () => {
       status: "completed",
       reportedDate: "2024-09-10",
       actualCost: 320,
-      description: "Water seepage through window seal during heavy rain."
-    }
+      description: "Water seepage through window seal during heavy rain.",
+    },
   ];
 
   const financialSummary = {
@@ -123,7 +117,7 @@ const PropertyManagement = () => {
     occupancyRate: 92,
     avgMonthlyReturn: 7.8,
     propertiesManaged: 2,
-    totalInvestors: 359
+    totalInvestors: 359,
   };
 
   const recentActivity = [
@@ -131,20 +125,20 @@ const PropertyManagement = () => {
       type: "dividend",
       message: "Dividend payment of $85,000 distributed to investors",
       property: "Luxury Downtown Apartment",
-      timestamp: "2 hours ago"
+      timestamp: "2 hours ago",
     },
     {
       type: "maintenance",
       message: "HVAC maintenance request submitted for Unit 4A",
-      property: "Luxury Downtown Apartment", 
-      timestamp: "5 hours ago"
+      property: "Luxury Downtown Apartment",
+      timestamp: "5 hours ago",
     },
     {
       type: "occupancy",
       message: "New tenant moved into Office 3C",
       property: "Tech District Office Building",
-      timestamp: "1 day ago"
-    }
+      timestamp: "1 day ago",
+    },
   ];
 
   const handlePropertyAction = (action: string, propertyId: string) => {
@@ -163,23 +157,31 @@ const PropertyManagement = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high": return "bg-red-100 text-red-800";
-      case "medium": return "bg-yellow-100 text-yellow-800"; 
-      case "low": return "bg-green-100 text-green-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "high":
+        return "bg-red-100 text-red-800";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800";
+      case "low":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed": return "bg-green-100 text-green-800";
-      case "in-progress": return "bg-blue-100 text-blue-800";
-      case "pending": return "bg-yellow-100 text-yellow-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "in-progress":
+        return "bg-blue-100 text-blue-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const filteredProperties = managedProperties.filter(prop => {
+  const filteredProperties = managedProperties.filter((prop) => {
     if (filter === "all") return true;
     return prop.status === filter;
   });
@@ -189,8 +191,12 @@ const PropertyManagement = () => {
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Property Management</h1>
-            <p className="text-muted-foreground">Oversee your managed properties and operations</p>
+            <h1 className="text-2xl md:text-3xl font-bold">
+              Property Management
+            </h1>
+            <p className="text-muted-foreground">
+              Oversee your managed properties and operations
+            </p>
           </div>
           <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
             <Button variant="outline" size="sm">
@@ -212,10 +218,14 @@ const PropertyManagement = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Revenue
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">${financialSummary.totalRevenue.toLocaleString()}</div>
+              <div className="text-xl md:text-2xl font-bold">
+                ${financialSummary.totalRevenue.toLocaleString()}
+              </div>
               <p className="text-xs text-green-600">+12% from last month</p>
             </CardContent>
           </Card>
@@ -225,28 +235,42 @@ const PropertyManagement = () => {
               <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">${financialSummary.netProfit.toLocaleString()}</div>
+              <div className="text-xl md:text-2xl font-bold">
+                ${financialSummary.netProfit.toLocaleString()}
+              </div>
               <p className="text-xs text-green-600">+8% from last month</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Occupancy Rate</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Occupancy Rate
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">{financialSummary.occupancyRate}%</div>
-              <p className="text-xs text-muted-foreground">Across all properties</p>
+              <div className="text-xl md:text-2xl font-bold">
+                {financialSummary.occupancyRate}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Across all properties
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Investors</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Investors
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">{financialSummary.totalInvestors}</div>
-              <p className="text-xs text-muted-foreground">{financialSummary.propertiesManaged} properties</p>
+              <div className="text-xl md:text-2xl font-bold">
+                {financialSummary.totalInvestors}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {financialSummary.propertiesManaged} properties
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -288,21 +312,34 @@ const PropertyManagement = () => {
 
                 <div className="space-y-4">
                   {filteredProperties.map((property) => (
-                    <Card key={property.id} className="hover:shadow-md transition-shadow">
+                    <Card
+                      key={property.id}
+                      className="hover:shadow-md transition-shadow"
+                    >
                       <CardContent className="p-4 md:p-6">
                         <div className="flex flex-col md:flex-row gap-4">
-                          <img 
-                            src={property.imageUrl} 
+                          <img
+                            src={property.imageUrl}
                             alt={property.title}
                             className="w-full md:w-32 h-32 rounded-lg object-cover"
                           />
                           <div className="flex-1">
                             <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-3">
                               <div>
-                                <h3 className="font-semibold text-lg">{property.title}</h3>
-                                <p className="text-muted-foreground">{property.location}</p>
+                                <h3 className="font-semibold text-lg">
+                                  {property.title}
+                                </h3>
+                                <p className="text-muted-foreground">
+                                  {property.location}
+                                </p>
                                 <div className="flex flex-wrap items-center gap-2 mt-1">
-                                  <Badge variant={property.status === "active" ? "default" : "secondary"}>
+                                  <Badge
+                                    variant={
+                                      property.status === "active"
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                  >
                                     {property.status}
                                   </Badge>
                                   <span className="text-sm text-muted-foreground">
@@ -324,20 +361,36 @@ const PropertyManagement = () => {
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div>
-                                <p className="text-muted-foreground">Monthly Revenue</p>
-                                <p className="font-semibold">${property.monthlyRevenue.toLocaleString()}</p>
+                                <p className="text-muted-foreground">
+                                  Monthly Revenue
+                                </p>
+                                <p className="font-semibold">
+                                  ${property.monthlyRevenue.toLocaleString()}
+                                </p>
                               </div>
                               <div>
-                                <p className="text-muted-foreground">Net Income</p>
-                                <p className="font-semibold">${property.netIncome.toLocaleString()}</p>
+                                <p className="text-muted-foreground">
+                                  Net Income
+                                </p>
+                                <p className="font-semibold">
+                                  ${property.netIncome.toLocaleString()}
+                                </p>
                               </div>
                               <div>
-                                <p className="text-muted-foreground">Occupancy</p>
-                                <p className="font-semibold">{property.occupancyRate}%</p>
+                                <p className="text-muted-foreground">
+                                  Occupancy
+                                </p>
+                                <p className="font-semibold">
+                                  {property.occupancyRate}%
+                                </p>
                               </div>
                               <div>
-                                <p className="text-muted-foreground">Avg Return</p>
-                                <p className="font-semibold">{property.avgMonthlyReturn}%</p>
+                                <p className="text-muted-foreground">
+                                  Avg Return
+                                </p>
+                                <p className="font-semibold">
+                                  {property.avgMonthlyReturn}%
+                                </p>
                               </div>
                             </div>
 
@@ -346,19 +399,29 @@ const PropertyManagement = () => {
                                 <span>Funding Progress</span>
                                 <span>{property.fundingProgress}%</span>
                               </div>
-                              <Progress value={property.fundingProgress} className="h-2" />
+                              <Progress
+                                value={property.fundingProgress}
+                                className="h-2"
+                              />
                             </div>
 
-                            {(property.maintenanceRequests > 0 || property.pendingIssues > 0) && (
+                            {(property.maintenanceRequests > 0 ||
+                              property.pendingIssues > 0) && (
                               <div className="flex flex-wrap gap-2 mt-3">
                                 {property.maintenanceRequests > 0 && (
-                                  <Badge variant="outline" className="text-orange-600">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-orange-600"
+                                  >
                                     <Wrench className="h-3 w-3 mr-1" />
                                     {property.maintenanceRequests} maintenance
                                   </Badge>
                                 )}
                                 {property.pendingIssues > 0 && (
-                                  <Badge variant="outline" className="text-red-600">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-red-600"
+                                  >
                                     <AlertTriangle className="h-3 w-3 mr-1" />
                                     {property.pendingIssues} urgent
                                   </Badge>
@@ -389,13 +452,13 @@ const PropertyManagement = () => {
                             <div>
                               <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <h4 className="font-medium">{request.issue}</h4>
-                                <Badge 
-                                  variant="secondary" 
+                                <Badge
+                                  variant="secondary"
                                   className={getPriorityColor(request.priority)}
                                 >
                                   {request.priority} priority
                                 </Badge>
-                                <Badge 
+                                <Badge
                                   variant="secondary"
                                   className={getStatusColor(request.status)}
                                 >
@@ -405,18 +468,25 @@ const PropertyManagement = () => {
                               <p className="text-sm text-muted-foreground">
                                 {request.unit} • Reported {request.reportedDate}
                               </p>
-                              <p className="text-sm mt-1">{request.description}</p>
+                              <p className="text-sm mt-1">
+                                {request.description}
+                              </p>
                             </div>
                             <div className="text-right mt-2 md:mt-0">
                               <p className="font-semibold">
-                                ${(request.estimatedCost || request.actualCost).toLocaleString()}
+                                $
+                                {(
+                                  request.estimatedCost || request.actualCost
+                                ).toLocaleString()}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {request.actualCost ? 'Actual cost' : 'Estimated cost'}
+                                {request.actualCost
+                                  ? "Actual cost"
+                                  : "Estimated cost"}
                               </p>
                             </div>
                           </div>
-                          
+
                           {request.status !== "completed" && (
                             <div className="flex flex-wrap gap-2">
                               <Button size="sm" variant="outline">
@@ -447,7 +517,9 @@ const PropertyManagement = () => {
                     <CardContent>
                       <div className="text-center py-8">
                         <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-muted-foreground">Revenue analytics chart would be displayed here</p>
+                        <p className="text-muted-foreground">
+                          Revenue analytics chart would be displayed here
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -459,7 +531,9 @@ const PropertyManagement = () => {
                     <CardContent>
                       <div className="text-center py-8">
                         <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-muted-foreground">Occupancy trends chart would be displayed here</p>
+                        <p className="text-muted-foreground">
+                          Occupancy trends chart would be displayed here
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -483,8 +557,12 @@ const PropertyManagement = () => {
                   {recentActivity.map((activity, index) => (
                     <div key={index} className="border-l-2 border-primary pl-4">
                       <p className="text-sm font-medium">{activity.message}</p>
-                      <p className="text-xs text-muted-foreground">{activity.property}</p>
-                      <p className="text-xs text-muted-foreground">{activity.timestamp}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {activity.property}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {activity.timestamp}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -527,18 +605,27 @@ const PropertyManagement = () => {
               <CardContent>
                 <div className="space-y-3">
                   {maintenanceRequests
-                    .filter(req => req.priority === "high" && req.status === "pending")
+                    .filter(
+                      (req) =>
+                        req.priority === "high" && req.status === "pending"
+                    )
                     .map((request) => (
-                      <div key={request.id} className="p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
+                      <div
+                        key={request.id}
+                        className="p-3 bg-red-50 dark:bg-red-950/20 rounded-lg"
+                      >
                         <p className="text-sm font-medium">{request.issue}</p>
-                        <p className="text-xs text-muted-foreground">{request.unit}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {request.unit}
+                        </p>
                         <Button size="sm" className="mt-2 w-full">
                           Resolve Now
                         </Button>
                       </div>
-                    ))
-                  }
-                  {maintenanceRequests.filter(req => req.priority === "high" && req.status === "pending").length === 0 && (
+                    ))}
+                  {maintenanceRequests.filter(
+                    (req) => req.priority === "high" && req.status === "pending"
+                  ).length === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-4">
                       No urgent issues at this time
                     </p>
