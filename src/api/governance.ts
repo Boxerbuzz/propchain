@@ -2,7 +2,7 @@ import { supabase } from "../lib/supabase";
 import { GovernanceRepository } from "../data/repositories/GovernanceRepository";
 import { HederaIntegrationService } from "../services/integrations/HederaIntegrationService";
 import { GovernanceService } from "../services/GovernanceService";
-import { GovernanceProposalFormData, GovernanceProposalFormSchema, GovernanceProposal, Vote, ApiResponseSchema, PaginatedResponseSchema } from "../types";
+import { GovernanceProposalFormData, GovernanceProposalFormSchema, GovernanceProposal, Vote, ApiResponseSchema, PaginatedResponseSchema, GovernanceProposalSchema, VoteSchema, GenericApiResponse } from "../types";
 import { z } from "zod";
 
 // Initialize repositories and services
@@ -11,20 +11,20 @@ const hederaIntegrationService = new HederaIntegrationService();
 const governanceService = new GovernanceService(governanceRepository, hederaIntegrationService);
 
 // Define response types
-const GovernanceProposalResponseSchema = ApiResponseSchema(GovernanceProposal);
+const GovernanceProposalResponseSchema = ApiResponseSchema(GovernanceProposalSchema);
 type GovernanceProposalResponse = z.infer<typeof GovernanceProposalResponseSchema>;
 
-const GovernanceProposalsListResponseSchema = ApiResponseSchema(z.array(GovernanceProposal));
+const GovernanceProposalsListResponseSchema = ApiResponseSchema(z.array(GovernanceProposalSchema));
 type GovernanceProposalsListResponse = z.infer<typeof GovernanceProposalsListResponseSchema>;
 
-const VoteResponseSchema = ApiResponseSchema(Vote);
+const VoteResponseSchema = ApiResponseSchema(VoteSchema);
 type VoteResponse = z.infer<typeof VoteResponseSchema>;
 
-const VotesListResponseSchema = ApiResponseSchema(z.array(Vote));
+const VotesListResponseSchema = ApiResponseSchema(z.array(VoteSchema));
 type VotesListResponse = z.infer<typeof VotesListResponseSchema>;
 
 export const governanceApi = {
-  async createProposal(proposerId: string, propertyId: string, formData: any): Promise<GovernanceProposalResponse | ApiResponseSchema<z.ZodAny>> {
+  async createProposal(proposerId: string, propertyId: string, formData: any): Promise<GovernanceProposalResponse | GenericApiResponse> {
     try {
       const validatedData = GovernanceProposalFormSchema.parse(formData);
       const proposal = await governanceService.createProposal(proposerId, propertyId, validatedData);
@@ -37,7 +37,7 @@ export const governanceApi = {
     }
   },
 
-  async getProposalDetails(proposalId: string): Promise<GovernanceProposalResponse | ApiResponseSchema<z.ZodAny>> {
+  async getProposalDetails(proposalId: string): Promise<GovernanceProposalResponse | GenericApiResponse> {
     try {
       const proposal = await governanceService.getProposalDetails(proposalId);
       if (!proposal) {
@@ -49,7 +49,7 @@ export const governanceApi = {
     }
   },
 
-  async listProposals(filters?: any): Promise<GovernanceProposalsListResponse | ApiResponseSchema<z.ZodAny>> {
+  async listProposals(filters?: any): Promise<GovernanceProposalsListResponse | GenericApiResponse> {
     try {
       const proposals = await governanceService.listProposals(filters);
       return { success: true, data: proposals, message: "Governance proposals listed successfully." };
@@ -58,7 +58,7 @@ export const governanceApi = {
     }
   },
 
-  async submitVote(proposalId: string, voterId: string, voteChoice: Vote["voteChoice"], votingPower: number, voteReason?: string): Promise<VoteResponse | ApiResponseSchema<z.ZodAny>> {
+  async submitVote(proposalId: string, voterId: string, voteChoice: Vote["voteChoice"], votingPower: number, voteReason?: string): Promise<VoteResponse | GenericApiResponse> {
     try {
       const vote = await governanceService.submitVote(proposalId, voterId, voteChoice, votingPower, voteReason);
       return { success: true, data: vote, message: "Vote submitted successfully." };
@@ -67,7 +67,7 @@ export const governanceApi = {
     }
   },
 
-  async getVotesByProposalId(proposalId: string): Promise<VotesListResponse | ApiResponseSchema<z.ZodAny>> {
+  async getVotesByProposalId(proposalId: string): Promise<VotesListResponse | GenericApiResponse> {
     try {
       const votes = await governanceRepository.getVotesByProposalId(proposalId);
       return { success: true, data: votes, message: "Votes retrieved successfully." };

@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase";
 import { PropertyRepository } from "../data/repositories/PropertyRepository";
 import { PropertyService } from "../services/PropertyService";
-import { PropertyFormData, PropertyFormSchema, Property, ApiResponseSchema, PropertyImage, PropertyDocument, PaginatedResponseSchema } from "../types";
+import { PropertyFormData, PropertyFormSchema, Property, ApiResponseSchema, PropertyImage, PropertyDocument, PaginatedResponseSchema, PropertySchema, PropertyImageSchema, PropertyDocumentSchema, GenericApiResponse } from "../types";
 import { z } from "zod";
 
 // Initialize repositories and services
@@ -9,20 +9,20 @@ const propertyRepository = new PropertyRepository(supabase);
 const propertyService = new PropertyService(propertyRepository);
 
 // Define response types
-const PropertyResponseSchema = ApiResponseSchema(Property);
+const PropertyResponseSchema = ApiResponseSchema(PropertySchema);
 type PropertyResponse = z.infer<typeof PropertyResponseSchema>;
 
-const PropertiesListResponseSchema = ApiResponseSchema(z.array(Property));
+const PropertiesListResponseSchema = ApiResponseSchema(z.array(PropertySchema));
 type PropertiesListResponse = z.infer<typeof PropertiesListResponseSchema>;
 
-const PropertyImageResponseSchema = ApiResponseSchema(PropertyImage);
+const PropertyImageResponseSchema = ApiResponseSchema(PropertyImageSchema);
 type PropertyImageResponse = z.infer<typeof PropertyImageResponseSchema>;
 
-const PropertyDocumentResponseSchema = ApiResponseSchema(PropertyDocument);
+const PropertyDocumentResponseSchema = ApiResponseSchema(PropertyDocumentSchema);
 type PropertyDocumentResponse = z.infer<typeof PropertyDocumentResponseSchema>;
 
 export const propertyApi = {
-  async createProperty(ownerId: string, formData: any): Promise<PropertyResponse | ApiResponseSchema<z.ZodAny>> {
+  async createProperty(ownerId: string, formData: any): Promise<PropertyResponse | GenericApiResponse> {
     try {
       const validatedData = PropertyFormSchema.parse(formData);
       const property = await propertyService.createProperty(ownerId, validatedData);
@@ -35,7 +35,7 @@ export const propertyApi = {
     }
   },
 
-  async getPropertyDetails(propertyId: string): Promise<PropertyResponse | ApiResponseSchema<z.ZodAny>> {
+  async getPropertyDetails(propertyId: string): Promise<PropertyResponse | GenericApiResponse> {
     try {
       const property = await propertyService.getPropertyDetails(propertyId);
       if (!property) {
@@ -47,7 +47,7 @@ export const propertyApi = {
     }
   },
 
-  async listProperties(filters?: any): Promise<PropertiesListResponse | ApiResponseSchema<z.ZodAny>> {
+  async listProperties(filters?: any): Promise<PropertiesListResponse | GenericApiResponse> {
     try {
       const properties = await propertyService.listProperties(filters);
       return { success: true, data: properties, message: "Properties listed successfully." };
@@ -56,7 +56,7 @@ export const propertyApi = {
     }
   },
 
-  async updateProperty(propertyId: string, formData: any): Promise<PropertyResponse | ApiResponseSchema<z.ZodAny>> {
+  async updateProperty(propertyId: string, formData: any): Promise<PropertyResponse | GenericApiResponse> {
     try {
       // You might have a specific schema for updates (e.g., Partial<PropertyFormSchema>)
       const updatedProperty = await propertyService.updateProperty(propertyId, formData);
@@ -69,7 +69,7 @@ export const propertyApi = {
     }
   },
 
-  async uploadPropertyImage(propertyId: string, imageUrl: string, imageType?: string, caption?: string, isPrimary?: boolean): Promise<PropertyImageResponse | ApiResponseSchema<z.ZodAny>> {
+  async uploadPropertyImage(propertyId: string, imageUrl: string, imageType?: string, caption?: string, isPrimary?: boolean): Promise<PropertyImageResponse | GenericApiResponse> {
     try {
       const image = await propertyService.uploadPropertyImage(propertyId, imageUrl, imageType, caption, isPrimary);
       if (!image) {
@@ -81,7 +81,7 @@ export const propertyApi = {
     }
   },
 
-  async uploadPropertyDocument(propertyId: string, documentType: string, documentName: string, fileUrl: string): Promise<PropertyDocumentResponse | ApiResponseSchema<z.ZodAny>> {
+  async uploadPropertyDocument(propertyId: string, documentType: string, documentName: string, fileUrl: string): Promise<PropertyDocumentResponse | GenericApiResponse> {
     try {
       const document = await propertyService.uploadPropertyDocument(propertyId, documentType, documentName, fileUrl);
       if (!document) {

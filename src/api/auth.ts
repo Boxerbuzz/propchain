@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase";
 import { UserRepository } from "../data/repositories/UserRepository";
 import { AuthService } from "../services/AuthService";
-import { SignUpFormSchema, LoginFormSchema, User, ApiResponseSchema } from "../types";
+import { SignUpFormSchema, LoginFormSchema, ApiResponseSchema } from "../types";
 import { z } from "zod";
 
 // Initialize repositories and services

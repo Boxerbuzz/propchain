@@ -4,7 +4,7 @@ import { TokenizationRepository } from "../data/repositories/TokenizationReposit
 import { PaymentGatewayService } from "../services/integrations/PaymentGatewayService";
 import { HederaIntegrationService } from "../services/integrations/HederaIntegrationService";
 import { InvestmentService } from "../services/InvestmentService";
-import { InvestmentFormData, InvestmentFormSchema, Investment, TokenHolding, DividendDistribution, DividendPayment, ApiResponseSchema } from "../types";
+import { InvestmentFormData, InvestmentFormSchema, Investment, TokenHolding, DividendDistribution, DividendPayment, ApiResponseSchema, InvestmentSchema, TokenHoldingSchema, DividendDistributionSchema, DividendPaymentSchema, GenericApiResponse, BooleanApiResponse } from "../types";
 import { z } from "zod";
 
 // Initialize repositories and services
@@ -20,23 +20,23 @@ const investmentService = new InvestmentService(
 );
 
 // Define response types
-const InvestmentResponseSchema = ApiResponseSchema(Investment);
+const InvestmentResponseSchema = ApiResponseSchema(InvestmentSchema);
 type InvestmentResponse = z.infer<typeof InvestmentResponseSchema>;
 
-const InvestmentsListResponseSchema = ApiResponseSchema(z.array(Investment));
+const InvestmentsListResponseSchema = ApiResponseSchema(z.array(InvestmentSchema));
 type InvestmentsListResponse = z.infer<typeof InvestmentsListResponseSchema>;
 
-const TokenHoldingsListResponseSchema = ApiResponseSchema(z.array(TokenHolding));
+const TokenHoldingsListResponseSchema = ApiResponseSchema(z.array(TokenHoldingSchema));
 type TokenHoldingsListResponse = z.infer<typeof TokenHoldingsListResponseSchema>;
 
-const DividendDistributionsListResponseSchema = ApiResponseSchema(z.array(DividendDistribution));
+const DividendDistributionsListResponseSchema = ApiResponseSchema(z.array(DividendDistributionSchema));
 type DividendDistributionsListResponse = z.infer<typeof DividendDistributionsListResponseSchema>;
 
-const DividendPaymentResponseSchema = ApiResponseSchema(DividendPayment);
+const DividendPaymentResponseSchema = ApiResponseSchema(DividendPaymentSchema);
 type DividendPaymentResponse = z.infer<typeof DividendPaymentResponseSchema>;
 
 export const investmentApi = {
-  async placeInvestment(investorId: string, tokenizationId: string, formData: any): Promise<InvestmentResponse | ApiResponseSchema<z.ZodAny>> {
+  async placeInvestment(investorId: string, tokenizationId: string, formData: any): Promise<InvestmentResponse | GenericApiResponse> {
     try {
       const validatedData = InvestmentFormSchema.parse(formData);
       const investment = await investmentService.placeInvestment(investorId, tokenizationId, validatedData);
@@ -49,7 +49,7 @@ export const investmentApi = {
     }
   },
 
-  async processInvestmentPayment(investmentId: string, paystackReference: string): Promise<InvestmentResponse | ApiResponseSchema<z.ZodAny>> {
+  async processInvestmentPayment(investmentId: string, paystackReference: string): Promise<InvestmentResponse | GenericApiResponse> {
     try {
       const updatedInvestment = await investmentService.processInvestmentPayment(investmentId, paystackReference);
       return { success: true, data: updatedInvestment, message: "Investment payment processed successfully." };
@@ -58,7 +58,7 @@ export const investmentApi = {
     }
   },
 
-  async getUserInvestments(userId: string): Promise<InvestmentsListResponse | ApiResponseSchema<z.ZodAny>> {
+  async getUserInvestments(userId: string): Promise<InvestmentsListResponse | GenericApiResponse> {
     try {
       const investments = await investmentService.getUserInvestments(userId);
       return { success: true, data: investments, message: "User investments retrieved successfully." };
@@ -67,7 +67,7 @@ export const investmentApi = {
     }
   },
 
-  async getTokenHoldings(userId: string): Promise<TokenHoldingsListResponse | ApiResponseSchema<z.ZodAny>> {
+  async getTokenHoldings(userId: string): Promise<TokenHoldingsListResponse | GenericApiResponse> {
     try {
       const tokenHoldings = await investmentService.getTokenHoldings(userId);
       return { success: true, data: tokenHoldings, message: "User token holdings retrieved successfully." };
@@ -76,7 +76,7 @@ export const investmentApi = {
     }
   },
 
-  async getDividendDistributions(tokenizationId?: string): Promise<DividendDistributionsListResponse | ApiResponseSchema<z.ZodAny>> {
+  async getDividendDistributions(tokenizationId?: string): Promise<DividendDistributionsListResponse | GenericApiResponse> {
     try {
       const distributions = await investmentService.getDividendDistributions(tokenizationId);
       return { success: true, data: distributions, message: "Dividend distributions retrieved successfully." };
@@ -85,7 +85,7 @@ export const investmentApi = {
     }
   },
 
-  async recordDividendDistribution(formData: any): Promise<DividendPaymentResponse | ApiResponseSchema<z.ZodAny>> {
+  async recordDividendDistribution(formData: any): Promise<DividendPaymentResponse | GenericApiResponse> {
     try {
       // This method would typically be called by an admin or scheduled job via an internal API.
       // For now, it's a direct call to the service.
@@ -96,7 +96,7 @@ export const investmentApi = {
     }
   },
 
-  async processDividendPayments(distributionId: string): Promise<ApiResponseSchema<boolean>> {
+  async processDividendPayments(distributionId: string): Promise<BooleanApiResponse | GenericApiResponse> {
     try {
       const success = await investmentService.processDividendPayments(distributionId);
       return { success, message: success ? "Dividend payments processed." : "Failed to process dividend payments." };

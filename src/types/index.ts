@@ -488,6 +488,12 @@ export const ApiResponseSchema = <T extends z.ZodType>(dataSchema: T) =>
     message: z.string().optional(),
   });
 
+export const GenericApiResponseSchema = ApiResponseSchema(z.any());
+export type GenericApiResponse = z.infer<typeof GenericApiResponseSchema>;
+
+export const BooleanApiResponseSchema = ApiResponseSchema(z.boolean());
+export type BooleanApiResponse = z.infer<typeof BooleanApiResponseSchema>;
+
 export const PaginatedResponseSchema = <T extends z.ZodType>(dataSchema: T) =>
   z.object({
     data: z.array(dataSchema),

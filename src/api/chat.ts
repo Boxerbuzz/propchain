@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase";
 import { ChatRepository } from "../data/repositories/ChatRepository";
 import { ChatService } from "../services/ChatService";
-import { ChatRoom, ChatParticipant, ChatMessage, ApiResponseSchema, PaginatedResponseSchema } from "../types";
+import { ChatRoom, ChatParticipant, ChatMessage, ApiResponseSchema, PaginatedResponseSchema, ChatRoomSchema, ChatParticipantSchema, ChatMessageSchema, GenericApiResponse } from "../types";
 import { z } from "zod";
 
 // Initialize repositories and services
@@ -9,26 +9,26 @@ const chatRepository = new ChatRepository(supabase);
 const chatService = new ChatService(chatRepository);
 
 // Define response types
-const ChatRoomResponseSchema = ApiResponseSchema(ChatRoom);
+const ChatRoomResponseSchema = ApiResponseSchema(ChatRoomSchema);
 type ChatRoomResponse = z.infer<typeof ChatRoomResponseSchema>;
 
-const ChatRoomsListResponseSchema = ApiResponseSchema(z.array(ChatRoom));
+const ChatRoomsListResponseSchema = ApiResponseSchema(z.array(ChatRoomSchema));
 type ChatRoomsListResponse = z.infer<typeof ChatRoomsListResponseSchema>;
 
-const ChatParticipantResponseSchema = ApiResponseSchema(ChatParticipant);
+const ChatParticipantResponseSchema = ApiResponseSchema(ChatParticipantSchema);
 type ChatParticipantResponse = z.infer<typeof ChatParticipantResponseSchema>;
 
-const ChatParticipantsListResponseSchema = ApiResponseSchema(z.array(ChatParticipant));
+const ChatParticipantsListResponseSchema = ApiResponseSchema(z.array(ChatParticipantSchema));
 type ChatParticipantsListResponse = z.infer<typeof ChatParticipantsListResponseSchema>;
 
-const ChatMessageResponseSchema = ApiResponseSchema(ChatMessage);
+const ChatMessageResponseSchema = ApiResponseSchema(ChatMessageSchema);
 type ChatMessageResponse = z.infer<typeof ChatMessageResponseSchema>;
 
-const ChatMessagesListResponseSchema = ApiResponseSchema(z.array(ChatMessage));
+const ChatMessagesListResponseSchema = ApiResponseSchema(z.array(ChatMessageSchema));
 type ChatMessagesListResponse = z.infer<typeof ChatMessagesListResponseSchema>;
 
 export const chatApi = {
-  async createChatRoom(createdBy: string, name: string, description?: string, roomType?: ChatRoom["roomType"], isPublic?: boolean): Promise<ChatRoomResponse | ApiResponseSchema<z.ZodAny>> {
+  async createChatRoom(createdBy: string, name: string, description?: string, roomType?: ChatRoom["roomType"], isPublic?: boolean): Promise<ChatRoomResponse | GenericApiResponse> {
     try {
       const room = await chatService.createChatRoom(createdBy, name, description, roomType, isPublic);
       return { success: true, data: room, message: "Chat room created successfully." };
@@ -37,7 +37,7 @@ export const chatApi = {
     }
   },
 
-  async getChatRoom(roomId: string): Promise<ChatRoomResponse | ApiResponseSchema<z.ZodAny>> {
+  async getChatRoom(roomId: string): Promise<ChatRoomResponse | GenericApiResponse> {
     try {
       const room = await chatService.getChatRoom(roomId);
       if (!room) {
@@ -49,7 +49,7 @@ export const chatApi = {
     }
   },
 
-  async getChatRooms(filters?: any): Promise<ChatRoomsListResponse | ApiResponseSchema<z.ZodAny>> {
+  async getChatRooms(filters?: any): Promise<ChatRoomsListResponse | GenericApiResponse> {
     try {
       const rooms = await chatService.getChatRooms(filters);
       return { success: true, data: rooms, message: "Chat rooms retrieved successfully." };
@@ -58,7 +58,7 @@ export const chatApi = {
     }
   },
 
-  async addParticipantToRoom(roomId: string, userId: string, role?: ChatParticipant["role"]): Promise<ChatParticipantResponse | ApiResponseSchema<z.ZodAny>> {
+  async addParticipantToRoom(roomId: string, userId: string, role?: ChatParticipant["role"]): Promise<ChatParticipantResponse | GenericApiResponse> {
     try {
       const participant = await chatService.addParticipantToRoom(roomId, userId, role);
       return { success: true, data: participant, message: "Participant added to room successfully." };
@@ -67,7 +67,7 @@ export const chatApi = {
     }
   },
 
-  async getRoomParticipants(roomId: string): Promise<ChatParticipantsListResponse | ApiResponseSchema<z.ZodAny>> {
+  async getRoomParticipants(roomId: string): Promise<ChatParticipantsListResponse | GenericApiResponse> {
     try {
       const participants = await chatService.getRoomParticipants(roomId);
       return { success: true, data: participants, message: "Room participants retrieved successfully." };
@@ -76,7 +76,7 @@ export const chatApi = {
     }
   },
 
-  async sendMessage(roomId: string, senderId: string, messageText: string, messageType?: ChatMessage["messageType"]): Promise<ChatMessageResponse | ApiResponseSchema<z.ZodAny>> {
+  async sendMessage(roomId: string, senderId: string, messageText: string, messageType?: ChatMessage["messageType"]): Promise<ChatMessageResponse | GenericApiResponse> {
     try {
       const message = await chatService.sendMessage(roomId, senderId, messageText, messageType);
       return { success: true, data: message, message: "Message sent successfully." };
@@ -85,7 +85,7 @@ export const chatApi = {
     }
   },
 
-  async getRoomMessages(roomId: string): Promise<ChatMessagesListResponse | ApiResponseSchema<z.ZodAny>> {
+  async getRoomMessages(roomId: string): Promise<ChatMessagesListResponse | GenericApiResponse> {
     try {
       const messages = await chatService.getRoomMessages(roomId);
       return { success: true, data: messages, message: "Room messages retrieved successfully." };
