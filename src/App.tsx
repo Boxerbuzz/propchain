@@ -9,6 +9,12 @@ import BrowseProperties from "./pages/BrowseProperties";
 import PropertyDetails from "./pages/PropertyDetails";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+import VerifyEmail from "./pages/auth/VerifyEmail";
+import VerifyPhone from "./pages/auth/VerifyPhone";
+import Welcome from "./pages/onboarding/Welcome";
+import ProfileSetup from "./pages/onboarding/ProfileSetup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +33,12 @@ const App = () => (
             <Route path="/browse/:id" element={<PropertyDetails />} />
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/signup" element={<Signup />} />
+            <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+            <Route path="/auth/reset-password" element={<ResetPassword />} />
+            <Route path="/auth/verify-email" element={<VerifyEmail />} />
+            <Route path="/auth/verify-phone" element={<VerifyPhone />} />
+            <Route path="/onboarding/welcome" element={<Welcome />} />
+            <Route path="/onboarding/profile-setup" element={<ProfileSetup />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
