@@ -38,6 +38,8 @@ import CreateWallet from "./pages/wallet/Create";
 import ConnectWallet from "./pages/wallet/Connect";
 import FundWallet from "./pages/wallet/Fund";
 import WalletSettings from "./pages/wallet/Settings";
+import RegisterProperty from "./pages/properties/Register";
+import UploadDocs from "./pages/properties/UploadDocs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -85,6 +87,8 @@ const App = () => (
             <Route path="/wallet/connect" element={<ConnectWallet />} />
             <Route path="/wallet/fund" element={<FundWallet />} />
             <Route path="/wallet/settings" element={<WalletSettings />} />
+            <Route path="/properties/register" element={<RegisterProperty />} />
+            <Route path="/properties/upload-docs" element={<UploadDocs />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
