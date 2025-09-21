@@ -1,19 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, DollarSign, Building, Users, Target, BarChart3, PieChart, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Building, Users, Target, BarChart3, PieChart, Activity, Wallet } from "lucide-react";
 import { Link } from "react-router-dom";
-import Header from "@/components/Header";
 
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
             Welcome back, John! 👋
           </h1>
           <p className="text-muted-foreground">
@@ -23,9 +20,9 @@ export default function Dashboard() {
 
         {/* KYC Status Alert */}
         <Card className="border-amber-200 bg-amber-50 mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center space-x-3 mb-3 md:mb-0">
                 <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
                   <Target className="w-5 h-5 text-amber-600" />
                 </div>
@@ -37,7 +34,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <Link to="/kyc/start">
-                <Button variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100">
+                <Button variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100 w-full md:w-auto">
                   Verify Now
                 </Button>
               </Link>
@@ -46,13 +43,13 @@ export default function Dashboard() {
         </Card>
 
         {/* Quick Stats */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
           <Card className="border-border">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Portfolio Value</p>
-                  <p className="text-2xl font-bold text-foreground">₦0</p>
+                  <p className="text-xl md:text-2xl font-bold text-foreground">₦0</p>
                   <div className="flex items-center mt-1">
                     <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
                     <span className="text-sm text-green-600">0%</span>
@@ -66,11 +63,11 @@ export default function Dashboard() {
           </Card>
 
           <Card className="border-border">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Properties</p>
-                  <p className="text-2xl font-bold text-foreground">0</p>
+                  <p className="text-xl md:text-2xl font-bold text-foreground">0</p>
                   <p className="text-sm text-muted-foreground mt-1">Active investments</p>
                 </div>
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -81,11 +78,11 @@ export default function Dashboard() {
           </Card>
 
           <Card className="border-border">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Monthly Returns</p>
-                  <p className="text-2xl font-bold text-foreground">₦0</p>
+                  <p className="text-xl md:text-2xl font-bold text-foreground">₦0</p>
                   <div className="flex items-center mt-1">
                     <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
                     <span className="text-sm text-green-600">0%</span>
@@ -99,11 +96,11 @@ export default function Dashboard() {
           </Card>
 
           <Card className="border-border">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Wallet Balance</p>
-                  <p className="text-2xl font-bold text-foreground">₦0</p>
+                  <p className="text-xl md:text-2xl font-bold text-foreground">₦0</p>
                   <p className="text-sm text-muted-foreground mt-1">Available to invest</p>
                 </div>
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -114,7 +111,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
           {/* Recent Activity */}
           <div className="lg:col-span-2">
             <Card className="border-border">
@@ -149,27 +146,39 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Link to="/browse" className="block">
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start text-sm">
                     <Building className="w-4 h-4 mr-2" />
                     Browse Properties
                   </Button>
                 </Link>
                 <Link to="/wallet/setup" className="block">
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start text-sm">
                     <DollarSign className="w-4 h-4 mr-2" />
                     Set Up Wallet
                   </Button>
                 </Link>
                 <Link to="/portfolio" className="block">
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start text-sm">
                     <PieChart className="w-4 h-4 mr-2" />
                     View Portfolio
                   </Button>
                 </Link>
                 <Link to="/kyc/start" className="block">
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start text-sm">
                     <Target className="w-4 h-4 mr-2" />
                     Complete KYC
+                  </Button>
+                </Link>
+                <Link to="/property/management" className="block">
+                  <Button variant="outline" className="w-full justify-start text-sm">
+                    <Building className="w-4 h-4 mr-2" />
+                    Manage Properties
+                  </Button>
+                </Link>
+                <Link to="/wallet/dashboard" className="block">
+                  <Button variant="outline" className="w-full justify-start text-sm">
+                    <Wallet className="w-4 h-4 mr-2" />
+                    Wallet Dashboard
                   </Button>
                 </Link>
               </CardContent>

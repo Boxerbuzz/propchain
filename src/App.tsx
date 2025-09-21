@@ -27,6 +27,8 @@ import Review from "./pages/kyc/Review";
 import KYCStatus from "./pages/kyc/Status";
 import Dashboard from "./pages/Dashboard";
 import WalletSetup from "./pages/wallet/Setup";
+import WalletDashboard from "./pages/wallet/Dashboard";
+import PropertyManagement from "./pages/property/Management";
 import Profile from "./pages/settings/Profile";
 import Notifications from "./pages/settings/Notifications";
 import Security from "./pages/settings/Security";
@@ -66,6 +68,8 @@ const App = () => (
             <Route path="/kyc/status" element={<KYCStatus />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/wallet/setup" element={<WalletSetup />} />
+            <Route path="/wallet/dashboard" element={<WalletDashboard />} />
+            <Route path="/property/management" element={<PropertyManagement />} />
             <Route path="/settings/profile" element={<Profile />} />
             <Route path="/settings/notifications" element={<Notifications />} />
             <Route path="/settings/security" element={<Security />} />

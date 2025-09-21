@@ -1,0 +1,556 @@
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { 
+  Building2, 
+  DollarSign, 
+  TrendingUp, 
+  Users, 
+  Calendar,
+  Settings,
+  Eye,
+  Edit,
+  Plus,
+  Filter,
+  Download,
+  BarChart3,
+  Home,
+  Wrench,
+  MessageSquare,
+  AlertTriangle
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+const PropertyManagement = () => {
+  const { toast } = useToast();
+  const [selectedProperty, setSelectedProperty] = useState(null);
+  const [filter, setFilter] = useState("all");
+
+  // Mock property management data
+  const managedProperties = [
+    {
+      id: "prop1",
+      title: "Luxury Downtown Apartment Complex",
+      location: "Manhattan, NY",
+      totalValue: 2500000,
+      totalTokens: 25000,
+      soldTokens: 20000,
+      fundingProgress: 80,
+      monthlyRevenue: 125000,
+      monthlyExpenses: 45000,
+      netIncome: 80000,
+      occupancyRate: 95,
+      totalUnits: 24,
+      occupiedUnits: 23,
+      status: "active",
+      nextDividendDate: "2024-10-15",
+      imageUrl: "/placeholder.svg",
+      investors: 156,
+      avgMonthlyReturn: 8.5,
+      maintenanceRequests: 2,
+      pendingIssues: 1
+    },
+    {
+      id: "prop2", 
+      title: "Tech District Office Building",
+      location: "San Francisco, CA",
+      totalValue: 3200000,
+      totalTokens: 32000,
+      soldTokens: 32000,
+      fundingProgress: 100,
+      monthlyRevenue: 185000,
+      monthlyExpenses: 65000,
+      netIncome: 120000,
+      occupancyRate: 88,
+      totalUnits: 12,
+      occupiedUnits: 11,
+      status: "funded",
+      nextDividendDate: "2024-10-20",
+      imageUrl: "/placeholder.svg",
+      investors: 203,
+      avgMonthlyReturn: 7.2,
+      maintenanceRequests: 1,
+      pendingIssues: 0
+    }
+  ];
+
+  const maintenanceRequests = [
+    {
+      id: "req1",
+      propertyId: "prop1",
+      unit: "Unit 4A",
+      issue: "HVAC system not working properly",
+      priority: "high",
+      status: "pending",
+      reportedDate: "2024-09-18",
+      estimatedCost: 850,
+      description: "Tenant reports inconsistent heating and cooling. May need professional inspection."
+    },
+    {
+      id: "req2",
+      propertyId: "prop1",
+      unit: "Common Area",
+      issue: "Elevator maintenance required",
+      priority: "medium",
+      status: "in-progress",
+      reportedDate: "2024-09-15",
+      estimatedCost: 1200,
+      description: "Scheduled quarterly maintenance for elevator system."
+    },
+    {
+      id: "req3",
+      propertyId: "prop2",
+      unit: "Office 2B",
+      issue: "Window leak during rain",
+      priority: "low",
+      status: "completed",
+      reportedDate: "2024-09-10",
+      actualCost: 320,
+      description: "Water seepage through window seal during heavy rain."
+    }
+  ];
+
+  const financialSummary = {
+    totalRevenue: 310000,
+    totalExpenses: 110000,
+    netProfit: 200000,
+    occupancyRate: 92,
+    avgMonthlyReturn: 7.8,
+    propertiesManaged: 2,
+    totalInvestors: 359
+  };
+
+  const recentActivity = [
+    {
+      type: "dividend",
+      message: "Dividend payment of $85,000 distributed to investors",
+      property: "Luxury Downtown Apartment",
+      timestamp: "2 hours ago"
+    },
+    {
+      type: "maintenance",
+      message: "HVAC maintenance request submitted for Unit 4A",
+      property: "Luxury Downtown Apartment", 
+      timestamp: "5 hours ago"
+    },
+    {
+      type: "occupancy",
+      message: "New tenant moved into Office 3C",
+      property: "Tech District Office Building",
+      timestamp: "1 day ago"
+    }
+  ];
+
+  const handlePropertyAction = (action: string, propertyId: string) => {
+    toast({
+      title: `${action} Property`,
+      description: `${action} action initiated for property ${propertyId}`,
+    });
+  };
+
+  const handleMaintenanceUpdate = (requestId: string, newStatus: string) => {
+    toast({
+      title: "Maintenance Updated",
+      description: `Request ${requestId} status updated to ${newStatus}`,
+    });
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high": return "bg-red-100 text-red-800";
+      case "medium": return "bg-yellow-100 text-yellow-800"; 
+      case "low": return "bg-green-100 text-green-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed": return "bg-green-100 text-green-800";
+      case "in-progress": return "bg-blue-100 text-blue-800";
+      case "pending": return "bg-yellow-100 text-yellow-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const filteredProperties = managedProperties.filter(prop => {
+    if (filter === "all") return true;
+    return prop.status === filter;
+  });
+
+  return (
+    <div className="min-h-screen bg-background py-4 md:py-8">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold">Property Management</h1>
+            <p className="text-muted-foreground">Oversee your managed properties and operations</p>
+          </div>
+          <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
+            <Button variant="outline" size="sm">
+              <Filter className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Filter</span>
+            </Button>
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Export</span>
+            </Button>
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Add Property</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Financial Overview */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl md:text-2xl font-bold">${financialSummary.totalRevenue.toLocaleString()}</div>
+              <p className="text-xs text-green-600">+12% from last month</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl md:text-2xl font-bold">${financialSummary.netProfit.toLocaleString()}</div>
+              <p className="text-xs text-green-600">+8% from last month</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Occupancy Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl md:text-2xl font-bold">{financialSummary.occupancyRate}%</div>
+              <p className="text-xs text-muted-foreground">Across all properties</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Investors</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl md:text-2xl font-bold">{financialSummary.totalInvestors}</div>
+              <p className="text-xs text-muted-foreground">{financialSummary.propertiesManaged} properties</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            <Tabs defaultValue="properties" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="properties">Properties</TabsTrigger>
+                <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="properties" className="space-y-6">
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Button
+                    variant={filter === "all" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setFilter("all")}
+                  >
+                    All Properties
+                  </Button>
+                  <Button
+                    variant={filter === "active" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setFilter("active")}
+                  >
+                    Active
+                  </Button>
+                  <Button
+                    variant={filter === "funded" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setFilter("funded")}
+                  >
+                    Fully Funded
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  {filteredProperties.map((property) => (
+                    <Card key={property.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4 md:p-6">
+                        <div className="flex flex-col md:flex-row gap-4">
+                          <img 
+                            src={property.imageUrl} 
+                            alt={property.title}
+                            className="w-full md:w-32 h-32 rounded-lg object-cover"
+                          />
+                          <div className="flex-1">
+                            <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-3">
+                              <div>
+                                <h3 className="font-semibold text-lg">{property.title}</h3>
+                                <p className="text-muted-foreground">{property.location}</p>
+                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                  <Badge variant={property.status === "active" ? "default" : "secondary"}>
+                                    {property.status}
+                                  </Badge>
+                                  <span className="text-sm text-muted-foreground">
+                                    {property.investors} investors
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex gap-2 mt-2 md:mt-0">
+                                <Button variant="outline" size="sm">
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  <span className="hidden sm:inline">View</span>
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  <span className="hidden sm:inline">Edit</span>
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <p className="text-muted-foreground">Monthly Revenue</p>
+                                <p className="font-semibold">${property.monthlyRevenue.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Net Income</p>
+                                <p className="font-semibold">${property.netIncome.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Occupancy</p>
+                                <p className="font-semibold">{property.occupancyRate}%</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Avg Return</p>
+                                <p className="font-semibold">{property.avgMonthlyReturn}%</p>
+                              </div>
+                            </div>
+
+                            <div className="mt-4">
+                              <div className="flex justify-between text-sm mb-2">
+                                <span>Funding Progress</span>
+                                <span>{property.fundingProgress}%</span>
+                              </div>
+                              <Progress value={property.fundingProgress} className="h-2" />
+                            </div>
+
+                            {(property.maintenanceRequests > 0 || property.pendingIssues > 0) && (
+                              <div className="flex flex-wrap gap-2 mt-3">
+                                {property.maintenanceRequests > 0 && (
+                                  <Badge variant="outline" className="text-orange-600">
+                                    <Wrench className="h-3 w-3 mr-1" />
+                                    {property.maintenanceRequests} maintenance
+                                  </Badge>
+                                )}
+                                {property.pendingIssues > 0 && (
+                                  <Badge variant="outline" className="text-red-600">
+                                    <AlertTriangle className="h-3 w-3 mr-1" />
+                                    {property.pendingIssues} urgent
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="maintenance" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Wrench className="h-5 w-5" />
+                      Maintenance Requests
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {maintenanceRequests.map((request) => (
+                        <div key={request.id} className="border rounded-lg p-4">
+                          <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-3">
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <h4 className="font-medium">{request.issue}</h4>
+                                <Badge 
+                                  variant="secondary" 
+                                  className={getPriorityColor(request.priority)}
+                                >
+                                  {request.priority} priority
+                                </Badge>
+                                <Badge 
+                                  variant="secondary"
+                                  className={getStatusColor(request.status)}
+                                >
+                                  {request.status}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                {request.unit} • Reported {request.reportedDate}
+                              </p>
+                              <p className="text-sm mt-1">{request.description}</p>
+                            </div>
+                            <div className="text-right mt-2 md:mt-0">
+                              <p className="font-semibold">
+                                ${(request.estimatedCost || request.actualCost).toLocaleString()}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {request.actualCost ? 'Actual cost' : 'Estimated cost'}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {request.status !== "completed" && (
+                            <div className="flex flex-wrap gap-2">
+                              <Button size="sm" variant="outline">
+                                Update Status
+                              </Button>
+                              <Button size="sm" variant="outline">
+                                Assign Contractor
+                              </Button>
+                              <Button size="sm" variant="outline">
+                                <MessageSquare className="h-3 w-3 mr-1" />
+                                Contact Tenant
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="analytics" className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Revenue Trend</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-8">
+                        <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-muted-foreground">Revenue analytics chart would be displayed here</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Occupancy Rates</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-8">
+                        <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-muted-foreground">Occupancy trends chart would be displayed here</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentActivity.map((activity, index) => (
+                    <div key={index} className="border-l-2 border-primary pl-4">
+                      <p className="text-sm font-medium">{activity.message}</p>
+                      <p className="text-xs text-muted-foreground">{activity.property}</p>
+                      <p className="text-xs text-muted-foreground">{activity.timestamp}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button className="w-full justify-start">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Property
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Schedule Maintenance
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Process Dividends
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Generate Report
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Urgent Issues */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-orange-600" />
+                  Urgent Issues
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {maintenanceRequests
+                    .filter(req => req.priority === "high" && req.status === "pending")
+                    .map((request) => (
+                      <div key={request.id} className="p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
+                        <p className="text-sm font-medium">{request.issue}</p>
+                        <p className="text-xs text-muted-foreground">{request.unit}</p>
+                        <Button size="sm" className="mt-2 w-full">
+                          Resolve Now
+                        </Button>
+                      </div>
+                    ))
+                  }
+                  {maintenanceRequests.filter(req => req.priority === "high" && req.status === "pending").length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No urgent issues at this time
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PropertyManagement;

@@ -159,4 +159,21 @@
   .nav-item-active {
     @apply text-primary border-b-2 border-primary;
   }
+
+  /* Mobile Responsive Utilities */
+  .mobile-padding {
+    @apply px-4 md:px-6 lg:px-8;
+  }
+  
+  .mobile-text {
+    @apply text-sm md:text-base;
+  }
+  
+  .mobile-grid {
+    @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
+  }
+  
+  .mobile-flex {
+    @apply flex-col md:flex-row;
+  }
 }

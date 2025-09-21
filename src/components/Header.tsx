@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Bell, User, Wallet } from "lucide-react";
+import { Bell, User, Wallet, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Header() {
   return (
-    <header className="bg-background border-b border-border">
+    <header className="sticky top-0 z-50 bg-background border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">PC</span>
           </div>
-          <span className="text-xl font-bold text-foreground">PropChain</span>
+          <span className="text-xl font-bold text-foreground hidden sm:block">PropChain</span>
         </Link>
 
         {/* Navigation */}
@@ -19,11 +19,11 @@ export default function Header() {
           <Link to="/browse" className="nav-item">Browse Properties</Link>
           <Link to="/portfolio" className="nav-item">Portfolio</Link>
           <Link to="/dashboard" className="nav-item">Dashboard</Link>
-          <Link to="/governance" className="nav-item">Governance</Link>
+          <Link to="/property/management" className="nav-item">Manage</Link>
         </nav>
 
         {/* User Actions */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
           {/* Wallet Balance */}
           <div className="hidden md:flex items-center space-x-2 bg-background-muted border border-border rounded-lg px-3 py-2">
             <Wallet className="h-4 w-4 text-muted-foreground" />
@@ -44,12 +44,17 @@ export default function Header() {
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-2">
             <Link to="/auth/login">
-              <Button variant="ghost">Login</Button>
+              <Button variant="ghost" size="sm">Login</Button>
             </Link>
             <Link to="/auth/signup">
-              <Button className="btn-primary">Sign Up</Button>
+              <Button className="btn-primary" size="sm">Sign Up</Button>
             </Link>
           </div>
+
+          {/* Mobile Menu */}
+          <Button variant="ghost" size="icon" className="md:hidden">
+            <Menu className="h-5 w-5" />
+          </Button>
         </div>
       </div>
     </header>
