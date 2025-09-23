@@ -5,7 +5,7 @@ import {
   PrivateKey, 
   TopicMessageSubmitTransaction,
   TopicId 
-} from "https://deno.land/x/hedera_sdk/mod.ts";
+} from "https://esm.sh/@hashgraph/sdk@2.65.1";
 
 serve(async (req) => {
   if (req.method !== "POST") {

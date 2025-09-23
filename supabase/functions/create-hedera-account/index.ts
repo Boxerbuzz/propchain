@@ -1,11 +1,11 @@
+// deno-lint-ignore-file
 import { serve } from "https://deno.land/std@0.178.0/http/server.ts";
 import {
   Client,
   PrivateKey,
-  AccountId,
   Hbar,
-  CryptoCreateTransaction,
-} from "https://deno.land/x/hedera_sdk/mod.ts";
+  AccountCreateTransaction,
+} from "https://esm.sh/@hashgraph/sdk@2.65.1";
 
 // Load environment variables for Hedera operator
 const OPERATOR_ID = Deno.env.get("HEDERA_OPERATOR_ID");
@@ -18,7 +18,7 @@ if (!OPERATOR_ID || !OPERATOR_PRIVATE_KEY) {
 }
 
 const client = Client.forTestnet(); // Or Client.forMainnet() or Client.forPreviewnet()
-client.setOperator(OPERATOR_ID, PrivateKey.fromString(OPERATOR_PRIVATE_KEY));
+client.setOperator(OPERATOR_ID, PrivateKey.fromStringED25519(OPERATOR_PRIVATE_KEY));
 
 serve(async (req) => {
   if (req.method !== "POST") {
@@ -33,13 +33,13 @@ serve(async (req) => {
     const newAccountPublicKey = newAccountPrivateKey.publicKey;
 
     // Create the new Hedera account with an initial balance (e.g., 1 Hbar)
-    const createAccountTransaction = new CryptoCreateTransaction()
-      .setKey(newAccountPublicKey)
+    const createAccountTransaction = new AccountCreateTransaction()
+      .setKeyWithoutAlias(newAccountPublicKey)
       .setInitialBalance(Hbar.fromTinybars(0))
       .freezeWith(client); // Freeze the transaction for signing
 
     const signedTransaction = await createAccountTransaction.sign(
-      PrivateKey.fromString(OPERATOR_PRIVATE_KEY)
+      PrivateKey.fromStringED25519(OPERATOR_PRIVATE_KEY)
     );
     const txResponse = await signedTransaction.execute(client);
     const receipt = await txResponse.getReceipt(client);

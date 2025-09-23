@@ -7,10 +7,9 @@ CREATE OR REPLACE FUNCTION public.reserve_tokens_with_timeout(
 RETURNS JSON
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp;
 AS $$
 DECLARE
-  -- Ensure that the function operates on the public schema
-  SET search_path = public, pg_temp;
   v_tokenization RECORD;
   v_available_tokens BIGINT;
   v_result JSON;
@@ -66,10 +65,10 @@ CREATE OR REPLACE FUNCTION public.release_expired_reservation(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp;
 AS $$
 DECLARE
   -- Ensure that the function operates on the public schema
-  SET search_path = public, pg_temp;
 BEGIN
   -- Update investment status to expired
   UPDATE investments
@@ -113,10 +112,9 @@ CREATE OR REPLACE FUNCTION public.cleanup_expired_reservations_for_property(
 RETURNS INTEGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp;
 AS $$
 DECLARE
-  -- Ensure that the function operates on the public schema
-  SET search_path = public, pg_temp;
   cleaned_count INTEGER := 0;
   expired_reservation RECORD;
 BEGIN
@@ -152,10 +150,11 @@ CREATE OR REPLACE FUNCTION public.create_investment_with_reservation(
 RETURNS JSON
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp;
 AS $$
 DECLARE
   -- Ensure that the function operates on the public schema
-  SET search_path = public, pg_temp;
+  
   v_investment_id UUID;
   v_reservation_result JSON;
   v_expires_at TIMESTAMP;
@@ -215,10 +214,11 @@ CREATE OR REPLACE FUNCTION public.increment_tokenization_raise(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp;
 AS $$ 
 DECLARE
   -- Ensure that the function operates on the public schema
-  SET search_path = public, pg_temp;
+  
   v_investment RECORD;
 BEGIN
   SELECT i.amount_ngn, i.tokenization_id, i.payment_status
@@ -249,10 +249,10 @@ CREATE OR REPLACE FUNCTION public.upsert_token_holdings(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp;
 AS $$
 DECLARE
   -- Ensure that the function operates on the public schema
-  SET search_path = public, pg_temp;
 BEGIN
   INSERT INTO token_holdings (
     user_id,
@@ -290,10 +290,11 @@ CREATE OR REPLACE FUNCTION public.get_user_voting_power(
 RETURNS BIGINT
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp;
 AS $$
 DECLARE
   -- Ensure that the function operates on the public schema
-  SET search_path = public, pg_temp;
+  
   v_total_tokens BIGINT := 0;
 BEGIN
   SELECT COALESCE(SUM(balance), 0)
@@ -315,10 +316,11 @@ CREATE OR REPLACE FUNCTION public.create_chat_room_for_tokenization(
 RETURNS UUID
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp;
 AS $$
 DECLARE
   -- Ensure that the function operates on the public schema
-  SET search_path = public, pg_temp;
+  
   v_room_id UUID;
   v_tokenization RECORD;
 BEGIN
@@ -380,10 +382,11 @@ CREATE OR REPLACE FUNCTION public.add_user_to_chat_room(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp;
 AS $$
 DECLARE
   -- Ensure that the function operates on the public schema
-  SET search_path = public, pg_temp;
+  
 BEGIN
   INSERT INTO chat_participants (
     room_id,
@@ -421,10 +424,11 @@ CREATE OR REPLACE FUNCTION public.create_governance_proposal(
 RETURNS UUID
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp;
 AS $$
 DECLARE
   -- Ensure that the function operates on the public schema
-  SET search_path = public, pg_temp;
+  
   v_proposal_id UUID;
   v_voting_start TIMESTAMP := NOW();
   v_voting_end TIMESTAMP;
@@ -475,10 +479,10 @@ CREATE OR REPLACE FUNCTION public.cast_vote(
 RETURNS JSON
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp;
 AS $$
 DECLARE
   -- Ensure that the function operates on the public schema
-  SET search_path = public, pg_temp;
   v_proposal RECORD;
 BEGIN
   -- Check if proposal exists and is active

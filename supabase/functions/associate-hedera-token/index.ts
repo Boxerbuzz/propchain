@@ -1,12 +1,20 @@
 import { serve } from "https://deno.land/std@0.178.0/http/server.ts";
-import { Client, PrivateKey, AccountId, TokenId, TokenAssociateTransaction } from "https://deno.land/x/hedera_sdk/mod.ts";
+import {
+  Client,
+  PrivateKey,
+  AccountId,
+  TokenId,
+  TokenAssociateTransaction,
+} from "https://esm.sh/@hashgraph/sdk@2.65.1";
 
 // Load environment variables for Hedera operator
 const OPERATOR_ID = Deno.env.get("HEDERA_OPERATOR_ID");
 const OPERATOR_PRIVATE_KEY = Deno.env.get("HEDERA_OPERATOR_PRIVATE_KEY");
 
 if (!OPERATOR_ID || !OPERATOR_PRIVATE_KEY) {
-  throw new Error("Hedera operator ID and private key must be set in Supabase secrets.");
+  throw new Error(
+    "Hedera operator ID and private key must be set in Supabase secrets."
+  );
 }
 
 const client = Client.forTestnet(); // Or Client.forMainnet() or Client.forPreviewnet()
@@ -14,14 +22,19 @@ client.setOperator(OPERATOR_ID, PrivateKey.fromString(OPERATOR_PRIVATE_KEY));
 
 serve(async (req) => {
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+    });
   }
 
   try {
     const { accountId, tokenId, privateKey } = await req.json();
 
     if (!accountId || !tokenId || !privateKey) {
-      return new Response(JSON.stringify({ error: "Missing accountId, tokenId, or privateKey" }), { status: 400 });
+      return new Response(
+        JSON.stringify({ error: "Missing accountId, tokenId, or privateKey" }),
+        { status: 400 }
+      );
     }
 
     const associateTransaction = new TokenAssociateTransaction()
@@ -29,12 +42,16 @@ serve(async (req) => {
       .setTokenIds([TokenId.fromString(tokenId)])
       .freezeWith(client);
 
-    const associateTxSign = await associateTransaction.sign(PrivateKey.fromString(privateKey));
+    const associateTxSign = await associateTransaction.sign(
+      PrivateKey.fromString(privateKey)
+    );
     const associateTxSubmit = await associateTxSign.execute(client);
     const associateRx = await associateTxSubmit.getReceipt(client);
 
     if (associateRx.status.toString() !== "SUCCESS") {
-      throw new Error(`Token association failed with status: ${associateRx.status.toString()}`);
+      throw new Error(
+        `Token association failed with status: ${associateRx.status.toString()}`
+      );
     }
 
     return new Response(
@@ -46,16 +63,20 @@ serve(async (req) => {
       {
         headers: { "Content-Type": "application/json" },
         status: 200,
-      },
+      }
     );
   } catch (error: any) {
     console.error("Error associating Hedera token:", error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message, message: "Failed to associate Hedera token." }),
+      JSON.stringify({
+        success: false,
+        error: error.message,
+        message: "Failed to associate Hedera token.",
+      }),
       {
         headers: { "Content-Type": "application/json" },
         status: 500,
-      },
+      }
     );
   }
 });
