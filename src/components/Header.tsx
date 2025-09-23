@@ -258,17 +258,28 @@ export default function Header() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80 font-spartan">
-              <div className="flex flex-col h-full">
+            <SheetContent side="right" className="w-full sm:w-80 bg-background border-l border-border">
+              <div className="flex flex-col h-full py-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-2">
+                    <Building className="h-6 w-6 text-primary" />
+                    <span className="font-bold text-lg text-foreground">PropChain</span>
+                  </div>
+                </div>
+
                 {/* Mobile Wallet Connect (only when authenticated) */}
                 {isAuthenticated && (
-                  <div className="border-b pb-4 mb-4">
+                  <div className="mb-6">
                     <ConnectWalletButton />
                   </div>
                 )}
 
                 {/* Mobile Navigation */}
-                <nav className="flex-1 space-y-1">
+                <nav className="flex-1 space-y-2">
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                    Main Navigation
+                  </div>
                   {navigation.map((item) => {
                     const isActive = isActiveRoute(item.href);
                     return (
@@ -276,14 +287,23 @@ export default function Header() {
                         key={item.name}
                         to={item.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
+                        className={`group flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                           isActive
-                            ? "text-primary bg-primary/10"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                            ? "text-primary bg-primary/10 shadow-sm"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/80 hover:shadow-sm"
                         }`}
                       >
-                        <item.icon className="h-5 w-5" />
-                        {item.name}
+                        <div className={`p-2 rounded-lg transition-colors ${
+                          isActive 
+                            ? "bg-primary/20" 
+                            : "bg-muted group-hover:bg-muted-foreground/10"
+                        }`}>
+                          <item.icon className="h-4 w-4" />
+                        </div>
+                        <span className="flex-1">{item.name}</span>
+                        {isActive && (
+                          <div className="w-2 h-2 bg-primary rounded-full" />
+                        )}
                       </Link>
                     );
                   })}
@@ -291,18 +311,39 @@ export default function Header() {
 
                 {/* Mobile User Menu (only when authenticated) */}
                 {isAuthenticated && (
-                  <div className="border-t pt-4 space-y-1">
+                  <div className="border-t border-border pt-6 mt-6 space-y-2">
+                    <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                      Account
+                    </div>
                     {userMenuItems.map((item) => (
                       <Link
                         key={item.name}
                         to={item.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors"
+                        className="group flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
                       >
-                        <item.icon className="h-4 w-4" />
-                        {item.name}
+                        <div className="p-2 rounded-lg bg-muted group-hover:bg-muted-foreground/10 transition-colors">
+                          <item.icon className="h-4 w-4" />
+                        </div>
+                        <span className="flex-1">{item.name}</span>
                       </Link>
                     ))}
+                  </div>
+                )}
+
+                {/* Mobile Auth Buttons (only when not authenticated) */}
+                {!isAuthenticated && (
+                  <div className="border-t border-border pt-6 mt-6 space-y-4">
+                    <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/auth/signup" onClick={() => setMobileMenuOpen(false)}>
+                      <Button className="w-full bg-primary hover:bg-primary/90">
+                        Get Started
+                      </Button>
+                    </Link>
                   </div>
                 )}
                 

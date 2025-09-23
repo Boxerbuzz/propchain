@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import PropertyCard from "@/components/PropertyCard";
+import Footer from "@/components/Footer";
 import { ArrowRight, Building, Users, TrendingUp, Shield, Zap, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -205,6 +206,9 @@ export default function Landing() {
           </div>
         </div>
       </section>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
