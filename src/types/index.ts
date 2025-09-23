@@ -440,6 +440,7 @@ export const TokenizationFormSchema = z
 export const InvestmentFormSchema = z.object({
   amountNgn: z.number().positive("Investment amount must be positive"),
   paymentMethod: z.enum(["paystack", "wallet"]),
+  email: z.string().email("Valid email is required"),
 });
 
 export const KycFormSchema = z.object({

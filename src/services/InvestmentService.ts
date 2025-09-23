@@ -1,12 +1,15 @@
 import { InvestmentRepository } from "../data/repositories/InvestmentRepository";
 import { TokenizationRepository } from "../data/repositories/TokenizationRepository";
+import { TokenHoldingRepository } from "../data/repositories/TokenHoldingRepository";
 import { PaymentGatewayService } from "../services/integrations/PaymentGatewayService";
 import { HederaIntegrationService } from "../services/integrations/HederaIntegrationService";
 import { Investment, InvestmentFormData, Tokenization, DividendDistribution, DividendPayment, TokenHolding } from "../types";
+import { supabase } from "../lib/supabase";
 
 export class InvestmentService {
   private investmentRepository: InvestmentRepository;
   private tokenizationRepository: TokenizationRepository;
+  private tokenHoldingRepository: TokenHoldingRepository;
   private paymentGatewayService: PaymentGatewayService;
   private hederaIntegrationService: HederaIntegrationService;
 
@@ -18,6 +21,7 @@ export class InvestmentService {
   ) {
     this.investmentRepository = investmentRepository;
     this.tokenizationRepository = tokenizationRepository;
+    this.tokenHoldingRepository = new TokenHoldingRepository(supabase);
     this.paymentGatewayService = paymentGatewayService;
     this.hederaIntegrationService = hederaIntegrationService;
   }
@@ -51,11 +55,11 @@ export class InvestmentService {
 
     // If payment method is paystack, initialize payment
     if (investmentData.paymentMethod === "paystack") {
-      // This is a simplified flow. In a real app, you'd get user email from session/db
-      const mockUserEmail = "investor@example.com"; 
+      // Use email from investment form data
+      const userEmail = investmentData.email;
       const reference = `INV-${investorId}-${Date.now()}`;
       const authorizationUrl = await this.paymentGatewayService.initializePayment(
-        mockUserEmail,
+        userEmail,
         amountNgn * 100, // Paystack amount in kobo
         reference
       );
@@ -96,18 +100,30 @@ export class InvestmentService {
       });
 
       // Update or create token holding for the investor
-      const existingHolding = (await this.investmentRepository.getTokenHoldingsByUserId(investment.investorId!)).find(
-        (h) => h.tokenizationId === investment.tokenizationId
+      const existingHolding = await this.tokenHoldingRepository.findByUserAndTokenization(
+        investment.investorId!,
+        investment.tokenizationId!
       );
 
       if (existingHolding) {
-        // This part needs a dedicated TokenHoldingRepository for updates.
-        // For now, we'll log it.
-        console.log("Mock: Updating existing token holding");
+        // Update existing token holding
+        await this.tokenHoldingRepository.updateBalance(
+          existingHolding.id,
+          existingHolding.balance + (investment.tokensAllocated || 0)
+        );
       } else {
-        // This part needs a dedicated TokenHoldingRepository for creation.
-        // For now, we'll log it.
-        console.log("Mock: Creating new token holding");
+        // Create new token holding
+        const tokenization = await this.tokenizationRepository.findById(investment.tokenizationId!);
+        await this.tokenHoldingRepository.create({
+          userId: investment.investorId!,
+          tokenizationId: investment.tokenizationId!,
+          propertyId: tokenization?.propertyId,
+          tokenId: tokenization?.tokenId || '',
+          balance: investment.tokensAllocated || 0,
+          totalInvestedNgn: investment.amountNgn || 0,
+          averagePurchasePrice: tokenization?.pricePerToken || 0,
+          acquisitionDate: new Date(),
+        });
       }
 
       return updatedInvestment;
