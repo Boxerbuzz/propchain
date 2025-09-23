@@ -1,12 +1,16 @@
 import { supabase } from "../lib/supabase";
 import { UserRepository } from "../data/repositories/UserRepository";
+import { NotificationRepository } from "../data/repositories/NotificationRepository";
+import { WalletRepository } from "../data/repositories/WalletRepository";
 import { AuthService } from "../services/AuthService";
 import { SignUpFormSchema, LoginFormSchema, ApiResponseSchema } from "../types";
 import { z } from "zod";
 
 // Initialize repositories and services
 const userRepository = new UserRepository(supabase);
-const authService = new AuthService(supabase, userRepository);
+const notificationRepository = new NotificationRepository(supabase);
+const walletRepository = new WalletRepository(supabase);
+const authService = new AuthService(supabase, userRepository, notificationRepository, walletRepository);
 
 // Define response types
 const AuthSuccessResponseSchema = ApiResponseSchema(z.object({ user: z.any(), session: z.any().nullable() }));
