@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 // supabase/functions/submit-to-hcs/index.ts
 import { serve } from "https://deno.land/std@0.178.0/http/server.ts";
 import { 
@@ -5,11 +6,7 @@ import {
   PrivateKey, 
   TopicMessageSubmitTransaction,
   TopicId 
-<<<<<<< HEAD
-} from "https://esm.sh/@hashgraph/sdk@2.65.1";
-=======
-} from "npm:@hashgraph/sdk@^2.73.1";
->>>>>>> 5748e5cb84e7e2bbafb939bc9b9875f665dc7cfd
+} from "https://esm.sh/@hashgraph/sdk@2.73.2";
 
 serve(async (req) => {
   if (req.method !== "POST") {

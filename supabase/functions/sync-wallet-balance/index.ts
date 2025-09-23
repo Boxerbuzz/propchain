@@ -1,6 +1,8 @@
+// deno-lint-ignore-file
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { Client, AccountBalanceQuery, Hbar } from "npm:@hashgraph/sdk@^2.73.1"
+import { Client, AccountBalanceQuery } from "https://esm.sh/@hashgraph/sdk@2.73.2"
 
+//2.73.2
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',

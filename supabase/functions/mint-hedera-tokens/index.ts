@@ -1,16 +1,12 @@
 import { serve } from "https://deno.land/std@0.178.0/http/server.ts";
-<<<<<<< HEAD
 import {
   Client,
   PrivateKey,
   TokenId,
   TokenMintTransaction,
-} from "https://esm.sh/@hashgraph/sdk@2.65.1";
+} from "https://esm.sh/@hashgraph/sdk@2.73.2";
 
-//https://esm.sh/@hashgraph/sdk@2.65.1
-=======
-import { Client, PrivateKey, TokenId, TokenMintTransaction } from "npm:@hashgraph/sdk@^2.73.1";
->>>>>>> 5748e5cb84e7e2bbafb939bc9b9875f665dc7cfd
+//https://esm.sh/@hashgraph/sdk@2.73.2
 
 // Load environment variables for Hedera operator
 const OPERATOR_ID = Deno.env.get("HEDERA_OPERATOR_ID");

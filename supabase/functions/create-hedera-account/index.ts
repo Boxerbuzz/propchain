@@ -4,13 +4,8 @@ import {
   Client,
   PrivateKey,
   Hbar,
-<<<<<<< HEAD
   AccountCreateTransaction,
-} from "https://esm.sh/@hashgraph/sdk@2.65.1";
-=======
-  CryptoCreateTransaction,
-} from "npm:@hashgraph/sdk@^2.73.1";
->>>>>>> 5748e5cb84e7e2bbafb939bc9b9875f665dc7cfd
+} from "https://esm.sh/@hashgraph/sdk@2.73.2";
 
 // Load environment variables for Hedera operator
 const OPERATOR_ID = Deno.env.get("HEDERA_OPERATOR_ID");
