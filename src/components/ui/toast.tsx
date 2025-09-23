@@ -47,12 +47,8 @@ const Toast = React.forwardRef<
       className={cn(toastVariants({ variant }), className)}
       {...props}
     >
-      {variant === "destructive" && <AlertCircle className="h-5 w-5 mr-3 text-white" />} {/* Added icon */}
-      <div className="grid gap-1">
-        {props.title && <ToastTitle>{props.title}</ToastTitle>}
-        {props.description && <ToastDescription>{props.description}</ToastDescription>}
-      </div>
-      {props.action}
+      {variant === "destructive" && <AlertCircle className="h-5 w-5 mr-3 text-white" />}
+      {props.children}
       <ToastClose />
     </ToastPrimitives.Root>
   );
