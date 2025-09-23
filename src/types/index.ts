@@ -16,36 +16,36 @@ export const UserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email("Invalid email format"),
   phone: z.string().nullable(), // More flexible phone validation
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  dateOfBirth: z
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
+  date_of_birth: z
     .string()
     .transform((str) => str ? new Date(str) : null)
     .nullable(),
   nationality: z.string().default("Nigeria"),
-  stateOfResidence: z.string().nullable(),
+  state_of_residence: z.string().nullable(),
   occupation: z.string().nullable(),
-  annualIncome: z
+  annual_income: z
     .number()
     .positive("Annual income must be positive")
     .nullable(),
-  investmentExperience: z.enum(["beginner", "intermediate", "advanced"]),
-  hederaAccountId: z
+  investment_experience: z.enum(["beginner", "intermediate", "advanced"]),
+  hedera_account_id: z
     .string()
     .regex(/^0\.0\.\d+$/, "Invalid Hedera account ID")
     .nullable(),
-  kycStatus: z
+  kyc_status: z
     .enum(["pending", "verified", "rejected", "expired"])
     .default("pending"),
-  kycLevel: z.enum(["tier_1", "tier_2", "tier_3"]).default("tier_1"),
-  accountStatus: z.enum(["active", "suspended", "closed"]).default("active"),
-  walletType: z.enum(["custodial", "external", "hybrid"]).nullable(),
-  referralCode: z.string().nullable(),
-  referredBy: z.string().uuid().nullable(),
-  emailVerifiedAt: z.date().nullable(),
-  phoneVerifiedAt: z.date().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  kyc_level: z.enum(["tier_1", "tier_2", "tier_3"]).default("tier_1"),
+  account_status: z.enum(["active", "suspended", "closed"]).default("active"),
+  wallet_type: z.enum(["custodial", "external", "hybrid"]).nullable(),
+  referral_code: z.string().nullable(),
+  referred_by: z.string().uuid().nullable(),
+  email_verified_at: z.date().nullable(),
+  phone_verified_at: z.date().nullable(),
+  created_at: z.date(),
+  updated_at: z.date(),
 });
 
 // Property schemas
@@ -314,24 +314,24 @@ export const VoteSchema = z.object({
 // Wallet schemas
 export const WalletSchema = z.object({
   id: z.string().uuid(),
-  userId: z.string().uuid(),
-  walletType: z.enum(["custodial", "external", "hardware"]),
-  walletName: z.string().max(50, "Wallet name too long").nullable(),
-  hederaAccountId: z
+  user_id: z.string().uuid(),
+  wallet_type: z.enum(["custodial", "external", "hardware"]),
+  wallet_name: z.string().max(50, "Wallet name too long").nullable(),
+  hedera_account_id: z
     .string()
     .regex(/^0\.0\.\d+$/, "Invalid Hedera account ID")
     .nullable(),
-  privateKeyEncrypted: z.string().nullable(),
-  publicKey: z.string().nullable(),
-  balanceHbar: z.number().min(0).default(0),
-  balanceNgn: z.number().min(0).default(0),
-  balanceUsd: z.number().min(0).default(0),
-  isPrimary: z.boolean().default(false),
-  backupCompleted: z.boolean().default(false),
-  securityLevel: z.enum(["basic", "standard", "high"]).default("standard"),
-  lastSyncAt: z.date().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  private_key_encrypted: z.string().nullable(),
+  public_key: z.string().nullable(),
+  balance_hbar: z.number().min(0).default(0),
+  balance_ngn: z.number().min(0).default(0),
+  balance_usd: z.number().min(0).default(0),
+  is_primary: z.boolean().default(false),
+  backup_completed: z.boolean().default(false),
+  security_level: z.enum(["basic", "standard", "high"]).default("standard"),
+  last_sync_at: z.date().nullable(),
+  created_at: z.date(),
+  updated_at: z.date(),
 });
 
 // KYC schemas

@@ -44,10 +44,10 @@ export class AuthService {
       const newUser: Partial<User> = {
         id: data.user.id,
         email: data.user.email!,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
         phone: formData.phone,
-        emailVerifiedAt: data.user.email_confirmed_at ? new Date() : null,
+        email_verified_at: data.user.email_confirmed_at ? new Date() : null,
       };
 
       try {
@@ -104,16 +104,16 @@ export class AuthService {
       if (data?.accountId && data?.privateKey) {
         // Create wallet record in database
         const walletData = {
-          userId: userId,
-          walletType: 'custodial' as const,
-          walletName: 'Primary Hedera Wallet',
-          hederaAccountId: data.accountId,
-          privateKeyEncrypted: data.privateKey, // Edge function should encrypt this
-          isPrimary: true,
-          securityLevel: 'standard' as const,
-          balanceHbar: 0,
-          balanceNgn: 0,
-          balanceUsd: 0,
+          user_id: userId,
+          wallet_type: 'custodial' as const,
+          wallet_name: 'Primary Hedera Wallet',
+          hedera_account_id: data.accountId,
+          private_key_encrypted: data.privateKey, // Edge function should encrypt this
+          is_primary: true,
+          security_level: 'standard' as const,
+          balance_hbar: 0,
+          balance_ngn: 0,
+          balance_usd: 0,
         };
 
         const wallet = await this.walletRepository.create(walletData);
@@ -121,8 +121,8 @@ export class AuthService {
         if (wallet) {
           // Update user with hedera account ID
           await this.userRepository.update(userId, {
-            hederaAccountId: data.accountId,
-            walletType: 'custodial'
+            hedera_account_id: data.accountId,
+            wallet_type: 'custodial'
           });
 
           console.log(`Created Hedera wallet ${data.accountId} for user ${userId}`);

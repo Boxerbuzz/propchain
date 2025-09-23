@@ -14,13 +14,13 @@ export class WalletSyncService {
   async syncWalletBalance(walletId: string): Promise<Wallet | null> {
     try {
       const wallet = await this.walletRepository.findById(walletId);
-      if (!wallet || !wallet.hederaAccountId) {
+      if (!wallet || !wallet.hedera_account_id) {
         throw new Error("Wallet not found or missing Hedera account ID");
       }
 
       // Call the sync-wallet-balance edge function
       const { data, error } = await this.supabase.functions.invoke('sync-wallet-balance', {
-        body: { hederaAccountId: wallet.hederaAccountId }
+        body: { hederaAccountId: wallet.hedera_account_id }
       });
 
       if (error) throw error;
@@ -28,10 +28,10 @@ export class WalletSyncService {
       if (data) {
         // Update wallet with new balance information
         const updatedWallet = await this.walletRepository.update(walletId, {
-          balanceHbar: data.balanceHbar,
-          balanceUsd: data.balanceUsd,
-          balanceNgn: data.balanceNgn,
-          lastSyncAt: new Date(data.lastSyncAt),
+          balance_hbar: data.balanceHbar,
+          balance_usd: data.balanceUsd,
+          balance_ngn: data.balanceNgn,
+          last_sync_at: new Date(data.lastSyncAt),
         });
 
         console.log(`Synced wallet ${walletId} balance: ${data.balanceHbar} HBAR`);
@@ -51,7 +51,7 @@ export class WalletSyncService {
       const syncedWallets: Wallet[] = [];
 
       for (const wallet of wallets) {
-        if (wallet.hederaAccountId) {
+        if (wallet.hedera_account_id) {
           try {
             const syncedWallet = await this.syncWalletBalance(wallet.id);
             if (syncedWallet) {

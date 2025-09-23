@@ -43,8 +43,8 @@ export class UserService {
     );
 
     // Update user's KYC status and level based on the mock verification result
-    let kycStatus: User["kycStatus"] = "pending";
-    let kycLevel: User["kycLevel"] = "tier_1"; // Default
+    let kycStatus: User["kyc_status"] = "pending";
+    let kycLevel: User["kyc_level"] = "tier_1"; // Default
 
     if (mockKycRecord.verificationStatus === "verified") {
       kycStatus = "verified";
@@ -62,8 +62,8 @@ export class UserService {
     }
 
     await this.userRepository.update(userId, {
-      kycStatus: kycStatus,
-      kycLevel: kycLevel,
+      kyc_status: kycStatus,
+      kyc_level: kycLevel,
     });
 
     return kycStatus;
