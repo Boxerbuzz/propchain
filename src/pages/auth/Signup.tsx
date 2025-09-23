@@ -13,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Spinner } from "@/components/ui/spinner";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,6 +31,8 @@ export default function Signup() {
       phone: "",
       password: "",
       confirmPassword: "",
+      terms: false,
+      marketing: false,
     },
   });
 
@@ -59,7 +62,8 @@ export default function Signup() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <AuthCard title="Create Your Account">
         <p className="text-muted-foreground text-center mb-6">Join thousands of investors on PropChain</p>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Name Fields */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -189,41 +193,63 @@ export default function Signup() {
           </div>
 
           {/* Terms & Conditions */}
-          <div className="flex items-start space-x-2">
-            <Checkbox id="terms" className="mt-1" {...form.register("terms") /* Assuming 'terms' is part of schema */}
-            />
-            <Label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed">
-              I agree to PropChain's{" "}
-              <Link to="/terms" className="text-primary hover:text-primary-hover">
-                Terms of Service
-              </Link>{" "}
-              and{" "}
-              <Link to="/privacy" className="text-primary hover:text-primary-hover">
-                Privacy Policy
-              </Link>,
-              and confirm that I am at least 18 years old.
-            </Label>
-          </div>
-          {form.formState.errors.terms && (
-            <p className="text-red-500 text-xs mt-1">
-              {form.formState.errors.terms.message}
-            </p>
-          )}
+          <FormField
+            control={form.control}
+            name="terms"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-start space-x-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="mt-1"
+                    />
+                  </FormControl>
+                  <FormLabel className="text-sm text-muted-foreground leading-relaxed">
+                    I agree to PropChain's{" "}
+                    <Link to="/terms" className="text-primary hover:text-primary-hover">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link to="/privacy" className="text-primary hover:text-primary-hover">
+                      Privacy Policy
+                    </Link>,
+                    and confirm that I am at least 18 years old.
+                  </FormLabel>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           {/* Marketing Consent */}
-          <div className="flex items-center space-x-2">
-            <Checkbox id="marketing" {...form.register("marketing") /* Assuming 'marketing' is part of schema */}
-            />
-            <Label htmlFor="marketing" className="text-sm text-muted-foreground">
-              I'd like to receive updates about new investment opportunities
-            </Label>
-          </div>
+          <FormField
+            control={form.control}
+            name="marketing"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center space-x-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className="text-sm text-muted-foreground">
+                    I'd like to receive updates about new investment opportunities
+                  </FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
 
           {/* Submit Button */}
           <Button type="submit" className="w-full btn-primary" size="lg" disabled={isLoading}>
             {isLoading ? <Spinner className="mr-2" /> : "Create Account"}
           </Button>
-        </form>
+          </form>
+        </Form>
 
         {/* Divider */}
         <div className="relative my-6">
