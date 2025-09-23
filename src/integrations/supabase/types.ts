@@ -1389,7 +1389,85 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_user_to_chat_room: {
+        Args: { p_room_id: string; p_user_id: string; p_voting_power?: number }
+        Returns: undefined
+      }
+      cast_vote: {
+        Args: {
+          p_proposal_id: string
+          p_vote_choice: string
+          p_voter_id: string
+          p_voting_power: number
+        }
+        Returns: Json
+      }
+      cleanup_expired_reservations_for_property: {
+        Args: { p_property_id: string }
+        Returns: number
+      }
+      create_chat_room_for_tokenization: {
+        Args: { p_tokenization_id: string }
+        Returns: string
+      }
+      create_governance_proposal: {
+        Args: {
+          p_budget_ngn: number
+          p_description: string
+          p_property_id: string
+          p_proposal_type: string
+          p_proposer_id: string
+          p_title: string
+          p_tokenization_id: string
+          p_voting_period_days?: number
+        }
+        Returns: string
+      }
+      create_investment_with_reservation: {
+        Args: {
+          p_amount_ngn: number
+          p_investor_id: string
+          p_reservation_minutes?: number
+          p_tokenization_id: string
+          p_tokens_requested: number
+        }
+        Returns: Json
+      }
+      get_user_voting_power: {
+        Args: { p_property_id: string; p_user_id: string }
+        Returns: number
+      }
+      increment_tokenization_raise: {
+        Args: { p_investment_id: string }
+        Returns: undefined
+      }
+      release_expired_reservation: {
+        Args: {
+          p_investment_id: string
+          p_tokenization_id: string
+          p_tokens_to_release: number
+        }
+        Returns: undefined
+      }
+      reserve_tokens_with_timeout: {
+        Args: {
+          p_investment_id: string
+          p_tokenization_id: string
+          p_tokens_requested: number
+        }
+        Returns: Json
+      }
+      upsert_token_holdings: {
+        Args: {
+          p_amount_invested: number
+          p_property_id: string
+          p_token_id: string
+          p_tokenization_id: string
+          p_tokens_to_add: number
+          p_user_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -41,22 +41,9 @@ export class AuthService {
     }
 
     if (data.user && data.session) {
-      const newUser: Partial<User> = {
-        id: data.user.id,
-        email: data.user.email!,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        phone: formData.phone,
-        email_verified_at: data.user.email_confirmed_at ? new Date() : null,
-      };
-
       try {
-        // Create user profile
-        const createdUser = await this.userRepository.create(newUser);
-
-        if (!createdUser) {
-          return { user: null, session: null, error: "Failed to create user profile in the database." };
-        }
+        // Wait a moment for the trigger to create the user profile
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         // Create welcome notification
         await this.createWelcomeNotification(data.user.id);
