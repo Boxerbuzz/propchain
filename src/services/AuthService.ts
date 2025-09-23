@@ -80,12 +80,12 @@ export class AuthService {
   private async createWelcomeNotification(userId: string): Promise<void> {
     try {
       await this.notificationRepository.create({
-        userId: userId,
+        user_id: userId,
         title: "Welcome to PropChain!",
         message: "Your account has been created successfully. Start exploring investment opportunities and building your property portfolio.",
-        notificationType: "system",
+        notification_type: "system",
         priority: "normal",
-        actionUrl: "/dashboard",
+        action_url: "/dashboard",
       });
     } catch (error: any) {
       console.error("Failed to create welcome notification:", error.message);

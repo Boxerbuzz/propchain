@@ -115,14 +115,14 @@ export class InvestmentService {
         // Create new token holding
         const tokenization = await this.tokenizationRepository.findById(investment.tokenizationId!);
         await this.tokenHoldingRepository.create({
-          userId: investment.investorId!,
-          tokenizationId: investment.tokenizationId!,
-          propertyId: tokenization?.propertyId,
-          tokenId: tokenization?.tokenId || '',
+          user_id: investment.investorId!,
+          tokenization_id: investment.tokenizationId!,
+          property_id: tokenization?.propertyId,
+          token_id: tokenization?.tokenId || '',
           balance: investment.tokensAllocated || 0,
-          totalInvestedNgn: investment.amountNgn || 0,
-          averagePurchasePrice: tokenization?.pricePerToken || 0,
-          acquisitionDate: new Date(),
+          total_invested_ngn: investment.amountNgn || 0,
+          average_purchase_price: tokenization?.pricePerToken || 0,
+          acquisition_date: new Date(),
         });
       }
 

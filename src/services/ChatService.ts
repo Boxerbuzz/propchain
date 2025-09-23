@@ -31,10 +31,10 @@ export class ChatService {
 
   async addParticipantToRoom(roomId: string, userId: string, role?: ChatParticipant["role"]): Promise<ChatParticipant | null> {
     const newParticipant: Partial<ChatParticipant> = {
-      roomId,
-      userId,
+      room_id: roomId,
+      user_id: userId,
       role,
-      joinedAt: new Date(),
+      joined_at: new Date(),
     };
     return this.chatRepository.createChatParticipant(newParticipant);
   }

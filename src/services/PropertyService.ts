@@ -49,12 +49,12 @@ export class PropertyService {
 
   async uploadPropertyImage(propertyId: string, imageUrl: string, imageType?: string, caption?: string, isPrimary?: boolean): Promise<PropertyImage | null> {
     const newImage: Partial<PropertyImage> = {
-      propertyId,
-      imageUrl,
-      imageType,
+      property_id: propertyId,
+      image_url: imageUrl,
+      image_type: imageType,
       caption,
-      isPrimary,
-      createdAt: new Date(),
+      is_primary: isPrimary,
+      created_at: new Date(),
     };
     // For this, we'll need a new BaseRepository or a direct Supabase call for property_images
     // For simplicity, we'll mock returning the image data for now.
@@ -64,11 +64,11 @@ export class PropertyService {
 
   async uploadPropertyDocument(propertyId: string, documentType: string, documentName: string, fileUrl: string): Promise<PropertyDocument | null> {
     const newDocument: Partial<PropertyDocument> = {
-      propertyId,
-      documentType,
-      documentName,
-      fileUrl,
-      uploadedAt: new Date(),
+      property_id: propertyId,
+      document_type: documentType,
+      document_name: documentName,
+      file_url: fileUrl,
+      uploaded_at: new Date(),
     };
     // Similarly, direct Supabase call or dedicated repo for property_documents.
     console.log(`Mock: Uploading document for property ${propertyId}: ${documentName}`);
