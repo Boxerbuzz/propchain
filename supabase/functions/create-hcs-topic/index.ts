@@ -4,7 +4,11 @@ import {
   Client,
   PrivateKey,
   TopicCreateTransaction,
+<<<<<<< HEAD
 } from "https://esm.sh/@hashgraph/sdk@2.65.1";
+=======
+} from "npm:@hashgraph/sdk@^2.73.1";
+>>>>>>> 5748e5cb84e7e2bbafb939bc9b9875f665dc7cfd
 
 serve(async (req) => {
   if (req.method !== "POST") {
