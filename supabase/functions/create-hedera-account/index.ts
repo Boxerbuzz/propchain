@@ -20,10 +20,25 @@ if (!OPERATOR_ID || !OPERATOR_PRIVATE_KEY) {
 const client = Client.forTestnet(); // Or Client.forMainnet() or Client.forPreviewnet()
 client.setOperator(OPERATOR_ID, PrivateKey.fromStringED25519(OPERATOR_PRIVATE_KEY));
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 serve(async (req) => {
+  // Handle CORS preflight request
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: CORS_HEADERS,
+    });
+  }
+
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   }
 
@@ -62,7 +77,7 @@ serve(async (req) => {
         message: "Hedera account created and funded successfully.",
       }),
       {
-        headers: { "Content-Type": "application/json" },
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
         status: 200,
       }
     );
@@ -75,7 +90,7 @@ serve(async (req) => {
         message: "Failed to create Hedera account.",
       }),
       {
-        headers: { "Content-Type": "application/json" },
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
         status: 500,
       }
     );

@@ -61,11 +61,11 @@ export default function VerifyEmail() {
           {/* Back Link */}
           <div className="text-center mt-4">
             <Link 
-              to="/auth/signup" 
+              to="/auth/login" 
               className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
-              Back to signup
+              Back to signin
             </Link>
           </div>
         </div>
