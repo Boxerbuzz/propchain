@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Calculator, TrendingUp, DollarSign } from "lucide-react";
+import InvestmentModal from "@/components/InvestmentModal";
+import { useInvestment } from "@/hooks/useInvestment";
 
 interface InvestmentCalculatorProps {
   propertyValue: number;
@@ -15,9 +17,12 @@ export default function InvestmentCalculator({
   propertyValue,
   expectedReturn,
   tokenPrice,
-  minimumInvestment
-}: InvestmentCalculatorProps) {
+  minimumInvestment,
+  property
+}: InvestmentCalculatorProps & { property?: any }) {
   const [investmentAmount, setInvestmentAmount] = useState(minimumInvestment);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { invest, isInvesting } = useInvestment();
   
   const tokensReceived = Math.floor(investmentAmount / tokenPrice);
   const ownershipPercentage = (investmentAmount / propertyValue) * 100;
@@ -94,14 +99,36 @@ export default function InvestmentCalculator({
         </div>
 
         {/* Investment Button */}
-        <Button className="w-full btn-primary" size="lg">
-          Invest ₦{investmentAmount.toLocaleString()}
+        <Button 
+          className="w-full btn-primary" 
+          size="lg"
+          onClick={() => setIsModalOpen(true)}
+          disabled={isInvesting}
+        >
+          {isInvesting ? 'Processing...' : `Invest ₦${investmentAmount.toLocaleString()}`}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
           * Returns are projected and not guaranteed
         </p>
       </div>
+      
+      <InvestmentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        property={property || {
+          id: 'default-tokenization',
+          title: 'Property Investment',
+          tokenPrice: tokenPrice,
+          minInvestment: minimumInvestment,
+          expectedReturn: expectedReturn
+        }}
+        onInvest={async (amount: number, paymentMethod: 'paystack' | 'wallet') => {
+          const tokenizationId = property?.id || 'default-tokenization';
+          await invest(tokenizationId, amount, paymentMethod);
+          setIsModalOpen(false);
+        }}
+      />
     </div>
   );
 }

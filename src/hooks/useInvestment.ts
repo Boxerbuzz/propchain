@@ -1,39 +1,56 @@
 import { useState } from 'react';
-import { placeInvestment, processInvestmentPayment } from '@/api/investments';
+import { investmentApi } from '@/api/investments';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 
 export const useInvestment = () => {
   const [isInvesting, setIsInvesting] = useState(false);
+  const { currentUser } = useAuth();
 
   const invest = async (
-    investorId: string,
     tokenizationId: string,
     amount: number,
     paymentMethod: 'paystack' | 'wallet'
   ) => {
+    if (!currentUser) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to make an investment",
+        variant: "destructive",
+      });
+      throw new Error('User not authenticated');
+    }
+
     setIsInvesting(true);
     
     try {
       // Place investment
-      // Mock API call for now - replace with actual API integration
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const investmentResponse = await investmentApi.placeInvestment(
+        currentUser.id,
+        tokenizationId,
+        {
+          amount,
+          paymentMethod,
+          email: currentUser.email,
+        }
+      );
       
-      const mockInvestment = {
-        id: `inv_${Date.now()}`,
-        paystackReference: paymentMethod === 'paystack' ? `ref_${Date.now()}` : undefined
-      };
+      if (!investmentResponse.success) {
+        throw new Error(investmentResponse.error || 'Failed to place investment');
+      }
+      
+      const investment = investmentResponse.data;
       
       // Handle Paystack payment
-      if (paymentMethod === 'paystack' && mockInvestment?.paystackReference) {
-        // In a real app, you'd redirect to Paystack and handle the callback
-        // For now, we'll simulate payment confirmation
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
+      if (paymentMethod === 'paystack' && investment?.paystackReference) {
+        // Process payment
+        const paymentResponse = await investmentApi.processInvestmentPayment(
+          investment.id,
+          investment.paystackReference
+        );
         
-        // Mock payment verification
-        const paymentSuccess = true; // In real app, verify with Paystack
-        
-        if (!paymentSuccess) {
-          throw new Error('Payment verification failed');
+        if (!paymentResponse.success) {
+          throw new Error(paymentResponse.error || 'Payment processing failed');
         }
         
         toast({
@@ -41,20 +58,17 @@ export const useInvestment = () => {
           description: `You've successfully invested ₦${amount.toLocaleString()}`,
         });
         
-        return mockInvestment;
+        return paymentResponse.data;
       }
       
       // Handle wallet payment
       if (paymentMethod === 'wallet') {
-        // Simulate wallet payment processing
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
         toast({
           title: "Investment Successful!",
           description: `You've successfully invested ₦${amount.toLocaleString()} from your wallet`,
         });
         
-        return mockInvestment;
+        return investment;
       }
       
     } catch (error) {
