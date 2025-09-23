@@ -15,15 +15,12 @@ export const LocationSchema = z.object({
 export const UserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email("Invalid email format"),
-  phone: z
-    .string()
-    .regex(/^\+234[0-9]{10}$/, "Invalid Nigerian phone number")
-    .nullable(),
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  phone: z.string().nullable(), // More flexible phone validation
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
   dateOfBirth: z
-    .date()
-    .max(new Date(), "Date of birth cannot be in future")
+    .string()
+    .transform((str) => str ? new Date(str) : null)
     .nullable(),
   nationality: z.string().default("Nigeria"),
   stateOfResidence: z.string().nullable(),
@@ -353,22 +350,16 @@ export const KycRecordSchema = z.object({
 });
 
 // Form validation schemas
+// Simplified SignUp Form - Better UX
 export const SignUpFormSchema = z
   .object({
-    firstName: z.string().min(2, "First name must be at least 2 characters"),
-    lastName: z.string().min(2, "Last name must be at least 2 characters"),
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Invalid email format"),
-    phone: z
-      .string()
-      .regex(/^\+234[0-9]{10}$/, "Invalid Nigerian phone number"),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(/[A-Z]/, "Password must contain uppercase letter")
-      .regex(/[a-z]/, "Password must contain lowercase letter")
-      .regex(/[0-9]/, "Password must contain number"),
+    phone: z.string().min(1, "Phone number is required"), // More flexible validation
+    password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
-    terms: z.boolean().refine((val) => val === true, { message: "You must agree to the terms and conditions" }),
+    terms: z.boolean().refine((val) => val === true, { message: "You must agree to the terms" }),
     marketing: z.boolean().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -445,15 +436,11 @@ export const TokenizationFormSchema = z
     }
   );
 
-export const InvestmentFormSchema = z
-  .object({
-    amountNgn: z.number().positive("Investment amount must be positive"),
-    paymentMethod: z.enum(["paystack", "wallet"]),
-  })
-  .refine((data) => data.amountNgn >= 10000, {
-    message: "Minimum investment is ₦10,000",
-    path: ["amountNgn"],
-  });
+// Simplified Investment Form - Less restrictive
+export const InvestmentFormSchema = z.object({
+  amountNgn: z.number().positive("Investment amount must be positive"),
+  paymentMethod: z.enum(["paystack", "wallet"]),
+});
 
 export const KycFormSchema = z.object({
   idType: z.enum(["nin", "drivers_license", "passport"]),
