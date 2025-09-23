@@ -6,7 +6,7 @@ import {
   TokenCreateTransaction,
   TokenType,
   TokenSupplyType,
-} from "https://deno.land/x/hedera_sdk/mod.ts";
+} from "npm:@hashgraph/sdk@^2.73.1";
 
 serve(async (req) => {
   if (req.method !== "POST") {

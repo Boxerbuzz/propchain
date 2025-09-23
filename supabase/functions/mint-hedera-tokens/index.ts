@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.178.0/http/server.ts";
-import { Client, PrivateKey, TokenId, TokenMintTransaction } from "https://deno.land/x/hedera_sdk/mod.ts";
+import { Client, PrivateKey, TokenId, TokenMintTransaction } from "npm:@hashgraph/sdk@^2.73.1";
 
 // Load environment variables for Hedera operator
 const OPERATOR_ID = Deno.env.get("HEDERA_OPERATOR_ID");

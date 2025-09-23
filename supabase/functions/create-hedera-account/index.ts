@@ -5,7 +5,7 @@ import {
   AccountId,
   Hbar,
   CryptoCreateTransaction,
-} from "https://deno.land/x/hedera_sdk/mod.ts";
+} from "npm:@hashgraph/sdk@^2.73.1";
 
 // Load environment variables for Hedera operator
 const OPERATOR_ID = Deno.env.get("HEDERA_OPERATOR_ID");
