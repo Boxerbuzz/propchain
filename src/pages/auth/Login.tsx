@@ -12,12 +12,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "react-hot-toast";
+import { actionToast } from "@/lib/toast";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  //const { toast } = useToast();
 
   const form = useForm<z.infer<typeof LoginFormSchema>>({
     resolver: zodResolver(LoginFormSchema),
@@ -28,25 +31,34 @@ export default function Login() {
   });
 
   const onSubmit = async (values: z.infer<typeof LoginFormSchema>) => {
-    const errorMessage = await login(values);
-    if (errorMessage) {
-      toast({
-        title: "Login Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Login Successful",
-        description: "Welcome back!",
-      });
-      navigate("/dashboard");
-    }
+
+    actionToast(login(values), {
+			error: e => e.message,
+			success: 'Login Successful',
+			loading: 'Getting started...',
+		})
+
+    //navigate("/dashboard");
+
+    // const errorMessage = await login(values);
+    // if (errorMessage) {
+    //   toast({
+    //     title: "Login Failed",
+    //     description: errorMessage,
+    //     variant: "destructive",
+    //   });
+    // } else {
+    //   toast({
+    //     title: "Login Successful",
+    //     description: "Welcome back!",
+    //   });
+    //   navigate("/dashboard");
+    // }
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <AuthCard title="Sign in to your account">
+      <AuthCard title="Sign in to your account" maxWidth="max-w-xl">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Email */}
           <div>
@@ -99,7 +111,10 @@ export default function Login() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Checkbox id="remember" />
-              <Label htmlFor="remember" className="text-sm text-muted-foreground">
+              <Label
+                htmlFor="remember"
+                className="text-sm text-muted-foreground"
+              >
                 Remember me
               </Label>
             </div>
@@ -112,8 +127,13 @@ export default function Login() {
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full btn-primary" size="lg" disabled={isLoading}>
-            {isLoading ? "Signing In..." : "Sign In"}
+          <Button
+            type="submit"
+            className="w-full btn-primary"
+            size="lg"
+            disabled={isLoading}
+          >
+            {isLoading ? <Spinner className="mr-2" /> : "Sign In"}
           </Button>
         </form>
 

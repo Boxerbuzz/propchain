@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
@@ -220,7 +221,7 @@ export default function Signup() {
 
           {/* Submit Button */}
           <Button type="submit" className="w-full btn-primary" size="lg" disabled={isLoading}>
-            {isLoading ? "Creating Account..." : "Create Account"}
+            {isLoading ? <Spinner className="mr-2" /> : "Create Account"}
           </Button>
         </form>
 

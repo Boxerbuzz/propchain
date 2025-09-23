@@ -9,10 +9,22 @@ export class BaseRepository<T> {
     this.tableName = tableName;
   }
 
+  private camelToSnakeCase(obj: Record<string, any>): Record<string, any> {
+    const newObj: Record<string, any> = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const snakeKey = key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+        newObj[snakeKey] = obj[key];
+      }
+    }
+    return newObj;
+  }
+
   async create(data: Partial<T>): Promise<T | null> {
+    const snakeCaseData = this.camelToSnakeCase(data as Record<string, any>);
     const { data: createdData, error } = await this.supabase
       .from(this.tableName)
-      .insert(data)
+      .insert(snakeCaseData)
       .select()
       .single();
     if (error) throw error;
@@ -32,8 +44,9 @@ export class BaseRepository<T> {
   async find(filters?: Partial<T>): Promise<T[]> {
     let query = this.supabase.from(this.tableName).select("*");
     if (filters) {
-      Object.keys(filters).forEach((key) => {
-        query = query.eq(key, (filters as any)[key]);
+      const snakeCaseFilters = this.camelToSnakeCase(filters as Record<string, any>);
+      Object.keys(snakeCaseFilters).forEach((key) => {
+        query = query.eq(key, (snakeCaseFilters as any)[key]);
       });
     }
     const { data, error } = await query;
@@ -42,9 +55,10 @@ export class BaseRepository<T> {
   }
 
   async update(id: string, data: Partial<T>): Promise<T | null> {
+    const snakeCaseData = this.camelToSnakeCase(data as Record<string, any>);
     const { data: updatedData, error } = await this.supabase
       .from(this.tableName)
-      .update(data)
+      .update(snakeCaseData)
       .eq("id", id)
       .select()
       .single();

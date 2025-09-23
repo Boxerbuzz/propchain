@@ -19,12 +19,19 @@ export const authApi = {
   async register(formData: any): Promise<AuthSuccessResponse | AuthErrorResponse> {
     try {
       const validatedData = SignUpFormSchema.parse(formData);
-      const { user, session } = await authService.register(validatedData);
+      const { user, session, error } = await authService.register(validatedData);
+      
+      if (error) {
+        console.error("AuthAPI - Register Service Error:", error);
+        return { success: false, error, message: error };
+      }
+
       return { success: true, data: { user, session }, message: "Registration successful." };
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         return { success: false, error: error.errors[0].message, message: "Validation Error" };
       }
+      console.error("AuthAPI - Register Catch Error:", error);
       return { success: false, error: error.message, message: "Registration failed." };
     }
   },
@@ -32,12 +39,19 @@ export const authApi = {
   async login(formData: any): Promise<AuthSuccessResponse | AuthErrorResponse> {
     try {
       const validatedData = LoginFormSchema.parse(formData);
-      const { user, session } = await authService.login(validatedData);
+      const { user, session, error } = await authService.login(validatedData);
+
+      if (error) {
+        console.error("AuthAPI - Login Service Error:", error);
+        return { success: false, error, message: error };
+      }
+
       return { success: true, data: { user, session }, message: "Login successful." };
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         return { success: false, error: error.errors[0].message, message: "Validation Error" };
       }
+      console.error("AuthAPI - Login Catch Error:", error);
       return { success: false, error: error.message, message: "Login failed." };
     }
   },

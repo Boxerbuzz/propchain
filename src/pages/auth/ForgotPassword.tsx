@@ -9,6 +9,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { Spinner } from "@/components/ui/spinner";
 
 // Define a Zod schema for the email input
 const ForgotPasswordFormSchema = z.object({
@@ -39,7 +40,8 @@ export default function ForgotPassword() {
     } else {
       toast({
         title: "Password Reset Email Sent",
-        description: "Please check your email for a link to reset your password.",
+        description:
+          "Please check your email for a link to reset your password.",
       });
       // Optionally redirect to a success page or back to login
       // navigate("/auth/login");
@@ -52,7 +54,7 @@ export default function ForgotPassword() {
         <p className="text-muted-foreground text-center mb-6">
           Enter your email address and we'll send you a reset link
         </p>
-        
+
         <div className="flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mx-auto mb-6">
           <Mail className="w-8 h-8 text-primary" />
         </div>
@@ -76,8 +78,13 @@ export default function ForgotPassword() {
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-            {isLoading ? "Sending..." : "Send Reset Link"}
+          <Button
+            type="submit"
+            className="w-full"
+            size="lg"
+            disabled={isLoading}
+          >
+            {isLoading ? <Spinner className="mr-2" /> : "Send Reset Link"}
           </Button>
         </form>
 

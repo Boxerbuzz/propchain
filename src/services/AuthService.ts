@@ -11,7 +11,7 @@ export class AuthService {
     this.userRepository = userRepository;
   }
 
-  async register(formData: SignUpFormData): Promise<{ user: User | null; session: any | null }> {
+  async register(formData: SignUpFormData): Promise<{ user: User | null; session: any | null; error: string | null }> {
     const { data, error } = await this.supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
@@ -25,12 +25,10 @@ export class AuthService {
     });
 
     if (error) {
-      throw new Error(error.message);
+      return { user: null, session: null, error: error.message };
     }
 
     if (data.user && data.session) {
-      // Optionally, you might want to save additional user profile data to your 'users' table
-      // using the userRepository here, if it's not automatically handled by Supabase's auth trigger.
       const newUser: Partial<User> = {
         id: data.user.id,
         email: data.user.email!,
@@ -40,32 +38,39 @@ export class AuthService {
         emailVerifiedAt: data.user.email_confirmed_at ? new Date() : null,
         // Other fields will be default or set later
       };
+
+      const createdUser = await this.userRepository.create(newUser);
+
+      if (!createdUser) {
+        return { user: null, session: null, error: "Failed to create user profile in the database." };
+      }
+
       // Since Supabase auth.signUp creates an entry in auth.users, 
       // and often a trigger inserts into public.users, we might just fetch here
       // or assume the trigger handles it. For now, we'll return the auth user.
 
       const profile = await this.userRepository.findById(data.user.id);
 
-      return { user: profile, session: data.session };
+      return { user: profile, session: data.session, error: null };
     }
-    return { user: null, session: null };
+    return { user: null, session: null, error: "Registration failed: no user or session data." };
   }
 
-  async login(formData: LoginFormData): Promise<{ user: User | null; session: any | null }> {
+  async login(formData: LoginFormData): Promise<{ user: User | null; session: any | null; error: string | null }> {
     const { data, error } = await this.supabase.auth.signInWithPassword({
       email: formData.email,
       password: formData.password,
     });
 
     if (error) {
-      throw new Error(error.message);
+      return { user: null, session: null, error: error.message };
     }
 
     if (data.user && data.session) {
       const userProfile = await this.userRepository.findById(data.user.id);
-      return { user: userProfile, session: data.session };
+      return { user: userProfile, session: data.session, error: null };
     }
-    return { user: null, session: null };
+    return { user: null, session: null, error: "Login failed: no user or session data." };
   }
 
   async logout(): Promise<void> {

@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     fetchCurrentUser();
 
-    // Listen for auth state changes from Supabase
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Supabase Auth Event:", event);
       if (session?.user) {
@@ -69,10 +68,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setCurrentUser(response.data.user as User);
         return null; // No error
       } else {
-        return response.message || "Login failed.";
+        console.error("AuthContext - Login API Error:", response.error);
+        return response.error || response.message || "Login failed with an unknown error.";
       }
     } catch (error: any) {
-      console.error("Login error:", error);
+      console.error("Login error in AuthContext:", error);
       return error.message || "An unexpected error occurred during login.";
     } finally {
       setIsLoading(false);
@@ -87,10 +87,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setCurrentUser(response.data.user as User);
         return null; // No error
       } else {
-        return response.message || "Signup failed.";
+        console.error("AuthContext - Signup API Error:", response.error);
+        return response.error || response.message || "Signup failed with an unknown error.";
       }
     } catch (error: any) {
-      console.error("Signup error:", error);
+      console.error("Signup error in AuthContext:", error);
       return error.message || "An unexpected error occurred during signup.";
     } finally {
       setIsLoading(false);
@@ -105,10 +106,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setCurrentUser(null);
         return null; // No error
       } else {
-        return response.message || "Logout failed.";
+        console.error("AuthContext - Logout API Error:", response.error);
+        return response.error || response.message || "Logout failed with an unknown error.";
       }
     } catch (error: any) {
-      console.error("Logout error:", error);
+      console.error("Logout error in AuthContext:", error);
       return error.message || "An unexpected error occurred during logout.";
     } finally {
       setIsLoading(false);
@@ -118,15 +120,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const resetPassword = async (email: string): Promise<string | null> => {
     setIsLoading(true);
     try {
-      // Assuming authApi.resetPassword exists and handles the Supabase call
-      // This is a simplified direct call to the service for now.
       const { error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) {
-        return error.message;
+        console.error("AuthContext - Reset Password Supabase Error:", error);
+        return error.message || "Failed to send password reset email.";
       }
       return null; // No error, email sent
     } catch (error: any) {
-      console.error("Reset password error:", error);
+      console.error("Reset password error in AuthContext:", error);
       return error.message || "An unexpected error occurred during password reset.";
     } finally {
       setIsLoading(false);
