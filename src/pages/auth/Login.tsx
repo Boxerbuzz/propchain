@@ -31,12 +31,11 @@ export default function Login() {
   });
 
   const onSubmit = async (values: z.infer<typeof LoginFormSchema>) => {
-
     actionToast(login(values), {
-			error: e => e.message,
-			success: 'Login Successful',
-			loading: 'Getting started...',
-		})
+      error: (e) => e.message,
+      success: "Login Successful",
+      loading: "Getting started...",
+    });
 
     //navigate("/dashboard");
 
