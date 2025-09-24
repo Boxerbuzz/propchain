@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, LoginFormData, SignUpFormData } from '@/types';
 
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [isManualAuthOperation, setIsManualAuthOperation] = useState(false);
+  const isManualAuthOperationRef = useRef(false);
 
   // Fetch user data from the users table
   const fetchUserFromDatabase = async (authUserId: string): Promise<User | null> => {
@@ -74,10 +74,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, 'isManualOperation:', isManualAuthOperation);
+      console.log('Auth state change:', event, 'isManualOperation:', isManualAuthOperationRef.current);
       
       // Skip if we're in the middle of a manual auth operation
-      if (isManualAuthOperation) {
+      if (isManualAuthOperationRef.current) {
         console.log('Skipping auth listener during manual operation');
         return;
       }
@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signup = async (formData: SignUpFormData): Promise<string | null> => {
     setIsLoading(true);
-    setIsManualAuthOperation(true);
+    isManualAuthOperationRef.current = true;
     
     try {
       console.log('Starting manual signup operation');
@@ -165,13 +165,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return 'An unexpected error occurred during signup';
     } finally {
       setIsLoading(false);
-      setIsManualAuthOperation(false);
+      isManualAuthOperationRef.current = false;
     }
   };
 
   const login = async (formData: LoginFormData): Promise<string | null> => {
     setIsLoading(true);
-    setIsManualAuthOperation(true);
+    isManualAuthOperationRef.current = true;
     
     try {
       console.log('Starting manual login operation');
@@ -205,7 +205,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return 'An unexpected error occurred during login';
     } finally {
       setIsLoading(false);
-      setIsManualAuthOperation(false);
+      isManualAuthOperationRef.current = false;
     }
   };
 
