@@ -8,12 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MessageCircle, Search, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUserChatRooms } from "@/hooks/useUserChatRooms";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 const Chat = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useSupabaseAuth();
   
   // Fetch real chat rooms data
   const { chatRooms, isLoading, error } = useUserChatRooms();

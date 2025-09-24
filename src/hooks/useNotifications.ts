@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { userApi } from "../api/users";
-import { useAuth } from "../context/AuthContext";
+import { supabaseService } from "@/services/supabaseService";
+import { useSupabaseAuth } from "./useSupabaseAuth";
 import { Notification } from "../types";
 import { toast } from "react-hot-toast";
 
@@ -14,13 +14,13 @@ interface UseNotificationsReturn {
 }
 
 export const useNotifications = (): UseNotificationsReturn => {
-  const { currentUser, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useSupabaseAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchNotifications = async () => {
-    if (!isAuthenticated || !currentUser?.id) {
+    if (!isAuthenticated || !user?.id) {
       setNotifications([]);
       setIsLoading(false);
       return;
@@ -30,13 +30,8 @@ export const useNotifications = (): UseNotificationsReturn => {
       setIsLoading(true);
       setError(null);
       
-      const response = await userApi.getUserNotifications(currentUser.id);
-      
-      if (response.success && response.data) {
-        setNotifications(response.data);
-      } else {
-        setError(response.error || "Failed to fetch notifications");
-      }
+      const data = await supabaseService.notifications.listUnreadByUser(user.id);
+      setNotifications(data as unknown as Notification[]);
     } catch (err: any) {
       const errorMessage = err.message || "An error occurred while fetching notifications";
       setError(errorMessage);
@@ -47,11 +42,11 @@ export const useNotifications = (): UseNotificationsReturn => {
   };
 
   const markAllAsRead = async () => {
-    if (!currentUser?.id) return;
+    if (!user?.id) return;
 
     try {
-      const response = await userApi.markAllNotificationsAsRead(currentUser.id);
-      if (response.success) {
+      const success = await supabaseService.notifications.markAllAsRead(user.id);
+      if (success) {
         // Update local state to mark all as read
         setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date() })));
         toast.success("All notifications marked as read");
@@ -65,17 +60,13 @@ export const useNotifications = (): UseNotificationsReturn => {
   };
 
   const clearReadNotifications = async () => {
-    if (!currentUser?.id) return;
+    if (!user?.id) return;
 
     try {
-      const response = await userApi.clearReadNotifications(currentUser.id);
-      if (response.success) {
-        // Remove read notifications from local state
-        setNotifications(prev => prev.filter(n => !n.read_at));
-        toast.success("Read notifications cleared");
-      } else {
-        toast.error("Failed to clear notifications");
-      }
+      // For now, just remove read notifications from local state
+      // You can implement actual deletion later if needed
+      setNotifications(prev => prev.filter(n => !n.read_at));
+      toast.success("Read notifications cleared");
     } catch (error) {
       console.error("Failed to clear notifications:", error);
       toast.error("Failed to clear notifications");
@@ -88,7 +79,7 @@ export const useNotifications = (): UseNotificationsReturn => {
 
   useEffect(() => {
     fetchNotifications();
-  }, [currentUser?.id, isAuthenticated]);
+  }, [user?.id, isAuthenticated]);
 
   return {
     notifications,

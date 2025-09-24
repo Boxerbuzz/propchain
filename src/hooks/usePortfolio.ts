@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { investmentApi } from "../api/investments";
-import { useAuth } from "../context/AuthContext";
+import { supabaseService } from "@/services/supabaseService";
+import { useSupabaseAuth } from "./useSupabaseAuth";
 import { Investment, TokenHolding, DividendPayment } from "../types";
 import { toast } from "react-hot-toast";
 
@@ -35,7 +35,7 @@ const initialStats: PortfolioStats = {
 };
 
 export const usePortfolio = (): UsePortfolioReturn => {
-  const { currentUser, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useSupabaseAuth();
   const [portfolioStats, setPortfolioStats] = useState<PortfolioStats>(initialStats);
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [tokenHoldings, setTokenHoldings] = useState<TokenHolding[]>([]);
@@ -44,7 +44,7 @@ export const usePortfolio = (): UsePortfolioReturn => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchPortfolioData = async () => {
-    if (!isAuthenticated || !currentUser?.id) {
+    if (!isAuthenticated || !user?.id) {
       setIsLoading(false);
       return;
     }
@@ -53,36 +53,32 @@ export const usePortfolio = (): UsePortfolioReturn => {
       setIsLoading(true);
       setError(null);
 
-      // Fetch user investments
-      const investmentsResponse = await investmentApi.getUserInvestments(currentUser.id);
-      if (investmentsResponse.success && investmentsResponse.data) {
-        setInvestments(investmentsResponse.data);
-      }
+      // Fetch user investments and token holdings
+      const [investments, tokenHoldings] = await Promise.all([
+        supabaseService.investments.listByUser(user.id),
+        supabaseService.investments.getTokenHoldings(user.id),
+      ]);
+      
+      setInvestments(investments as unknown as Investment[]);
+      setTokenHoldings(tokenHoldings as unknown as TokenHolding[]);
+      
+      // Calculate portfolio stats from token holdings
+      const totalInvested = tokenHoldings.reduce((sum: number, h: any) => sum + (h.total_invested_ngn || 0), 0);
+      const unrealizedReturns = tokenHoldings.reduce((sum: number, h: any) => sum + (h.unrealized_returns_ngn || 0), 0);
+      const realizedReturns = tokenHoldings.reduce((sum: number, h: any) => sum + (h.realized_returns_ngn || 0), 0);
+      const currentValue = totalInvested + unrealizedReturns;
+      const totalReturn = unrealizedReturns + realizedReturns;
+      const returnPercentage = totalInvested > 0 ? (totalReturn / totalInvested) * 100 : 0;
 
-      // Fetch token holdings
-      const holdingsResponse = await investmentApi.getTokenHoldings(currentUser.id);
-      if (holdingsResponse.success && holdingsResponse.data) {
-        setTokenHoldings(holdingsResponse.data);
-        
-        // Calculate portfolio stats from token holdings
-        const holdings = holdingsResponse.data;
-        const totalInvested = holdings.reduce((sum: number, h: any) => sum + (h.total_invested_ngn || 0), 0);
-        const unrealizedReturns = holdings.reduce((sum: number, h: any) => sum + (h.unrealized_returns_ngn || 0), 0);
-        const realizedReturns = holdings.reduce((sum: number, h: any) => sum + (h.realized_returns_ngn || 0), 0);
-        const currentValue = totalInvested + unrealizedReturns;
-        const totalReturn = unrealizedReturns + realizedReturns;
-        const returnPercentage = totalInvested > 0 ? (totalReturn / totalInvested) * 100 : 0;
-
-        setPortfolioStats({
-          totalInvested,
-          currentValue,
-          totalReturn,
-          returnPercentage,
-          monthlyDividends: 0, // Will be calculated from dividend data
-          totalProperties: holdings.length,
-          activeInvestments: holdings.filter((h: any) => h.balance > 0).length
-        });
-      }
+      setPortfolioStats({
+        totalInvested,
+        currentValue,
+        totalReturn,
+        returnPercentage,
+        monthlyDividends: 0, // Will be calculated from dividend data
+        totalProperties: tokenHoldings.length,
+        activeInvestments: tokenHoldings.filter((h: any) => h.balance > 0).length
+      });
 
     } catch (err: any) {
       const errorMessage = err.message || "Failed to load portfolio data";
@@ -99,7 +95,7 @@ export const usePortfolio = (): UsePortfolioReturn => {
 
   useEffect(() => {
     fetchPortfolioData();
-  }, [currentUser?.id, isAuthenticated]);
+  }, [user?.id, isAuthenticated]);
 
   return {
     portfolioStats,

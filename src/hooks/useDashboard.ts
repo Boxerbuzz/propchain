@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useSupabaseAuth } from "./useSupabaseAuth";
 import { usePortfolio } from "./usePortfolio";
-import { userApi } from "../api/users";
+import { supabaseService } from "@/services/supabaseService";
 import { Wallet } from "../types";
 
 interface DashboardStats {
@@ -24,25 +24,21 @@ interface UseDashboardReturn {
 }
 
 export const useDashboard = (): UseDashboardReturn => {
-  const { currentUser, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useSupabaseAuth();
   const { portfolioStats, investments, isLoading: portfolioLoading, error: portfolioError } = usePortfolio();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchWallets = async () => {
-    if (!isAuthenticated || !currentUser?.id) {
+    if (!isAuthenticated || !user?.id) {
       setWallets([]);
       return;
     }
 
     try {
-      const response = await userApi.getUserWallets(currentUser.id);
-      if (response.success && response.data) {
-        setWallets(response.data);
-      } else {
-        console.error("Failed to fetch wallets:", response.error);
-      }
+      const wallets = await supabaseService.wallets.listByUser(user.id);
+      setWallets(wallets as unknown as Wallet[]);
     } catch (err: any) {
       console.error("Failed to fetch wallets:", err);
     }
@@ -54,7 +50,7 @@ export const useDashboard = (): UseDashboardReturn => {
 
   useEffect(() => {
     const loadDashboardData = async () => {
-      if (!isAuthenticated || !currentUser?.id) {
+      if (!isAuthenticated || !user?.id) {
         setIsLoading(false);
         return;
       }
@@ -72,7 +68,7 @@ export const useDashboard = (): UseDashboardReturn => {
     };
 
     loadDashboardData();
-  }, [currentUser?.id, isAuthenticated]);
+  }, [user?.id, isAuthenticated]);
 
   // Calculate dashboard stats
   const stats: DashboardStats = {
@@ -88,7 +84,7 @@ export const useDashboard = (): UseDashboardReturn => {
   };
 
   // Determine if KYC alert should show
-  const shouldShowKycAlert = currentUser?.kyc_status !== 'verified';
+  const shouldShowKycAlert = user?.kyc_status !== 'verified';
 
   return {
     stats,

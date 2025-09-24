@@ -7,7 +7,7 @@ import AuthCard from "@/components/auth/AuthCard";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -19,7 +19,7 @@ const ForgotPasswordFormSchema = z.object({
 type ForgotPasswordFormData = z.infer<typeof ForgotPasswordFormSchema>;
 
 export default function ForgotPassword() {
-  const { resetPassword, isLoading } = useAuth();
+  const { resetPassword, loading } = useSupabaseAuth();
   const { toast } = useToast();
 
   const form = useForm<ForgotPasswordFormData>({
@@ -82,9 +82,9 @@ export default function ForgotPassword() {
             type="submit"
             className="w-full"
             size="lg"
-            disabled={isLoading}
+            disabled={loading}
           >
-            {isLoading ? <Spinner className="mr-2" /> : "Send Reset Link"}
+            {loading ? <Spinner className="mr-2" /> : "Send Reset Link"}
           </Button>
         </form>
 

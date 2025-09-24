@@ -1,24 +1,24 @@
-import { useState, useEffect } from "react";
-import { chatApi } from "../api/chat";
-import { useAuth } from "../context/AuthContext";
+import { useState, useEffect, useCallback } from "react";
+import { supabaseService } from "@/services/supabaseService";
+import { useSupabaseAuth } from "./useSupabaseAuth";
 import { ChatRoom } from "../types";
 import { toast } from "react-hot-toast";
 
 interface UseUserChatRoomsReturn {
-  chatRooms: ChatRoom[];
+  chatRooms: any[];
   isLoading: boolean;
   error: string | null;
   refetch: () => void;
 }
 
 export const useUserChatRooms = (): UseUserChatRoomsReturn => {
-  const { currentUser, isAuthenticated } = useAuth();
-  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  const { user, isAuthenticated } = useSupabaseAuth();
+  const [chatRooms, setChatRooms] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchChatRooms = async () => {
-    if (!isAuthenticated || !currentUser?.id) {
+  const fetchChatRooms = useCallback(async () => {
+    if (!isAuthenticated || !user?.id) {
       setIsLoading(false);
       return;
     }
@@ -27,17 +27,8 @@ export const useUserChatRooms = (): UseUserChatRoomsReturn => {
       setIsLoading(true);
       setError(null);
       
-      // Fetch chat rooms where user is a participant
-      const response = await chatApi.getChatRooms();
-      
-      if (response.success && response.data) {
-        setChatRooms(response.data);
-      } else {
-        setError(response.error || "Failed to fetch chat rooms");
-        if (response.error) {
-          toast.error("Failed to load chat rooms");
-        }
-      }
+      const data = await supabaseService.chat.getUserChatRooms(user.id);
+      setChatRooms(data);
     } catch (err: any) {
       const errorMessage = err.message || "An error occurred while fetching chat rooms";
       setError(errorMessage);
@@ -45,7 +36,7 @@ export const useUserChatRooms = (): UseUserChatRoomsReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.id, isAuthenticated]);
 
   const refetch = () => {
     fetchChatRooms();
@@ -53,7 +44,7 @@ export const useUserChatRooms = (): UseUserChatRoomsReturn => {
 
   useEffect(() => {
     fetchChatRooms();
-  }, [currentUser?.id, isAuthenticated]);
+  }, [fetchChatRooms]);
 
   return {
     chatRooms,
