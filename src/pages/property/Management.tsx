@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,8 +41,8 @@ const PropertyManagement = () => {
     deleteProperty,
   } = usePropertyManagement();
 
-  // Mock maintenance requests (to be replaced with real data later)
-  const maintenanceRequests = [
+  // Mock maintenance requests using useMemo to ensure stable reference
+  const maintenanceRequests = useMemo(() => [
     {
       id: "req1",
       propertyId: "prop1",
@@ -79,9 +79,9 @@ const PropertyManagement = () => {
       actualCost: 320,
       description: "Water seepage through window seal during heavy rain.",
     },
-  ];
+  ], []);
   
-  const recentActivity = [
+  const recentActivity = useMemo(() => [
     {
       type: "property",
       message: `New property registration completed`,
@@ -100,7 +100,7 @@ const PropertyManagement = () => {
       property: managedProperties[1]?.title || "Property",
       timestamp: "1 day ago",
     },
-  ];
+  ], [managedProperties]);
 
   const handlePropertyAction = async (action: string, propertyId: string) => {
     switch (action) {
