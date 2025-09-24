@@ -4,8 +4,29 @@ import { useSupabaseAuth } from "./useSupabaseAuth";
 import { ChatRoom } from "../types";
 import { toast } from "react-hot-toast";
 
+interface ChatRoomWithLastMessage {
+  room_id: string;
+  room_name: string;
+  room_description?: string;
+  room_type: string;
+  property_title?: string;
+  property_location?: any;
+  token_symbol?: string;
+  tokenization_status?: string;
+  last_message?: string;
+  last_message_type?: string;
+  last_message_at?: string;
+  last_sender_first_name?: string;
+  last_sender_last_name?: string;
+  unread_count: number;
+  voting_power: number;
+  role: string;
+  joined_at: string;
+  last_seen_at?: string;
+}
+
 interface UseUserChatRoomsReturn {
-  chatRooms: any[];
+  chatRooms: ChatRoomWithLastMessage[];
   isLoading: boolean;
   error: string | null;
   refetch: () => void;
@@ -13,7 +34,7 @@ interface UseUserChatRoomsReturn {
 
 export const useUserChatRooms = (): UseUserChatRoomsReturn => {
   const { user, isAuthenticated } = useSupabaseAuth();
-  const [chatRooms, setChatRooms] = useState<any[]>([]);
+  const [chatRooms, setChatRooms] = useState<ChatRoomWithLastMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

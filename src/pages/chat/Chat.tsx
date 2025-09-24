@@ -20,11 +20,11 @@ const Chat = () => {
 
   // Transform chat rooms for display
   const displayRooms = chatRooms.map(room => ({
-    id: room.id,
-    name: room.name || "Chat Room",
-    lastMessage: "No recent messages", // This would come from joining with chat_messages
-    timestamp: "Recently", // This would be calculated from last message timestamp
-    unread: 0, // This would be calculated based on last_seen_at
+    id: room.room_id,
+    name: room.room_name || "Chat Room",
+    lastMessage: room.last_message || "No recent messages",
+    timestamp: room.last_message_at ? new Date(room.last_message_at).toLocaleDateString() : "Recently",
+    unread: room.unread_count || 0,
     participants: 0, // This would come from counting chat_participants
     avatar: "/placeholder.svg"
   }));
