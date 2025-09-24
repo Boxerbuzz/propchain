@@ -1,14 +1,26 @@
 import { useState, useEffect } from "react";
-import { tokenizationApi } from "../api/tokenizations";
-import { Tokenization } from "../types";
+import { supabaseService } from "@/services/supabaseService";
 import { toast } from "react-hot-toast";
 
-interface PropertyWithTokenization extends Tokenization {
-  property_title: string;
-  property_location: any;
-  property_type: string;
+interface PropertyWithTokenization {
+  id?: string;
+  property_title?: string;
+  property_location?: any;
+  property_type?: string;
   primary_image?: string;
-  image_count: number;
+  image_count?: number;
+  // Tokenization fields  
+  status?: string;
+  target_raise?: number;
+  current_raise?: number;
+  expected_roi_annual?: number;
+  tokens_sold?: number;
+  total_supply?: number;
+  investment_window_end?: string;
+  price_per_token?: number;
+  min_investment?: number;
+  // Include other relevant fields
+  [key: string]: any;
 }
 
 interface UsePropertiesReturn {
@@ -28,14 +40,19 @@ export const useProperties = (filters?: any): UsePropertiesReturn => {
       setIsLoading(true);
       setError(null);
       
-      const response = await tokenizationApi.listTokenizations(filters);
+      const tokenizations = await supabaseService.properties.listActiveTokenizations();
       
-      if (response.success && response.data) {
-        setProperties(response.data as PropertyWithTokenization[]);
-      } else {
-        setError(response.error || "Failed to fetch properties");
-        toast.error("Failed to load properties");
-      }
+      // Map to include property info
+      const mappedProperties = tokenizations.map((tokenization: any) => ({
+        ...tokenization,
+        property_title: tokenization.properties?.title || 'Unknown Property',
+        property_location: tokenization.properties?.location || {},
+        property_type: tokenization.properties?.property_type || 'Unknown',
+        primary_image: null, // We'll need a separate query for images if needed
+        image_count: 0,
+      }));
+      
+      setProperties(mappedProperties);
     } catch (err: any) {
       const errorMessage = err.message || "An error occurred while fetching properties";
       setError(errorMessage);

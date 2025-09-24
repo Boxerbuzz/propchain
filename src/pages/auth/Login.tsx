@@ -9,14 +9,14 @@ import AuthCard from "@/components/auth/AuthCard";
 import { useForm } from "react-hook-form";
 import { LoginFormSchema } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading } = useAuth();
+  const { login, loading } = useSupabaseAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -37,7 +37,7 @@ export default function Login() {
 
     //navigate("/dashboard");
 
-    const errorMessage = await login(values);
+    const errorMessage = await login(values.email, values.password);
     if (errorMessage) {
       toast({
         title: "Login Failed",
@@ -128,9 +128,9 @@ export default function Login() {
             type="submit"
             className="w-full btn-primary"
             size="lg"
-            disabled={isLoading}
+            disabled={loading}
           >
-            {isLoading ? <Spinner className="mr-2" /> : "Sign In"}
+            {loading ? <Spinner className="mr-2" /> : "Sign In"}
           </Button>
         </form>
 

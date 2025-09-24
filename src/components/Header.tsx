@@ -22,13 +22,13 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 export default function Header() {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout, user } = useSupabaseAuth();
 
   // Mock notifications data
   const notifications = [
@@ -212,8 +212,8 @@ export default function Header() {
                         <User className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium text-foreground">John Doe</p>
-                        <p className="text-xs text-muted-foreground">john@example.com</p>
+                        <p className="text-sm font-medium text-foreground">{user?.first_name} {user?.last_name}</p>
+                        <p className="text-xs text-muted-foreground">{user?.email}</p>
                       </div>
                     </div>
                   </DropdownMenuLabel>
@@ -227,11 +227,9 @@ export default function Header() {
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator className="bg-border/20" />
-                  <DropdownMenuItem asChild>
-                    <Link to="#" className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive">
-                      <LogOut className="h-4 w-4" />
-                      Logout
-                    </Link>
+                  <DropdownMenuItem onClick={() => logout()} className="cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -319,7 +317,12 @@ export default function Header() {
                       <Link
                         key={item.name}
                         to={item.href}
-                        onClick={() => setMobileMenuOpen(false)}
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          if (item.name === 'Logout') {
+                            logout();
+                          }
+                        }}
                         className="group flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
                       >
                         <div className="p-2 rounded-lg bg-muted group-hover:bg-muted-foreground/10 transition-colors">
