@@ -7,9 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { FileText, MapPin, DollarSign, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabaseService } from "@/services/supabaseService";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { toast } from "react-hot-toast";
 
 const RegisterProperty = () => {
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -24,6 +28,7 @@ const RegisterProperty = () => {
     expectedReturn: "",
   });
   const navigate = useNavigate();
+  const { user } = useSupabaseAuth();
 
   const propertyTypes = [
     "Residential Apartment",
@@ -42,9 +47,24 @@ const RegisterProperty = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = () => {
-    // Handle property registration
-    navigate("/properties/upload-docs");
+  const handleSubmit = async () => {
+    if (!user) {
+      toast.error("Please log in to register a property");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const property = await supabaseService.properties.create(formData, user.id);
+      toast.success("Property submitted for review successfully!");
+      navigate("/properties/upload-docs", { 
+        state: { propertyId: property.id } 
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to submit property");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStep1 = () => (
@@ -357,7 +377,9 @@ const RegisterProperty = () => {
                 {step < 4 ? (
                   <Button onClick={handleNext}>Next</Button>
                 ) : (
-                  <Button onClick={handleSubmit}>Submit for Review</Button>
+                  <Button onClick={handleSubmit} disabled={isSubmitting}>
+                    {isSubmitting ? "Submitting..." : "Submit for Review"}
+                  </Button>
                 )}
               </div>
             </CardContent>

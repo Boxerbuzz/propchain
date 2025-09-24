@@ -54,6 +54,35 @@ export const supabaseService = {
 
   // Properties services
   properties: {
+    async create(propertyData: any, userId: string) {
+      const { data, error } = await supabase
+        .from('properties')
+        .insert({
+          title: propertyData.title,
+          description: propertyData.description,
+          property_type: propertyData.propertyType,
+          location: {
+            address: propertyData.address,
+            city: propertyData.city,
+            state: propertyData.state,
+            country: propertyData.country,
+          },
+          estimated_value: parseFloat(propertyData.totalValue),
+          owner_id: userId,
+          approval_status: 'pending',
+          listing_status: 'draft',
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating property:', error);
+        throw error;
+      }
+
+      return data;
+    },
+
     async listActiveTokenizations(): Promise<Tokenization[]> {
       const { data, error } = await supabase
         .from('tokenizations')
@@ -225,13 +254,15 @@ export const supabaseService = {
   // Chat services
   chat: {
     async getUserChatRooms(userId: string) {
-      // Note: This is a view, so we'll use a direct query instead
       const { data, error } = await supabase
         .from('chat_participants')
         .select(`
           *,
           chat_rooms!inner(
-            *,
+            id,
+            name,
+            description,
+            room_type,
             properties(title, location),
             tokenizations(token_symbol, status)
           )
@@ -243,7 +274,22 @@ export const supabaseService = {
         return [];
       }
       
-      return data;
+      // Transform to match the expected interface
+      return (data || []).map((participant: any) => ({
+        room_id: participant.chat_rooms.id,
+        room_name: participant.chat_rooms.name,
+        room_description: participant.chat_rooms.description,
+        room_type: participant.chat_rooms.room_type,
+        property_title: participant.chat_rooms.properties?.title,
+        property_location: participant.chat_rooms.properties?.location,
+        token_symbol: participant.chat_rooms.tokenizations?.token_symbol,
+        tokenization_status: participant.chat_rooms.tokenizations?.status,
+        unread_count: 0, // TODO: Calculate unread count
+        voting_power: participant.voting_power || 0,
+        role: participant.role,
+        joined_at: participant.joined_at,
+        last_seen_at: participant.last_seen_at,
+      }));
     },
 
     async getChatMessages(roomId: string) {
