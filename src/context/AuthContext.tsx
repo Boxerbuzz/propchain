@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [isManualAuthOperation, setIsManualAuthOperation] = useState(false);
 
   // Fetch user data from the users table
   const fetchUserFromDatabase = async (authUserId: string): Promise<User | null> => {
@@ -73,10 +74,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, 'isManualOperation:', isManualAuthOperation);
+      
+      // Skip if we're in the middle of a manual auth operation
+      if (isManualAuthOperation) {
+        console.log('Skipping auth listener during manual operation');
+        return;
+      }
+
       if (session?.user) {
+        console.log('Fetching user data from listener');
         const userData = await fetchUserFromDatabase(session.user.id);
         setCurrentUser(userData);
       } else {
+        console.log('Clearing user data from listener');
         setCurrentUser(null);
       }
     });
@@ -86,7 +97,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signup = async (formData: SignUpFormData): Promise<string | null> => {
     setIsLoading(true);
+    setIsManualAuthOperation(true);
+    
     try {
+      console.log('Starting manual signup operation');
+      
       // Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -139,21 +154,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Fetch and set the user data
+      console.log('Fetching user data after signup');
       const userData = await fetchUserFromDatabase(authData.user.id);
       setCurrentUser(userData);
 
+      console.log('Manual signup operation completed');
       return null; // Success
     } catch (error) {
       console.error('Signup error:', error);
       return 'An unexpected error occurred during signup';
     } finally {
       setIsLoading(false);
+      setIsManualAuthOperation(false);
     }
   };
 
   const login = async (formData: LoginFormData): Promise<string | null> => {
     setIsLoading(true);
+    setIsManualAuthOperation(true);
+    
     try {
+      console.log('Starting manual login operation');
+      
       // Sign in with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: formData.email,
@@ -169,18 +191,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Fetch user data from the users table
+      console.log('Fetching user data after login');
       const userData = await fetchUserFromDatabase(authData.user.id);
       if (!userData) {
         return 'User profile not found';
       }
 
       setCurrentUser(userData);
+      console.log('Manual login operation completed');
       return null; // Success
     } catch (error) {
       console.error('Login error:', error);
       return 'An unexpected error occurred during login';
     } finally {
       setIsLoading(false);
+      setIsManualAuthOperation(false);
     }
   };
 
