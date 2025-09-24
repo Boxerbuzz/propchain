@@ -83,6 +83,81 @@ export const supabaseService = {
       return data;
     },
 
+    async getOwnedProperties(userId: string) {
+      const { data, error } = await supabase
+        .from('properties')
+        .select(`
+          *,
+          tokenizations(*),
+          property_images(
+            id,
+            image_url,
+            is_primary,
+            sort_order
+          )
+        `)
+        .eq('owner_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching owned properties:', error);
+        throw error;
+      }
+
+      return data;
+    },
+
+    async updateProperty(propertyId: string, updates: any) {
+      const { data, error } = await supabase
+        .from('properties')
+        .update(updates)
+        .eq('id', propertyId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating property:', error);
+        throw error;
+      }
+
+      return data;
+    },
+
+    async deleteProperty(propertyId: string) {
+      const { error } = await supabase
+        .from('properties')
+        .update({ listing_status: 'deleted' })
+        .eq('id', propertyId);
+
+      if (error) {
+        console.error('Error deleting property:', error);
+        throw error;
+      }
+    },
+
+    async getPropertyFinancials(propertyId: string) {
+      // Get tokenization data and investment metrics
+      const { data: tokenization, error: tokError } = await supabase
+        .from('tokenizations')
+        .select(`
+          *,
+          investments(
+            amount_ngn,
+            payment_status,
+            created_at
+          )
+        `)
+        .eq('property_id', propertyId)
+        .single();
+
+      if (tokError && tokError.code !== 'PGRST116') {
+        console.error('Error fetching property financials:', tokError);
+        throw tokError;
+      }
+
+      return tokenization || null;
+    },
+
     async listActiveTokenizations(): Promise<Tokenization[]> {
       const { data, error } = await supabase
         .from('tokenizations')
