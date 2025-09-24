@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { User, LoginFormData, SignUpFormData } from '@/types';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useRef,
+} from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { User, LoginFormData, SignUpFormData } from "@/types";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -22,16 +29,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isManualAuthOperationRef = useRef(false);
 
   // Fetch user data from the users table
-  const fetchUserFromDatabase = async (authUserId: string): Promise<User | null> => {
+  const fetchUserFromDatabase = async (
+    authUserId: string
+  ): Promise<User | null> => {
     try {
       const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authUserId)
+        .from("users")
+        .select("*")
+        .eq("id", authUserId)
         .single();
 
       if (error) {
-        console.error('Error fetching user from database:', error);
+        console.error("Error fetching user from database:", error);
         return null;
       }
 
@@ -39,16 +48,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData: User = {
         ...data,
         date_of_birth: data.date_of_birth ? new Date(data.date_of_birth) : null,
-        email_verified_at: data.email_verified_at ? new Date(data.email_verified_at) : null,
-        phone_verified_at: data.phone_verified_at ? new Date(data.phone_verified_at) : null,
+        email_verified_at: data.email_verified_at
+          ? new Date(data.email_verified_at)
+          : null,
+        phone_verified_at: data.phone_verified_at
+          ? new Date(data.phone_verified_at)
+          : null,
         created_at: new Date(data.created_at),
         updated_at: new Date(data.updated_at),
-        investment_experience: data.investment_experience || 'beginner',
+        investment_experience: data.investment_experience || "beginner",
       } as User;
 
       return userData;
     } catch (error) {
-      console.error('Error in fetchUserFromDatabase:', error);
+      console.error("Error in fetchUserFromDatabase:", error);
       return null;
     }
   };
@@ -57,14 +70,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
         if (session?.user) {
           const userData = await fetchUserFromDatabase(session.user.id);
           setCurrentUser(userData);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error("Error initializing auth:", error);
       } finally {
         setIsInitializing(false);
       }
@@ -73,21 +88,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initializeAuth();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, 'isManualOperation:', isManualAuthOperationRef.current);
-      
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log(
+        "Auth state change:",
+        event,
+        "isManualOperation:",
+        isManualAuthOperationRef.current
+      );
+
       // Skip if we're in the middle of a manual auth operation
       if (isManualAuthOperationRef.current) {
-        console.log('Skipping auth listener during manual operation');
+        console.log("Skipping auth listener during manual operation");
         return;
       }
 
       if (session?.user) {
-        console.log('Fetching user data from listener');
+        console.log("Fetching user data from listener");
         const userData = await fetchUserFromDatabase(session.user.id);
         setCurrentUser(userData);
       } else {
-        console.log('Clearing user data from listener');
+        console.log("Clearing user data from listener");
         setCurrentUser(null);
       }
     });
@@ -98,17 +120,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signup = async (formData: SignUpFormData): Promise<string | null> => {
     setIsLoading(true);
     isManualAuthOperationRef.current = true;
-    
+
     try {
-      console.log('Starting manual signup operation');
-      
+      console.log("Starting manual signup operation");
+
       // Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
-        }
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
       });
 
       if (authError) {
@@ -116,53 +138,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (!authData.user) {
-        return 'Failed to create account';
+        return "Failed to create account";
       }
 
       // Create user record in the users table
-      const { error: userError } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id,
-          email: formData.email,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          phone: formData.phone,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
+      const { error: userError } = await supabase.from("users").insert({
+        id: authData.user.id,
+        email: formData.email,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone: formData.phone,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       if (userError) {
-        console.error('Error creating user record:', userError);
-        return 'Failed to create user profile';
+        console.error("Error creating user record:", userError);
+        return "Failed to create user profile";
       }
 
       // Send welcome notification
       try {
-        await supabase
-          .from('notifications')
-          .insert({
-            user_id: authData.user.id,
-            title: 'Welcome to PropChain!',
-            message: 'Thank you for joining our platform. Start exploring investment opportunities today.',
-            notification_type: 'welcome',
-            created_at: new Date().toISOString()
-          });
+        await supabase.from("notifications").insert({
+          user_id: authData.user.id,
+          title: "Welcome to PropChain!",
+          message:
+            "Thank you for joining our platform. Start exploring investment opportunities today.",
+          notification_type: "welcome",
+          created_at: new Date().toISOString(),
+        });
       } catch (notificationError) {
         // Don't fail signup if notification fails
-        console.error('Error creating welcome notification:', notificationError);
+        console.error(
+          "Error creating welcome notification:",
+          notificationError
+        );
       }
 
       // Fetch and set the user data
-      console.log('Fetching user data after signup');
+      console.log("Fetching user data after signup");
       const userData = await fetchUserFromDatabase(authData.user.id);
       setCurrentUser(userData);
 
-      console.log('Manual signup operation completed');
+      console.log("Manual signup operation completed");
       return null; // Success
     } catch (error) {
-      console.error('Signup error:', error);
-      return 'An unexpected error occurred during signup';
+      console.error("Signup error:", error);
+      return "An unexpected error occurred during signup";
     } finally {
       setIsLoading(false);
       isManualAuthOperationRef.current = false;
@@ -172,37 +194,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (formData: LoginFormData): Promise<string | null> => {
     setIsLoading(true);
     isManualAuthOperationRef.current = true;
-    
+
     try {
-      console.log('Starting manual login operation');
-      
+      console.log("Starting manual login operation");
+
       // Sign in with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password
-      });
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
 
       if (authError) {
         return authError.message;
       }
 
       if (!authData.user) {
-        return 'Login failed';
+        return "Login failed";
       }
 
       // Fetch user data from the users table
-      console.log('Fetching user data after login');
+      console.log("Fetching user data after login");
       const userData = await fetchUserFromDatabase(authData.user.id);
       if (!userData) {
-        return 'User profile not found';
+        return "User profile not found";
       }
 
       setCurrentUser(userData);
-      console.log('Manual login operation completed');
+      console.log("Manual login operation completed");
       return null; // Success
     } catch (error) {
-      console.error('Login error:', error);
-      return 'An unexpected error occurred during login';
+      console.error("Login error:", error);
+      return "An unexpected error occurred during login";
     } finally {
       setIsLoading(false);
       isManualAuthOperationRef.current = false;
@@ -216,12 +239,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) {
         return error.message;
       }
-      
+
       setCurrentUser(null);
       return null; // Success
     } catch (error) {
-      console.error('Logout error:', error);
-      return 'An unexpected error occurred during logout';
+      console.error("Logout error:", error);
+      return "An unexpected error occurred during logout";
     } finally {
       setIsLoading(false);
     }
@@ -240,8 +263,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return null; // Success
     } catch (error) {
-      console.error('Reset password error:', error);
-      return 'An unexpected error occurred during password reset';
+      console.error("Reset password error:", error);
+      return "An unexpected error occurred during password reset";
     } finally {
       setIsLoading(false);
     }
@@ -264,7 +287,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
