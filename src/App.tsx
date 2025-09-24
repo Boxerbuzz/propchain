@@ -42,95 +42,92 @@ import UploadDocs from "./pages/properties/UploadDocs";
 import NotFound from "./pages/NotFound";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
-import { AuthProvider } from "./context/AuthContext";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import RouteGuard from "./components/auth/RouteGuard";
 import { Toaster as HotToaster } from "react-hot-toast";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <HotToaster />
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes (with main layout) */}
-            <Route path="/" element={<MainLayout />}>
-              <Route index element={<Landing />} />
-              <Route path="/browse" element={<BrowseProperties />} />
-              <Route path="/browse/:id" element={<PropertyDetails />} />
-              <Route path="/browse/:id/invest" element={<InvestmentFlow />} />
-              {/* Onboarding routes */}
-              <Route path="/onboarding/welcome" element={<Welcome />} />
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <HotToaster />
+      <BrowserRouter>
+        <Routes>
+          {/* Public routes (with main layout) */}
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<Landing />} />
+            <Route path="/browse" element={<BrowseProperties />} />
+            <Route path="/browse/:id" element={<PropertyDetails />} />
+            <Route path="/browse/:id/invest" element={<InvestmentFlow />} />
+            {/* Onboarding routes */}
+            <Route path="/onboarding/welcome" element={<Welcome />} />
+            <Route
+              path="/onboarding/profile-setup"
+              element={<ProfileSetup />}
+            />
+            {/* KYC routes */}
+            <Route path="/kyc/start" element={<KYCStart />} />
+            <Route path="/kyc/document-type" element={<DocumentType />} />
+            <Route path="/kyc/upload-id" element={<UploadID />} />
+            <Route path="/kyc/selfie" element={<Selfie />} />
+            <Route path="/kyc/address" element={<Address />} />
+            <Route path="/kyc/review" element={<Review />} />
+            <Route path="/kyc/status" element={<KYCStatus />} />
+
+            {/* Authenticated routes (MainLayout) */}
+            <Route element={<RouteGuard />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/portfolio" element={<Portfolio />} />
               <Route
-                path="/onboarding/profile-setup"
-                element={<ProfileSetup />}
+                path="/portfolio/:tokenizationId"
+                element={<PortfolioDetail />}
               />
-              {/* KYC routes */}
-              <Route path="/kyc/start" element={<KYCStart />} />
-              <Route path="/kyc/document-type" element={<DocumentType />} />
-              <Route path="/kyc/upload-id" element={<UploadID />} />
-              <Route path="/kyc/selfie" element={<Selfie />} />
-              <Route path="/kyc/address" element={<Address />} />
-              <Route path="/kyc/review" element={<Review />} />
-              <Route path="/kyc/status" element={<KYCStatus />} />
-
-              {/* Authenticated routes (MainLayout) */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/portfolio" element={<Portfolio />} />
-                <Route
-                  path="/portfolio/:tokenizationId"
-                  element={<PortfolioDetail />}
-                />
-                <Route path="/wallet/setup" element={<WalletSetup />} />
-                <Route path="/wallet/dashboard" element={<WalletDashboard />} />
-                <Route path="/wallet/create" element={<CreateWallet />} />
-                <Route path="/wallet/connect" element={<ConnectWallet />} />
-                <Route path="/wallet/fund" element={<FundWallet />} />
-                <Route path="/wallet/settings" element={<WalletSettings />} />
-                <Route
-                  path="/property/management"
-                  element={<PropertyManagement />}
-                />
-                <Route
-                  path="/properties/register"
-                  element={<RegisterProperty />}
-                />
-                <Route
-                  path="/properties/upload-docs"
-                  element={<UploadDocs />}
-                />
-                <Route path="/chat" element={<Chat />} />
-                <Route path="/chat/:roomId" element={<ChatRoom />} />
-                <Route path="/settings/profile" element={<Profile />} />
-                <Route
-                  path="/settings/notifications"
-                  element={<Notifications />}
-                />
-                <Route path="/settings/security" element={<Security />} />
-              </Route>
+              <Route path="/wallet/setup" element={<WalletSetup />} />
+              <Route path="/wallet/dashboard" element={<WalletDashboard />} />
+              <Route path="/wallet/create" element={<CreateWallet />} />
+              <Route path="/wallet/connect" element={<ConnectWallet />} />
+              <Route path="/wallet/fund" element={<FundWallet />} />
+              <Route path="/wallet/settings" element={<WalletSettings />} />
+              <Route
+                path="/property/management"
+                element={<PropertyManagement />}
+              />
+              <Route
+                path="/properties/register"
+                element={<RegisterProperty />}
+              />
+              <Route
+                path="/properties/upload-docs"
+                element={<UploadDocs />}
+              />
+              <Route path="/chat" element={<Chat />} />
+              <Route path="/chat/:roomId" element={<ChatRoom />} />
+              <Route path="/settings/profile" element={<Profile />} />
+              <Route
+                path="/settings/notifications"
+                element={<Notifications />}
+              />
+              <Route path="/settings/security" element={<Security />} />
             </Route>
+          </Route>
 
-            {/* Auth routes (AuthLayout) */}
-            <Route path="/auth" element={<AuthLayout />}>
-              <Route path="login" element={<Login />} />
-              <Route path="signup" element={<Signup />} />
-              <Route path="forgot-password" element={<ForgotPassword />} />
-              <Route path="reset-password" element={<ResetPassword />} />
-              <Route path="verify-email" element={<VerifyEmail />} />
-              <Route path="verify-phone" element={<VerifyPhone />} />
-            </Route>
+          {/* Auth routes (AuthLayout) */}
+          <Route path="/auth" element={<AuthLayout />}>
+            <Route path="login" element={<Login />} />
+            <Route path="signup" element={<Signup />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="reset-password" element={<ResetPassword />} />
+            <Route path="verify-email" element={<VerifyEmail />} />
+            <Route path="verify-phone" element={<VerifyPhone />} />
+          </Route>
 
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+          {/* Catch-all route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 

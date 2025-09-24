@@ -9,7 +9,7 @@ import AuthCard from "@/components/auth/AuthCard";
 import { useForm } from "react-hook-form";
 import { SignUpFormSchema } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Spinner } from "@/components/ui/spinner";
@@ -18,7 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { signup, isLoading } = useAuth();
+  const { signup, loading } = useSupabaseAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -38,7 +38,13 @@ export default function Signup() {
 
   const onSubmit = async (values: z.infer<typeof SignUpFormSchema>) => {
     // You might want to handle terms and marketing consent checkboxes here if they are part of form submission
-    const errorMessage = await signup(values);
+    const errorMessage = await signup({
+      firstName: values.firstName,
+      lastName: values.lastName,
+      email: values.email,
+      phone: values.phone,
+      password: values.password,
+    });
     if (errorMessage) {
       toast({
         title: "Signup Failed",
@@ -245,8 +251,8 @@ export default function Signup() {
           />
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full btn-primary" size="lg" disabled={isLoading}>
-            {isLoading ? <Spinner className="mr-2" /> : "Create Account"}
+          <Button type="submit" className="w-full btn-primary" size="lg" disabled={loading}>
+            {loading ? <Spinner className="mr-2" /> : "Create Account"}
           </Button>
           </form>
         </Form>

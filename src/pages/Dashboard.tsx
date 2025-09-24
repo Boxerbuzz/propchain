@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, DollarSign, Building, Users, Target, BarChart3, PieChart, Activity, Wallet, Bell, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useSupabaseAuth } from "../hooks/useSupabaseAuth";
 import { useDashboard } from "../hooks/useDashboard";
 import { useNotifications } from "../hooks/useNotifications";
 
 export default function Dashboard() {
-  const { currentUser } = useAuth();
+  const { user } = useSupabaseAuth();
   const { stats, isLoading, shouldShowKycAlert } = useDashboard();
   const { notifications, isLoading: notificationsLoading, markAllAsRead } = useNotifications();
 
@@ -22,8 +22,8 @@ export default function Dashboard() {
   };
 
   const getDisplayName = () => {
-    if (!currentUser) return "User";
-    return currentUser.first_name || currentUser.email?.split('@')[0] || "User";
+    if (!user) return "User";
+    return user.first_name || user.email?.split('@')[0] || "User";
   };
 
   if (isLoading) {
@@ -68,7 +68,7 @@ export default function Dashboard() {
                   <div>
                     <h3 className="font-semibold text-amber-800">Complete Your Verification</h3>
                     <p className="text-sm text-amber-700">
-                      {currentUser?.kyc_status === 'pending' 
+                      {user?.kyc_status === 'pending' 
                         ? 'Your KYC is being processed. Complete verification to unlock all features.'
                         : 'Verify your identity to unlock all features and higher limits'
                       }
@@ -77,7 +77,7 @@ export default function Dashboard() {
                 </div>
                 <Link to="/kyc/start">
                   <Button variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100 w-full md:w-auto">
-                    {currentUser?.kyc_status === 'pending' ? 'Check Status' : 'Verify Now'}
+                    {user?.kyc_status === 'pending' ? 'Check Status' : 'Verify Now'}
                   </Button>
                 </Link>
               </div>
