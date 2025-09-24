@@ -30,12 +30,12 @@ export default function BrowseProperties() {
             tokenization.property_location?.state || ""
           }`
         : tokenization.property_location || "Location",
-    price: tokenization.targetRaise || tokenization.currentRaise || 0,
-    expectedReturn: tokenization.expectedRoiAnnual || 0,
-    tokensSold: Number(tokenization.tokensSold) || 0,
-    totalTokens: Number(tokenization.totalSupply) || 1,
-    investmentDeadline: tokenization.investmentWindowEnd
-      ? new Date(tokenization.investmentWindowEnd).toLocaleDateString()
+    price: tokenization.target_raise || tokenization.current_raise || 0,
+    expectedReturn: tokenization.expected_roi_annual || 0,
+    tokensSold: Number(tokenization.tokens_sold) || 0,
+    totalTokens: Number(tokenization.total_supply) || 1,
+    investmentDeadline: tokenization.investment_window_end
+      ? new Date(tokenization.investment_window_end).toLocaleDateString()
       : "TBD",
     imageUrl:
       tokenization.primary_image ||
