@@ -23,43 +23,54 @@ import {
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useNotifications } from "@/hooks/useNotifications";
 
 export default function Header() {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { isAuthenticated, logout, user } = useSupabaseAuth();
+  const { notifications, markAllAsRead, clearReadNotifications } = useNotifications();
 
-  // Mock notifications data
-  const notifications = [
-    {
-      id: 1,
-      title: "Investment Completed",
-      message: "Your investment in Luxury Apartment Complex - Ikoyi has been processed",
-      time: "2 min ago",
-      type: "success",
-      icon: CheckCircle,
-      isRead: false
-    },
-    {
-      id: 2,
-      title: "New Property Available",
-      message: "Commercial Plaza - Victoria Island is now available for investment",
-      time: "1 hour ago",
-      type: "info",
-      icon: Building,
-      isRead: true
-    },
-    {
-      id: 3,
-      title: "Payment Due",
-      message: "Your next investment installment is due in 3 days",
-      time: "2 hours ago",
-      type: "warning",
-      icon: AlertTriangle,
-      isRead: false
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'investment':
+        return CheckCircle;
+      case 'property':
+        return Building;
+      case 'payment':
+        return AlertTriangle;
+      default:
+        return Bell;
     }
-  ];
+  };
+
+  const getNotificationColor = (type: string) => {
+    switch (type) {
+      case 'investment':
+        return 'success';
+      case 'property':
+        return 'primary';
+      case 'payment':
+        return 'warning';
+      default:
+        return 'primary';
+    }
+  };
+
+  const formatNotificationTime = (createdAt: string) => {
+    const now = new Date();
+    const created = new Date(createdAt);
+    const diffInMinutes = Math.floor((now.getTime() - created.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} min ago`;
+    } else if (diffInMinutes < 1440) {
+      return `${Math.floor(diffInMinutes / 60)} hour ago`;
+    } else {
+      return `${Math.floor(diffInMinutes / 1440)} day ago`;
+    }
+  };
 
   const navigation = [
     { name: 'Home', href: '/', icon: Home },
@@ -151,44 +162,66 @@ export default function Header() {
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative hover:bg-muted/50 transition-colors">
                   <Bell className="h-5 w-5" />
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-destructive">
-                    {notifications.length}
-                  </Badge>
+                  {notifications.filter(n => !n.read_at).length > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-destructive">
+                      {notifications.filter(n => !n.read_at).length}
+                    </Badge>
+                  )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80 p-0 bg-background border-border/20 shadow-lg" align="end">
                 <div className="flex items-center justify-between p-3 border-b border-border/10">
                   <h3 className="font-semibold text-sm text-foreground">Notifications</h3>
-                  <Button variant="link" size="sm" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => alert("Mark all as read clicked")}>Mark all as read</Button>
+                  {notifications.filter(n => !n.read_at).length > 0 && (
+                    <Button variant="link" size="sm" className="text-xs text-muted-foreground hover:text-foreground" onClick={markAllAsRead}>
+                      Mark all as read
+                    </Button>
+                  )}
                 </div>
                 <div className="max-h-96 overflow-y-auto">
-                  {notifications.map((notification) => (
-                    <div key={notification.id} className="p-4 border-b border-border/10 last:border-b-0 hover:bg-muted/30 transition-colors cursor-pointer">
-                      <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-full ${notification.type === "success" ? "bg-success/10 text-success" : notification.type === "warning" ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"}`}>
-                          <notification.icon className="h-4 w-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-center">
-                            <p className="text-sm font-semibold text-foreground">{notification.title}</p>
-                            <div className="flex items-center gap-2">
-                              {!notification.isRead && (
-                                <span className="h-2 w-2 rounded-full bg-primary" />
-                              )}
-                              <span className="text-xs text-muted-foreground">{notification.time}</span>
-                            </div>
+                  {notifications.length > 0 ? notifications.map((notification) => {
+                    const NotificationIcon = getNotificationIcon(notification.notification_type);
+                    const color = getNotificationColor(notification.notification_type);
+                    
+                    return (
+                      <div key={notification.id} className="p-4 border-b border-border/10 last:border-b-0 hover:bg-muted/30 transition-colors cursor-pointer">
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-full ${
+                            color === "success" ? "bg-green-500/10 text-green-600" : 
+                            color === "warning" ? "bg-amber-500/10 text-amber-600" : 
+                            "bg-primary/10 text-primary"
+                          }`}>
+                            <NotificationIcon className="h-4 w-4" />
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{notification.message}</p>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm font-semibold text-foreground">{notification.title}</p>
+                              <div className="flex items-center gap-2">
+                                {!notification.read_at && (
+                                  <span className="h-2 w-2 rounded-full bg-primary" />
+                                )}
+                                <span className="text-xs text-muted-foreground">{formatNotificationTime(new Date(notification.created_at).toISOString())}</span>
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{notification.message}</p>
+                          </div>
                         </div>
                       </div>
+                    );
+                  }) : (
+                    <div className="p-8 text-center">
+                      <Bell className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">No notifications</p>
                     </div>
-                  ))}
+                  )}
                 </div>
                 <div className="p-3 border-t border-border/10 flex justify-between">
-                  <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground hover:text-foreground" onClick={() => alert("View All Notifications clicked")}>
-                    View All Notifications
-                  </Button>
-                  <Button variant="ghost" size="sm" className="w-full text-xs text-destructive hover:text-destructive" onClick={() => alert("Clear All Notifications clicked")}>
+                  <Link to="/settings/notifications" className="flex-1">
+                    <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground hover:text-foreground">
+                      View All Notifications
+                    </Button>
+                  </Link>
+                  <Button variant="ghost" size="sm" className="w-full text-xs text-destructive hover:text-destructive" onClick={clearReadNotifications}>
                     Clear All
                   </Button>
                 </div>

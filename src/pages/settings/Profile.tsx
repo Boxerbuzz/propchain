@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,30 +19,59 @@ import {
   Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useDashboard } from "@/hooks/useDashboard";
 
 const Profile = () => {
   const { toast } = useToast();
+  const { user, isAuthenticated } = useSupabaseAuth();
+  const { stats } = useDashboard();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    address: "123 Main St, New York, NY 10001",
-    bio: "Real estate investor with 5 years of experience in commercial and residential properties.",
-    dateOfBirth: "1990-05-15",
-    occupation: "Software Engineer",
-    investmentExperience: "intermediate"
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    bio: "",
+    dateOfBirth: "",
+    occupation: "",
+    investmentExperience: "beginner"
   });
 
-  const [stats] = useState({
-    totalInvested: 25000,
-    propertiesOwned: 5,
-    totalReturn: 2350,
-    joinedDate: "January 2024",
-    verificationStatus: "verified",
-    kycStatus: "completed"
-  });
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.first_name || "",
+        lastName: user.last_name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        address: user.state_of_residence || "",
+        bio: "",
+        dateOfBirth: user.date_of_birth ? (typeof user.date_of_birth === 'string' ? user.date_of_birth : user.date_of_birth.toISOString().split('T')[0]) : "",
+        occupation: user.occupation || "",
+        investmentExperience: user.investment_experience || "beginner"
+      });
+    }
+  }, [user]);
+
+  const formatDate = (dateString: string | Date) => {
+    if (!dateString) return "Not set";
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long'
+    });
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
 
   const handleSave = () => {
     // In real app, save to backend
@@ -87,20 +116,24 @@ const Profile = () => {
                     </AvatarFallback>
                   </Avatar>
                 </div>
-                <CardTitle>{formData.firstName} {formData.lastName}</CardTitle>
+                <CardTitle>{formData.firstName || "User"} {formData.lastName}</CardTitle>
                 <CardDescription className="flex items-center justify-center gap-2">
                   <Mail className="h-4 w-4" />
                   {formData.email}
                 </CardDescription>
                 <div className="flex justify-center gap-2 mt-2">
-                  <Badge variant="secondary" className="bg-green-100 text-green-800">
-                    <Verified className="h-3 w-3 mr-1" />
-                    Verified
-                  </Badge>
-                  <Badge variant="secondary">
-                    <Shield className="h-3 w-3 mr-1" />
-                    KYC Complete
-                  </Badge>
+                  {user?.email_verified_at && (
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      <Verified className="h-3 w-3 mr-1" />
+                      Verified
+                    </Badge>
+                  )}
+                  {user?.kyc_status === 'verified' && (
+                    <Badge variant="secondary">
+                      <Shield className="h-3 w-3 mr-1" />
+                      KYC Complete
+                    </Badge>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
@@ -112,19 +145,19 @@ const Profile = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Member Since</span>
-                    <span className="text-sm font-medium">{stats.joinedDate}</span>
+                    <span className="text-sm font-medium">{user?.created_at ? formatDate(user.created_at) : "Not set"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Total Invested</span>
-                    <span className="text-sm font-medium">${stats.totalInvested.toLocaleString()}</span>
+                    <span className="text-sm font-medium">{formatCurrency(stats.totalInvested)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Properties</span>
-                    <span className="text-sm font-medium">{stats.propertiesOwned}</span>
+                    <span className="text-sm font-medium">{stats.propertiesCount}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Total Return</span>
-                    <span className="text-sm font-medium text-green-600">+${stats.totalReturn}</span>
+                    <span className="text-sm font-medium text-green-600">{formatCurrency(stats.totalReturns)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -262,42 +295,69 @@ const Profile = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <div className={`flex items-center justify-between p-3 rounded-lg ${
+                    user?.email_verified_at ? 'bg-green-50 dark:bg-green-950/20' : 'bg-amber-50 dark:bg-amber-950/20'
+                  }`}>
                     <div className="flex items-center gap-3">
-                      <Verified className="h-5 w-5 text-green-600" />
+                      <Verified className={`h-5 w-5 ${user?.email_verified_at ? 'text-green-600' : 'text-amber-600'}`} />
                       <div>
                         <p className="font-medium">Email Verified</p>
-                        <p className="text-sm text-muted-foreground">Your email has been verified</p>
+                        <p className="text-sm text-muted-foreground">
+                          {user?.email_verified_at ? 'Your email has been verified' : 'Please verify your email address'}
+                        </p>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      Complete
+                    <Badge variant="secondary" className={
+                      user?.email_verified_at 
+                        ? "bg-green-100 text-green-800" 
+                        : "bg-amber-100 text-amber-800"
+                    }>
+                      {user?.email_verified_at ? 'Complete' : 'Pending'}
                     </Badge>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <div className={`flex items-center justify-between p-3 rounded-lg ${
+                    user?.kyc_status === 'verified' ? 'bg-green-50 dark:bg-green-950/20' : 'bg-amber-50 dark:bg-amber-950/20'
+                  }`}>
                     <div className="flex items-center gap-3">
-                      <Shield className="h-5 w-5 text-green-600" />
+                      <Shield className={`h-5 w-5 ${user?.kyc_status === 'verified' ? 'text-green-600' : 'text-amber-600'}`} />
                       <div>
                         <p className="font-medium">KYC Verification</p>
-                        <p className="text-sm text-muted-foreground">Identity verification complete</p>
+                        <p className="text-sm text-muted-foreground">
+                          {user?.kyc_status === 'verified' 
+                            ? 'Identity verification complete' 
+                            : `Identity verification ${user?.kyc_status || 'not started'}`
+                          }
+                        </p>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      Complete
+                    <Badge variant="secondary" className={
+                      user?.kyc_status === 'verified' 
+                        ? "bg-green-100 text-green-800" 
+                        : "bg-amber-100 text-amber-800"
+                    }>
+                      {user?.kyc_status === 'verified' ? 'Complete' : 'Pending'}
                     </Badge>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                  <div className={`flex items-center justify-between p-3 rounded-lg ${
+                    user?.phone_verified_at ? 'bg-green-50 dark:bg-green-950/20' : 'bg-amber-50 dark:bg-amber-950/20'
+                  }`}>
                     <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 text-blue-600" />
+                      <Phone className={`h-5 w-5 ${user?.phone_verified_at ? 'text-green-600' : 'text-amber-600'}`} />
                       <div>
                         <p className="font-medium">Phone Verification</p>
-                        <p className="text-sm text-muted-foreground">Phone number verified</p>
+                        <p className="text-sm text-muted-foreground">
+                          {user?.phone_verified_at ? 'Phone number verified' : 'Please verify your phone number'}
+                        </p>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                      Complete
+                    <Badge variant="secondary" className={
+                      user?.phone_verified_at 
+                        ? "bg-green-100 text-green-800" 
+                        : "bg-amber-100 text-amber-800"
+                    }>
+                      {user?.phone_verified_at ? 'Complete' : 'Pending'}
                     </Badge>
                   </div>
                 </div>
