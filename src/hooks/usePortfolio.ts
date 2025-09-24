@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabaseService } from "@/services/supabaseService";
-import { useSupabaseAuth } from "./useSupabaseAuth";
+import { useAuth } from "./useAuth";
 import { Investment, TokenHolding, DividendPayment } from "../types";
 import { toast } from "react-hot-toast";
 
@@ -35,7 +35,7 @@ const initialStats: PortfolioStats = {
 };
 
 export const usePortfolio = (): UsePortfolioReturn => {
-  const { user, isAuthenticated } = useSupabaseAuth();
+  const { user, isAuthenticated } = useAuth();
   const [portfolioStats, setPortfolioStats] = useState<PortfolioStats>(initialStats);
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [tokenHoldings, setTokenHoldings] = useState<TokenHolding[]>([]);

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileText, MapPin, DollarSign, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabaseService } from "@/services/supabaseService";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "react-hot-toast";
 
 const RegisterProperty = () => {
@@ -28,7 +28,7 @@ const RegisterProperty = () => {
     expectedReturn: "",
   });
   const navigate = useNavigate();
-  const { user } = useSupabaseAuth();
+  const { user } = useAuth();
 
   const propertyTypes = [
     "Residential Apartment",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabaseService } from "@/services/supabaseService";
-import { useSupabaseAuth } from "./useSupabaseAuth";
+import { useAuth } from "./useAuth";
 import { Notification } from "../types";
 import { toast } from "react-hot-toast";
 
@@ -14,7 +14,7 @@ interface UseNotificationsReturn {
 }
 
 export const useNotifications = (): UseNotificationsReturn => {
-  const { user, isAuthenticated } = useSupabaseAuth();
+  const { user, isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

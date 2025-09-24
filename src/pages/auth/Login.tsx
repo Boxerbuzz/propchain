@@ -9,14 +9,14 @@ import AuthCard from "@/components/auth/AuthCard";
 import { useForm } from "react-hook-form";
 import { LoginFormSchema } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, loading } = useSupabaseAuth();
+  const { login, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 

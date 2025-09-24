@@ -73,7 +73,7 @@ const fetchUserProfile = async (userId: string) => {
   }
 };
 
-export const useSupabaseAuth = () => {
+export const useAuth = () => {
   const [, forceUpdate] = useState({});
   
   useEffect(() => {

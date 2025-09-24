@@ -22,14 +22,14 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 
 export default function Header() {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { isAuthenticated, logout, user } = useSupabaseAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const { notifications, markAllAsRead, clearReadNotifications } = useNotifications();
 
   const getNotificationIcon = (type: string) => {

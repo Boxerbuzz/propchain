@@ -9,7 +9,7 @@ import AuthCard from "@/components/auth/AuthCard";
 import { useForm } from "react-hook-form";
 import { SignUpFormSchema } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Spinner } from "@/components/ui/spinner";
@@ -18,7 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { signup, loading } = useSupabaseAuth();
+  const { signup, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 

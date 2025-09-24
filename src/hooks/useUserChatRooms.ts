@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabaseService } from "@/services/supabaseService";
-import { useSupabaseAuth } from "./useSupabaseAuth";
+import { useAuth } from "./useAuth";
 import { ChatRoom } from "../types";
 import { toast } from "react-hot-toast";
 
@@ -33,7 +33,7 @@ interface UseUserChatRoomsReturn {
 }
 
 export const useUserChatRooms = (): UseUserChatRoomsReturn => {
-  const { user, isAuthenticated } = useSupabaseAuth();
+  const { user, isAuthenticated } = useAuth();
   const [chatRooms, setChatRooms] = useState<ChatRoomWithLastMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

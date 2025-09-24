@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSupabaseAuth } from "./useSupabaseAuth";
+import { useAuth } from "./useAuth";
 import { usePortfolio } from "./usePortfolio";
 import { supabaseService } from "@/services/supabaseService";
 import { Wallet } from "../types";
@@ -24,7 +24,7 @@ interface UseDashboardReturn {
 }
 
 export const useDashboard = (): UseDashboardReturn => {
-  const { user, isAuthenticated } = useSupabaseAuth();
+  const { user, isAuthenticated } = useAuth();
   const { portfolioStats, investments, isLoading: portfolioLoading, error: portfolioError } = usePortfolio();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [isLoading, setIsLoading] = useState(true);

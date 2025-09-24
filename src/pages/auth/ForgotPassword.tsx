@@ -7,7 +7,7 @@ import AuthCard from "@/components/auth/AuthCard";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -19,7 +19,7 @@ const ForgotPasswordFormSchema = z.object({
 type ForgotPasswordFormData = z.infer<typeof ForgotPasswordFormSchema>;
 
 export default function ForgotPassword() {
-  const { resetPassword, loading } = useSupabaseAuth();
+  const { resetPassword, loading } = useAuth();
   const { toast } = useToast();
 
   const form = useForm<ForgotPasswordFormData>({

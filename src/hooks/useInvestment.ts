@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { supabaseService } from '@/services/supabaseService';
 import { toast } from '@/hooks/use-toast';
-import { useSupabaseAuth } from './useSupabaseAuth';
+import { useAuth } from './useAuth';
 
 export const useInvestment = () => {
   const [isInvesting, setIsInvesting] = useState(false);
-  const { user } = useSupabaseAuth();
+  const { user } = useAuth();
 
   const invest = async (
     tokenizationId: string,

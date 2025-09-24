@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabaseService } from "@/services/supabaseService";
 import { useToast } from "@/hooks/use-toast";
-import { useSupabaseAuth } from "./useSupabaseAuth";
+import { useAuth } from "./useAuth";
 
 interface PropertyWithMetrics {
   id: string;
@@ -51,7 +51,7 @@ interface UsePropertyManagementReturn {
 }
 
 export const usePropertyManagement = (): UsePropertyManagementReturn => {
-  const { user } = useSupabaseAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [properties, setProperties] = useState<PropertyWithMetrics[]>([]);
   const [financialSummary, setFinancialSummary] = useState<FinancialSummary>({

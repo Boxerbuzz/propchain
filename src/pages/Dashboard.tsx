@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, DollarSign, Building, Users, Target, BarChart3, PieChart, Activity, Wallet, Bell, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useSupabaseAuth } from "../hooks/useSupabaseAuth";
+import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
 import { useNotifications } from "../hooks/useNotifications";
 
 export default function Dashboard() {
-  const { user } = useSupabaseAuth();
+  const { user } = useAuth();
   const { stats, isLoading, shouldShowKycAlert } = useDashboard();
   const { notifications, isLoading: notificationsLoading, markAllAsRead } = useNotifications();
 

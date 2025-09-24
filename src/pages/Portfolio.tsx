@@ -18,12 +18,12 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { usePortfolio } from "@/hooks/usePortfolio";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 const Portfolio = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
-  const { isAuthenticated } = useSupabaseAuth();
+  const { isAuthenticated } = useAuth();
   
   // Fetch real portfolio data
   const { portfolioStats, investments, tokenHoldings, isLoading, error } = usePortfolio();

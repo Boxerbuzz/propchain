@@ -19,12 +19,12 @@ import {
   Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
 
 const Profile = () => {
   const { toast } = useToast();
-  const { user, isAuthenticated } = useSupabaseAuth();
+  const { user, isAuthenticated } = useAuth();
   const { stats } = useDashboard();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -273,6 +273,8 @@ const Profile = () => {
                   <div>
                     <Label htmlFor="experience">Investment Experience</Label>
                     <select
+                    title="Investment Experience"
+                      id="experience"
                       className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm disabled:opacity-50"
                       value={formData.investmentExperience}
                       onChange={(e) => handleInputChange("investmentExperience", e.target.value)}

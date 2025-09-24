@@ -9,7 +9,7 @@ interface PropertyWithTokenization {
   property_type?: string;
   primary_image?: string;
   image_count?: number;
-  // Tokenization fields  
+  // Tokenization fields
   status?: string;
   target_raise?: number;
   current_raise?: number;
@@ -39,22 +39,24 @@ export const useProperties = (filters?: any): UsePropertiesReturn => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      const tokenizations = await supabaseService.properties.listActiveTokenizations();
-      
+
+      const tokenizations =
+        await supabaseService.properties.listActiveTokenizations();
+
       // Map to include property info
       const mappedProperties = tokenizations.map((tokenization: any) => ({
         ...tokenization,
-        property_title: tokenization.properties?.title || 'Unknown Property',
+        property_title: tokenization.properties?.title || "Unknown Property",
         property_location: tokenization.properties?.location || {},
-        property_type: tokenization.properties?.property_type || 'Unknown',
+        property_type: tokenization.properties?.property_type || "Unknown",
         primary_image: null, // We'll need a separate query for images if needed
         image_count: 0,
       }));
-      
+
       setProperties(mappedProperties);
     } catch (err: any) {
-      const errorMessage = err.message || "An error occurred while fetching properties";
+      const errorMessage =
+        err.message || "An error occurred while fetching properties";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -74,6 +76,6 @@ export const useProperties = (filters?: any): UsePropertiesReturn => {
     properties,
     isLoading,
     error,
-    refetch
+    refetch,
   };
 };
