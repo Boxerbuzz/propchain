@@ -3,98 +3,56 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import PropertyCard from "@/components/PropertyCard";
 import { Search, Filter, MapPin, SlidersHorizontal, Grid, List, X } from "lucide-react";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useProperties } from "@/hooks/useProperties";
 
 export default function BrowseProperties() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
   const isMobile = useIsMobile();
 
-  // Mock properties data
-  const properties = [
-    {
-      id: "1",
-      title: "Luxury Apartment Complex - Ikoyi",
-      location: "Ikoyi, Lagos",
-      price: 500000000,
-      expectedReturn: 12,
-      tokensSold: 750,
-      totalTokens: 1000,
-      investmentDeadline: "Dec 31, 2024",
-      imageUrl: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop",
-      status: "active" as const
-    },
-    {
-      id: "2",
-      title: "Commercial Plaza - Victoria Island", 
-      location: "Victoria Island, Lagos",
-      price: 750000000,
-      expectedReturn: 15,
-      tokensSold: 600,
-      totalTokens: 1200,
-      investmentDeadline: "Jan 15, 2025",
-      imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop",
-      status: "active" as const
-    },
-    {
-      id: "3",
-      title: "Residential Estate - Lekki",
-      location: "Lekki, Lagos", 
-      price: 300000000,
-      expectedReturn: 10,
-      tokensSold: 400,
-      totalTokens: 800,
-      investmentDeadline: "Feb 28, 2025",
-      imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-      status: "upcoming" as const
-    },
-    {
-      id: "4",
-      title: "Mixed-Use Development - Abuja",
-      location: "Central Area, Abuja",
-      price: 1000000000,
-      expectedReturn: 18,
-      tokensSold: 1000,
-      totalTokens: 1000,
-      investmentDeadline: "Completed",
-      imageUrl: "https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=400&h=300&fit=crop",
-      status: "funded" as const
-    },
-    {
-      id: "5",
-      title: "Shopping Center - Port Harcourt",
-      location: "GRA, Port Harcourt",
-      price: 400000000,
-      expectedReturn: 14,
-      tokensSold: 320,
-      totalTokens: 600,
-      investmentDeadline: "Mar 15, 2025",
-      imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop",
-      status: "active" as const
-    },
-    {
-      id: "6",
-      title: "Office Complex - Ikeja",
-      location: "Ikeja, Lagos",
-      price: 600000000,
-      expectedReturn: 13,
-      tokensSold: 200,
-      totalTokens: 900,
-      investmentDeadline: "Apr 30, 2025",
-      imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
-      status: "upcoming" as const
-    }
-  ];
+  // Fetch real properties data
+  const { properties: tokenizations, isLoading, error } = useProperties();
+
+  // Transform tokenizations to match PropertyCard interface
+  const properties = tokenizations.map(tokenization => ({
+    id: tokenization.id,
+    title: tokenization.property_title || "Property Name",
+    location: typeof tokenization.property_location === 'object' 
+      ? `${tokenization.property_location?.city || ''}, ${tokenization.property_location?.state || ''}` 
+      : tokenization.property_location || "Location",
+    price: tokenization.targetRaise || tokenization.currentRaise || 0,
+    expectedReturn: tokenization.expectedRoiAnnual || 0,
+    tokensSold: Number(tokenization.tokensSold) || 0,
+    totalTokens: Number(tokenization.totalSupply) || 1,
+    investmentDeadline: tokenization.investmentWindowEnd 
+      ? new Date(tokenization.investmentWindowEnd).toLocaleDateString() 
+      : "TBD",
+    imageUrl: tokenization.primary_image || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop",
+    status: tokenization.status === 'active' ? 'active' as const : 
+            tokenization.status === 'upcoming' ? 'upcoming' as const :
+            tokenization.status === 'completed' ? 'funded' as const : 'upcoming' as const
+  }));
+
+  // Filter properties
+  const filteredProperties = properties.filter(property => {
+    const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         property.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || property.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const filters = [
-    { label: "All Properties", count: properties.length, active: true },
-    { label: "Active", count: properties.filter(p => p.status === "active").length, active: false },
-    { label: "Upcoming", count: properties.filter(p => p.status === "upcoming").length, active: false },
-    { label: "Funded", count: properties.filter(p => p.status === "funded").length, active: false }
+    { label: "All Properties", count: properties.length, active: statusFilter === "all" },
+    { label: "Active", count: properties.filter(p => p.status === "active").length, active: statusFilter === "active" },
+    { label: "Upcoming", count: properties.filter(p => p.status === "upcoming").length, active: statusFilter === "upcoming" },
+    { label: "Funded", count: properties.filter(p => p.status === "funded").length, active: statusFilter === "funded" }
   ];
 
   const locations = ["All Locations", "Lagos", "Abuja", "Port Harcourt", "Kano", "Ibadan"];
@@ -133,6 +91,15 @@ export default function BrowseProperties() {
                   ? "border-primary bg-primary/5 text-primary" 
                   : "border-border hover:bg-muted"
               }`}
+              onClick={() => {
+                const filterMap: Record<string, string> = {
+                  "All Properties": "all",
+                  "Active": "active", 
+                  "Upcoming": "upcoming",
+                  "Funded": "funded"
+                };
+                setStatusFilter(filterMap[filter.label] || "all");
+              }}
             >
               <span className="font-medium">{filter.label}</span>
               <Badge variant={filter.active ? "default" : "secondary"}>
@@ -255,7 +222,7 @@ export default function BrowseProperties() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                   <p className="text-muted-foreground">
-                    Showing {properties.length} properties
+                    {isLoading ? "Loading..." : `Showing ${filteredProperties.length} of ${properties.length} properties`}
                   </p>
                 </div>
                 
@@ -283,15 +250,47 @@ export default function BrowseProperties() {
               </div>
 
               {/* Properties Grid */}
-              <div className={`grid gap-6 ${
-                viewMode === "grid" 
-                  ? "md:grid-cols-2 xl:grid-cols-3" 
-                  : "grid-cols-1"
-              }`}>
-                {properties.map((property) => (
-                  <PropertyCard key={property.id} {...property} />
-                ))}
-              </div>
+              {isLoading ? (
+                <div className={`grid gap-6 ${
+                  viewMode === "grid" 
+                    ? "md:grid-cols-2 xl:grid-cols-3" 
+                    : "grid-cols-1"
+                }`}>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="space-y-3">
+                      <Skeleton className="h-48 w-full rounded-lg" />
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground mb-4">Failed to load properties</p>
+                  <Button onClick={() => window.location.reload()}>Try Again</Button>
+                </div>
+              ) : filteredProperties.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground mb-4">
+                    {searchQuery ? "No properties match your search" : "No properties available"}
+                  </p>
+                  {searchQuery && (
+                    <Button variant="outline" onClick={() => setSearchQuery("")}>
+                      Clear Search
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className={`grid gap-6 ${
+                  viewMode === "grid" 
+                    ? "md:grid-cols-2 xl:grid-cols-3" 
+                    : "grid-cols-1"
+                }`}>
+                  {filteredProperties.map((property) => (
+                    <PropertyCard key={property.id} {...property} />
+                  ))}
+                </div>
+              )}
 
               {/* Pagination */}
               <div className="mt-12 flex justify-center">

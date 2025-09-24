@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -16,123 +17,63 @@ import {
   Download
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { usePortfolio } from "@/hooks/usePortfolio";
+import { useAuth } from "@/context/AuthContext";
 
 const Portfolio = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
+  const { isAuthenticated } = useAuth();
+  
+  // Fetch real portfolio data
+  const { portfolioStats, investments, tokenHoldings, isLoading, error } = usePortfolio();
 
-  // Mock portfolio data
-  const portfolioStats = {
-    totalInvested: 25000,
-    currentValue: 27350,
-    totalReturn: 2350,
-    returnPercentage: 9.4,
-    monthlyDividends: 245,
-    totalProperties: 5,
-    activeInvestments: 5
-  };
+  // Transform investments data for display
+  const displayInvestments = tokenHoldings.map((holding: any) => ({
+    id: holding.id,
+    tokenizationId: holding.tokenization_id,
+    propertyTitle: `Property ${holding.property_id?.slice(0, 8)}...` || "Property Investment",
+    location: "Location TBD", // This would come from joining with properties table
+    invested: holding.total_invested_ngn || 0,
+    currentValue: (holding.total_invested_ngn || 0) + (holding.unrealized_returns_ngn || 0),
+    return: (holding.unrealized_returns_ngn || 0) + (holding.realized_returns_ngn || 0),
+    returnPercentage: holding.total_invested_ngn > 0 
+      ? (((holding.unrealized_returns_ngn || 0) + (holding.realized_returns_ngn || 0)) / holding.total_invested_ngn) * 100 
+      : 0,
+    tokens: holding.balance || 0,
+    totalTokens: 100000, // This would come from tokenizations table
+    status: holding.balance > 0 ? "active" : "inactive",
+    expectedReturn: "8.5%", // This would come from tokenizations table
+    nextDividend: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Mock next month
+    dividendAmount: (holding.total_invested_ngn || 0) * 0.08 / 12, // Mock monthly dividend
+    imageUrl: "/placeholder.svg"
+  }));
 
-  const investments = [
-    {
-      id: "inv-1",
-      tokenizationId: "tok-luxury-manhattan",
-      propertyTitle: "Luxury Downtown Apartment Complex",
-      location: "Manhattan, NY",
-      invested: 5000,
-      currentValue: 5470,
-      return: 470,
-      returnPercentage: 9.4,
-      tokens: 50,
-      totalTokens: 25000,
-      status: "active",
-      expectedReturn: "8.5%",
-      nextDividend: "2024-10-15",
-      dividendAmount: 42.5,
-      imageUrl: "/placeholder.svg"
-    },
-    {
-      id: "inv-2",
-      tokenizationId: "tok-tech-offices",
-      propertyTitle: "Tech District Office Building",
-      location: "San Francisco, CA",
-      invested: 7500,
-      currentValue: 7950,
-      return: 450,
-      returnPercentage: 6.0,
-      tokens: 75,
-      totalTokens: 30000,
-      status: "active",
-      expectedReturn: "7.2%",
-      nextDividend: "2024-10-20",
-      dividendAmount: 56.25,
-      imageUrl: "/placeholder.svg"
-    },
-    {
-      id: "inv-3",
-      tokenizationId: "tok-retail-center",
-      propertyTitle: "Prime Retail Shopping Center",
-      location: "Miami, FL",
-      invested: 3000,
-      currentValue: 3240,
-      return: 240,
-      returnPercentage: 8.0,
-      tokens: 30,
-      totalTokens: 20000,
-      status: "active",
-      expectedReturn: "9.1%",
-      nextDividend: "2024-10-25",
-      dividendAmount: 28.5,
-      imageUrl: "/placeholder.svg"
-    },
-    {
-      id: "inv-4",
-      tokenizationId: "tok-warehouse-logistics",
-      propertyTitle: "Industrial Warehouse Complex",
-      location: "Dallas, TX",
-      invested: 6000,
-      currentValue: 6420,
-      return: 420,
-      returnPercentage: 7.0,
-      tokens: 60,
-      totalTokens: 35000,
-      status: "active",
-      expectedReturn: "6.8%",
-      nextDividend: "2024-11-01",
-      dividendAmount: 45.0,
-      imageUrl: "/placeholder.svg"
-    },
-    {
-      id: "inv-5",
-      tokenizationId: "tok-resort-hotel",
-      propertyTitle: "Beachfront Resort Hotel",
-      location: "Cancun, Mexico",
-      invested: 3500,
-      currentValue: 4270,
-      return: 770,
-      returnPercentage: 22.0,
-      tokens: 35,
-      totalTokens: 15000,
-      status: "funded",
-      expectedReturn: "12.5%",
-      nextDividend: "2024-11-10",
-      dividendAmount: 48.75,
-      imageUrl: "/placeholder.svg"
-    }
-  ];
-
-  const filteredInvestments = investments.filter(inv => {
+  const filteredInvestments = displayInvestments.filter((inv: any) => {
     if (filter === "all") return true;
     return inv.status === filter;
   });
 
-  const upcomingDividends = investments
-    .map(inv => ({
+  const upcomingDividends = displayInvestments
+    .map((inv: any) => ({
       property: inv.propertyTitle,
       amount: inv.dividendAmount,
       date: inv.nextDividend
     }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 3);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background py-8">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-2xl font-bold mb-4">Please Log In</h1>
+          <p className="text-muted-foreground mb-6">You need to be logged in to view your portfolio.</p>
+          <Button onClick={() => navigate("/auth/login")}>Go to Login</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -162,8 +103,14 @@ const Portfolio = () => {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${portfolioStats.totalInvested.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Across {portfolioStats.totalProperties} properties</p>
+              {isLoading ? (
+                <Skeleton className="h-8 w-24 mb-2" />
+              ) : (
+                <div className="text-2xl font-bold">₦{portfolioStats.totalInvested.toLocaleString()}</div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {isLoading ? <Skeleton className="h-4 w-32" /> : `Across ${portfolioStats.totalProperties} properties`}
+              </p>
             </CardContent>
           </Card>
 
@@ -173,10 +120,18 @@ const Portfolio = () => {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${portfolioStats.currentValue.toLocaleString()}</div>
-              <p className="text-xs text-green-600">
-                +${portfolioStats.totalReturn} ({portfolioStats.returnPercentage}%)
-              </p>
+              {isLoading ? (
+                <Skeleton className="h-8 w-24 mb-2" />
+              ) : (
+                <div className="text-2xl font-bold">₦{portfolioStats.currentValue.toLocaleString()}</div>
+              )}
+              {isLoading ? (
+                <Skeleton className="h-4 w-20" />
+              ) : (
+                <p className={`text-xs ${portfolioStats.totalReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {portfolioStats.totalReturn >= 0 ? '+' : ''}₦{portfolioStats.totalReturn.toLocaleString()} ({portfolioStats.returnPercentage.toFixed(1)}%)
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -216,7 +171,36 @@ const Portfolio = () => {
               </div>
 
               <TabsContent value={filter} className="space-y-4">
-                {filteredInvestments.map((investment) => (
+                {isLoading ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <Card key={i}>
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <Skeleton className="w-16 h-16 rounded-lg" />
+                          <div className="flex-1 space-y-2">
+                            <Skeleton className="h-6 w-64" />
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-4 w-48" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : error ? (
+                  <Card className="p-12 text-center">
+                    <p className="text-muted-foreground mb-4">Failed to load portfolio data</p>
+                    <Button onClick={() => window.location.reload()}>Try Again</Button>
+                  </Card>
+                ) : filteredInvestments.length === 0 ? (
+                  <Card className="p-12 text-center">
+                    <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No Investments Found</h3>
+                    <p className="text-muted-foreground mb-4">
+                      You haven't made any investments yet. Start by browsing available properties.
+                    </p>
+                    <Button onClick={() => navigate("/browse")}>Browse Properties</Button>
+                  </Card>
+                ) : filteredInvestments.map((investment: any) => (
                   <Card key={investment.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
@@ -252,16 +236,16 @@ const Portfolio = () => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                           <p className="text-sm text-muted-foreground">Invested</p>
-                          <p className="font-semibold">${investment.invested.toLocaleString()}</p>
+                          <p className="font-semibold">₦{investment.invested.toLocaleString()}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Current Value</p>
-                          <p className="font-semibold">${investment.currentValue.toLocaleString()}</p>
+                          <p className="font-semibold">₦{investment.currentValue.toLocaleString()}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Return</p>
                           <p className={`font-semibold ${investment.return >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {investment.return >= 0 ? '+' : ''}${investment.return} ({investment.returnPercentage}%)
+                            {investment.return >= 0 ? '+' : ''}₦{investment.return.toLocaleString()} ({investment.returnPercentage.toFixed(1)}%)
                           </p>
                         </div>
                         <div>
