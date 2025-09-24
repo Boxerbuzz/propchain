@@ -7,11 +7,11 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isInitializing } = useAuth();
 
-  if (isLoading) {
-    // Optionally render a loading spinner or skeleton here
-    return <div>Loading authentication...</div>; // Or a more sophisticated loading component
+  if (isInitializing) {
+    // Show loading while initializing auth state
+    return <div>Loading authentication...</div>;
   }
 
   if (!isAuthenticated) {
