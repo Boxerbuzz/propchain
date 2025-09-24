@@ -57,19 +57,19 @@ export const PropertySchema = z.object({
     .max(100, "Title too long"),
   description: z.string().max(2000, "Description too long").nullable(),
   location: LocationSchema,
-  propertyType: z.enum([
+  property_type: z.enum([
     "residential",
     "commercial",
     "industrial",
     "land",
     "mixed_use",
   ]),
-  propertySubtype: z.string().nullable(),
-  landSize: z.number().positive("Land size must be positive").nullable(),
-  builtUpArea: z.number().positive("Built-up area must be positive").nullable(),
+  property_subtype: z.string().nullable(),
+  land_size: z.number().positive("Land size must be positive").nullable(),
+  built_up_area: z.number().positive("Built-up area must be positive").nullable(),
   bedrooms: z.number().int().min(0, "Bedrooms cannot be negative").nullable(),
   bathrooms: z.number().int().min(0, "Bathrooms cannot be negative").nullable(),
-  yearBuilt: z
+  year_built: z
     .number()
     .int()
     .min(1800)
@@ -79,70 +79,70 @@ export const PropertySchema = z.object({
     .enum(["excellent", "good", "fair", "needs_renovation"])
     .nullable(),
   amenities: z.array(z.string()).nullable(),
-  estimatedValue: z.number().positive("Estimated value must be positive"),
-  marketValue: z.number().positive().nullable(),
-  rentalIncomeMonthly: z.number().positive().nullable(),
-  rentalYield: z
+  estimated_value: z.number().positive("Estimated value must be positive"),
+  market_value: z.number().positive().nullable(),
+  rental_income_monthly: z.number().positive().nullable(),
+  rental_yield: z
     .number()
     .min(0)
     .max(100, "Yield cannot exceed 100%")
     .nullable(),
-  ownerId: z.string().uuid(),
-  propertyManagerId: z.string().uuid().nullable(),
-  hcsTopicId: z.string().nullable(),
-  hfsFileIds: z.array(z.string()).nullable(),
-  approvalStatus: z
+  owner_id: z.string().uuid(),
+  property_manager_id: z.string().uuid().nullable(),
+  hcs_topic_id: z.string().nullable(),
+  hfs_file_ids: z.array(z.string()).nullable(),
+  approval_status: z
     .enum(["pending", "approved", "rejected", "suspended"])
     .default("pending"),
-  approvedBy: z.string().uuid().nullable(),
-  approvedAt: z.date().nullable(),
-  verificationScore: z.number().int().min(0).max(100).default(0),
-  listingStatus: z
+  approved_by: z.string().uuid().nullable(),
+  approved_at: z.date().nullable(),
+  verification_score: z.number().int().min(0).max(100).default(0),
+  listing_status: z
     .enum(["draft", "active", "sold", "withdrawn"])
     .default("draft"),
   featured: z.boolean().default(false),
-  viewsCount: z.number().int().min(0).default(0),
-  favoritesCount: z.number().int().min(0).default(0),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  views_count: z.number().int().min(0).default(0),
+  favorites_count: z.number().int().min(0).default(0),
+  created_at: z.date(),
+  updated_at: z.date(),
 });
 
 // Tokenization schemas
 export const TokenizationSchema = z
   .object({
     id: z.string().uuid(),
-    propertyId: z.string().uuid(),
-    tokenId: z
+    property_id: z.string().uuid(),
+    token_id: z
       .string()
       .regex(/^0\.0\.\d+$/, "Invalid Hedera token ID")
       .nullable(),
-    tokenName: z.string().max(50, "Token name too long").nullable(),
-    tokenSymbol: z.string().max(10, "Token symbol too long").nullable(),
-    totalSupply: z.number().int().positive("Total supply must be positive"),
-    pricePerToken: z.number().positive("Price per token must be positive"),
-    minInvestment: z.number().positive("Minimum investment must be positive"),
-    maxInvestment: z.number().positive().nullable(),
-    minTokensPerPurchase: z.number().int().positive().default(1),
-    maxTokensPerPurchase: z.number().int().positive().nullable(),
-    investmentWindowStart: z.date(),
-    investmentWindowEnd: z.date(),
-    minimumRaise: z.number().positive("Minimum raise must be positive"),
-    targetRaise: z.number().positive().nullable(),
-    currentRaise: z.number().min(0).default(0),
-    tokensSold: z.number().int().min(0).default(0),
-    investorCount: z.number().int().min(0).default(0),
-    expectedRoiAnnual: z
+    token_name: z.string().max(50, "Token name too long").nullable(),
+    token_symbol: z.string().max(10, "Token symbol too long").nullable(),
+    total_supply: z.number().int().positive("Total supply must be positive"),
+    price_per_token: z.number().positive("Price per token must be positive"),
+    min_investment: z.number().positive("Minimum investment must be positive"),
+    max_investment: z.number().positive().nullable(),
+    min_tokens_per_purchase: z.number().int().positive().default(1),
+    max_tokens_per_purchase: z.number().int().positive().nullable(),
+    investment_window_start: z.date(),
+    investment_window_end: z.date(),
+    minimum_raise: z.number().positive("Minimum raise must be positive"),
+    target_raise: z.number().positive().nullable(),
+    current_raise: z.number().min(0).default(0),
+    tokens_sold: z.number().int().min(0).default(0),
+    investor_count: z.number().int().min(0).default(0),
+    expected_roi_annual: z
       .number()
       .min(0)
       .max(100, "ROI cannot exceed 100%")
       .nullable(),
-    dividendFrequency: z.enum(["monthly", "quarterly", "annually"]).nullable(),
-    managementFeePercentage: z
+    dividend_frequency: z.enum(["monthly", "quarterly", "annually"]).nullable(),
+    management_fee_percentage: z
       .number()
       .min(0)
       .max(20, "Management fee too high")
       .default(2.5),
-    platformFeePercentage: z
+    platform_fee_percentage: z
       .number()
       .min(0)
       .max(10, "Platform fee too high")
@@ -158,102 +158,102 @@ export const TokenizationSchema = z
         "failed",
       ])
       .default("draft"),
-    autoRefund: z.boolean().default(true),
-    createdBy: z.string().uuid(),
-    approvedBy: z.string().uuid().nullable(),
-    approvedAt: z.date().nullable(),
-    mintingTransactionId: z.string().nullable(),
-    mintedAt: z.date().nullable(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
+    auto_refund: z.boolean().default(true),
+    created_by: z.string().uuid(),
+    approved_by: z.string().uuid().nullable(),
+    approved_at: z.date().nullable(),
+    minting_transaction_id: z.string().nullable(),
+    minted_at: z.date().nullable(),
+    created_at: z.date(),
+    updated_at: z.date(),
   })
-  .refine((data) => data.investmentWindowEnd > data.investmentWindowStart, {
+  .refine((data) => data.investment_window_end > data.investment_window_start, {
     message: "Investment window end must be after start",
-    path: ["investmentWindowEnd"],
+    path: ["investment_window_end"],
   })
   .refine(
-    (data) => !data.maxInvestment || data.maxInvestment > data.minInvestment,
+    (data) => !data.max_investment || data.max_investment > data.min_investment,
     {
       message: "Maximum investment must be greater than minimum",
-      path: ["maxInvestment"],
+      path: ["max_investment"],
     }
   );
 
 // Investment schemas
 export const InvestmentSchema = z.object({
   id: z.string().uuid(),
-  tokenizationId: z.string().uuid(),
-  investorId: z.string().uuid(),
-  amountNgn: z.number().positive("Investment amount must be positive"),
-  amountUsd: z.number().positive().nullable(),
-  exchangeRate: z.number().positive().nullable(),
-  tokensRequested: z
+  tokenization_id: z.string().uuid(),
+  investor_id: z.string().uuid(),
+  amount_ngn: z.number().positive("Investment amount must be positive"),
+  amount_usd: z.number().positive().nullable(),
+  exchange_rate: z.number().positive().nullable(),
+  tokens_requested: z
     .number()
     .int()
     .positive("Tokens requested must be positive"),
-  tokensAllocated: z.number().int().min(0).default(0),
-  percentageOwnership: z.number().min(0).max(100).nullable(),
-  paystackReference: z.string().nullable(),
-  paymentStatus: z
+  tokens_allocated: z.number().int().min(0).default(0),
+  percentage_ownership: z.number().min(0).max(100).nullable(),
+  paystack_reference: z.string().nullable(),
+  payment_status: z
     .enum(["pending", "confirmed", "failed", "refunded"])
     .default("pending"),
-  paymentMethod: z.enum(["paystack", "wallet", "bank_transfer"]).nullable(),
-  paymentConfirmedAt: z.date().nullable(),
-  refundProcessedAt: z.date().nullable(),
-  refundAmount: z.number().positive().nullable(),
-  investmentSource: z.enum(["web", "mobile", "api"]).nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  payment_method: z.enum(["paystack", "wallet", "bank_transfer"]).nullable(),
+  payment_confirmed_at: z.date().nullable(),
+  refund_processed_at: z.date().nullable(),
+  refund_amount: z.number().positive().nullable(),
+  investment_source: z.enum(["web", "mobile", "api"]).nullable(),
+  created_at: z.date(),
+  updated_at: z.date(),
 });
 
 // Chat schemas
 export const ChatRoomSchema = z.object({
   id: z.string().uuid(),
-  propertyId: z.string().uuid().nullable(),
-  tokenizationId: z.string().uuid().nullable(),
+  property_id: z.string().uuid().nullable(),
+  tokenization_id: z.string().uuid().nullable(),
   name: z
     .string()
     .min(1, "Room name is required")
     .max(100, "Room name too long"),
   description: z.string().max(500, "Description too long").nullable(),
-  roomType: z
+  room_type: z
     .enum(["investment", "governance", "general", "support"])
     .default("investment"),
-  isPublic: z.boolean().default(false),
-  maxParticipants: z.number().int().positive().nullable(),
-  autoJoinInvestors: z.boolean().default(true),
-  aiAssistantEnabled: z.boolean().default(true),
-  moderationEnabled: z.boolean().default(true),
-  createdBy: z.string().uuid().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  is_public: z.boolean().default(false),
+  max_participants: z.number().int().positive().nullable(),
+  auto_join_investors: z.boolean().default(true),
+  ai_assistant_enabled: z.boolean().default(true),
+  moderation_enabled: z.boolean().default(true),
+  created_by: z.string().uuid().nullable(),
+  created_at: z.date(),
+  updated_at: z.date(),
 });
 
 export const ChatMessageSchema = z.object({
   id: z.string().uuid(),
-  roomId: z.string().uuid(),
-  senderId: z.string().uuid().nullable(),
-  replyToId: z.string().uuid().nullable(),
-  messageText: z.string().max(2000, "Message too long").nullable(),
-  messageType: z
+  room_id: z.string().uuid(),
+  sender_id: z.string().uuid().nullable(),
+  reply_to_id: z.string().uuid().nullable(),
+  message_text: z.string().max(2000, "Message too long").nullable(),
+  message_type: z
     .enum(["text", "system", "proposal", "vote", "announcement", "ai_response"])
     .default("text"),
   metadata: z.record(z.any()).nullable(),
   attachments: z.array(z.string().url()).nullable(),
-  isPinned: z.boolean().default(false),
-  isEdited: z.boolean().default(false),
-  editedAt: z.date().nullable(),
+  is_pinned: z.boolean().default(false),
+  is_edited: z.boolean().default(false),
+  edited_at: z.date().nullable(),
   reactions: z.record(z.array(z.string())).default({}),
-  createdAt: z.date(),
+  created_at: z.date(),
 });
 
 // Governance schemas
 export const GovernanceProposalSchema = z
   .object({
     id: z.string().uuid(),
-    propertyId: z.string().uuid(),
-    tokenizationId: z.string().uuid().nullable(),
-    proposerId: z.string().uuid(),
+    property_id: z.string().uuid(),
+    tokenization_id: z.string().uuid().nullable(),
+    proposer_id: z.string().uuid(),
     title: z
       .string()
       .min(5, "Title must be at least 5 characters")
@@ -262,18 +262,18 @@ export const GovernanceProposalSchema = z
       .string()
       .min(20, "Description must be at least 20 characters")
       .max(2000, "Description too long"),
-    proposalType: z.string().min(1, "Proposal type is required"),
-    budgetNgn: z.number().positive().nullable(),
-    budgetUsd: z.number().positive().nullable(),
-    supportingDocuments: z.array(z.string().url()).nullable(),
-    votingStart: z.date(),
-    votingEnd: z.date(),
-    quorumRequired: z
+    proposal_type: z.string().min(1, "Proposal type is required"),
+    budget_ngn: z.number().positive().nullable(),
+    budget_usd: z.number().positive().nullable(),
+    supporting_documents: z.array(z.string().url()).nullable(),
+    voting_start: z.date(),
+    voting_end: z.date(),
+    quorum_required: z
       .number()
       .min(1)
       .max(100, "Quorum cannot exceed 100%")
       .default(50),
-    approvalThreshold: z
+    approval_threshold: z
       .number()
       .min(1)
       .max(100, "Threshold cannot exceed 100%")
@@ -281,34 +281,34 @@ export const GovernanceProposalSchema = z
     status: z
       .enum(["draft", "active", "passed", "rejected", "executed", "expired"])
       .default("draft"),
-    totalVotesCast: z.number().int().min(0).default(0),
-    votesFor: z.number().int().min(0).default(0),
-    votesAgainst: z.number().int().min(0).default(0),
-    votesAbstain: z.number().int().min(0).default(0),
-    executionDate: z.date().nullable(),
-    executionStatus: z
+    total_votes_cast: z.number().int().min(0).default(0),
+    votes_for: z.number().int().min(0).default(0),
+    votes_against: z.number().int().min(0).default(0),
+    votes_abstain: z.number().int().min(0).default(0),
+    execution_date: z.date().nullable(),
+    execution_status: z
       .enum(["pending", "in_progress", "completed", "failed"])
       .nullable(),
-    executionNotes: z.string().max(1000, "Execution notes too long").nullable(),
-    hcsRecordId: z.string().nullable(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
+    execution_notes: z.string().max(1000, "Execution notes too long").nullable(),
+    hcs_record_id: z.string().nullable(),
+    created_at: z.date(),
+    updated_at: z.date(),
   })
-  .refine((data) => data.votingEnd > data.votingStart, {
+  .refine((data) => data.voting_end > data.voting_start, {
     message: "Voting end must be after voting start",
-    path: ["votingEnd"],
+    path: ["voting_end"],
   });
 
 export const VoteSchema = z.object({
   id: z.string().uuid(),
-  proposalId: z.string().uuid(),
-  voterId: z.string().uuid(),
-  voteChoice: z.enum(["for", "against", "abstain"]),
-  votingPower: z.number().int().positive("Voting power must be positive"),
-  voteWeight: z.number().min(0).nullable(),
-  voteReason: z.string().max(500, "Vote reason too long").nullable(),
-  voteTransactionId: z.string().nullable(),
-  castAt: z.date(),
+  proposal_id: z.string().uuid(),
+  voter_id: z.string().uuid(),
+  vote_choice: z.enum(["for", "against", "abstain"]),
+  voting_power: z.number().int().positive("Voting power must be positive"),
+  vote_weight: z.number().min(0).nullable(),
+  vote_reason: z.string().max(500, "Vote reason too long").nullable(),
+  vote_transaction_id: z.string().nullable(),
+  cast_at: z.date(),
 });
 
 // Wallet schemas
@@ -337,16 +337,16 @@ export const WalletSchema = z.object({
 // KYC schemas
 export const KycRecordSchema = z.object({
   id: z.string().uuid(),
-  userId: z.string().uuid(),
-  idType: z.enum(["nin", "drivers_license", "passport"]),
-  idNumber: z.string().min(5, "ID number too short").nullable(),
-  selfieUrl: z.string().url("Invalid selfie URL").nullable(),
-  idDocumentUrl: z.string().url("Invalid document URL").nullable(),
-  verificationStatus: z
+  user_id: z.string().uuid(),
+  id_type: z.enum(["nin", "drivers_license", "passport"]),
+  id_number: z.string().min(5, "ID number too short").nullable(),
+  selfie_url: z.string().url("Invalid selfie URL").nullable(),
+  id_document_url: z.string().url("Invalid document URL").nullable(),
+  verification_status: z
     .enum(["pending", "verified", "rejected"])
     .default("pending"),
-  hcsRecordId: z.string().nullable(),
-  createdAt: z.date(),
+  hcs_record_id: z.string().nullable(),
+  created_at: z.date(),
 });
 
 // Form validation schemas
@@ -438,8 +438,8 @@ export const TokenizationFormSchema = z
 
 // Simplified Investment Form - Less restrictive
 export const InvestmentFormSchema = z.object({
-  amountNgn: z.number().positive("Investment amount must be positive"),
-  paymentMethod: z.enum(["paystack", "wallet"]),
+  amount_ngn: z.number().positive("Investment amount must be positive"),
+  payment_method: z.enum(["paystack", "wallet"]),
   email: z.string().email("Valid email is required"),
 });
 
