@@ -10,27 +10,27 @@ export class PropertyService {
 
   async createProperty(ownerId: string, propertyData: PropertyFormData): Promise<Property | null> {
     const newProperty: Partial<Property> = {
-      ownerId,
+      owner_id: ownerId,
       title: propertyData.title,
       description: propertyData.description,
       location: propertyData.location,
-      propertyType: propertyData.propertyType,
-      propertySubtype: propertyData.propertySubtype,
-      landSize: propertyData.landSize,
-      builtUpArea: propertyData.builtUpArea,
+      property_type: propertyData.propertyType,
+      property_subtype: propertyData.propertySubtype,
+      land_size: propertyData.landSize,
+      built_up_area: propertyData.builtUpArea,
       bedrooms: propertyData.bedrooms,
       bathrooms: propertyData.bathrooms,
-      yearBuilt: propertyData.yearBuilt,
+      year_built: propertyData.yearBuilt,
       condition: propertyData.condition,
       amenities: propertyData.amenities,
-      estimatedValue: propertyData.estimatedValue,
+      estimated_value: propertyData.estimatedValue,
       // Default values from schema or calculated:
-      approvalStatus: "pending",
-      listingStatus: "draft",
-      viewsCount: 0,
-      favoritesCount: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      approval_status: "pending",
+      listing_status: "draft",
+      views_count: 0,
+      favorites_count: 0,
+      created_at: new Date(),
+      updated_at: new Date(),
     };
     return this.propertyRepository.create(newProperty);
   }

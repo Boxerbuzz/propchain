@@ -119,7 +119,7 @@ export const governanceApi = {
   async submitVote(
     proposalId: string,
     voterId: string,
-    voteChoice: Vote["voteChoice"],
+    voteChoice: Vote["vote_choice"],
     votingPower: number,
     voteReason?: string
   ): Promise<VoteResponse | GenericApiResponse> {

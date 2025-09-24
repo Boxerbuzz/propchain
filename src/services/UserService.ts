@@ -36,7 +36,7 @@ export class UserService {
   async submitKYC(
     userId: string,
     kycData: KycFormData
-  ): Promise<KycRecord["verificationStatus"]> {
+  ): Promise<User["kyc_status"]> {
     const mockKycRecord = await this.kycService.submitForVerification(
       userId,
       kycData
@@ -46,7 +46,7 @@ export class UserService {
     let kycStatus: User["kyc_status"] = "pending";
     let kycLevel: User["kyc_level"] = "tier_1"; // Default
 
-    if (mockKycRecord.verificationStatus === "verified") {
+    if (mockKycRecord.verification_status === "verified") {
       kycStatus = "verified";
       // Logic to determine kycLevel based on submitted data or mock logic
       if (kycData.idType === "passport") {
@@ -57,7 +57,7 @@ export class UserService {
       ) {
         kycLevel = "tier_2";
       }
-    } else if (mockKycRecord.verificationStatus === "rejected") {
+    } else if (mockKycRecord.verification_status === "rejected") {
       kycStatus = "rejected";
     }
 

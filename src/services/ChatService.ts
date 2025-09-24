@@ -8,15 +8,15 @@ export class ChatService {
     this.chatRepository = chatRepository;
   }
 
-  async createChatRoom(createdBy: string, name: string, description?: string, roomType?: ChatRoom["roomType"], isPublic?: boolean): Promise<ChatRoom | null> {
+  async createChatRoom(createdBy: string, name: string, description?: string, room_type?: ChatRoom["room_type"], is_public?: boolean): Promise<ChatRoom | null> {
     const newRoom: Partial<ChatRoom> = {
-      createdBy,
+      created_by: createdBy,
       name,
       description,
-      roomType,
-      isPublic,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      room_type,
+      is_public,
+      created_at: new Date(),
+      updated_at: new Date(),
     };
     return this.chatRepository.create(newRoom);
   }
@@ -43,13 +43,13 @@ export class ChatService {
     return this.chatRepository.getChatParticipants(roomId);
   }
 
-  async sendMessage(roomId: string, senderId: string, messageText: string, messageType?: ChatMessage["messageType"]): Promise<ChatMessage | null> {
+  async sendMessage(roomId: string, senderId: string, messageText: string, message_type?: ChatMessage["message_type"]): Promise<ChatMessage | null> {
     const newMessage: Partial<ChatMessage> = {
-      roomId,
-      senderId,
-      messageText,
-      messageType,
-      createdAt: new Date(),
+      room_id: roomId,
+      sender_id: senderId,
+      message_text: messageText,
+      message_type,
+      created_at: new Date(),
     };
     return this.chatRepository.createChatMessage(newMessage);
   }

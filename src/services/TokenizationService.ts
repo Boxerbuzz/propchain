@@ -18,23 +18,23 @@ export class TokenizationService {
   async createTokenizationProposal(createdBy: string, propertyId: string, tokenizationData: TokenizationFormData): Promise<Tokenization | null> {
     // In a real scenario, this would involve more complex validation and potentially a governance proposal
     const newTokenization: Partial<Tokenization> = {
-      propertyId,
-      createdBy,
-      tokenName: `Property-${propertyId}-Token`, // Example dynamic naming
-      tokenSymbol: `PRP-${propertyId.substring(0, 3).toUpperCase()}`, // Example dynamic symbol
-      totalSupply: tokenizationData.totalSupply,
-      pricePerToken: tokenizationData.pricePerToken,
-      minInvestment: tokenizationData.minInvestment,
-      maxInvestment: tokenizationData.maxInvestment,
-      investmentWindowStart: tokenizationData.investmentWindowStart,
-      investmentWindowEnd: tokenizationData.investmentWindowEnd,
-      minimumRaise: tokenizationData.minimumRaise,
-      targetRaise: tokenizationData.targetRaise,
-      expectedRoiAnnual: tokenizationData.expectedRoiAnnual,
-      dividendFrequency: tokenizationData.dividendFrequency,
+      property_id: propertyId,
+      created_by: createdBy,
+      token_name: `Property-${propertyId}-Token`, // Example dynamic naming
+      token_symbol: `PRP-${propertyId.substring(0, 3).toUpperCase()}`, // Example dynamic symbol
+      total_supply: tokenizationData.totalSupply,
+      price_per_token: tokenizationData.pricePerToken,
+      min_investment: tokenizationData.minInvestment,
+      max_investment: tokenizationData.maxInvestment,
+      investment_window_start: tokenizationData.investmentWindowStart,
+      investment_window_end: tokenizationData.investmentWindowEnd,
+      minimum_raise: tokenizationData.minimumRaise,
+      target_raise: tokenizationData.targetRaise,
+      expected_roi_annual: tokenizationData.expectedRoiAnnual,
+      dividend_frequency: tokenizationData.dividendFrequency,
       status: "draft", // Initial status
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
     };
     return this.tokenizationRepository.create(newTokenization);
   }
@@ -48,27 +48,27 @@ export class TokenizationService {
   }
 
   async updateTokenizationStatus(tokenizationId: string, status: Tokenization["status"]): Promise<Tokenization | null> {
-    return this.tokenizationRepository.update(tokenizationId, { status, updatedAt: new Date() });
+    return this.tokenizationRepository.update(tokenizationId, { status, updated_at: new Date() });
   }
 
   async mintPropertyTokens(tokenizationId: string, supplyKey: PrivateKey): Promise<Tokenization | null> {
     const tokenization = await this.tokenizationRepository.findById(tokenizationId);
-    if (!tokenization || !tokenization.tokenId) {
+    if (!tokenization || !tokenization.token_id) {
       throw new Error("Tokenization not found or token ID not set.");
     }
 
     // Call Hedera Integration Service to mint tokens
     const transactionId = await this.hederaIntegrationService.mintTokens(
-      tokenization.tokenId,
-      tokenization.totalSupply,
+      tokenization.token_id,
+      tokenization.total_supply,
       supplyKey
     );
 
     return this.tokenizationRepository.update(tokenizationId, {
       status: "minting",
-      mintingTransactionId: transactionId,
-      mintedAt: new Date(),
-      updatedAt: new Date(),
+      minting_transaction_id: transactionId,
+      minted_at: new Date(),
+      updated_at: new Date(),
     });
   }
 }

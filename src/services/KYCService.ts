@@ -11,30 +11,30 @@ export class KYCService {
   async submitForVerification(userId: string, kycData: KycFormData): Promise<Partial<KycRecord>> {
     console.log(`Mock KYC: Submitting verification for user ${userId} with data:`, kycData);
 
-    let verificationStatus: KycRecord["verificationStatus"] = "pending";
+    let verification_status: KycRecord["verification_status"] = "pending";
 
     // Simple mock validation rules:
     // 1. ID number must be at least 8 characters long (arbitrary rule for demo)
     // 2. Address must be at least 15 characters long (arbitrary rule for demo)
     if (kycData.idNumber.length >= 8 && kycData.address.length >= 15) {
-      verificationStatus = "verified";
+      verification_status = "verified";
     } else {
-      verificationStatus = "rejected";
+      verification_status = "rejected";
     }
 
     // Simulate async operation
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    // For a full KycRecord, you'd save it to the database and get an ID, hcsRecordId, etc.
+    // For a full KycRecord, you'd save it to the database and get an ID, hcs_record_id, etc.
     return {
-      userId,
-      idType: kycData.idType,
-      idNumber: kycData.idNumber,
+      user_id: userId,
+      id_type: kycData.idType,
+      id_number: kycData.idNumber,
       // In a real app, file URLs would be stored after upload
-      // selfieUrl: "mock-selfie-url.jpg",
-      // idDocumentUrl: "mock-id-document-url.jpg",
-      verificationStatus,
-      createdAt: new Date(),
+      // selfie_url: "mock-selfie-url.jpg",
+      // id_document_url: "mock-id-document-url.jpg",
+      verification_status,
+      created_at: new Date(),
     };
   }
 }

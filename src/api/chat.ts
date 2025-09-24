@@ -28,9 +28,9 @@ const ChatMessagesListResponseSchema = ApiResponseSchema(z.array(ChatMessageSche
 type ChatMessagesListResponse = z.infer<typeof ChatMessagesListResponseSchema>;
 
 export const chatApi = {
-  async createChatRoom(createdBy: string, name: string, description?: string, roomType?: ChatRoom["roomType"], isPublic?: boolean): Promise<ChatRoomResponse | GenericApiResponse> {
+  async createChatRoom(createdBy: string, name: string, description?: string, room_type?: ChatRoom["room_type"], is_public?: boolean): Promise<ChatRoomResponse | GenericApiResponse> {
     try {
-      const room = await chatService.createChatRoom(createdBy, name, description, roomType, isPublic);
+      const room = await chatService.createChatRoom(createdBy, name, description, room_type, is_public);
       return { success: true, data: room, message: "Chat room created successfully." };
     } catch (error: any) {
       return { success: false, error: error.message, message: "Failed to create chat room." };
@@ -76,9 +76,9 @@ export const chatApi = {
     }
   },
 
-  async sendMessage(roomId: string, senderId: string, messageText: string, messageType?: ChatMessage["messageType"]): Promise<ChatMessageResponse | GenericApiResponse> {
+  async sendMessage(roomId: string, senderId: string, messageText: string, message_type?: ChatMessage["message_type"]): Promise<ChatMessageResponse | GenericApiResponse> {
     try {
-      const message = await chatService.sendMessage(roomId, senderId, messageText, messageType);
+      const message = await chatService.sendMessage(roomId, senderId, messageText, message_type);
       return { success: true, data: message, message: "Message sent successfully." };
     } catch (error: any) {
       return { success: false, error: error.message, message: "Failed to send message." };
