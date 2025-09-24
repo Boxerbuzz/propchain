@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -25,12 +31,16 @@ export default function ProfileSetup() {
               </Link>
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">PC</span>
+                  <span className="text-primary-foreground font-bold text-sm">
+                    PC
+                  </span>
                 </div>
-                <span className="text-xl font-bold text-foreground">PropChain</span>
+                <span className="text-xl font-bold text-foreground">
+                  PropChain
+                </span>
               </div>
             </div>
-            
+
             {/* Progress */}
             <div className="flex items-center space-x-3">
               <span className="text-sm text-muted-foreground">Step 2 of 3</span>
@@ -64,18 +74,16 @@ export default function ProfileSetup() {
                     <AvatarImage src="" />
                     <AvatarFallback className="text-lg">JD</AvatarFallback>
                   </Avatar>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
+                  <Button
+                    size="sm"
+                    variant="outline"
                     className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full p-0"
                   >
                     <Camera className="w-4 h-4" />
                   </Button>
                 </div>
                 <div>
-                  <Button variant="outline">
-                    Upload Photo
-                  </Button>
+                  <Button variant="outline">Upload Photo</Button>
                   <p className="text-xs text-muted-foreground mt-2">
                     JPG, PNG or GIF. Max 2MB.
                   </p>
@@ -122,7 +130,9 @@ export default function ProfileSetup() {
           {/* Professional Information */}
           <Card className="border-border">
             <CardHeader>
-              <CardTitle className="text-lg">Professional Information</CardTitle>
+              <CardTitle className="text-lg">
+                Professional Information
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
@@ -144,9 +154,15 @@ export default function ProfileSetup() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="under-1m">Under ₦1,000,000</SelectItem>
-                    <SelectItem value="1m-5m">₦1,000,000 - ₦5,000,000</SelectItem>
-                    <SelectItem value="5m-10m">₦5,000,000 - ₦10,000,000</SelectItem>
-                    <SelectItem value="10m-20m">₦10,000,000 - ₦20,000,000</SelectItem>
+                    <SelectItem value="1m-5m">
+                      ₦1,000,000 - ₦5,000,000
+                    </SelectItem>
+                    <SelectItem value="5m-10m">
+                      ₦5,000,000 - ₦10,000,000
+                    </SelectItem>
+                    <SelectItem value="10m-20m">
+                      ₦10,000,000 - ₦20,000,000
+                    </SelectItem>
                     <SelectItem value="over-20m">Over ₦20,000,000</SelectItem>
                   </SelectContent>
                 </Select>
@@ -161,15 +177,23 @@ export default function ProfileSetup() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="experience">Real Estate Investment Experience</Label>
+                <Label htmlFor="experience">
+                  Real Estate Investment Experience
+                </Label>
                 <Select>
                   <SelectTrigger>
                     <SelectValue placeholder="Select your experience level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="beginner">Beginner (0-1 years)</SelectItem>
-                    <SelectItem value="intermediate">Intermediate (2-5 years)</SelectItem>
-                    <SelectItem value="experienced">Experienced (5+ years)</SelectItem>
+                    <SelectItem value="beginner">
+                      Beginner (0-1 years)
+                    </SelectItem>
+                    <SelectItem value="intermediate">
+                      Intermediate (2-5 years)
+                    </SelectItem>
+                    <SelectItem value="experienced">
+                      Experienced (5+ years)
+                    </SelectItem>
                     <SelectItem value="expert">Expert (10+ years)</SelectItem>
                   </SelectContent>
                 </Select>
@@ -191,8 +215,8 @@ export default function ProfileSetup() {
 
               <div>
                 <Label htmlFor="investmentGoals">Investment Goals</Label>
-                <Textarea 
-                  id="investmentGoals" 
+                <Textarea
+                  id="investmentGoals"
                   placeholder="Tell us about your investment goals and preferences"
                 />
               </div>

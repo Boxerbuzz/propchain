@@ -1,7 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, DollarSign, Building, Users, Target, BarChart3, PieChart, Activity, Wallet, Bell, X } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Building,
+  Target,
+  BarChart3,
+  PieChart,
+  Activity,
+  Wallet,
+  Bell,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
@@ -10,20 +21,27 @@ import { useNotifications } from "../hooks/useNotifications";
 export default function Dashboard() {
   const { user } = useAuth();
   const { stats, isLoading, shouldShowKycAlert } = useDashboard();
-  const { notifications, isLoading: notificationsLoading, markAllAsRead } = useNotifications();
+  const {
+    notifications,
+    isLoading: notificationsLoading,
+    markAllAsRead,
+  } = useNotifications();
+
+
+  console.log(user);
 
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-NG', { 
-      style: 'currency', 
-      currency: 'NGN',
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(num);
   };
 
   const getDisplayName = () => {
     if (!user) return "User";
-    return user.first_name || user.email?.split('@')[0] || "User";
+    return user.first_name || user.email?.split("@")[0] || "User";
   };
 
   if (isLoading) {
@@ -66,18 +84,24 @@ export default function Dashboard() {
                     <Target className="w-5 h-5 text-amber-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-amber-800">Complete Your Verification</h3>
+                    <h3 className="font-semibold text-amber-800">
+                      Complete Your Verification
+                    </h3>
                     <p className="text-sm text-amber-700">
-                      {user?.kyc_status === 'pending' 
-                        ? 'Your KYC is being processed. Complete verification to unlock all features.'
-                        : 'Verify your identity to unlock all features and higher limits'
-                      }
+                      {user?.kyc_status === "pending"
+                        ? "Your KYC is being processed. Complete verification to unlock all features."
+                        : "Verify your identity to unlock all features and higher limits"}
                     </p>
                   </div>
                 </div>
                 <Link to="/kyc/start">
-                  <Button variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100 w-full md:w-auto">
-                    {user?.kyc_status === 'pending' ? 'Check Status' : 'Verify Now'}
+                  <Button
+                    variant="outline"
+                    className="border-amber-300 text-amber-700 hover:bg-amber-100 w-full md:w-auto"
+                  >
+                    {user?.kyc_status === "pending"
+                      ? "Check Status"
+                      : "Verify Now"}
                   </Button>
                 </Link>
               </div>
@@ -91,15 +115,25 @@ export default function Dashboard() {
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Portfolio Value</p>
-                  <p className="text-xl md:text-2xl font-bold text-foreground">{formatNumber(stats.portfolioValue)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Portfolio Value
+                  </p>
+                  <p className="text-xl md:text-2xl font-bold text-foreground">
+                    {formatNumber(stats.portfolioValue)}
+                  </p>
                   <div className="flex items-center mt-1">
                     {stats.returnPercentage >= 0 ? (
                       <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
                     ) : (
                       <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
                     )}
-                    <span className={`text-sm ${stats.returnPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span
+                      className={`text-sm ${
+                        stats.returnPercentage >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
                       {Math.abs(stats.returnPercentage).toFixed(1)}%
                     </span>
                   </div>
@@ -116,8 +150,12 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Properties</p>
-                  <p className="text-xl md:text-2xl font-bold text-foreground">{stats.propertiesCount}</p>
-                  <p className="text-sm text-muted-foreground mt-1">Active investments</p>
+                  <p className="text-xl md:text-2xl font-bold text-foreground">
+                    {stats.propertiesCount}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Active investments
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                   <Building className="w-6 h-6 text-primary" />
@@ -131,14 +169,22 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Returns</p>
-                  <p className="text-xl md:text-2xl font-bold text-foreground">{formatNumber(stats.totalReturns)}</p>
+                  <p className="text-xl md:text-2xl font-bold text-foreground">
+                    {formatNumber(stats.totalReturns)}
+                  </p>
                   <div className="flex items-center mt-1">
                     {stats.totalReturns >= 0 ? (
                       <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
                     ) : (
                       <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
                     )}
-                    <span className={`text-sm ${stats.totalReturns >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span
+                      className={`text-sm ${
+                        stats.totalReturns >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
                       {formatNumber(Math.abs(stats.totalReturns))}
                     </span>
                   </div>
@@ -154,9 +200,15 @@ export default function Dashboard() {
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Wallet Balance</p>
-                  <p className="text-xl md:text-2xl font-bold text-foreground">{formatNumber(stats.walletBalance)}</p>
-                  <p className="text-sm text-muted-foreground mt-1">Available to invest</p>
+                  <p className="text-sm text-muted-foreground">
+                    Wallet Balance
+                  </p>
+                  <p className="text-xl md:text-2xl font-bold text-foreground">
+                    {formatNumber(stats.walletBalance)}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Available to invest
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                   <DollarSign className="w-6 h-6 text-primary" />
@@ -181,7 +233,9 @@ export default function Dashboard() {
                   <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center mx-auto mb-4">
                     <Activity className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">No Recent Activity</h3>
+                  <h3 className="font-semibold text-foreground mb-2">
+                    No Recent Activity
+                  </h3>
                   <p className="text-muted-foreground mb-6">
                     Start investing to see your activity here
                   </p>
@@ -201,37 +255,55 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Link to="/browse" className="block">
-                  <Button variant="outline" className="w-full justify-start text-sm">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-sm"
+                  >
                     <Building className="w-4 h-4 mr-2" />
                     Browse Properties
                   </Button>
                 </Link>
                 <Link to="/wallet/setup" className="block">
-                  <Button variant="outline" className="w-full justify-start text-sm">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-sm"
+                  >
                     <DollarSign className="w-4 h-4 mr-2" />
                     Set Up Wallet
                   </Button>
                 </Link>
                 <Link to="/portfolio" className="block">
-                  <Button variant="outline" className="w-full justify-start text-sm">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-sm"
+                  >
                     <PieChart className="w-4 h-4 mr-2" />
                     View Portfolio
                   </Button>
                 </Link>
                 <Link to="/kyc/start" className="block">
-                  <Button variant="outline" className="w-full justify-start text-sm">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-sm"
+                  >
                     <Target className="w-4 h-4 mr-2" />
                     Complete KYC
                   </Button>
                 </Link>
                 <Link to="/property/management" className="block">
-                  <Button variant="outline" className="w-full justify-start text-sm">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-sm"
+                  >
                     <Building className="w-4 h-4 mr-2" />
                     Manage Properties
                   </Button>
                 </Link>
                 <Link to="/wallet/dashboard" className="block">
-                  <Button variant="outline" className="w-full justify-start text-sm">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-sm"
+                  >
                     <Wallet className="w-4 h-4 mr-2" />
                     Wallet Dashboard
                   </Button>
@@ -245,13 +317,13 @@ export default function Dashboard() {
                 <CardTitle className="flex items-center">
                   <Bell className="w-4 h-4 mr-2" />
                   Notifications
-                  {notifications.filter(n => !n.read_at).length > 0 && (
+                  {notifications.filter((n) => !n.read_at).length > 0 && (
                     <Badge variant="secondary" className="ml-2 text-xs">
-                      {notifications.filter(n => !n.read_at).length}
+                      {notifications.filter((n) => !n.read_at).length}
                     </Badge>
                   )}
                 </CardTitle>
-                {notifications.filter(n => !n.read_at).length > 0 && (
+                {notifications.filter((n) => !n.read_at).length > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -275,25 +347,36 @@ export default function Dashboard() {
                 ) : notifications.length > 0 ? (
                   <div className="space-y-4 max-h-64 overflow-y-auto">
                     {notifications.slice(0, 5).map((notification) => (
-                      <div key={notification.id} className="flex items-start space-x-3">
-                        <div className={`w-2 h-2 rounded-full mt-2 ${
-                          notification.read_at ? 'bg-muted' : 'bg-primary'
-                        }`}></div>
+                      <div
+                        key={notification.id}
+                        className="flex items-start space-x-3"
+                      >
+                        <div
+                          className={`w-2 h-2 rounded-full mt-2 ${
+                            notification.read_at ? "bg-muted" : "bg-primary"
+                          }`}
+                        ></div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm ${
-                            notification.read_at ? 'text-muted-foreground' : 'font-medium text-foreground'
-                          }`}>
+                          <p
+                            className={`text-sm ${
+                              notification.read_at
+                                ? "text-muted-foreground"
+                                : "font-medium text-foreground"
+                            }`}
+                          >
                             {notification.title}
                           </p>
                           <p className="text-xs text-muted-foreground line-clamp-2">
                             {notification.message}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(notification.created_at).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
+                            {new Date(
+                              notification.created_at
+                            ).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
                             })}
                           </p>
                         </div>
@@ -314,7 +397,9 @@ export default function Dashboard() {
                     <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center mx-auto mb-3">
                       <Bell className="w-6 h-6 text-muted-foreground" />
                     </div>
-                    <p className="text-sm font-medium text-foreground mb-1">No notifications</p>
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      No notifications
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       You're all caught up!
                     </p>

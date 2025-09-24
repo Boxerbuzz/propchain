@@ -30,7 +30,7 @@ const PropertyManagement = () => {
   const navigate = useNavigate();
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [filter, setFilter] = useState("all");
-  
+
   const {
     properties: managedProperties,
     financialSummary,
@@ -42,88 +42,98 @@ const PropertyManagement = () => {
   } = usePropertyManagement();
 
   // Mock maintenance requests using useMemo to ensure stable reference
-  const maintenanceRequests = useMemo(() => [
-    {
-      id: "req1",
-      propertyId: "prop1",
-      unit: "Unit 4A",
-      issue: "HVAC system not working properly",
-      priority: "high",
-      status: "pending",
-      reportedDate: "2024-09-18",
-      estimatedCost: 850,
-      actualCost: null,
-      description: "Tenant reports inconsistent heating and cooling. May need professional inspection.",
-    },
-    {
-      id: "req2",
-      propertyId: "prop1", 
-      unit: "Common Area",
-      issue: "Elevator maintenance required",
-      priority: "medium",
-      status: "in-progress",
-      reportedDate: "2024-09-15",
-      estimatedCost: 1200,
-      actualCost: null,
-      description: "Scheduled quarterly maintenance for elevator system.",
-    },
-    {
-      id: "req3",
-      propertyId: "prop2",
-      unit: "Office 2B",
-      issue: "Window leak during rain",
-      priority: "low",
-      status: "completed",
-      reportedDate: "2024-09-10",
-      estimatedCost: 320,
-      actualCost: 320,
-      description: "Water seepage through window seal during heavy rain.",
-    },
-  ], []);
-  
-  const recentActivity = useMemo(() => [
-    {
-      type: "property",
-      message: `New property registration completed`,
-      property: managedProperties[0]?.title || "Property",
-      timestamp: "2 hours ago",
-    },
-    {
-      type: "maintenance",
-      message: "System maintenance scheduled for next week",
-      property: "System",
-      timestamp: "5 hours ago", 
-    },
-    {
-      type: "investment",
-      message: "Investment activity updated",
-      property: managedProperties[1]?.title || "Property",
-      timestamp: "1 day ago",
-    },
-  ], [managedProperties]);
+  const maintenanceRequests = useMemo(
+    () => [
+      {
+        id: "req1",
+        propertyId: "prop1",
+        unit: "Unit 4A",
+        issue: "HVAC system not working properly",
+        priority: "high",
+        status: "pending",
+        reportedDate: "2024-09-18",
+        estimatedCost: 850,
+        actualCost: null,
+        description:
+          "Tenant reports inconsistent heating and cooling. May need professional inspection.",
+      },
+      {
+        id: "req2",
+        propertyId: "prop1",
+        unit: "Common Area",
+        issue: "Elevator maintenance required",
+        priority: "medium",
+        status: "in-progress",
+        reportedDate: "2024-09-15",
+        estimatedCost: 1200,
+        actualCost: null,
+        description: "Scheduled quarterly maintenance for elevator system.",
+      },
+      {
+        id: "req3",
+        propertyId: "prop2",
+        unit: "Office 2B",
+        issue: "Window leak during rain",
+        priority: "low",
+        status: "completed",
+        reportedDate: "2024-09-10",
+        estimatedCost: 320,
+        actualCost: 320,
+        description: "Water seepage through window seal during heavy rain.",
+      },
+    ],
+    []
+  );
+
+  const recentActivity = useMemo(
+    () => [
+      {
+        type: "property",
+        message: `New property registration completed`,
+        property: managedProperties[0]?.title || "Property",
+        timestamp: "2 hours ago",
+      },
+      {
+        type: "maintenance",
+        message: "System maintenance scheduled for next week",
+        property: "System",
+        timestamp: "5 hours ago",
+      },
+      {
+        type: "investment",
+        message: "Investment activity updated",
+        property: managedProperties[1]?.title || "Property",
+        timestamp: "1 day ago",
+      },
+    ],
+    [managedProperties]
+  );
 
   const handlePropertyAction = async (action: string, propertyId: string) => {
     switch (action) {
-      case 'View':
+      case "View":
         navigate(`/properties/${propertyId}`);
         break;
-      case 'Edit':
+      case "Edit":
         navigate(`/properties/${propertyId}/edit`);
         break;
-      case 'Approve':
-        await updateProperty(propertyId, { approval_status: 'approved', listing_status: 'active' });
+      case "Approve":
+        await updateProperty(propertyId, {
+          approval_status: "approved",
+          listing_status: "active",
+        });
         break;
-      case 'Tokenize':
+      case "Tokenize":
         navigate(`/properties/${propertyId}/tokenize`);
         break;
-      case 'Upload Images':
+      case "Upload Images":
         navigate(`/properties/${propertyId}/images`);
         break;
-      case 'Upload Documents':
+      case "Upload Documents":
         navigate(`/properties/${propertyId}/documents`);
         break;
-      case 'Delete':
-        if (window.confirm('Are you sure you want to delete this property?')) {
+      case "Delete":
+        if (window.confirm("Are you sure you want to delete this property?")) {
           await deleteProperty(propertyId);
         }
         break;
@@ -194,7 +204,7 @@ const PropertyManagement = () => {
               <Download className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Export</span>
             </Button>
-            <Button size="sm" onClick={() => navigate('/properties/register')}>
+            <Button size="sm" onClick={() => navigate("/properties/register")}>
               <Plus className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Add Property</span>
             </Button>
@@ -234,7 +244,9 @@ const PropertyManagement = () => {
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Net Profit
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-xl md:text-2xl font-bold">
@@ -339,8 +351,12 @@ const PropertyManagement = () => {
                   ) : filteredProperties.length === 0 ? (
                     <Card>
                       <CardContent className="p-8 text-center">
-                        <p className="text-muted-foreground mb-4">No properties found.</p>
-                        <Button onClick={() => navigate('/properties/register')}>
+                        <p className="text-muted-foreground mb-4">
+                          No properties found.
+                        </p>
+                        <Button
+                          onClick={() => navigate("/properties/register")}
+                        >
                           <Plus className="h-4 w-4 mr-2" />
                           Add Your First Property
                         </Button>
@@ -366,14 +382,16 @@ const PropertyManagement = () => {
                                     {property.title}
                                   </h3>
                                   <p className="text-muted-foreground">
-                                    {property.location?.address || 'Location not specified'}
+                                    {property.location?.address ||
+                                      "Location not specified"}
                                   </p>
                                   <div className="flex flex-wrap items-center gap-2 mt-1">
                                     <Badge
                                       variant={
                                         property.approval_status === "approved"
                                           ? "default"
-                                          : property.approval_status === "pending"
+                                          : property.approval_status ===
+                                            "pending"
                                           ? "secondary"
                                           : "destructive"
                                       }
@@ -387,57 +405,6 @@ const PropertyManagement = () => {
                                     )}
                                   </div>
                                 </div>
-                                <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handlePropertyAction('View', property.id)}
-                                  >
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    <span className="hidden sm:inline">View</span>
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handlePropertyAction('Edit', property.id)}
-                                  >
-                                    <Edit className="h-4 w-4 mr-1" />
-                                    <span className="hidden sm:inline">Edit</span>
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handlePropertyAction('Upload Images', property.id)}
-                                  >
-                                    <Upload className="h-4 w-4 mr-1" />
-                                    <span className="hidden sm:inline">Images</span>
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handlePropertyAction('Upload Documents', property.id)}
-                                  >
-                                    <FileText className="h-4 w-4 mr-1" />
-                                    <span className="hidden sm:inline">Docs</span>
-                                  </Button>
-                                  {property.approval_status === 'approved' && !property.tokenizations?.length && (
-                                    <Button 
-                                      size="sm"
-                                      onClick={() => handlePropertyAction('Tokenize', property.id)}
-                                    >
-                                      <DollarSign className="h-4 w-4 mr-1" />
-                                      <span className="hidden sm:inline">Tokenize</span>
-                                    </Button>
-                                  )}
-                                  {property.approval_status === 'pending' && (
-                                    <Button 
-                                      size="sm"
-                                      onClick={() => handlePropertyAction('Approve', property.id)}
-                                    >
-                                      Approve
-                                    </Button>
-                                  )}
-                                </div>
                               </div>
 
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -446,7 +413,10 @@ const PropertyManagement = () => {
                                     Est. Monthly Revenue
                                   </p>
                                   <p className="font-semibold">
-                                    ₦{Math.round(property.monthlyRevenue).toLocaleString()}
+                                    ₦
+                                    {Math.round(
+                                      property.monthlyRevenue
+                                    ).toLocaleString()}
                                   </p>
                                 </div>
                                 <div>
@@ -454,7 +424,10 @@ const PropertyManagement = () => {
                                     Est. Net Income
                                   </p>
                                   <p className="font-semibold">
-                                    ₦{Math.round(property.netIncome).toLocaleString()}
+                                    ₦
+                                    {Math.round(
+                                      property.netIncome
+                                    ).toLocaleString()}
                                   </p>
                                 </div>
                                 <div>
@@ -479,7 +452,9 @@ const PropertyManagement = () => {
                                 <div className="mt-4">
                                   <div className="flex justify-between text-sm mb-2">
                                     <span>Funding Progress</span>
-                                    <span>{Math.round(property.fundingProgress)}%</span>
+                                    <span>
+                                      {Math.round(property.fundingProgress)}%
+                                    </span>
                                   </div>
                                   <Progress
                                     value={property.fundingProgress}
@@ -490,7 +465,7 @@ const PropertyManagement = () => {
 
                               {(property.maintenanceRequests > 0 ||
                                 property.pendingIssues > 0) && (
-                                <div className="flex flex-wrap gap-2 mt-3">
+                                <div className="flex flex-wrap gap-2 mt-3 mb-3">
                                   {property.maintenanceRequests > 0 && (
                                     <Badge
                                       variant="outline"
@@ -511,6 +486,87 @@ const PropertyManagement = () => {
                                   )}
                                 </div>
                               )}
+
+                              <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handlePropertyAction("View", property.id)
+                                  }
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  <span className="hidden sm:inline">View</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handlePropertyAction("Edit", property.id)
+                                  }
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  <span className="hidden sm:inline">Edit</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handlePropertyAction(
+                                      "Upload Images",
+                                      property.id
+                                    )
+                                  }
+                                >
+                                  <Upload className="h-4 w-4 mr-1" />
+                                  <span className="hidden sm:inline">
+                                    Images
+                                  </span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handlePropertyAction(
+                                      "Upload Documents",
+                                      property.id
+                                    )
+                                  }
+                                >
+                                  <FileText className="h-4 w-4 mr-1" />
+                                  <span className="hidden sm:inline">Docs</span>
+                                </Button>
+                                {property.approval_status === "approved" &&
+                                  !property.tokenizations?.length && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handlePropertyAction(
+                                          "Tokenize",
+                                          property.id
+                                        )
+                                      }
+                                    >
+                                      <DollarSign className="h-4 w-4 mr-1" />
+                                      <span className="hidden sm:inline">
+                                        Tokenize
+                                      </span>
+                                    </Button>
+                                  )}
+                                {property.approval_status === "pending" && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handlePropertyAction(
+                                        "Approve",
+                                        property.id
+                                      )
+                                    }
+                                  >
+                                    Approve
+                                  </Button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </CardContent>
