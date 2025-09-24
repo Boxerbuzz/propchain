@@ -13,14 +13,14 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Spinner } from "@/components/ui/spinner";
-import { toast } from "react-hot-toast";
+//import { toast } from "react-hot-toast";
 import { actionToast } from "@/lib/toast";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
-  //const { toast } = useToast();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof LoginFormSchema>>({
     resolver: zodResolver(LoginFormSchema),
@@ -31,28 +31,28 @@ export default function Login() {
   });
 
   const onSubmit = async (values: z.infer<typeof LoginFormSchema>) => {
-    actionToast(login(values), {
-      error: (e) => e.message,
-      success: "Login Successful",
-      loading: "Getting started...",
-    });
+    // actionToast(login(values), {
+    //   error: (e) => e.message,
+    //   success: "Login Successful",
+    //   loading: "Getting started...",
+    // });
 
     //navigate("/dashboard");
 
-    // const errorMessage = await login(values);
-    // if (errorMessage) {
-    //   toast({
-    //     title: "Login Failed",
-    //     description: errorMessage,
-    //     variant: "destructive",
-    //   });
-    // } else {
-    //   toast({
-    //     title: "Login Successful",
-    //     description: "Welcome back!",
-    //   });
-    //   navigate("/dashboard");
-    // }
+    const errorMessage = await login(values);
+    if (errorMessage) {
+      toast({
+        title: "Login Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
+      navigate("/dashboard");
+    }
   };
 
   return (

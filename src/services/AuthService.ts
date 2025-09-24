@@ -11,7 +11,7 @@ export class AuthService {
   private walletRepository: WalletRepository;
 
   constructor(
-    supabase: SupabaseClient, 
+    supabase: SupabaseClient,
     userRepository: UserRepository,
     notificationRepository: NotificationRepository,
     walletRepository: WalletRepository
@@ -22,7 +22,9 @@ export class AuthService {
     this.walletRepository = walletRepository;
   }
 
-  async register(formData: SignUpFormData): Promise<{ user: User | null; session: any | null; error: string | null }> {
+  async register(
+    formData: SignUpFormData
+  ): Promise<{ user: User | null; session: any | null; error: string | null }> {
     const { data, error } = await this.supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
@@ -43,11 +45,10 @@ export class AuthService {
     if (data.user && data.session) {
       const newUser: Partial<User> = {
         id: data.user.id,
-        email: data.user.email!,
+        email: formData.email,
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
-        email_verified_at: data.user.email_confirmed_at ? new Date() : null,
       };
 
       try {
@@ -55,26 +56,36 @@ export class AuthService {
         const createdUser = await this.userRepository.create(newUser);
 
         if (!createdUser) {
-          return { user: null, session: null, error: "Failed to create user profile in the database." };
+          return {
+            user: null,
+            session: null,
+            error: "Failed to create user profile in the database.",
+          };
         }
 
         // Create welcome notification
         await this.createWelcomeNotification(data.user.id);
 
         // Create Hedera wallet
-        await this.createHederaWallet(data.user.id);
+        //await this.createHederaWallet(data.user.id);
 
         const profile = await this.userRepository.findById(data.user.id);
         return { user: profile, session: data.session, error: null };
-
       } catch (walletError: any) {
-        console.warn("Wallet creation failed during signup:", walletError.message);
+        console.warn(
+          "Wallet creation failed during signup:",
+          walletError.message
+        );
         // Continue with signup even if wallet creation fails
         const profile = await this.userRepository.findById(data.user.id);
         return { user: profile, session: data.session, error: null };
       }
     }
-    return { user: null, session: null, error: "Registration failed: no user or session data." };
+    return {
+      user: null,
+      session: null,
+      error: "Registration failed: no user or session data.",
+    };
   }
 
   private async createWelcomeNotification(userId: string): Promise<void> {
@@ -82,7 +93,8 @@ export class AuthService {
       await this.notificationRepository.create({
         user_id: userId,
         title: "Welcome to PropChain!",
-        message: "Your account has been created successfully. Start exploring investment opportunities and building your property portfolio.",
+        message:
+          "Your account has been created successfully. Start exploring investment opportunities and building your property portfolio.",
         notification_type: "system",
         priority: "normal",
         action_url: "/dashboard",
@@ -95,9 +107,12 @@ export class AuthService {
   private async createHederaWallet(userId: string): Promise<void> {
     try {
       // Call the create-hedera-account edge function
-      const { data, error } = await this.supabase.functions.invoke('create-hedera-account', {
-        body: {}
-      });
+      const { data, error } = await this.supabase.functions.invoke(
+        "create-hedera-account",
+        {
+          body: {},
+        }
+      );
 
       if (error) throw error;
 
@@ -105,12 +120,12 @@ export class AuthService {
         // Create wallet record in database
         const walletData = {
           user_id: userId,
-          wallet_type: 'custodial' as const,
-          wallet_name: 'Primary Hedera Wallet',
+          wallet_type: "custodial" as const,
+          wallet_name: "Primary Hedera Wallet",
           hedera_account_id: data.accountId,
           private_key_encrypted: data.privateKey, // Edge function should encrypt this
           is_primary: true,
-          security_level: 'standard' as const,
+          security_level: "standard" as const,
           balance_hbar: 0,
           balance_ngn: 0,
           balance_usd: 0,
@@ -122,10 +137,12 @@ export class AuthService {
           // Update user with hedera account ID
           await this.userRepository.update(userId, {
             hedera_account_id: data.accountId,
-            wallet_type: 'custodial'
+            wallet_type: "custodial",
           });
 
-          console.log(`Created Hedera wallet ${data.accountId} for user ${userId}`);
+          console.log(
+            `Created Hedera wallet ${data.accountId} for user ${userId}`
+          );
         }
       }
     } catch (error: any) {
@@ -134,7 +151,9 @@ export class AuthService {
     }
   }
 
-  async login(formData: LoginFormData): Promise<{ user: User | null; session: any | null; error: string | null }> {
+  async login(
+    formData: LoginFormData
+  ): Promise<{ user: User | null; session: any | null; error: string | null }> {
     const { data, error } = await this.supabase.auth.signInWithPassword({
       email: formData.email,
       password: formData.password,
@@ -148,7 +167,11 @@ export class AuthService {
       const userProfile = await this.userRepository.findById(data.user.id);
       return { user: userProfile, session: data.session, error: null };
     }
-    return { user: null, session: null, error: "Login failed: no user or session data." };
+    return {
+      user: null,
+      session: null,
+      error: "Login failed: no user or session data.",
+    };
   }
 
   async logout(): Promise<void> {
@@ -166,7 +189,7 @@ export class AuthService {
     console.log(`Mock: Verifying email with token: ${token}`);
     // In a real scenario, you'd likely be verifying a session after a user clicks a link.
     // For example, calling supabase.auth.verifyOtp after receiving an OTP.
-    return true; 
+    return true;
   }
 
   async resetPassword(email: string): Promise<void> {
@@ -192,7 +215,10 @@ export class AuthService {
   }
 
   async getCurrentUser(): Promise<User | null> {
-    const { data: { user }, error } = await this.supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await this.supabase.auth.getUser();
     if (error) {
       console.error("Error fetching current user:", error.message);
       return null;
