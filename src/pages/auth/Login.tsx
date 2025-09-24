@@ -13,8 +13,6 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Spinner } from "@/components/ui/spinner";
-//import { toast } from "react-hot-toast";
-import { actionToast } from "@/lib/toast";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
