@@ -77,6 +77,8 @@ const RegisterProperty = () => {
             <Label htmlFor="propertyType">Property Type</Label>
             <select
               id="propertyType"
+              name="propertyType"
+              title="propetyType"
               value={formData.propertyType}
               onChange={(e) => setFormData({...formData, propertyType: e.target.value})}
               className="w-full p-2 border border-input bg-background rounded-md"
