@@ -14,10 +14,10 @@ interface AuthContextType {
   currentUser: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitializing: boolean;
   login: (formData: LoginFormData) => Promise<string | null>;
   signup: (formData: SignUpFormData) => Promise<string | null>;
   logout: () => Promise<string | null>;
-  // Add a method for password reset as well
   resetPassword: (email: string) => Promise<string | null>;
 }
 
@@ -25,29 +25,35 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Initial state is false
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   const fetchCurrentUser = useCallback(async () => {
-    setIsLoading(true);
+    console.log("AuthContext: fetchCurrentUser called");
+    setIsInitializing(true);
     try {
       const response = await authApi.getCurrentUser();
       if (response.success && response.data?.user) {
         setCurrentUser(response.data.user as User);
+        console.log("AuthContext: User fetched successfully");
       } else {
         setCurrentUser(null);
+        console.log("AuthContext: No user found");
       }
     } catch (error) {
       console.error("fetchCurrentUser: Failed to fetch current user:", error);
       setCurrentUser(null);
     } finally {
-      setIsLoading(false);
+      setIsInitializing(false);
+      console.log("AuthContext: Initialization complete");
     }
-  }, []); // Removed isLoading from dependency array
+  }, []);
 
   useEffect(() => {
     fetchCurrentUser();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("AuthContext: Auth state changed", event);
       try {
         if (session?.user) {
           const response = await authApi.getCurrentUser();
@@ -62,15 +68,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error("onAuthStateChange: Error in listener:", error);
         setCurrentUser(null);
-      } finally {
-        setIsLoading(false);
       }
+      // Removed the problematic setIsLoading(false) from here
     });
 
     return () => {
       authListener?.subscription?.unsubscribe();
     };
-  }, []); // Changed dependency array to empty
+  }, [fetchCurrentUser]);
 
   const login = async (formData: LoginFormData): Promise<string | null> => {
     setIsLoading(true);
@@ -150,6 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     currentUser,
     isAuthenticated: !!currentUser,
     isLoading,
+    isInitializing,
     login,
     signup,
     logout,
