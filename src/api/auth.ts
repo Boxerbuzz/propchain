@@ -77,5 +77,14 @@ export const authApi = {
     } catch (error: any) {
       return { success: false, error: error.message, message: "Failed to retrieve current user." };
     }
+  },
+
+  async getUserProfile(userId: string): Promise<AuthSuccessResponse | AuthErrorResponse> {
+    try {
+      const user = await authService.getUserProfileById(userId);
+      return { success: true, data: { user, session: null }, message: "User profile retrieved by ID." };
+    } catch (error: any) {
+      return { success: false, error: error.message, message: "Failed to retrieve user profile by ID." };
+    }
   }
 };

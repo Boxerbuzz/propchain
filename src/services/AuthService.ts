@@ -215,18 +215,74 @@ export class AuthService {
   }
 
   async getCurrentUser(): Promise<User | null> {
-    const {
-      data: { user },
-      error,
-    } = await this.supabase.auth.getUser();
+    console.log("AuthService: getCurrentUser called");
+    let user = null;
+    let error = null;
+
+    try {
+      const result = await this.supabase.auth.getUser();
+      user = result.data.user;
+      error = result.error;
+      console.log("AuthService: supabase.auth.getUser result:", {
+        user,
+        error,
+      });
+    } catch (e: any) {
+      console.error(
+        "AuthService: Uncaught error during supabase.auth.getUser:",
+        e.message
+      );
+      error = e;
+    }
+
     if (error) {
-      console.error("Error fetching current user:", error.message);
+      console.error(
+        "AuthService: Error fetching current Supabase user:",
+        error?.message || "Unknown error"
+      );
       return null;
     }
     if (user) {
+      console.log("AuthService: Supabase user found:", user.id);
       const userProfile = await this.userRepository.findById(user.id);
-      return userProfile;
+      if (userProfile) {
+        console.log(
+          "AuthService: User profile found in database.",
+          userProfile.id
+        );
+        return userProfile;
+      } else {
+        console.log(
+          "AuthService: User profile NOT found in database for id:",
+          user.id
+        );
+        return null;
+      }
     }
+    console.log("AuthService: No Supabase user in session.");
     return null;
+  }
+
+  async getUserProfileById(userId: string): Promise<User | null> {
+    console.log("AuthService: getUserProfileById called with userId:", userId);
+    try {
+      const userProfile = await this.userRepository.findById(userId);
+      if (userProfile) {
+        console.log("AuthService: User profile found by ID.", userProfile.id);
+        return userProfile;
+      } else {
+        console.log(
+          "AuthService: User profile NOT found by ID for userId:",
+          userId
+        );
+        return null;
+      }
+    } catch (error: any) {
+      console.error(
+        "AuthService: Error fetching user profile by ID:",
+        error.message
+      );
+      return null;
+    }
   }
 }

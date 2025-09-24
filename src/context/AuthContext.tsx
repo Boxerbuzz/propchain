@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchCurrentUser = useCallback(async () => {
     console.log("AuthContext: fetchCurrentUser called");
-    setIsInitializing(true);
+    setIsLoading(true);
     try {
       const response = await authApi.getCurrentUser();
       if (response.success && response.data?.user) {
@@ -44,38 +44,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("fetchCurrentUser: Failed to fetch current user:", error);
       setCurrentUser(null);
     } finally {
-      setIsInitializing(false);
-      console.log("AuthContext: Initialization complete");
+      setIsLoading(false);
+      console.log("AuthContext: Initial fetch complete");
     }
   }, []);
 
   useEffect(() => {
-    fetchCurrentUser();
+    // fetchCurrentUser(); // Temporarily commented out to focus on onAuthStateChange flow
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("AuthContext: Auth state changed", event);
+      setIsLoading(true); // Set loading while processing auth state change
       try {
         if (session?.user) {
-          const response = await authApi.getCurrentUser();
+          console.log("AuthContext: Session user found, attempting to fetch user profile by ID...");
+          const response = await authApi.getUserProfile(session.user.id);
           if (response.success && response.data?.user) {
             setCurrentUser(response.data.user as User);
+            console.log("AuthContext: User profile fetched successfully in onAuthStateChange.", response.data.user);
           } else {
             setCurrentUser(null);
+            console.log("AuthContext: Failed to fetch user profile by ID or no user data in onAuthStateChange.");
           }
         } else {
           setCurrentUser(null);
+          console.log("AuthContext: No session user, setting current user to null.");
         }
       } catch (error) {
         console.error("onAuthStateChange: Error in listener:", error);
         setCurrentUser(null);
+      } finally {
+        setIsLoading(false); // Reset loading after processing auth state change
+        console.log("AuthContext: Auth state change processing complete.");
       }
-      // Removed the problematic setIsLoading(false) from here
     });
 
     return () => {
       authListener?.subscription?.unsubscribe();
     };
-  }, [fetchCurrentUser]);
+  }, [fetchCurrentUser]); // fetchCurrentUser is still a dependency because of the commented out line, but will be removed if the comment is removed.
 
   const login = async (formData: LoginFormData): Promise<string | null> => {
     setIsLoading(true);

@@ -7,6 +7,10 @@ export class BaseRepository<T> {
   constructor(supabase: SupabaseClient, tableName: string) {
     this.supabase = supabase;
     this.tableName = tableName;
+    console.log(
+      `BaseRepository: Initialized for table '${this.tableName}'. Supabase client available.`,
+      this.supabase
+    );
   }
 
   // Database already uses snake_case, no conversion needed
@@ -26,12 +30,88 @@ export class BaseRepository<T> {
   }
 
   async findById(id: string): Promise<T | null> {
-    const { data, error } = await this.supabase
+    console.log(
+      `BaseRepository: findById called for table '${this.tableName}' with ID: '${id}'`
+    );
+    console.log(
+      `BaseRepository: Debugging Supabase query details: tableName=${this.tableName}, id=${id}, supabaseClient=`,
+      this.supabase
+    );
+
+    const queryBuilder = this.supabase
       .from(this.tableName)
       .select("*")
-      .eq("id", id)
-      .single();
-    if (error && error.code !== "PGRST116") throw error; // PGRST116 is 'No rows found'
+      .eq("id", id);
+
+    console.log(
+      "BaseRepository: Supabase query builder object before .single():",
+      queryBuilder
+    );
+
+    // --- TEMPORARY: Attempting direct fetch to debug network request issue ---
+    const url = queryBuilder["url"].toString(); // Accessing the URL from the internal query builder object
+    const {
+      data: { session },
+    } = await this.supabase.auth.getSession();
+    const headers = {
+      ...queryBuilder["headers"],
+      Authorization: `Bearer ${session?.access_token}`,
+    };
+
+    console.log(
+      "BaseRepository: Attempting direct fetch to:",
+      url,
+      "with headers:",
+      headers
+    );
+
+    let data = null;
+    let error = null;
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: headers,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${errorText}`
+        );
+      }
+
+      const json = await response.json();
+      // Supabase .single() expects a single object or null if not found
+      data = Array.isArray(json) && json.length > 0 ? json[0] : null;
+
+      if (!data) {
+        error = { code: "PGRST116", message: "No rows found" }; // Mimic Supabase error for no rows
+      }
+
+      console.log("BaseRepository: Direct fetch result:", { data, error });
+    } catch (e: any) {
+      console.error("BaseRepository: Direct fetch error:", e);
+      error = { message: e.message || "Unknown network error" };
+    }
+    // --- END TEMPORARY ---
+
+    // const { data, error } = await queryBuilder.single(); // Temporarily commented out
+
+    if (error) {
+      console.error(
+        `BaseRepository: Error in findById for table '${this.tableName}' with ID '${id}':`,
+        error
+      );
+      if (error.code !== "PGRST116") {
+        throw error; // Re-throw if it's not just 'No rows found'
+      }
+    }
+
+    console.log(
+      `BaseRepository: findById result for table '${this.tableName}' with ID '${id}':`,
+      { data, error }
+    );
+
     return data as T | null;
   }
 
