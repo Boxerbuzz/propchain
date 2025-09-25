@@ -104,6 +104,52 @@ serve(async (req) => {
             p_amount_invested: investment.amount_ngn
           });
 
+          // Transfer tokens if Hedera token exists and investor has account
+          if (tokenization.token_id && tokenization.token_id !== 'pending') {
+            const { data: investor } = await supabaseClient
+              .from('users')
+              .select('hedera_account_id')
+              .eq('id', investment.investor_id)
+              .single();
+
+            if (investor?.hedera_account_id) {
+              try {
+                const transferResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/transfer-hedera-tokens`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    senderAccountId: Deno.env.get("HEDERA_OPERATOR_ID"),
+                    recipientAccountId: investor.hedera_account_id,
+                    tokenId: tokenization.token_id,
+                    amount: investment.tokens_requested,
+                    senderPrivateKey: Deno.env.get("HEDERA_OPERATOR_PRIVATE_KEY"),
+                  }),
+                });
+
+                const transferResult = await transferResponse.json();
+                
+                if (transferResult.success) {
+                  console.log(`Tokens transferred to investor: ${transferResult.data.transactionId}`);
+                  
+                  // Update token holdings with transaction ID
+                  await supabaseClient
+                    .from('token_holdings')
+                    .update({ 
+                      token_id: `${tokenization.token_id}:${transferResult.data.transactionId}`,
+                      updated_at: new Date().toISOString()
+                    })
+                    .eq('user_id', investment.investor_id)
+                    .eq('tokenization_id', investment.tokenization_id);
+                }
+              } catch (error) {
+                console.error('Token transfer failed:', error);
+              }
+            }
+          }
+
           // Auto-create chat room if it doesn't exist and add investor
           const { data: chatRoomId } = await supabaseClient.rpc('create_chat_room_for_tokenization', {
             p_tokenization_id: investment.tokenization_id
@@ -116,6 +162,17 @@ serve(async (req) => {
               p_user_id: investment.investor_id,
               p_voting_power: investment.tokens_requested
             });
+
+            // Create chat room invitation notification
+            await supabaseClient
+              .from('notifications')
+              .insert({
+                user_id: investment.investor_id,
+                notification_type: 'chat_room_invitation',
+                title: 'Join Investor Chat',
+                message: `You've been added to the investor chat room. Connect with other investors and participate in governance decisions.`,
+                action_url: `/chat/${chatRoomId}`,
+              });
           }
 
           // Create notification for successful investment

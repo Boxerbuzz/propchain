@@ -109,16 +109,21 @@ export default function InvestmentCalculator({
       </div>
       
       <InvestmentModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        property={{
-          id: property?.id || '',
-          title: property?.title || '',
-          tokenPrice: tokenPrice,
-          minInvestment: minimumInvestment,
-          expectedReturn: expectedReturn,
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        tokenization={{
+          id: property?.tokenizations?.[0]?.id || '',
+          token_name: property?.title || '',
+          token_symbol: `${property?.title?.slice(0, 3).toUpperCase()}T` || 'PROP',
+          price_per_token: tokenPrice,
+          min_investment: minimumInvestment,
+          max_investment: undefined,
+          expected_roi_annual: expectedReturn,
+          properties: {
+            id: property?.id || '',
+            title: property?.title || ''
+          }
         }}
-        tokenizationId={property?.tokenizations?.[0]?.id || ''}
       />
     </div>
   );

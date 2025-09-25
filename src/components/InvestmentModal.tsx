@@ -1,308 +1,323 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, Clock, ArrowRight, Wallet, CreditCard } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { 
+  TrendingUp, 
+  Wallet, 
+  CreditCard, 
+  Calculator,
+  Info,
+  CheckCircle,
+  ArrowRight
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import MoneyInput from '@/components/ui/money-input';
-import { useInvestmentFlow } from '@/hooks/useInvestmentFlow';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { toast } from 'sonner';
+import MoneyInput from "@/components/ui/money-input";
+import InvestmentCalculator from "./InvestmentCalculator";
+import { useInvestmentFlow } from "@/hooks/useInvestmentFlow";
+import InvestmentProgressIndicator from "./InvestmentProgressIndicator";
+import { useHederaAccount } from "@/hooks/useHederaAccount";
 
 interface InvestmentModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  property: {
+  tokenization: {
     id: string;
-    title: string;
-    tokenPrice: number;
-    minInvestment: number;
-    maxInvestment?: number;
-    expectedReturn: number;
+    token_name?: string;
+    token_symbol?: string;
+    price_per_token: number;
+    min_investment: number;
+    max_investment?: number;
+    expected_roi_annual?: number;
+    properties?: {
+      id: string;
+      title: string;
+    };
   };
-  tokenizationId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-type Step = 'amount' | 'payment' | 'confirmation' | 'processing' | 'success';
+const investmentFormSchema = z.object({
+  amount: z.number().min(1, "Investment amount is required"),
+});
 
-const InvestmentModal: React.FC<InvestmentModalProps> = ({
-  isOpen,
-  onClose,
-  property,
-  tokenizationId,
-}) => {
-  const [step, setStep] = useState<Step>('amount');
-  const [amount, setAmount] = useState(property.minInvestment);
-  const [paymentMethod, setPaymentMethod] = useState<'paystack' | 'wallet'>('paystack');
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
-  
-  const { createInvestment, isCreating } = useInvestmentFlow();
+type InvestmentFormData = z.infer<typeof investmentFormSchema>;
 
-  // Calculate investment details
-  const tokensReceived = Math.floor(amount / property.tokenPrice);
-  const ownershipPercentage = (tokensReceived * property.tokenPrice) / 1000000 * 100; // Assuming 1M property value
-  const projectedAnnualReturn = (amount * property.expectedReturn) / 100;
-  const projectedMonthlyReturn = projectedAnnualReturn / 12;
+export default function InvestmentModal({ tokenization, open, onOpenChange }: InvestmentModalProps) {
+  const { createInvestment, isCreating, error } = useInvestmentFlow();
+  const { hasAccount, createAccount, isCreating: isCreatingAccount } = useHederaAccount();
+  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "wallet">("paystack");
+  const [showProgress, setShowProgress] = useState(false);
+  const [investmentStatus, setInvestmentStatus] = useState<{
+    paymentStatus: 'pending' | 'processing' | 'confirmed' | 'failed';
+    tokenTransferStatus?: 'pending' | 'processing' | 'completed' | 'failed';
+    chatRoomCreated?: boolean;
+  }>({
+    paymentStatus: 'pending'
+  });
 
-  // Countdown timer
-  useEffect(() => {
-    if (step === 'payment' && timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
+  const form = useForm<InvestmentFormData>({
+    resolver: zodResolver(investmentFormSchema),
+    defaultValues: {
+      amount: tokenization.min_investment,
+    },
+  });
+
+  const watchedAmount = form.watch("amount");
+
+  const calculateTokens = (amount: number) => {
+    if (!amount || !tokenization.price_per_token) return 0;
+    return Math.floor(amount / tokenization.price_per_token);
+  };
+
+  const calculateROI = (amount: number) => {
+    if (!amount || !tokenization.expected_roi_annual) return { monthly: 0, annual: 0 };
+    const annual = (amount * tokenization.expected_roi_annual) / 100;
+    return {
+      annual,
+      monthly: annual / 12,
+    };
+  };
+
+  const tokens = calculateTokens(watchedAmount);
+  const roi = calculateROI(watchedAmount);
+
+  const handleAmountChange = (value: number) => {
+    form.setValue("amount", value);
+  };
+
+  const resetForm = () => {
+    form.reset();
+    setPaymentMethod("paystack");
+    setShowProgress(false);
+    setInvestmentStatus({ paymentStatus: 'pending' });
+  };
+
+  const handleInvest = async (values: InvestmentFormData) => {
+    if (!hasAccount) {
+      toast.error('Please create a blockchain wallet first');
+      return;
     }
-  }, [step, timeLeft]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleNext = () => {
-    if (step === 'amount') setStep('payment');
-    else if (step === 'payment') setStep('confirmation');
-  };
-
-  const handleInvest = async () => {
-    setStep('processing');
+    setShowProgress(true);
+    setInvestmentStatus({ paymentStatus: 'processing' });
     
-    try {
-      createInvestment({
-        tokenizationId,
-        amount,
-        paymentMethod,
-      });
-      
-      // Success handling is done in the hook
-      if (paymentMethod === 'wallet') {
-        setStep('success');
-      }
-    } catch (error) {
-      console.error('Investment failed:', error);
-      setStep('payment');
-    }
-  };
-
-  const resetModal = () => {
-    setStep('amount');
-    setAmount(property.minInvestment);
-    setTimeLeft(600);
+    createInvestment({
+      tokenizationId: tokenization.id,
+      amount: values.amount,
+      paymentMethod,
+    });
   };
 
   const handleClose = () => {
-    resetModal();
-    onClose();
-  };
-
-  const getStepNumber = (currentStep: Step) => {
-    const steps = ['amount', 'payment', 'confirmation', 'processing', 'success'];
-    return steps.indexOf(currentStep) + 1;
+    resetForm();
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md mx-auto">
-        <DialogHeader>
-          <DialogTitle className="text-center">
-            {step === 'success' ? 'Investment Successful!' : 'Invest in Property'}
-          </DialogTitle>
-        </DialogHeader>
+    <Dialog open={open} onOpenChange={handleClose}>
+      <div className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <TrendingUp className="w-5 h-5" />
+              <span>Invest in {tokenization.properties?.title}</span>
+            </DialogTitle>
+            <DialogDescription>
+              Purchase tokenized shares of this premium property
+            </DialogDescription>
+          </DialogHeader>
 
-        {/* Progress Bar */}
-        {step !== 'success' && (
-          <div className="mb-6">
-            <Progress value={(getStepNumber(step) / 4) * 100} className="mb-2" />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Step {getStepNumber(step)} of 4</span>
-              {step === 'payment' && (
-                <span className="text-warning">Time remaining: {formatTime(timeLeft)}</span>
-              )}
-            </div>
-          </div>
-        )}
+          {!hasAccount && (
+            <Alert className="mb-4">
+              <Wallet className="h-4 w-4" />
+              <AlertTitle>Blockchain Wallet Required</AlertTitle>
+              <AlertDescription className="space-y-2">
+                <p>You need a blockchain wallet to receive your tokens.</p>
+                <Button 
+                  onClick={() => createAccount()} 
+                  disabled={isCreatingAccount}
+                  size="sm"
+                >
+                  <Wallet className="w-4 h-4 mr-2" />
+                  {isCreatingAccount ? 'Creating...' : 'Create Wallet'}
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
 
-        {/* Amount Selection Step */}
-        {step === 'amount' && (
-          <div className="space-y-6">
-            <div>
-              <Label htmlFor="amount">Investment Amount</Label>
-              <MoneyInput
-                value={amount}
-                onChange={setAmount}
-                min={property.minInvestment}
-                max={property.maxInvestment}
-                className="text-lg"
-                placeholder="Enter amount"
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                Min: ₦{property.minInvestment.toLocaleString()}
-                {property.maxInvestment && ` | Max: ₦${property.maxInvestment.toLocaleString()}`}
-              </p>
-            </div>
+          {showProgress && (
+            <InvestmentProgressIndicator
+              paymentMethod={paymentMethod}
+              paymentStatus={investmentStatus.paymentStatus}
+              tokenTransferStatus={investmentStatus.tokenTransferStatus}
+              chatRoomCreated={investmentStatus.chatRoomCreated}
+            />
+          )}
 
-            <Card>
-              <CardContent className="p-4 space-y-3">
-                <div className="flex justify-between">
-                  <span>Tokens Received:</span>
-                  <span className="font-semibold">{tokensReceived.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Ownership:</span>
-                  <span className="font-semibold">{ownershipPercentage.toFixed(4)}%</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between text-success">
-                  <span>Est. Monthly Return:</span>
-                  <span className="font-semibold">₦{projectedMonthlyReturn.toLocaleString()}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Button 
-              onClick={handleNext} 
-              className="w-full"
-              disabled={amount < property.minInvestment}
-            >
-              Continue <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* Payment Method Step */}
-        {step === 'payment' && (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Choose Payment Method</h3>
-              <p className="text-2xl font-bold text-primary">₦{amount.toLocaleString()}</p>
-            </div>
-
-            <div className="space-y-3">
-              <div
-                className={cn(
-                  "border rounded-lg p-4 cursor-pointer transition-colors",
-                  paymentMethod === 'paystack' ? "border-primary bg-primary/5" : "border-border"
-                )}
-                onClick={() => setPaymentMethod('paystack')}
-              >
-                <div className="flex items-center space-x-3">
-                  <CreditCard className="h-5 w-5" />
-                  <div>
-                    <p className="font-medium">Paystack (Card/Bank)</p>
-                    <p className="text-sm text-muted-foreground">Pay with debit card or bank transfer</p>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                className={cn(
-                  "border rounded-lg p-4 cursor-pointer transition-colors",
-                  paymentMethod === 'wallet' ? "border-primary bg-primary/5" : "border-border"
-                )}
-                onClick={() => setPaymentMethod('wallet')}
-              >
-                <div className="flex items-center space-x-3">
-                  <Wallet className="h-5 w-5" />
-                  <div>
-                    <p className="font-medium">Wallet Balance</p>
-                    <p className="text-sm text-muted-foreground">Use your account balance</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <Button onClick={handleNext} className="w-full">
-              Continue <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* Confirmation Step */}
-        {step === 'confirmation' && (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-4">Confirm Investment</h3>
-            </div>
-
-            <Card>
-              <CardContent className="p-4 space-y-3">
-                <div className="flex justify-between">
-                  <span>Property:</span>
-                  <span className="font-medium text-right">{property.title}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Amount:</span>
-                  <span className="font-semibold">₦{amount.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tokens:</span>
-                  <span className="font-semibold">{tokensReceived.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Payment Method:</span>
-                  <span className="font-medium capitalize">{paymentMethod}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between text-success">
-                  <span>Est. Monthly Return:</span>
-                  <span className="font-semibold">₦{projectedMonthlyReturn.toLocaleString()}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="bg-muted p-3 rounded-lg text-sm text-muted-foreground">
-              By proceeding, you agree to the investment terms and understand that returns are not guaranteed.
-            </div>
-
-            <Button onClick={handleInvest} className="w-full" disabled={isCreating}>
-              {isCreating ? 'Processing...' : 'Confirm Investment'}
-            </Button>
-          </div>
-        )}
-
-        {/* Processing Step */}
-        {step === 'processing' && (
-          <div className="text-center space-y-6">
-            <div className="flex justify-center">
-              <Clock className="h-12 w-12 text-primary animate-spin" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Processing Investment</h3>
-              <p className="text-muted-foreground">Please wait while we secure your tokens...</p>
-            </div>
-          </div>
-        )}
-
-        {/* Success Step */}
-        {step === 'success' && (
-          <div className="text-center space-y-6">
-            <div className="flex justify-center">
-              <CheckCircle className="h-16 w-16 text-success" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Investment Successful!</h3>
-              <p className="text-muted-foreground mb-4">
-                You've successfully invested ₦{amount.toLocaleString()} and received {tokensReceived.toLocaleString()} tokens.
-              </p>
-            </div>
-
+          <form onSubmit={form.handleSubmit(handleInvest)} className="space-y-6">
+            {/* Token Information */}
             <Card>
               <CardContent className="p-4">
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-1">Your estimated monthly return</p>
-                  <p className="text-2xl font-bold text-success">₦{projectedMonthlyReturn.toLocaleString()}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Token Symbol</p>
+                    <Badge variant="secondary" className="mt-1">
+                      {tokenization.token_symbol || 'N/A'}
+                    </Badge>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Price per Token</p>
+                    <p className="text-lg font-semibold">
+                      ₦{tokenization.price_per_token.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Button onClick={handleClose} className="w-full">
-              View Portfolio
-            </Button>
-          </div>
-        )}
-      </DialogContent>
+            {/* Investment Amount */}
+            <div className="space-y-2">
+              <Label htmlFor="amount">Investment Amount</Label>
+              <MoneyInput
+                value={watchedAmount}
+                onChange={handleAmountChange}
+                min={tokenization.min_investment}
+                max={tokenization.max_investment}
+                placeholder="Enter investment amount"
+                className="text-lg"
+              />
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>Min: ₦{tokenization.min_investment.toLocaleString()}</span>
+                {tokenization.max_investment && (
+                  <span>Max: ₦{tokenization.max_investment.toLocaleString()}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Investment Calculator */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Tokens to receive</p>
+                    <p className="text-xl font-bold">{tokens.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Est. monthly return</p>
+                    <p className="text-xl font-bold text-green-600">₦{roi.monthly.toLocaleString()}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Payment Method */}
+            <div className="space-y-3">
+              <Label>Payment Method</Label>
+              <RadioGroup
+                value={paymentMethod}
+                onValueChange={(value: "paystack" | "wallet") => setPaymentMethod(value)}
+              >
+                <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                  <RadioGroupItem value="paystack" id="paystack" />
+                  <CreditCard className="w-5 h-5" />
+                  <div className="flex-1">
+                    <Label htmlFor="paystack" className="font-medium">
+                      Paystack Payment
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Pay with debit card or bank transfer
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                  <RadioGroupItem value="wallet" id="wallet" />
+                  <Wallet className="w-5 h-5" />
+                  <div className="flex-1">
+                    <Label htmlFor="wallet" className="font-medium">
+                      Wallet Balance
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Use your account balance
+                    </p>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Investment Summary */}
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Tokens to receive:</span>
+                  <span className="font-semibold">{tokens.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Total investment:</span>
+                  <span className="font-semibold">₦{watchedAmount.toLocaleString()}</span>
+                </div>
+                {roi.monthly > 0 && (
+                  <>
+                    <Separator />
+                    <div className="flex justify-between items-center text-green-600">
+                      <span className="text-sm">Est. monthly return:</span>
+                      <span className="font-semibold">₦{roi.monthly.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-green-600">
+                      <span className="text-sm">Est. annual return:</span>
+                      <span className="font-semibold">₦{roi.annual.toLocaleString()}</span>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Risk Warning */}
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Real estate investments carry inherent risks. Past performance does not guarantee future results. 
+                Please invest only what you can afford to lose.
+              </AlertDescription>
+            </Alert>
+
+            {/* Submit Button */}
+            <div className="flex space-x-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isCreating || watchedAmount < tokenization.min_investment || !hasAccount}
+                className="flex-1"
+              >
+                {isCreating ? (
+                  "Processing..."
+                ) : (
+                  <>
+                    Invest ₦{watchedAmount.toLocaleString()}
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </div>
     </Dialog>
   );
-};
-
-export default InvestmentModal;
+}

@@ -12,10 +12,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, ArrowLeft } from "lucide-react";
+import { Camera, ArrowLeft, Wallet } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useHederaAccount } from "@/hooks/useHederaAccount";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function ProfileSetup() {
+  const { hasAccount, createAccount, isCreating } = useHederaAccount();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -220,6 +224,39 @@ export default function ProfileSetup() {
                   placeholder="Tell us about your investment goals and preferences"
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Blockchain Wallet Setup */}
+          <Card className="border-border">
+            <CardHeader>
+              <CardTitle className="text-lg">Blockchain Wallet Setup</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {hasAccount ? (
+                <Alert>
+                  <Wallet className="h-4 w-4" />
+                  <AlertDescription>
+                    Your blockchain wallet has been created successfully. You're ready to start investing!
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    We'll create a secure blockchain wallet for you to hold your tokenized real estate investments. 
+                    This wallet uses Hedera's enterprise-grade security.
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={() => createAccount()}
+                    disabled={isCreating}
+                    className="w-full"
+                  >
+                    <Wallet className="w-4 h-4 mr-2" />
+                    {isCreating ? 'Creating Wallet...' : 'Create Blockchain Wallet'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
