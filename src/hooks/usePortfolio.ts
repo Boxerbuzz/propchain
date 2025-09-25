@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useQuery } from '@tanstack/react-query';
 import { supabaseService } from "@/services/supabaseService";
-import { useAuth } from "./useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { Investment, TokenHolding, DividendPayment } from "../types";
-import { toast } from "react-hot-toast";
 
 interface PortfolioStats {
   totalInvested: number;
@@ -14,55 +13,34 @@ interface PortfolioStats {
   activeInvestments: number;
 }
 
-interface UsePortfolioReturn {
-  portfolioStats: PortfolioStats;
-  investments: Investment[];
-  tokenHoldings: TokenHolding[];
-  dividendPayments: DividendPayment[];
-  isLoading: boolean;
-  error: string | null;
-  refetch: () => void;
-}
-
-const initialStats: PortfolioStats = {
-  totalInvested: 0,
-  currentValue: 0,
-  totalReturn: 0,
-  returnPercentage: 0,
-  monthlyDividends: 0,
-  totalProperties: 0,
-  activeInvestments: 0
-};
-
-export const usePortfolio = (): UsePortfolioReturn => {
+export const usePortfolio = () => {
   const { user, isAuthenticated } = useAuth();
-  const [portfolioStats, setPortfolioStats] = useState<PortfolioStats>(initialStats);
-  const [investments, setInvestments] = useState<Investment[]>([]);
-  const [tokenHoldings, setTokenHoldings] = useState<TokenHolding[]>([]);
-  const [dividendPayments, setDividendPayments] = useState<DividendPayment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  return useQuery({
+    queryKey: ['portfolio', user?.id],
+    queryFn: async () => {
+      if (!isAuthenticated || !user?.id) {
+        return {
+          portfolioStats: {
+            totalInvested: 0,
+            currentValue: 0,
+            totalReturn: 0,
+            returnPercentage: 0,
+            monthlyDividends: 0,
+            totalProperties: 0,
+            activeInvestments: 0
+          },
+          investments: [],
+          tokenHoldings: [],
+          dividendPayments: []
+        };
+      }
 
-  const fetchPortfolioData = async () => {
-    if (!isAuthenticated || !user?.id) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // Fetch user investments and token holdings
       const [investments, tokenHoldings] = await Promise.all([
         supabaseService.investments.listByUser(user.id),
         supabaseService.investments.getTokenHoldings(user.id),
       ]);
       
-      setInvestments(investments as unknown as Investment[]);
-      setTokenHoldings(tokenHoldings as unknown as TokenHolding[]);
-      
-      // Calculate portfolio stats from token holdings
       const totalInvested = tokenHoldings.reduce((sum: number, h: any) => sum + (h.total_invested_ngn || 0), 0);
       const unrealizedReturns = tokenHoldings.reduce((sum: number, h: any) => sum + (h.unrealized_returns_ngn || 0), 0);
       const realizedReturns = tokenHoldings.reduce((sum: number, h: any) => sum + (h.realized_returns_ngn || 0), 0);
@@ -70,40 +48,25 @@ export const usePortfolio = (): UsePortfolioReturn => {
       const totalReturn = unrealizedReturns + realizedReturns;
       const returnPercentage = totalInvested > 0 ? (totalReturn / totalInvested) * 100 : 0;
 
-      setPortfolioStats({
+      const portfolioStats: PortfolioStats = {
         totalInvested,
         currentValue,
         totalReturn,
         returnPercentage,
-        monthlyDividends: 0, // Will be calculated from dividend data
+        monthlyDividends: 0,
         totalProperties: tokenHoldings.length,
         activeInvestments: tokenHoldings.filter((h: any) => h.balance > 0).length
-      });
+      };
 
-    } catch (err: any) {
-      const errorMessage = err.message || "Failed to load portfolio data";
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const refetch = () => {
-    fetchPortfolioData();
-  };
-
-  useEffect(() => {
-    fetchPortfolioData();
-  }, [user?.id, isAuthenticated]);
-
-  return {
-    portfolioStats,
-    investments,
-    tokenHoldings,
-    dividendPayments,
-    isLoading,
-    error,
-    refetch
-  };
+      return {
+        portfolioStats,
+        investments: investments as unknown as Investment[],
+        tokenHoldings: tokenHoldings as unknown as TokenHolding[],
+        dividendPayments: [] as DividendPayment[]
+      };
+    },
+    enabled: !!user?.id && isAuthenticated,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 2,
+  });
 };

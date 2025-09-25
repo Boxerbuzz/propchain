@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "./useAuth";
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from "@/context/AuthContext";
 import { usePortfolio } from "./usePortfolio";
 import { supabaseService } from "@/services/supabaseService";
 import { Wallet } from "../types";
@@ -14,84 +14,46 @@ interface DashboardStats {
   returnPercentage: number;
 }
 
-interface UseDashboardReturn {
-  stats: DashboardStats;
-  wallets: Wallet[];
-  isLoading: boolean;
-  error: string | null;
-  shouldShowKycAlert: boolean;
-  refetch: () => void;
-}
-
-export const useDashboard = (): UseDashboardReturn => {
+export const useDashboard = () => {
   const { user, isAuthenticated } = useAuth();
-  const { portfolioStats, investments, isLoading: portfolioLoading, error: portfolioError } = usePortfolio();
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const portfolioQuery = usePortfolio();
+  
+  const walletsQuery = useQuery({
+    queryKey: ['wallets', user?.id],
+    queryFn: async () => {
+      if (!isAuthenticated || !user?.id) return [];
+      return await supabaseService.wallets.listByUser(user.id) as unknown as Wallet[];
+    },
+    enabled: !!user?.id && isAuthenticated,
+    staleTime: 2 * 60 * 1000,
+  });
 
-  const fetchWallets = async () => {
-    if (!isAuthenticated || !user?.id) {
-      setWallets([]);
-      return;
-    }
-
-    try {
-      const wallets = await supabaseService.wallets.listByUser(user.id);
-      setWallets(wallets as unknown as Wallet[]);
-    } catch (err: any) {
-      console.error("Failed to fetch wallets:", err);
-    }
-  };
-
-  const refetch = () => {
-    fetchWallets();
-  };
-
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      if (!isAuthenticated || !user?.id) {
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        await fetchWallets();
-      } catch (err: any) {
-        setError(err.message || "Failed to load dashboard data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDashboardData();
-  }, [user?.id, isAuthenticated]);
-
-  // Calculate dashboard stats
+  const portfolioData = portfolioQuery.data;
+  const wallets = walletsQuery.data || [];
+  
   const stats: DashboardStats = {
-    portfolioValue: portfolioStats?.currentValue || 0,
-    totalInvested: portfolioStats?.totalInvested || 0,
-    totalReturns: portfolioStats?.totalReturn || 0,
-    propertiesCount: investments?.length || 0,
-    monthlyReturns: 0, // TODO: Calculate based on dividend payments
+    portfolioValue: portfolioData?.portfolioStats?.currentValue || 0,
+    totalInvested: portfolioData?.portfolioStats?.totalInvested || 0,
+    totalReturns: portfolioData?.portfolioStats?.totalReturn || 0,
+    propertiesCount: portfolioData?.investments?.length || 0,
+    monthlyReturns: 0,
     walletBalance: wallets.reduce((sum, wallet) => sum + (wallet.balance_ngn || 0), 0),
-    returnPercentage: portfolioStats?.totalInvested > 0 
-      ? ((portfolioStats?.totalReturn || 0) / portfolioStats.totalInvested) * 100 
+    returnPercentage: portfolioData?.portfolioStats?.totalInvested > 0 
+      ? ((portfolioData?.portfolioStats?.totalReturn || 0) / portfolioData.portfolioStats.totalInvested) * 100 
       : 0
   };
 
-  // Determine if KYC alert should show
   const shouldShowKycAlert = user?.kyc_status !== 'verified';
 
   return {
     stats,
     wallets,
-    isLoading: isLoading || portfolioLoading,
-    error: error || portfolioError,
+    isLoading: portfolioQuery.isLoading || walletsQuery.isLoading,
+    error: portfolioQuery.error?.message || walletsQuery.error?.message || null,
     shouldShowKycAlert,
-    refetch
+    refetch: () => {
+      portfolioQuery.refetch();
+      walletsQuery.refetch();
+    }
   };
 };

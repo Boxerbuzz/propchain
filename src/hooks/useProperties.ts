@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabaseService } from "@/services/supabaseService";
-import { toast } from "react-hot-toast";
+import { supabase } from '@/integrations/supabase/client';
+import { Property } from '@/types';
 
 interface PropertyWithTokenization {
   id?: string;
@@ -23,59 +24,60 @@ interface PropertyWithTokenization {
   [key: string]: any;
 }
 
-interface UsePropertiesReturn {
-  properties: PropertyWithTokenization[];
-  isLoading: boolean;
-  error: string | null;
-  refetch: () => void;
-}
-
-export const useProperties = (filters?: any): UsePropertiesReturn => {
-  const [properties, setProperties] = useState<PropertyWithTokenization[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchProperties = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const tokenizations =
-        await supabaseService.properties.listActiveTokenizations();
-
-      // Map to include property info
-      const mappedProperties = tokenizations.map((tokenization: any) => ({
+export const useProperties = (filters?: any) => {
+  return useQuery({
+    queryKey: ['properties', filters],
+    queryFn: async () => {
+      const tokenizations = await supabaseService.properties.listActiveTokenizations();
+      
+      return tokenizations.map((tokenization: any) => ({
         ...tokenization,
         property_title: tokenization.properties?.title || "Unknown Property",
         property_location: tokenization.properties?.location || {},
         property_type: tokenization.properties?.property_type || "Unknown",
-        primary_image: null, // We'll need a separate query for images if needed
+        primary_image: null,
         image_count: 0,
       }));
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+  });
+};
 
-      setProperties(mappedProperties);
-    } catch (err: any) {
-      const errorMessage =
-        err.message || "An error occurred while fetching properties";
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+export const useProperty = (id: string) => {
+  return useQuery({
+    queryKey: ['property', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data as Property;
+    },
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+};
 
-  const refetch = () => {
-    fetchProperties();
-  };
-
-  useEffect(() => {
-    fetchProperties();
-  }, [filters]);
-
-  return {
-    properties,
-    isLoading,
-    error,
-    refetch,
-  };
+export const useCreateProperty = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (property: Partial<Property>) => {
+      const { data, error } = await supabase
+        .from('properties')
+        .insert(property)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['properties'] });
+    },
+  });
 };

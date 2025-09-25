@@ -22,8 +22,8 @@ import {
   FileText,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { usePropertyManagement } from "@/hooks/usePropertyManagement";
 import { useNavigate } from "react-router-dom";
+import { useUserProperties, useUpdateProperty } from "@/hooks/usePropertyManagement";
 
 const PropertyManagement = () => {
   const { toast } = useToast();
@@ -31,15 +31,16 @@ const PropertyManagement = () => {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [filter, setFilter] = useState("all");
 
-  const {
-    properties: managedProperties,
-    financialSummary,
-    isLoading,
-    error,
-    refetch,
-    updateProperty,
-    deleteProperty,
-  } = usePropertyManagement();
+  const { data: managedProperties = [], isLoading, error, refetch } = useUserProperties();
+  const updatePropertyMutation = useUpdateProperty();
+
+  // Mock financial summary since it's not in the service yet
+  const financialSummary = {
+    totalRevenue: 2500000,
+    netProfit: 1800000,
+    occupancyRate: 85,
+    totalInvestors: 42
+  };
 
   // Mock maintenance requests using useMemo to ensure stable reference
   const maintenanceRequests = useMemo(
@@ -118,9 +119,12 @@ const PropertyManagement = () => {
         navigate(`/properties/${propertyId}/edit`);
         break;
       case "Approve":
-        await updateProperty(propertyId, {
-          approval_status: "approved",
-          listing_status: "active",
+        updatePropertyMutation.mutate({
+          id: propertyId,
+          data: {
+            approval_status: "approved",
+            listing_status: "active",
+          }
         });
         break;
       case "Tokenize":
@@ -134,7 +138,10 @@ const PropertyManagement = () => {
         break;
       case "Delete":
         if (window.confirm("Are you sure you want to delete this property?")) {
-          await deleteProperty(propertyId);
+          updatePropertyMutation.mutate({
+            id: propertyId,
+            data: { listing_status: "deleted" }
+          });
         }
         break;
       default:

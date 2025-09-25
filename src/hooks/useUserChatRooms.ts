@@ -1,76 +1,45 @@
-import { useState, useEffect, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabaseService } from "@/services/supabaseService";
-import { useAuth } from "./useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { ChatRoom } from "../types";
-import { toast } from "react-hot-toast";
 
-interface ChatRoomWithLastMessage {
-  room_id: string;
-  room_name: string;
-  room_description?: string;
-  room_type: string;
-  property_title?: string;
-  property_location?: any;
-  token_symbol?: string;
-  tokenization_status?: string;
-  last_message?: string;
-  last_message_type?: string;
-  last_message_at?: string;
-  last_sender_first_name?: string;
-  last_sender_last_name?: string;
-  unread_count: number;
-  voting_power: number;
-  role: string;
-  joined_at: string;
-  last_seen_at?: string;
-}
-
-interface UseUserChatRoomsReturn {
-  chatRooms: ChatRoomWithLastMessage[];
-  isLoading: boolean;
-  error: string | null;
-  refetch: () => void;
-}
-
-export const useUserChatRooms = (): UseUserChatRoomsReturn => {
+export const useUserChatRooms = () => {
   const { user, isAuthenticated } = useAuth();
-  const [chatRooms, setChatRooms] = useState<ChatRoomWithLastMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  return useQuery({
+    queryKey: ['user-chat-rooms', user?.id],
+    queryFn: async () => {
+      if (!isAuthenticated || !user?.id) return [];
+      return await supabaseService.chat.getUserChatRooms(user.id) as unknown as ChatRoom[];
+    },
+    enabled: !!user?.id && isAuthenticated,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};
 
-  const fetchChatRooms = useCallback(async () => {
-    if (!isAuthenticated || !user?.id) {
-      setIsLoading(false);
-      return;
-    }
+export const useChatMessages = (roomId: string) => {
+  return useQuery({
+    queryKey: ['chat-messages', roomId],
+    queryFn: async () => {
+      if (!roomId) return [];
+      return await supabaseService.chat.getMessages(roomId);
+    },
+    enabled: !!roomId,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+};
 
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const data = await supabaseService.chat.getUserChatRooms(user.id);
-      setChatRooms(data);
-    } catch (err: any) {
-      const errorMessage = err.message || "An error occurred while fetching chat rooms";
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id, isAuthenticated]);
-
-  const refetch = () => {
-    fetchChatRooms();
-  };
-
-  useEffect(() => {
-    fetchChatRooms();
-  }, [fetchChatRooms]);
-
-  return {
-    chatRooms,
-    isLoading,
-    error,
-    refetch
-  };
+export const useSendMessage = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ roomId, message }: { roomId: string; message: string }) => {
+      if (!user?.id) throw new Error('User not authenticated');
+      return await supabaseService.chat.sendMessage(roomId, user.id, message);
+    },
+    onSuccess: (_, { roomId }) => {
+      queryClient.invalidateQueries({ queryKey: ['chat-messages', roomId] });
+    },
+  });
 };

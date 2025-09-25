@@ -297,6 +297,7 @@ const Notifications = () => {
                 <div>
                   <Label htmlFor="quietStart">Start Time</Label>
                   <input
+                  aria-label="Start Time"
                     id="quietStart"
                     type="time"
                     defaultValue="22:00"
@@ -306,6 +307,7 @@ const Notifications = () => {
                 <div>
                   <Label htmlFor="quietEnd">End Time</Label>
                   <input
+                  aria-label="End Time"
                     id="quietEnd"
                     type="time"
                     defaultValue="08:00"
