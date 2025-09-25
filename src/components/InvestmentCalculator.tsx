@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Calculator, TrendingUp, DollarSign } from "lucide-react";
 import InvestmentModal from "@/components/InvestmentModal";
-import { useCreateInvestment } from "@/hooks/useInvestment";
+import MoneyInput from '@/components/ui/money-input';
 
 interface InvestmentCalculatorProps {
   propertyValue: number;
@@ -22,7 +21,6 @@ export default function InvestmentCalculator({
 }: InvestmentCalculatorProps & { property?: any }) {
   const [investmentAmount, setInvestmentAmount] = useState(minimumInvestment);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const createInvestment = useCreateInvestment();
   
   const tokensReceived = Math.floor(investmentAmount / tokenPrice);
   const ownershipPercentage = (investmentAmount / propertyValue) * 100;
@@ -40,16 +38,14 @@ export default function InvestmentCalculator({
         {/* Investment Amount Input */}
         <div>
           <Label htmlFor="investment-amount" className="text-sm font-medium">
-            Investment Amount (₦)
+            Investment Amount
           </Label>
-          <Input
-            id="investment-amount"
-            type="number"
+          <MoneyInput
             value={investmentAmount}
-            onChange={(e) => setInvestmentAmount(Number(e.target.value))}
+            onChange={setInvestmentAmount}
             min={minimumInvestment}
-            step={1000}
-            className="mt-1"
+            placeholder="Enter investment amount"
+            className="text-lg font-semibold"
           />
           <p className="text-xs text-muted-foreground mt-1">
             Minimum investment: ₦{minimumInvestment.toLocaleString()}
@@ -103,9 +99,8 @@ export default function InvestmentCalculator({
           className="w-full btn-primary" 
           size="lg"
           onClick={() => setIsModalOpen(true)}
-          disabled={createInvestment.isPending}
         >
-          {createInvestment.isPending ? 'Processing...' : `Invest ₦${investmentAmount.toLocaleString()}`}
+          Invest ₦{investmentAmount.toLocaleString()}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
@@ -116,22 +111,14 @@ export default function InvestmentCalculator({
       <InvestmentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        property={property || {
-          id: 'default-tokenization',
-          title: 'Property Investment',
+        property={{
+          id: property?.id || '',
+          title: property?.title || '',
           tokenPrice: tokenPrice,
           minInvestment: minimumInvestment,
-          expectedReturn: expectedReturn
+          expectedReturn: expectedReturn,
         }}
-        onInvest={async (amount: number, paymentMethod: 'paystack' | 'wallet') => {
-          const tokenizationId = property?.id || 'default-tokenization';
-          await createInvestment.mutateAsync({
-            tokenization_id: tokenizationId,
-            amount_ngn: amount,
-            tokens_requested: Math.floor(amount / tokenPrice)
-          });
-          setIsModalOpen(false);
-        }}
+        tokenizationId={property?.tokenizations?.[0]?.id || ''}
       />
     </div>
   );

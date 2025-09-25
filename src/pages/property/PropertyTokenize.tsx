@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
+import MoneyInput from '@/components/ui/money-input';
 
 const tokenizationSchema = z.object({
   token_name: z.string().min(1, "Token name is required"),
@@ -241,13 +242,11 @@ const PropertyTokenize = () => {
                   name="price_per_token"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Price Per Token (₦)</FormLabel>
+                      <FormLabel>Price Per Token</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        <MoneyInput
+                          value={field.value}
+                          onChange={field.onChange}
                           placeholder="100"
                         />
                       </FormControl>
@@ -261,12 +260,11 @@ const PropertyTokenize = () => {
                   name="target_raise"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Target Raise (₦)</FormLabel>
+                      <FormLabel>Target Raise</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        <MoneyInput
+                          value={field.value}
+                          onChange={field.onChange}
                           placeholder="1000000"
                         />
                       </FormControl>
@@ -281,12 +279,11 @@ const PropertyTokenize = () => {
                   name="minimum_raise"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Minimum Raise (₦)</FormLabel>
+                      <FormLabel>Minimum Raise</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        <MoneyInput
+                          value={field.value}
+                          onChange={field.onChange}
                           placeholder="300000"
                         />
                       </FormControl>
@@ -301,12 +298,11 @@ const PropertyTokenize = () => {
                   name="min_investment"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Minimum Investment (₦)</FormLabel>
+                      <FormLabel>Minimum Investment</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        <MoneyInput
+                          value={field.value}
+                          onChange={field.onChange}
                           placeholder="10000"
                         />
                       </FormControl>
@@ -320,12 +316,11 @@ const PropertyTokenize = () => {
                   name="max_investment"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Maximum Investment (₦)</FormLabel>
+                      <FormLabel>Maximum Investment</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        <MoneyInput
+                          value={field.value}
+                          onChange={field.onChange}
                           placeholder="1000000"
                         />
                       </FormControl>

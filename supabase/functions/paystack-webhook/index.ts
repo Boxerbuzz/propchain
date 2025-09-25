@@ -82,9 +82,53 @@ serve(async (req) => {
 
         console.log(`Investment ${investment.id} confirmed and updated.`);
 
-        // TODO: Update tokenization table (current_raise, tokens_sold, investor_count)
-        // TODO: Update or create token_holdings for the investor
-        // TODO: Potentially trigger notifications to the user
+        // Update tokenization statistics
+        await supabaseClient.rpc('increment_tokenization_raise', {
+          p_investment_id: investment.id
+        });
+
+        // Create or update token holdings
+        const { data: tokenization } = await supabaseClient
+          .from('tokenizations')
+          .select('property_id, token_id')
+          .eq('id', investment.tokenization_id)
+          .single();
+
+        if (tokenization) {
+          await supabaseClient.rpc('upsert_token_holdings', {
+            p_user_id: investment.investor_id,
+            p_tokenization_id: investment.tokenization_id,
+            p_property_id: tokenization.property_id,
+            p_token_id: tokenization.token_id || 'pending',
+            p_tokens_to_add: investment.tokens_requested,
+            p_amount_invested: investment.amount_ngn
+          });
+
+          // Auto-create chat room if it doesn't exist and add investor
+          const { data: chatRoomId } = await supabaseClient.rpc('create_chat_room_for_tokenization', {
+            p_tokenization_id: investment.tokenization_id
+          });
+
+          if (chatRoomId) {
+            // Add investor to chat room with voting power based on tokens
+            await supabaseClient.rpc('add_user_to_chat_room', {
+              p_room_id: chatRoomId,
+              p_user_id: investment.investor_id,
+              p_voting_power: investment.tokens_requested
+            });
+          }
+
+          // Create notification for successful investment
+          await supabaseClient
+            .from('notifications')
+            .insert({
+              user_id: investment.investor_id,
+              notification_type: 'investment_confirmed',
+              title: 'Investment Confirmed',
+              message: `Your investment of ₦${amount.toLocaleString()} has been confirmed. You received ${investment.tokens_requested.toLocaleString()} tokens.`,
+              action_url: `/portfolio`,
+            });
+        }
 
         break;
       case "transfer.success":

@@ -424,11 +424,73 @@ export const supabaseService = {
       
       return true;
     },
+    createWithReservation: async (data: {
+      tokenization_id: string;
+      investor_id: string;
+      amount_ngn: number;
+      tokens_requested: number;
+      payment_method?: string;
+    }) => {
+      const { data: result, error } = await supabase.rpc('create_investment_with_reservation', {
+        p_tokenization_id: data.tokenization_id,
+        p_investor_id: data.investor_id,
+        p_amount_ngn: data.amount_ngn,
+        p_tokens_requested: data.tokens_requested,
+      });
+      
+      if (error) throw error;
+      return result;
+    },
   },
 
-  // Wallets services
+  tokenizations: {
+    create: async (data: any) => {
+      const { data: result, error } = await supabase
+        .from('tokenizations')
+        .insert(data)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
+    },
+    
+    getById: async (id: string) => {
+      const { data, error } = await supabase
+        .from('tokenizations')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+
+    getByPropertyId: async (propertyId: string) => {
+      const { data, error } = await supabase
+        .from('tokenizations')
+        .select('*')
+        .eq('property_id', propertyId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+  },
+
+  payments: {
+    initializePaystack: async (data: { amount: number; email: string; reference: string }) => {
+      const { data: result, error } = await supabase.functions.invoke('initialize-paystack-payment', {
+        body: data,
+      });
+      
+      if (error) throw error;
+      return result;
+    },
+  },
+
   wallets: {
-    async listByUser(userId: string) {
+    listByUser: async (userId: string) => {
       const { data, error } = await supabase
         .from('wallets')
         .select('*')
@@ -440,6 +502,15 @@ export const supabaseService = {
       }
       
       return data;
+    },
+
+    deductBalance: async (data: { userId: string; amount: number; reference: string }) => {
+      const { data: result, error } = await supabase.functions.invoke('deduct-wallet-balance', {
+        body: data,
+      });
+      
+      if (error) throw error;
+      return result;
     },
   },
 
@@ -517,35 +588,4 @@ export const supabaseService = {
     },
   },
 
-  // Tokenizations services
-  tokenizations: {
-    async create(tokenizationData: any) {
-      const { data, error } = await supabase
-        .from('tokenizations')
-        .insert(tokenizationData)
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error creating tokenization:', error);
-        throw error;
-      }
-      
-      return data;
-    },
-
-    async getByPropertyId(propertyId: string) {
-      const { data, error } = await supabase
-        .from('tokenizations')
-        .select('*')
-        .eq('property_id', propertyId);
-      
-      if (error) {
-        console.error('Error fetching tokenizations:', error);
-        return [];
-      }
-      
-      return data || [];
-    },
-  },
 };

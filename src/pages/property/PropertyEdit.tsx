@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import MoneyInput from '@/components/ui/money-input';
 
 const propertyEditSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -217,12 +218,11 @@ const PropertyEdit = () => {
                   name="estimated_value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Estimated Value (₦)</FormLabel>
+                      <FormLabel>Estimated Value</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                        <MoneyInput
+                          value={field.value}
+                          onChange={field.onChange}
                           placeholder="Enter estimated value"
                         />
                       </FormControl>
