@@ -234,6 +234,37 @@ export const supabaseService = {
 
   // Investments services
   investments: {
+    async create(investmentData: any) {
+      const { data, error } = await supabase
+        .from('investments')
+        .insert(investmentData)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating investment:', error);
+        throw error;
+      }
+      
+      return data;
+    },
+
+    async update(id: string, updates: any) {
+      const { data, error } = await supabase
+        .from('investments')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error updating investment:', error);
+        throw error;
+      }
+      
+      return data;
+    },
+
     async listByUser(userId: string) {
       const { data, error } = await supabase
         .from('investments')
@@ -330,10 +361,7 @@ export const supabaseService = {
   chat: {
     async getUserChatRooms(userId: string) {
       const { data, error } = await supabase
-        .from('user_chat_rooms_with_last_message')
-        .select('*')
-        .eq('user_id', userId)
-        .order('last_message_at', { ascending: false });
+        .rpc('get_user_chat_rooms', { p_user_id: userId });
       
       if (error) {
         console.error('Error fetching chat rooms:', error);
@@ -356,6 +384,26 @@ export const supabaseService = {
       if (error) {
         console.error('Error fetching chat messages:', error);
         return [];
+      }
+      
+      return data;
+    },
+
+    async sendMessage(roomId: string, userId: string, message: string) {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .insert({
+          room_id: roomId,
+          sender_id: userId,
+          message_text: message,
+          message_type: 'text'
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error sending message:', error);
+        throw error;
       }
       
       return data;

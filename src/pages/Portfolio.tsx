@@ -26,7 +26,19 @@ const Portfolio = () => {
   const { isAuthenticated } = useAuth();
   
   // Fetch real portfolio data
-  const { portfolioStats, investments, tokenHoldings, isLoading, error } = usePortfolio();
+  const { data: portfolioData, isLoading, error } = usePortfolio();
+  const { portfolioStats, investments, tokenHoldings } = portfolioData || { 
+    portfolioStats: {
+      totalInvested: 0,
+      currentValue: 0,
+      totalReturns: 0,
+      totalDividends: 0,
+      activeInvestments: 0,
+      performancePercentage: 0
+    }, 
+    investments: [], 
+    tokenHoldings: [] 
+  };
 
   // Transform investments data for display
   const displayInvestments = tokenHoldings.map((holding: any) => ({

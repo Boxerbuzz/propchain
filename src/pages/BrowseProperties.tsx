@@ -18,7 +18,7 @@ export default function BrowseProperties() {
   const isMobile = useIsMobile();
 
   // Fetch real properties data
-  const { properties: tokenizations, isLoading, error } = useProperties();
+  const { data: tokenizations = [], isLoading, error } = useProperties();
 
   // Transform tokenizations to match PropertyCard interface
   const properties = tokenizations.map((tokenization) => ({

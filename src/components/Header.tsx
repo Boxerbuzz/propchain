@@ -173,7 +173,7 @@ export default function Header() {
                 <div className="flex items-center justify-between p-3 border-b border-border/10">
                   <h3 className="font-semibold text-sm text-foreground">Notifications</h3>
                   {notifications.filter(n => !n.read_at).length > 0 && (
-                    <Button variant="link" size="sm" className="text-xs text-muted-foreground hover:text-foreground" onClick={markAllAsRead}>
+                    <Button variant="link" size="sm" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => markAllAsRead()}>
                       Mark all as read
                     </Button>
                   )}
@@ -221,7 +221,7 @@ export default function Header() {
                       View All Notifications
                     </Button>
                   </Link>
-                  <Button variant="ghost" size="sm" className="w-full text-xs text-destructive hover:text-destructive" onClick={clearReadNotifications}>
+                  <Button variant="ghost" size="sm" className="w-full text-xs text-destructive hover:text-destructive" onClick={() => clearReadNotifications()}>
                     Clear All
                   </Button>
                 </div>

@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Calculator, TrendingUp, DollarSign } from "lucide-react";
 import InvestmentModal from "@/components/InvestmentModal";
-import { useInvestment } from "@/hooks/useInvestment";
+import { useCreateInvestment } from "@/hooks/useInvestment";
 
 interface InvestmentCalculatorProps {
   propertyValue: number;
@@ -22,7 +22,7 @@ export default function InvestmentCalculator({
 }: InvestmentCalculatorProps & { property?: any }) {
   const [investmentAmount, setInvestmentAmount] = useState(minimumInvestment);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { invest, isInvesting } = useInvestment();
+  const createInvestment = useCreateInvestment();
   
   const tokensReceived = Math.floor(investmentAmount / tokenPrice);
   const ownershipPercentage = (investmentAmount / propertyValue) * 100;
@@ -103,9 +103,9 @@ export default function InvestmentCalculator({
           className="w-full btn-primary" 
           size="lg"
           onClick={() => setIsModalOpen(true)}
-          disabled={isInvesting}
+          disabled={createInvestment.isPending}
         >
-          {isInvesting ? 'Processing...' : `Invest ₦${investmentAmount.toLocaleString()}`}
+          {createInvestment.isPending ? 'Processing...' : `Invest ₦${investmentAmount.toLocaleString()}`}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
@@ -125,7 +125,11 @@ export default function InvestmentCalculator({
         }}
         onInvest={async (amount: number, paymentMethod: 'paystack' | 'wallet') => {
           const tokenizationId = property?.id || 'default-tokenization';
-          await invest(tokenizationId, amount, paymentMethod);
+          await createInvestment.mutateAsync({
+            tokenization_id: tokenizationId,
+            amount_ngn: amount,
+            tokens_requested: Math.floor(amount / tokenPrice)
+          });
           setIsModalOpen(false);
         }}
       />

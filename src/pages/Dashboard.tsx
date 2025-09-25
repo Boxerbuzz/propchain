@@ -327,7 +327,7 @@ export default function Dashboard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={markAllAsRead}
+                    onClick={() => markAllAsRead()}
                     className="text-xs"
                   >
                     Mark all read

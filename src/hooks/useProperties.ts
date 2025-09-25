@@ -55,7 +55,7 @@ export const useProperty = (id: string) => {
         .single();
       
       if (error) throw error;
-      return data as Property;
+      return data;
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
@@ -66,7 +66,7 @@ export const useCreateProperty = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (property: Partial<Property>) => {
+    mutationFn: async (property: any) => {
       const { data, error } = await supabase
         .from('properties')
         .insert(property)
