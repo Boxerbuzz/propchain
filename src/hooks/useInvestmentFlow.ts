@@ -14,6 +14,14 @@ interface PaystackResponse {
   reference: string;
 }
 
+interface ReservationResult {
+  success: boolean;
+  investment_id: string;
+  reservation_expires_at: string;
+  tokens_reserved: number;
+  error?: string;
+}
+
 export const useInvestmentFlow = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -29,13 +37,13 @@ export const useInvestmentFlow = () => {
       const tokensRequested = Math.floor(data.amount / tokenization.price_per_token);
 
       // Create investment with reservation using the database function
-      const reservationResult = await supabaseService.investments.createWithReservation({
+      const reservationResult = (await supabaseService.investments.createWithReservation({
         tokenization_id: data.tokenizationId,
         investor_id: user.id,
         amount_ngn: data.amount,
         tokens_requested: tokensRequested,
         payment_method: data.paymentMethod,
-      });
+      }) as unknown) as ReservationResult;
 
       if (!reservationResult.success) {
         throw new Error(reservationResult.error || 'Failed to reserve tokens');
