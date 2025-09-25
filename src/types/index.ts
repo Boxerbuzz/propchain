@@ -674,3 +674,26 @@ export type KycFormData = z.infer<typeof KycFormSchema>;
 export type GovernanceProposalFormData = z.infer<
   typeof GovernanceProposalFormSchema
 >;
+
+// View types
+export type UserChatRoomWithLastMessage = {
+  room_id: string;
+  user_id?: string | null;
+  room_name: string | null;
+  room_description: string | null;
+  room_type: string | null;
+  property_title: string | null;
+  property_location: any | null;
+  token_symbol: string | null;
+  tokenization_status: string | null;
+  last_message: string | null;
+  last_message_type?: string | null;
+  last_message_at: string | null;
+  last_sender_first_name: string | null;
+  last_sender_last_name: string | null;
+  unread_count: number | null;
+  role: string | null;
+  joined_at: string | null;
+  last_seen_at: string | null;
+  voting_power: number | null;
+};

@@ -330,41 +330,17 @@ export const supabaseService = {
   chat: {
     async getUserChatRooms(userId: string) {
       const { data, error } = await supabase
-        .from('chat_participants')
-        .select(`
-          *,
-          chat_rooms!inner(
-            id,
-            name,
-            description,
-            room_type,
-            properties(title, location),
-            tokenizations(token_symbol, status)
-          )
-        `)
-        .eq('user_id', userId);
+        .from('user_chat_rooms_with_last_message')
+        .select('*')
+        .eq('user_id', userId)
+        .order('last_message_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching chat rooms:', error);
         return [];
       }
       
-      // Transform to match the expected interface
-      return (data || []).map((participant: any) => ({
-        room_id: participant.chat_rooms.id,
-        room_name: participant.chat_rooms.name,
-        room_description: participant.chat_rooms.description,
-        room_type: participant.chat_rooms.room_type,
-        property_title: participant.chat_rooms.properties?.title,
-        property_location: participant.chat_rooms.properties?.location,
-        token_symbol: participant.chat_rooms.tokenizations?.token_symbol,
-        tokenization_status: participant.chat_rooms.tokenizations?.status,
-        unread_count: 0, // TODO: Calculate unread count
-        voting_power: participant.voting_power || 0,
-        role: participant.role,
-        joined_at: participant.joined_at,
-        last_seen_at: participant.last_seen_at,
-      }));
+      return data || [];
     },
 
     async getChatMessages(roomId: string) {

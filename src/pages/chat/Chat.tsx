@@ -16,7 +16,7 @@ const Chat = () => {
   const { isAuthenticated } = useAuth();
   
   // Fetch real chat rooms data
-  const { chatRooms, isLoading, error } = useUserChatRooms();
+  const { data: chatRooms = [], isLoading, error } = useUserChatRooms();
 
   // Transform chat rooms for display
   const displayRooms = chatRooms.map(room => ({

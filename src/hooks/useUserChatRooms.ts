@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabaseService } from "@/services/supabaseService";
 import { useAuth } from "@/context/AuthContext";
-import { ChatRoom } from "../types";
+import { UserChatRoomWithLastMessage } from "../types";
 
 export const useUserChatRooms = () => {
   const { user, isAuthenticated } = useAuth();
@@ -10,7 +10,7 @@ export const useUserChatRooms = () => {
     queryKey: ['user-chat-rooms', user?.id],
     queryFn: async () => {
       if (!isAuthenticated || !user?.id) return [];
-      return await supabaseService.chat.getUserChatRooms(user.id) as unknown as ChatRoom[];
+      return await supabaseService.chat.getUserChatRooms(user.id) as unknown as UserChatRoomWithLastMessage[];
     },
     enabled: !!user?.id && isAuthenticated,
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -22,7 +22,7 @@ export const useChatMessages = (roomId: string) => {
     queryKey: ['chat-messages', roomId],
     queryFn: async () => {
       if (!roomId) return [];
-      return await supabaseService.chat.getMessages(roomId);
+      return await supabaseService.chat.getChatMessages(roomId);
     },
     enabled: !!roomId,
     staleTime: 30 * 1000, // 30 seconds
