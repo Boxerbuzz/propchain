@@ -360,8 +360,29 @@ export const supabaseService = {
   // Chat services
   chat: {
     async getUserChatRooms(userId: string) {
+      // Since user_chat_rooms_with_last_message is a view, we'll use the regular chat_rooms
+      // and join the data we need
       const { data, error } = await supabase
-        .rpc('get_user_chat_rooms', { p_user_id: userId });
+        .from('chat_rooms')
+        .select(`
+          *,
+          chat_participants!inner(
+            user_id,
+            role,
+            voting_power,
+            joined_at,
+            last_seen_at
+          ),
+          properties(
+            title,
+            location
+          ),
+          tokenizations(
+            token_symbol,
+            status
+          )
+        `)
+        .eq('chat_participants.user_id', userId);
       
       if (error) {
         console.error('Error fetching chat rooms:', error);

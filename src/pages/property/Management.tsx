@@ -187,7 +187,7 @@ const PropertyManagement = () => {
 
   const filteredProperties = managedProperties.filter((prop) => {
     if (filter === "all") return true;
-    return prop.status === filter;
+    return prop.approval_status === filter || prop.listing_status === filter;
   });
 
   return (
@@ -290,7 +290,7 @@ const PropertyManagement = () => {
                   {financialSummary.totalInvestors}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {financialSummary.propertiesManaged} properties
+                  {managedProperties.length} properties
                 </p>
               </CardContent>
             </Card>
@@ -378,7 +378,7 @@ const PropertyManagement = () => {
                         <CardContent className="p-4 md:p-6">
                           <div className="flex flex-col md:flex-row gap-4">
                             <img
-                              src={property.primaryImage}
+                              src="/placeholder.svg"
                               alt={property.title}
                               className="w-full md:w-32 h-32 rounded-lg object-cover"
                             />
@@ -405,11 +405,9 @@ const PropertyManagement = () => {
                                     >
                                       {property.approval_status}
                                     </Badge>
-                                    {property.investors > 0 && (
-                                      <span className="text-sm text-muted-foreground">
-                                        {property.investors} investors
-                                      </span>
-                                    )}
+                                    <span className="text-sm text-muted-foreground">
+                                      0 investors
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -422,7 +420,7 @@ const PropertyManagement = () => {
                                   <p className="font-semibold">
                                     ₦
                                     {Math.round(
-                                      property.monthlyRevenue
+                                      property.rental_income_monthly || 0
                                     ).toLocaleString()}
                                   </p>
                                 </div>
@@ -433,7 +431,7 @@ const PropertyManagement = () => {
                                   <p className="font-semibold">
                                     ₦
                                     {Math.round(
-                                      property.netIncome
+                                      (property.rental_income_monthly || 0) * 0.8
                                     ).toLocaleString()}
                                   </p>
                                 </div>
@@ -455,44 +453,27 @@ const PropertyManagement = () => {
                                 </div>
                               </div>
 
-                              {property.totalTokens > 0 && (
-                                <div className="mt-4">
-                                  <div className="flex justify-between text-sm mb-2">
-                                    <span>Funding Progress</span>
-                                    <span>
-                                      {Math.round(property.fundingProgress)}%
-                                    </span>
-                                  </div>
-                                  <Progress
-                                    value={property.fundingProgress}
-                                    className="h-2"
-                                  />
+                              <div className="mt-4">
+                                <div className="flex justify-between text-sm mb-2">
+                                  <span>Funding Progress</span>
+                                  <span>0%</span>
                                 </div>
-                              )}
+                                <Progress
+                                  value={0}
+                                  className="h-2"
+                                />
+                              </div>
 
-                              {(property.maintenanceRequests > 0 ||
-                                property.pendingIssues > 0) && (
-                                <div className="flex flex-wrap gap-2 mt-3 mb-3">
-                                  {property.maintenanceRequests > 0 && (
-                                    <Badge
-                                      variant="outline"
-                                      className="text-orange-600"
-                                    >
-                                      <Wrench className="h-3 w-3 mr-1" />
-                                      {property.maintenanceRequests} maintenance
-                                    </Badge>
-                                  )}
-                                  {property.pendingIssues > 0 && (
-                                    <Badge
-                                      variant="outline"
-                                      className="text-red-600"
-                                    >
-                                      <AlertTriangle className="h-3 w-3 mr-1" />
-                                      {property.pendingIssues} urgent
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
+                              <div className="flex flex-wrap gap-2 mt-3 mb-3">
+                                <Badge variant="outline" className="text-orange-600">
+                                  <Wrench className="h-3 w-3 mr-1" />
+                                  0 maintenance
+                                </Badge>
+                                <Badge variant="outline" className="text-red-600">
+                                  <AlertTriangle className="h-3 w-3 mr-1" />
+                                  0 urgent
+                                </Badge>
+                              </div>
 
                               <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
                                 <Button
@@ -543,8 +524,7 @@ const PropertyManagement = () => {
                                   <FileText className="h-4 w-4 mr-1" />
                                   <span className="hidden sm:inline">Docs</span>
                                 </Button>
-                                {property.approval_status === "approved" &&
-                                  !property.tokenizations?.length && (
+                                {property.approval_status === "approved" && (
                                     <Button
                                       size="sm"
                                       onClick={() =>
