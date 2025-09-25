@@ -22,7 +22,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import MoneyInput from "@/components/ui/money-input";
-import InvestmentCalculator from "./InvestmentCalculator";
 import { useInvestmentFlow } from "@/hooks/useInvestmentFlow";
 import InvestmentProgressIndicator from "./InvestmentProgressIndicator";
 import { useHederaAccount } from "@/hooks/useHederaAccount";
