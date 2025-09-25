@@ -105,6 +105,10 @@ export const PropertySchema = z.object({
   favorites_count: z.number().int().min(0).default(0),
   created_at: z.date(),
   updated_at: z.date(),
+  // Relations
+  tokenizations: z.array(z.any()).optional(),
+  property_images: z.array(z.any()).optional(), 
+  property_documents: z.array(z.any()).optional(),
 });
 
 // Tokenization schemas

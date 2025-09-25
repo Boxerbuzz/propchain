@@ -57,9 +57,7 @@ const RegisterProperty = () => {
     try {
       const property = await supabaseService.properties.create(formData, user.id);
       toast.success("Property submitted for review successfully!");
-      navigate("/properties/upload-docs", { 
-        state: { propertyId: property.id } 
-      });
+      navigate(`/property/${property.id}/documents`);
     } catch (error: any) {
       toast.error(error.message || "Failed to submit property");
     } finally {
