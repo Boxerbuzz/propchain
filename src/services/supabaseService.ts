@@ -516,4 +516,36 @@ export const supabaseService = {
       return data;
     },
   },
+
+  // Tokenizations services
+  tokenizations: {
+    async create(tokenizationData: any) {
+      const { data, error } = await supabase
+        .from('tokenizations')
+        .insert(tokenizationData)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating tokenization:', error);
+        throw error;
+      }
+      
+      return data;
+    },
+
+    async getByPropertyId(propertyId: string) {
+      const { data, error } = await supabase
+        .from('tokenizations')
+        .select('*')
+        .eq('property_id', propertyId);
+      
+      if (error) {
+        console.error('Error fetching tokenizations:', error);
+        return [];
+      }
+      
+      return data || [];
+    },
+  },
 };

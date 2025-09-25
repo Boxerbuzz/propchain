@@ -113,10 +113,10 @@ const PropertyManagement = () => {
   const handlePropertyAction = async (action: string, propertyId: string) => {
     switch (action) {
       case "View":
-        navigate(`/properties/${propertyId}`);
+        navigate(`/property/${propertyId}/view`);
         break;
       case "Edit":
-        navigate(`/properties/${propertyId}/edit`);
+        navigate(`/property/${propertyId}/edit`);
         break;
       case "Approve":
         updatePropertyMutation.mutate({
@@ -128,7 +128,7 @@ const PropertyManagement = () => {
         });
         break;
       case "Tokenize":
-        navigate(`/properties/${propertyId}/tokenize`);
+        navigate(`/property/${propertyId}/tokenize`);
         break;
       case "Upload Images":
         navigate(`/property/${propertyId}/images`);
