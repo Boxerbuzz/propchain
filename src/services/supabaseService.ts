@@ -94,6 +94,12 @@ export const supabaseService = {
             image_url,
             is_primary,
             sort_order
+          ),
+          property_documents(
+            id,
+            document_name,
+            document_type,
+            verification_status
           )
         `)
         .eq('owner_id', userId)
@@ -133,6 +139,101 @@ export const supabaseService = {
         console.error('Error deleting property:', error);
         throw error;
       }
+    },
+
+    async uploadPropertyImage(propertyId: string, file: File, isPrimary: boolean = false) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${propertyId}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('property-images')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('property-images')
+        .getPublicUrl(fileName);
+
+      const { data, error } = await supabase
+        .from('property_images')
+        .insert({
+          property_id: propertyId,
+          image_url: publicUrl,
+          is_primary: isPrimary,
+          sort_order: 0
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving image record:', error);
+        throw error;
+      }
+
+      return data;
+    },
+
+    async uploadPropertyDocument(propertyId: string, file: File, documentType: string, documentName: string) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${propertyId}/docs/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('property-images')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('Error uploading document:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('property-images')
+        .getPublicUrl(fileName);
+
+      const { data, error } = await supabase
+        .from('property_documents')
+        .insert({
+          property_id: propertyId,
+          document_name: documentName,
+          document_type: documentType,
+          file_url: publicUrl,
+          file_size: file.size,
+          mime_type: file.type,
+          verification_status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving document record:', error);
+        throw error;
+      }
+
+      return data;
+    },
+
+    async getPropertyById(propertyId: string) {
+      const { data, error } = await supabase
+        .from('properties')
+        .select(`
+          *,
+          tokenizations(*),
+          property_images(*),
+          property_documents(*)
+        `)
+        .eq('id', propertyId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching property:', error);
+        throw error;
+      }
+
+      return data;
     },
 
     async getPropertyFinancials(propertyId: string) {
@@ -199,21 +300,6 @@ export const supabaseService = {
       }
       
       return data as unknown as Tokenization;
-    },
-
-    async getPropertyById(id: string): Promise<Property | null> {
-      const { data, error } = await supabase
-        .from('properties')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (error) {
-        console.error('Error fetching property:', error);
-        return null;
-      }
-      
-      return data as unknown as Property;
     },
 
     async getPropertyImages(propertyId: string) {

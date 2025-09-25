@@ -131,10 +131,10 @@ const PropertyManagement = () => {
         navigate(`/properties/${propertyId}/tokenize`);
         break;
       case "Upload Images":
-        navigate(`/properties/${propertyId}/images`);
+        navigate(`/property/${propertyId}/images`);
         break;
       case "Upload Documents":
-        navigate(`/properties/${propertyId}/documents`);
+        navigate(`/property/${propertyId}/documents`);
         break;
       case "Delete":
         if (window.confirm("Are you sure you want to delete this property?")) {
@@ -455,13 +455,23 @@ const PropertyManagement = () => {
 
                               <div className="mt-4">
                                 <div className="flex justify-between text-sm mb-2">
-                                  <span>Funding Progress</span>
-                                  <span>0%</span>
+                                  <span>Tokenization Status</span>
+                                  <span>
+                                    {property.tokenizations && property.tokenizations.length > 0 
+                                      ? property.tokenizations[0].status 
+                                      : "Not Tokenized"}
+                                  </span>
                                 </div>
-                                <Progress
-                                  value={0}
-                                  className="h-2"
-                                />
+                                {property.tokenizations && property.tokenizations.length > 0 ? (
+                                  <Progress
+                                    value={(property.tokenizations[0].current_raise / property.tokenizations[0].target_raise) * 100}
+                                    className="h-2"
+                                  />
+                                ) : (
+                                  <div className="text-sm text-muted-foreground">
+                                    Property not yet tokenized
+                                  </div>
+                                )}
                               </div>
 
                               <div className="flex flex-wrap gap-2 mt-3 mb-3">

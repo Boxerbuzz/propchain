@@ -28,6 +28,8 @@ import Dashboard from "./pages/Dashboard";
 import WalletSetup from "./pages/wallet/Setup";
 import WalletDashboard from "./pages/wallet/Dashboard";
 import PropertyManagement from "./pages/property/Management";
+import PropertyImageManager from "./pages/property/PropertyImageManager";
+import PropertyDocumentManager from "./pages/property/PropertyDocumentManager";
 import Profile from "./pages/settings/Profile";
 import Notifications from "./pages/settings/Notifications";
 import Security from "./pages/settings/Security";
@@ -95,6 +97,14 @@ const App = () => (
                 <Route
                   path="/property/management"
                   element={<PropertyManagement />}
+                />
+                <Route
+                  path="/property/:propertyId/images"
+                  element={<PropertyImageManager />}
+                />
+                <Route
+                  path="/property/:propertyId/documents"
+                  element={<PropertyDocumentManager />}
                 />
                 <Route
                   path="/properties/register"
