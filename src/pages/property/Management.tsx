@@ -545,35 +545,19 @@ const PropertyManagement = () => {
               </TabsContent>
 
               <TabsContent value="analytics" className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Revenue Trend</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center py-8">
-                        <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-muted-foreground">
-                          Revenue analytics chart would be displayed here
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Occupancy Rates</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center py-8">
-                        <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-muted-foreground">
-                          Occupancy trends chart would be displayed here
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Revenue Trend</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8">
+                      <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-muted-foreground">
+                        Revenue analytics chart would be displayed here
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
           </div>
