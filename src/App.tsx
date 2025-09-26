@@ -54,6 +54,7 @@ import AuthLayout from "./layouts/AuthLayout";
 import RouteGuard from "./components/auth/RouteGuard";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
