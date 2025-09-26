@@ -18,7 +18,7 @@ if (!OPERATOR_ID || !OPERATOR_PRIVATE_KEY) {
 }
 
 const client = Client.forTestnet(); // Or Client.forMainnet() or Client.forPreviewnet()
-client.setOperator(OPERATOR_ID, PrivateKey.fromStringED25519(OPERATOR_PRIVATE_KEY));
+client.setOperator(OPERATOR_ID, PrivateKey.fromStringECDSA(OPERATOR_PRIVATE_KEY));
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -54,7 +54,7 @@ serve(async (req) => {
       .freezeWith(client); // Freeze the transaction for signing
 
     const signedTransaction = await createAccountTransaction.sign(
-      PrivateKey.fromStringED25519(OPERATOR_PRIVATE_KEY)
+      PrivateKey.fromStringECDSA(OPERATOR_PRIVATE_KEY)
     );
     const txResponse = await signedTransaction.execute(client);
     const receipt = await txResponse.getReceipt(client);
