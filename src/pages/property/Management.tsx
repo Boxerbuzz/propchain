@@ -16,14 +16,16 @@ import {
   Download,
   BarChart3,
   Wrench,
-  MessageSquare,
   AlertTriangle,
   Upload,
   FileText,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useUserProperties, useUpdateProperty } from "@/hooks/usePropertyManagement";
+import {
+  useUserProperties,
+  useUpdateProperty,
+} from "@/hooks/usePropertyManagement";
 
 const PropertyManagement = () => {
   const { toast } = useToast();
@@ -31,7 +33,12 @@ const PropertyManagement = () => {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [filter, setFilter] = useState("all");
 
-  const { data: managedProperties = [], isLoading, error, refetch } = useUserProperties();
+  const {
+    data: managedProperties = [],
+    isLoading,
+    error,
+    refetch,
+  } = useUserProperties();
   const updatePropertyMutation = useUpdateProperty();
 
   // Financial summary - connect to real DB when available
@@ -39,7 +46,7 @@ const PropertyManagement = () => {
     totalRevenue: 0,
     netProfit: 0,
     occupancyRate: 0,
-    totalInvestors: 0
+    totalInvestors: 0,
   };
 
   // No maintenance requests - this feature needs to be implemented with proper DB tables
@@ -82,7 +89,7 @@ const PropertyManagement = () => {
           data: {
             approval_status: "approved",
             listing_status: "active",
-          }
+          },
         });
         break;
       case "Tokenize":
@@ -98,7 +105,7 @@ const PropertyManagement = () => {
         if (window.confirm("Are you sure you want to delete this property?")) {
           updatePropertyMutation.mutate({
             id: propertyId,
-            data: { listing_status: "deleted" }
+            data: { listing_status: "deleted" },
           });
         }
         break;
@@ -107,32 +114,6 @@ const PropertyManagement = () => {
           title: `${action} Property`,
           description: `${action} action initiated for property ${propertyId}`,
         });
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-800";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "low":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "in-progress":
-        return "bg-blue-100 text-blue-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -382,7 +363,8 @@ const PropertyManagement = () => {
                                   <p className="font-semibold">
                                     ₦
                                     {Math.round(
-                                      (property.rental_income_monthly || 0) * 0.8
+                                      (property.rental_income_monthly || 0) *
+                                        0.8
                                     ).toLocaleString()}
                                   </p>
                                 </div>
@@ -408,14 +390,21 @@ const PropertyManagement = () => {
                                 <div className="flex justify-between text-sm mb-2">
                                   <span>Tokenization Status</span>
                                   <span>
-                                    {property.tokenizations && property.tokenizations.length > 0 
-                                      ? property.tokenizations[0].status 
+                                    {property.tokenizations &&
+                                    property.tokenizations.length > 0
+                                      ? property.tokenizations[0].status
                                       : "Not Tokenized"}
                                   </span>
                                 </div>
-                                {property.tokenizations && property.tokenizations.length > 0 ? (
+                                {property.tokenizations &&
+                                property.tokenizations.length > 0 ? (
                                   <Progress
-                                    value={(property.tokenizations[0].current_raise / property.tokenizations[0].target_raise) * 100}
+                                    value={
+                                      (property.tokenizations[0].current_raise /
+                                        property.tokenizations[0]
+                                          .target_raise) *
+                                      100
+                                    }
                                     className="h-2"
                                   />
                                 ) : (
@@ -426,13 +415,19 @@ const PropertyManagement = () => {
                               </div>
 
                               <div className="flex flex-wrap gap-2 mt-3 mb-3">
-                                <Badge variant="outline" className="text-orange-600">
-                                  <Wrench className="h-3 w-3 mr-1" />
-                                  0 maintenance
+                                <Badge
+                                  variant="outline"
+                                  className="text-orange-600"
+                                >
+                                  <Wrench className="h-3 w-3 mr-1" />0
+                                  maintenance
                                 </Badge>
-                                <Badge variant="outline" className="text-red-600">
-                                  <AlertTriangle className="h-3 w-3 mr-1" />
-                                  0 urgent
+                                <Badge
+                                  variant="outline"
+                                  className="text-red-600"
+                                >
+                                  <AlertTriangle className="h-3 w-3 mr-1" />0
+                                  urgent
                                 </Badge>
                               </div>
 
@@ -486,21 +481,21 @@ const PropertyManagement = () => {
                                   <span className="hidden sm:inline">Docs</span>
                                 </Button>
                                 {property.approval_status === "approved" && (
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handlePropertyAction(
-                                          "Tokenize",
-                                          property.id
-                                        )
-                                      }
-                                    >
-                                      <DollarSign className="h-4 w-4 mr-1" />
-                                      <span className="hidden sm:inline">
-                                        Tokenize
-                                      </span>
-                                    </Button>
-                                  )}
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handlePropertyAction(
+                                        "Tokenize",
+                                        property.id
+                                      )
+                                    }
+                                  >
+                                    <DollarSign className="h-4 w-4 mr-1" />
+                                    <span className="hidden sm:inline">
+                                      Tokenize
+                                    </span>
+                                  </Button>
+                                )}
                                 {property.approval_status === "pending" && (
                                   <Button
                                     size="sm"
@@ -536,7 +531,9 @@ const PropertyManagement = () => {
                     <div className="text-center py-8">
                       <Wrench className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground mb-4">
-                        No maintenance requests yet. This feature will be available once you have active properties with proper maintenance tracking.
+                        No maintenance requests yet. This feature will be
+                        available once you have active properties with proper
+                        maintenance tracking.
                       </p>
                       <Button variant="outline" size="sm">
                         <Plus className="h-4 w-4 mr-2" />
