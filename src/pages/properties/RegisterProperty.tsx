@@ -18,6 +18,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { PropertyDocumentUpload } from "@/components/PropertyDocumentUpload";
 import { PropertyImageUpload } from "@/components/PropertyImageUpload";
+import { usePropertyPostProcessing } from "@/hooks/usePropertyPostProcessing";
+import { usePropertyHCSSetup } from "@/hooks/usePropertyHCSSetup";
 
 const propertySchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -42,6 +44,12 @@ const RegisterProperty = () => {
   const [propertyId, setPropertyId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  // Enable post-processing for HCS topics and Hedera tokens
+  usePropertyPostProcessing();
+  
+  // Setup HCS topic creation for auto-approved properties
+  usePropertyHCSSetup();
 
   const form = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
