@@ -44,12 +44,17 @@ import FundWallet from "./pages/wallet/Fund";
 import WalletSettings from "./pages/wallet/Settings";
 import RegisterProperty from "./pages/properties/Register";
 import UploadDocs from "./pages/properties/UploadDocs";
-import NotFound from "./pages/NotFound";
+import TermsOfService from "./pages/legal/TermsOfService";
+import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
+import RiskDisclosure from "./pages/legal/RiskDisclosure";
+import Regulatory from "./pages/legal/Regulatory";
+import SupportCenter from "./pages/support/SupportCenter";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import RouteGuard from "./components/auth/RouteGuard";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -149,6 +154,13 @@ const App = () => (
               <Route path="verify-email" element={<VerifyEmail />} />
               <Route path="verify-phone" element={<VerifyPhone />} />
             </Route>
+
+            {/* Legal and Support Routes */}
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/risk-disclosure" element={<RiskDisclosure />} />
+            <Route path="/regulatory" element={<Regulatory />} />
+            <Route path="/support" element={<SupportCenter />} />
 
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />

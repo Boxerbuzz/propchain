@@ -18,70 +18,57 @@ import {
   ExternalLink,
   TrendingUp,
   History,
-  Settings
+  Settings,
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useWalletConnect } from "@/hooks/useWalletConnect";
+import { useDashboard } from "@/hooks/useDashboard";
+import { useWalletBalance } from "@/hooks/useWalletBalance";
+import { useAuth } from "@/context/AuthContext";
 
 const WalletDashboard = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [showBalance, setShowBalance] = useState(true);
   const [depositAmount, setDepositAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  
+  const { 
+    connectedWallets, 
+    disconnectExternalWallet,
+    getActiveWallet,
+    hasExternalWallet,
+    hasCustodialWallet
+  } = useWalletConnect();
 
-  // Mock wallet data
+  const { stats, wallets, isLoading: dashboardLoading } = useDashboard();
+  const { balance: hederaBalance, syncBalance, isSyncing } = useWalletBalance();
+
+  // Real wallet data from user's account
   const walletData = {
-    balance: 25000,
-    pendingDeposits: 500,
-    totalDeposited: 50000,
-    totalWithdrawn: 25000,
-    walletAddress: "0x742d35Cc6634C0532925a3b8D43Df8f6c4C7d28C",
-    connectedWallets: [
-      { type: "MetaMask", address: "0x742d...d28C", connected: true },
-      { type: "Coinbase", address: "Not connected", connected: false },
-      { type: "WalletConnect", address: "Not connected", connected: false }
-    ]
+    balance: stats.walletBalance,
+    balanceHbar: hederaBalance?.balanceHbar || 0,
+    balanceUsd: hederaBalance?.balanceUsd || 0,
+    pendingDeposits: 0, // TODO: Calculate from pending transactions
+    totalDeposited: 0, // TODO: Calculate from wallet transactions
+    totalWithdrawn: 0, // TODO: Calculate from wallet transactions
+    walletAddress: user?.hedera_account_id || "No wallet connected",
+    lastSyncAt: hederaBalance?.lastSyncAt
   };
 
+  // TODO: Replace with real transaction data from database
   const transactions = [
     {
-      id: "tx1",
-      type: "deposit",
-      amount: 5000,
+      id: "sync-" + Date.now(),
+      type: "sync",
+      amount: walletData.balanceHbar,
       status: "completed",
-      date: "2024-09-20",
-      method: "Bank Transfer",
-      hash: "0x8f2a...b4c9"
-    },
-    {
-      id: "tx2", 
-      type: "investment",
-      amount: -3000,
-      status: "completed",
-      date: "2024-09-19",
-      method: "Wallet",
-      property: "Luxury Downtown Apartment",
-      hash: "0x9e3b...c5d1"
-    },
-    {
-      id: "tx3",
-      type: "dividend",
-      amount: 125,
-      status: "completed", 
-      date: "2024-09-15",
-      method: "Auto-deposit",
-      property: "Tech District Office",
-      hash: "0x7f1c...a8e2"
-    },
-    {
-      id: "tx4",
-      type: "withdrawal",
-      amount: -1000,
-      status: "pending",
-      date: "2024-09-18",
-      method: "Bank Transfer",
-      hash: "0x6d2e...f9b3"
+      date: hederaBalance?.lastSyncAt ? new Date(hederaBalance.lastSyncAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      method: "Hedera Balance Sync",
+      hash: user?.hedera_account_id || ""
     }
-  ];
+  ].filter(tx => tx.amount > 0); // Only show if there's actually a balance
 
   const paymentMethods = [
     {
@@ -152,6 +139,18 @@ const WalletDashboard = () => {
     });
   };
 
+  const handleSyncBalance = () => {
+    if (user?.hedera_account_id) {
+      syncBalance();
+    } else {
+      toast({
+        title: "No Wallet Found",
+        description: "Please create a Hedera wallet first",
+        variant: "destructive"
+      });
+    }
+  };
+
   const getTransactionIcon = (type: string) => {
     switch (type) {
       case "deposit": return <ArrowUpDown className="h-4 w-4 text-green-600 rotate-180" />;
@@ -180,6 +179,17 @@ const WalletDashboard = () => {
             <p className="text-muted-foreground">Manage your funds and payment methods</p>
           </div>
           <div className="flex gap-3 mt-4 md:mt-0">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSyncBalance}
+              disabled={isSyncing || !user?.hedera_account_id}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">
+                {isSyncing ? 'Syncing...' : 'Sync Balance'}
+              </span>
+            </Button>
             <Button variant="outline" size="sm">
               <Settings className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Settings</span>
@@ -208,14 +218,24 @@ const WalletDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold mb-2">
-                {showBalance ? `$${walletData.balance.toLocaleString()}` : "••••••"}
+                {showBalance ? `₦${walletData.balance.toLocaleString()}` : "••••••"}
               </div>
               <p className="text-sm text-muted-foreground">
                 Available for investments
               </p>
-              {walletData.pendingDeposits > 0 && (
-                <p className="text-sm text-orange-600 mt-1">
-                  +${walletData.pendingDeposits} pending
+              {walletData.balanceHbar > 0 && (
+                <div className="mt-2 space-y-1">
+                  <p className="text-sm text-blue-600">
+                    {walletData.balanceHbar.toFixed(4)} HBAR
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    ${walletData.balanceUsd.toFixed(2)} USD
+                  </p>
+                </div>
+              )}
+              {walletData.lastSyncAt && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Last synced: {new Date(walletData.lastSyncAt).toLocaleString()}
                 </p>
               )}
             </CardContent>
@@ -226,7 +246,7 @@ const WalletDashboard = () => {
               <CardTitle className="text-sm font-medium">Total Deposited</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${walletData.totalDeposited.toLocaleString()}</div>
+              <div className="text-2xl font-bold">₦{walletData.totalDeposited.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">Lifetime deposits</p>
             </CardContent>
           </Card>
@@ -236,7 +256,7 @@ const WalletDashboard = () => {
               <CardTitle className="text-sm font-medium">Total Withdrawn</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${walletData.totalWithdrawn.toLocaleString()}</div>
+              <div className="text-2xl font-bold">₦{walletData.totalWithdrawn.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">Lifetime withdrawals</p>
             </CardContent>
           </Card>
@@ -262,7 +282,14 @@ const WalletDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {transactions.map((transaction) => (
+                      {transactions.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>No transactions yet</p>
+                          <p className="text-sm">Your wallet activity will appear here</p>
+                        </div>
+                      ) : (
+                        transactions.map((transaction) => (
                         <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex items-center gap-3">
                             {getTransactionIcon(transaction.type)}
@@ -277,16 +304,16 @@ const WalletDashboard = () => {
                                 </Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">{transaction.method}</p>
-                              {transaction.property && (
-                                <p className="text-xs text-muted-foreground">{transaction.property}</p>
-                              )}
                             </div>
                           </div>
                           <div className="text-right">
                             <p className={`font-semibold ${
                               transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
                             }`}>
-                              {transaction.amount > 0 ? '+' : ''}${Math.abs(transaction.amount).toLocaleString()}
+                              {transaction.type === 'sync' 
+                                ? `${transaction.amount.toFixed(4)} HBAR`
+                                : `${transaction.amount > 0 ? '+' : ''}₦${Math.abs(transaction.amount).toLocaleString()}`
+                              }
                             </p>
                             <p className="text-xs text-muted-foreground">{transaction.date}</p>
                             <Button variant="ghost" size="sm" className="h-6 p-1">
@@ -294,7 +321,8 @@ const WalletDashboard = () => {
                             </Button>
                           </div>
                         </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -351,27 +379,54 @@ const WalletDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {walletData.connectedWallets.map((wallet, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <Wallet className="h-5 w-5 text-muted-foreground" />
-                            <div>
-                              <p className="font-medium">{wallet.type}</p>
-                              <p className="text-sm text-muted-foreground">{wallet.address}</p>
+                      {connectedWallets.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Wallet className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p className="mb-4">No wallets connected</p>
+                          <Button onClick={() => window.location.href = '/wallet/connect'}>
+                            Connect Wallet
+                          </Button>
+                        </div>
+                      ) : (
+                        connectedWallets.map((wallet, index) => (
+                          <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <Wallet className="h-5 w-5 text-muted-foreground" />
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">{wallet.name}</p>
+                                  <Badge 
+                                    variant="secondary" 
+                                    className={wallet.type === 'custodial' ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"}
+                                  >
+                                    {wallet.type === 'custodial' ? 'Custodial' : 'External'}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground font-mono">
+                                  {wallet.address.length > 20 
+                                    ? `${wallet.address.substring(0, 10)}...${wallet.address.substring(wallet.address.length - 10)}`
+                                    : wallet.address
+                                  }
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                          {wallet.connected ? (
                             <div className="flex items-center gap-2">
                               <Badge variant="secondary" className="bg-green-100 text-green-800">
                                 Connected
                               </Badge>
-                              <Button variant="outline" size="sm">Disconnect</Button>
+                              {wallet.type === 'external' && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => disconnectExternalWallet()}
+                                >
+                                  Disconnect
+                                </Button>
+                              )}
                             </div>
-                          ) : (
-                            <Button size="sm">Connect</Button>
-                          )}
-                        </div>
-                      ))}
+                          </div>
+                        ))
+                      )}
                     </div>
                   </CardContent>
                 </Card>

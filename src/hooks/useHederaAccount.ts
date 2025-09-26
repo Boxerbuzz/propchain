@@ -41,6 +41,12 @@ export const useHederaAccount = () => {
       toast.success('Blockchain wallet created successfully!');
       queryClient.invalidateQueries({ queryKey: ['hedera-account', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['wallets', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['wallet-balance'] });
+      
+      // Redirect to wallet dashboard after successful creation
+      setTimeout(() => {
+        window.location.href = '/wallet/dashboard';
+      }, 1500);
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to create blockchain wallet');
