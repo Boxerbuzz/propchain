@@ -15,26 +15,52 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import MoneyInput from '@/components/ui/money-input';
+import MoneyInput from "@/components/ui/money-input";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const tokenizationSchema = z.object({
   token_name: z.string().min(1, "Token name is required"),
-  token_symbol: z.string().min(2, "Token symbol must be at least 2 characters").max(10, "Token symbol must be at most 10 characters"),
+  token_symbol: z
+    .string()
+    .min(2, "Token symbol must be at least 2 characters")
+    .max(10, "Token symbol must be at most 10 characters"),
   total_supply: z.number().min(1000, "Minimum total supply is 1,000 tokens"),
-  price_per_token: z.number().min(0.01, "Price per token must be at least 0.01"),
+  price_per_token: z
+    .number()
+    .min(0.01, "Price per token must be at least 0.01"),
   min_investment: z.number().min(1, "Minimum investment is required"),
   max_investment: z.number().optional(),
+  min_tokens_per_purchase: z.number().int().min(1).optional(),
+  max_tokens_per_purchase: z.number().int().min(1).optional(),
   target_raise: z.number().min(1, "Target raise is required"),
   minimum_raise: z.number().min(1, "Minimum raise is required"),
-  investment_window_days: z.number().min(1, "Investment window must be at least 1 day").max(365, "Investment window cannot exceed 365 days"),
+  investment_window_days: z
+    .number()
+    .min(1, "Investment window must be at least 1 day")
+    .max(365, "Investment window cannot exceed 365 days"),
   expected_roi_annual: z.number().min(0).max(100).optional(),
-  dividend_frequency: z.string().optional(),
+  dividend_frequency: z.enum(["monthly", "quarterly", "annually"]).optional(),
   management_fee_percentage: z.number().min(0).max(10).optional(),
+  platform_fee_percentage: z.number().min(0).max(5).optional(),
+  auto_refund: z.boolean().optional(),
 });
 
 type TokenizationForm = z.infer<typeof tokenizationSchema>;
@@ -50,7 +76,7 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
   open,
   onOpenChange,
   property,
-  onSuccess
+  onSuccess,
 }) => {
   const [step, setStep] = useState(1);
   const { user, isAuthenticated } = useAuth();
@@ -60,17 +86,30 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
     resolver: zodResolver(tokenizationSchema),
     defaultValues: {
       token_name: property ? `${property.title} Token` : "",
-      token_symbol: property ? property.title.substring(0, 6).toUpperCase().replace(/[^A-Z]/g, '') : "",
+      token_symbol: property
+        ? property.title
+            .substring(0, 6)
+            .toUpperCase()
+            .replace(/[^A-Z]/g, "")
+        : "",
       total_supply: 10000,
       price_per_token: 100,
       min_investment: 10000,
       max_investment: 1000000,
-      target_raise: property ? Math.floor((property.estimated_value || 0) * 0.8) : 0,
-      minimum_raise: property ? Math.floor((property.estimated_value || 0) * 0.3) : 0,
+      target_raise: property
+        ? Math.floor((property.estimated_value || 0) * 0.8)
+        : 0,
+      minimum_raise: property
+        ? Math.floor((property.estimated_value || 0) * 0.3)
+        : 0,
+      min_tokens_per_purchase: 1,
+      max_tokens_per_purchase: 1000,
       investment_window_days: 30,
       expected_roi_annual: 8,
       dividend_frequency: "quarterly",
       management_fee_percentage: 2.5,
+      platform_fee_percentage: 1.0,
+      auto_refund: true,
     },
   });
 
@@ -89,6 +128,8 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
         expected_roi_annual,
         dividend_frequency,
         management_fee_percentage,
+        platform_fee_percentage,
+        auto_refund,
         ...rest
       } = data;
 
@@ -98,30 +139,27 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
         now.getTime() + investment_window_days * 24 * 60 * 60 * 1000
       ).toISOString();
 
-      const payload: any = {
+      const payload = {
         property_id: property.id,
         token_name: String(rest.token_name).trim(),
         token_symbol: String(rest.token_symbol).trim().toUpperCase(),
         total_supply: rest.total_supply,
         price_per_token: rest.price_per_token,
         min_investment: rest.min_investment,
+        max_investment: max_investment || null,
+        min_tokens_per_purchase: rest.min_tokens_per_purchase || null,
+        max_tokens_per_purchase: rest.max_tokens_per_purchase || null,
         target_raise: rest.target_raise,
         minimum_raise: rest.minimum_raise,
         investment_window_start,
         investment_window_end,
+        expected_roi_annual: expected_roi_annual || null,
+        dividend_frequency: dividend_frequency || null,
+        management_fee_percentage: management_fee_percentage || null,
+        platform_fee_percentage: platform_fee_percentage || null,
+        auto_refund: auto_refund ?? true,
         status: "draft",
-        created_by: user.id,
-        token_id: null,
-        minting_transaction_id: null,
-        minted_at: null,
-        approved_at: null,
-        approved_by: null,
       };
-
-      if (typeof max_investment === "number") payload.max_investment = max_investment;
-      if (typeof expected_roi_annual === "number") payload.expected_roi_annual = expected_roi_annual;
-      if (dividend_frequency) payload.dividend_frequency = dividend_frequency;
-      if (typeof management_fee_percentage === "number") payload.management_fee_percentage = management_fee_percentage;
 
       return supabaseService.tokenizations.create(payload);
     },
@@ -156,11 +194,11 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
   const nextStep = async () => {
     const isValid = await form.trigger([
       "token_name",
-      "token_symbol", 
+      "token_symbol",
       "total_supply",
-      "price_per_token"
+      "price_per_token",
     ]);
-    
+
     if (isValid) {
       setStep(2);
     }
@@ -180,9 +218,7 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            Tokenize Property - Step {step} of 2
-          </DialogTitle>
+          <DialogTitle>Tokenize Property - Step {step} of 2</DialogTitle>
           <Progress value={step * 50} className="w-full" />
         </DialogHeader>
 
@@ -199,8 +235,10 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {step === 1 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Basic Token Information</h3>
-                
+                <h3 className="text-lg font-semibold">
+                  Basic Token Information
+                </h3>
+
                 <FormField
                   control={form.control}
                   name="token_name"
@@ -208,7 +246,10 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                     <FormItem>
                       <FormLabel>Token Name</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="e.g., Luxury Apartment Token" />
+                        <Input
+                          {...field}
+                          placeholder="e.g., Luxury Apartment Token"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -222,9 +263,15 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                     <FormItem>
                       <FormLabel>Token Symbol</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="e.g., LAT" maxLength={10} />
+                        <Input
+                          {...field}
+                          placeholder="e.g., LAT"
+                          maxLength={10}
+                        />
                       </FormControl>
-                      <FormDescription>2-10 characters, letters only</FormDescription>
+                      <FormDescription>
+                        2-10 characters, letters only
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -241,11 +288,15 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                           <Input
                             type="number"
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                             placeholder="10000"
                           />
                         </FormControl>
-                        <FormDescription>Number of tokens to create</FormDescription>
+                        <FormDescription>
+                          Number of tokens to create
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -275,7 +326,7 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
             {step === 2 && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Investment Details</h3>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -309,7 +360,9 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                             placeholder="300000"
                           />
                         </FormControl>
-                        <FormDescription>Minimum amount needed to proceed</FormDescription>
+                        <FormDescription>
+                          Minimum amount needed to proceed
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -365,11 +418,15 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                           <Input
                             type="number"
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                             placeholder="30"
                           />
                         </FormControl>
-                        <FormDescription>How long investors can invest</FormDescription>
+                        <FormDescription>
+                          How long investors can invest
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -386,7 +443,9 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                             type="number"
                             step="0.1"
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                             placeholder="8"
                           />
                         </FormControl>
@@ -403,7 +462,10 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Dividend Frequency</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select frequency" />
@@ -412,7 +474,9 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                           <SelectContent>
                             <SelectItem value="monthly">Monthly</SelectItem>
                             <SelectItem value="quarterly">Quarterly</SelectItem>
-                            <SelectItem value="semi-annually">Semi-Annually</SelectItem>
+                            <SelectItem value="semi-annually">
+                              Semi-Annually
+                            </SelectItem>
                             <SelectItem value="annually">Annually</SelectItem>
                           </SelectContent>
                         </Select>
@@ -432,7 +496,9 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                             type="number"
                             step="0.1"
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                             placeholder="2.5"
                           />
                         </FormControl>
@@ -461,11 +527,13 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                     <ChevronLeft className="mr-2 h-4 w-4" />
                     Previous
                   </Button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={createTokenizationMutation.isPending}
                   >
-                    {createTokenizationMutation.isPending ? "Creating..." : "Create Tokenization"}
+                    {createTokenizationMutation.isPending
+                      ? "Creating..."
+                      : "Create Tokenization"}
                   </Button>
                 </>
               )}

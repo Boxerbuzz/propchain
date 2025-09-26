@@ -1,24 +1,51 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/progress';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { supabaseService } from '@/services/supabaseService';
-import { PropertyImageUpload } from '@/components/PropertyImageUpload';
-import { PropertyDocumentUpload } from '@/components/PropertyDocumentUpload';
-import { toast } from 'sonner';
-import { ArrowLeft, FileText, MapPin, DollarSign, Camera, Upload, CheckCircle, Coins } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { supabaseService } from "@/services/supabaseService";
+import { PropertyImageUpload } from "@/components/PropertyImageUpload";
+import { PropertyDocumentUpload } from "@/components/PropertyDocumentUpload";
+import { toast } from "sonner";
+import {
+  ArrowLeft,
+  FileText,
+  MapPin,
+  DollarSign,
+  Camera,
+  Upload,
+  Coins,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
 const propertyEditSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -27,8 +54,13 @@ const propertyEditSchema = z.object({
   address: z.string().min(5, "Address must be at least 5 characters"),
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),
-  estimated_value: z.number().min(100000, "Property value must be at least ₦100,000"),
-  rental_income_monthly: z.number().min(0, "Rental income cannot be negative").optional(),
+  estimated_value: z
+    .number()
+    .min(100000, "Property value must be at least ₦100,000"),
+  rental_income_monthly: z
+    .number()
+    .min(0, "Rental income cannot be negative")
+    .optional(),
   bedrooms: z.number().min(0).optional(),
   bathrooms: z.number().min(0).optional(),
   year_built: z.number().min(1900).max(new Date().getFullYear()).optional(),
@@ -52,49 +84,49 @@ const PropertyEdit: React.FC = () => {
   const form = useForm<PropertyEditForm>({
     resolver: zodResolver(propertyEditSchema),
     defaultValues: {
-      title: '',
-      property_type: '',
+      title: "",
+      property_type: "",
       estimated_value: 0,
       bedrooms: 0,
       bathrooms: 0,
       year_built: 2023,
-      address: '',
-      city: '',
-      state: '',
-      description: '',
+      address: "",
+      city: "",
+      state: "",
+      description: "",
       rental_income_monthly: 0,
-    }
+    },
   });
 
   // Reset form when property data loads
   React.useEffect(() => {
     if (property) {
+      const location = property.location as any;
       form.reset({
-        title: property.title || '',
-        property_type: property.property_type || '',
+        title: property.title || "",
+        property_type: property.property_type || "",
         estimated_value: Number(property.estimated_value) || 0,
         bedrooms: property.bedrooms || 0,
         bathrooms: property.bathrooms || 0,
         year_built: property.year_built || 2023,
-        address: (property.location as any)?.address || '',
-        city: (property.location as any)?.city || '',
-        state: (property.location as any)?.state || '',
-        description: property.description || '',
+        address: location?.address || "",
+        city: location?.city || "",
+        state: location?.state || "",
+        description: property.description || "",
         rental_income_monthly: Number(property.rental_income_monthly) || 0,
       });
     }
   }, [property, form]);
 
-  const propertyTypes = [
-    "residential",
-    "commercial", 
-    "industrial",
-    "land",
-  ];
+  const propertyTypes = ["residential", "commercial", "industrial", "land"];
 
   const handleNext = async () => {
     if (step === 1) {
-      const isValid = await form.trigger(["title", "description", "property_type"]);
+      const isValid = await form.trigger([
+        "title",
+        "description",
+        "property_type",
+      ]);
       if (!isValid) return;
     }
     if (step === 2) {
@@ -105,7 +137,7 @@ const PropertyEdit: React.FC = () => {
       const isValid = await form.trigger(["estimated_value"]);
       if (!isValid) return;
     }
-    
+
     if (step < 5) setStep(step + 1);
   };
 
@@ -116,13 +148,7 @@ const PropertyEdit: React.FC = () => {
   const getStepProgress = () => ((step - 1) / 4) * 100;
 
   const updatePropertyMutation = useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: any;
-    }) => {
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
       return await supabaseService.properties.updateProperty(id, data);
     },
     onSuccess: () => {
@@ -139,17 +165,20 @@ const PropertyEdit: React.FC = () => {
   });
 
   const onSubmit = (data: PropertyEditForm) => {
+    // Remove individual location fields from root and create location object
+    const { address, city, state, ...propertyData } = data;
+
     updatePropertyMutation.mutate({
       id: propertyId!,
       data: {
-        ...data,
+        ...propertyData,
         location: {
-          address: data.address,
-          city: data.city,
-          state: data.state,
-          country: 'Nigeria',
+          address,
+          city,
+          state,
+          country: "Nigeria",
         },
-      }
+      },
     });
   };
 
@@ -180,7 +209,10 @@ const PropertyEdit: React.FC = () => {
               <FormItem>
                 <FormLabel>Property Title</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="e.g., Luxury Apartment Complex in Victoria Island" />
+                  <Input
+                    {...field}
+                    placeholder="e.g., Luxury Apartment Complex in Victoria Island"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -194,7 +226,11 @@ const PropertyEdit: React.FC = () => {
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Textarea {...field} placeholder="Detailed description of the property..." rows={4} />
+                  <Textarea
+                    {...field}
+                    placeholder="Detailed description of the property..."
+                    rows={4}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -286,7 +322,9 @@ const PropertyEdit: React.FC = () => {
   const renderStep3 = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-4">Property Valuation & Details</h3>
+        <h3 className="text-lg font-semibold mb-4">
+          Property Valuation & Details
+        </h3>
         <div className="space-y-4">
           <FormField
             control={form.control}
@@ -411,7 +449,9 @@ const PropertyEdit: React.FC = () => {
     <div className="space-y-6">
       <div className="text-center">
         <Upload className="h-12 w-12 text-primary mx-auto mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Update Property Documents</h3>
+        <h3 className="text-lg font-semibold mb-2">
+          Update Property Documents
+        </h3>
         <p className="text-muted-foreground mb-6">
           Manage legal documents, certificates, and other required paperwork.
         </p>
@@ -423,36 +463,6 @@ const PropertyEdit: React.FC = () => {
         )}
       </div>
     </div>
-  );
-
-  const TokenizationDialog = () => (
-    <Dialog open={isTokenizeDialogOpen} onOpenChange={setIsTokenizeDialogOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Coins className="w-4 h-4 mr-2" />
-          Tokenize Property
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Tokenize Property</DialogTitle>
-        </DialogHeader>
-        <div className="text-center py-8">
-          <p className="text-muted-foreground mb-4">
-            Tokenization feature will be available soon. This will allow you to create digital tokens
-            representing ownership shares of your property.
-          </p>
-          <Button 
-            onClick={() => {
-              setIsTokenizeDialogOpen(false);
-              navigate(`/property/${propertyId}/tokenize`);
-            }}
-          >
-            Go to Tokenization Setup
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
   );
 
   if (isLoading) {
@@ -502,7 +512,7 @@ const PropertyEdit: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <Link to={`/property/${propertyId}`}>
+        <Link to={`/property/management`}>
           <Button variant="outline" size="sm" className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Property
@@ -517,7 +527,6 @@ const PropertyEdit: React.FC = () => {
               Update your property information using the same steps as creation
             </p>
           </div>
-          <TokenizationDialog />
         </div>
 
         {/* Progress Steps */}
@@ -527,27 +536,45 @@ const PropertyEdit: React.FC = () => {
               const Icon = stepInfo.icon;
               const isActive = step === stepInfo.step;
               const isCompleted = step > stepInfo.step;
-              
+
               return (
                 <div key={stepInfo.step} className="flex items-center">
-                  <div className={`
+                  <div
+                    className={`
                     flex items-center justify-center w-10 h-10 rounded-full border-2 
-                    ${isActive ? 'border-primary bg-primary text-primary-foreground' : 
-                      isCompleted ? 'border-primary bg-primary text-primary-foreground' : 
-                      'border-muted-foreground bg-background text-muted-foreground'}
-                  `}>
+                    ${
+                      isActive
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : isCompleted
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-muted-foreground bg-background text-muted-foreground"
+                    }
+                  `}
+                  >
                     <Icon className="w-5 h-5" />
                   </div>
                   <div className="ml-3">
-                    <div className={`text-sm font-medium ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
+                    <div
+                      className={`text-sm font-medium ${
+                        isActive ? "text-primary" : "text-muted-foreground"
+                      }`}
+                    >
                       Step {stepInfo.step}
                     </div>
-                    <div className={`text-xs ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
+                    <div
+                      className={`text-xs ${
+                        isActive ? "text-primary" : "text-muted-foreground"
+                      }`}
+                    >
                       {stepInfo.title}
                     </div>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`flex-1 h-0.5 mx-4 ${isCompleted ? 'bg-primary' : 'bg-muted'}`} />
+                    <div
+                      className={`flex-1 h-0.5 mx-4 ${
+                        isCompleted ? "bg-primary" : "bg-muted"
+                      }`}
+                    />
                   )}
                 </div>
               );
@@ -592,11 +619,13 @@ const PropertyEdit: React.FC = () => {
                       Next
                     </Button>
                   ) : step === 3 ? (
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       disabled={updatePropertyMutation.isPending}
                     >
-                      {updatePropertyMutation.isPending ? "Updating..." : "Update & Continue"}
+                      {updatePropertyMutation.isPending
+                        ? "Updating..."
+                        : "Update & Continue"}
                     </Button>
                   ) : step < 5 ? (
                     <Button type="button" onClick={handleNext}>

@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { User, Tokenization } from "@/types";
+import { Database } from "@/types/database.types";
 
 export const supabaseService = {
   // Auth services
@@ -587,10 +588,15 @@ export const supabaseService = {
 
   // Tokenizations services
   tokenizations: {
-    async create(tokenizationData: any) {
+    async create(
+      tokenizationData: Database["public"]["Tables"]["tokenizations"]["Insert"]
+    ) {
       // Ensure we have valid auth before attempting insert
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
       if (authError || !user) {
         throw new Error("Authentication required to create tokenization");
       }
@@ -600,7 +606,9 @@ export const supabaseService = {
 
       const { data, error } = await supabase
         .from("tokenizations")
-        .insert(tokenizationData)
+        .insert({
+          ...tokenizationData,
+        })
         .select()
         .single();
 

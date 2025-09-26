@@ -4,13 +4,24 @@ import { supabaseService } from "@/services/supabaseService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Home, Bed, Bath, Calendar, DollarSign, Edit, Image, FileText, Coins } from "lucide-react";
+import {
+  MapPin,
+  Bed,
+  Bath,
+  Calendar,
+  DollarSign,
+  ArrowLeft,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const PropertyView = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
-  
-  const { data: property, isLoading, error } = useQuery({
+
+  const {
+    data: property,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["property", propertyId],
     queryFn: () => supabaseService.properties.getPropertyById(propertyId!),
     enabled: !!propertyId,
@@ -40,7 +51,9 @@ const PropertyView = () => {
       <div className="container mx-auto p-6">
         <Card>
           <CardContent className="text-center py-8">
-            <p className="text-muted-foreground">Property not found or you don't have permission to view it.</p>
+            <p className="text-muted-foreground">
+              Property not found or you don't have permission to view it.
+            </p>
             <Link to="/property/management">
               <Button className="mt-4">Back to Management</Button>
             </Link>
@@ -50,9 +63,10 @@ const PropertyView = () => {
     );
   }
 
-  const primaryImage = property.property_images?.find(img => img.is_primary)?.image_url || 
-                      property.property_images?.[0]?.image_url || 
-                      "/placeholder.svg";
+  const primaryImage =
+    property.property_images?.find((img) => img.is_primary)?.image_url ||
+    property.property_images?.[0]?.image_url ||
+    "/placeholder.svg";
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -61,14 +75,17 @@ const PropertyView = () => {
           <h1 className="text-3xl font-bold">{property.title}</h1>
           <div className="flex items-center text-muted-foreground mt-2">
             <MapPin className="w-4 h-4 mr-2" />
-            <span>{(property.location as any)?.address}, {(property.location as any)?.city}</span>
+            <span>
+              {(property.location as any)?.address},{" "}
+              {(property.location as any)?.city}
+            </span>
           </div>
         </div>
         <div className="flex gap-2">
-          <Link to={`/property/${propertyId}/edit`}>
+          <Link to={`/property/management`}>
             <Button variant="outline">
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Property
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Go Back
             </Button>
           </Link>
         </div>
@@ -84,7 +101,8 @@ const PropertyView = () => {
             />
             <div className="p-4">
               <div className="text-sm text-muted-foreground">
-                Images: {property.property_images?.length || 0} • Documents: {property.property_documents?.length || 0}
+                Images: {property.property_images?.length || 0} • Documents:{" "}
+                {property.property_documents?.length || 0}
               </div>
             </div>
           </CardContent>
@@ -98,11 +116,17 @@ const PropertyView = () => {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Status</span>
-                <Badge variant={property.approval_status === 'approved' ? 'default' : 'secondary'}>
+                <Badge
+                  variant={
+                    property.approval_status === "approved"
+                      ? "default"
+                      : "secondary"
+                  }
+                >
                   {property.approval_status}
                 </Badge>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Type</span>
                 <span>{property.property_type}</span>
@@ -168,16 +192,26 @@ const PropertyView = () => {
                 {property.tokenizations.map((tokenization) => (
                   <div key={tokenization.id} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Status</span>
+                      <span className="text-sm text-muted-foreground">
+                        Status
+                      </span>
                       <Badge>{tokenization.status}</Badge>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Target Raise</span>
-                      <span>₦{tokenization.target_raise?.toLocaleString()}</span>
+                      <span className="text-sm text-muted-foreground">
+                        Target Raise
+                      </span>
+                      <span>
+                        ₦{tokenization.target_raise?.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Current Raise</span>
-                      <span>₦{tokenization.current_raise?.toLocaleString()}</span>
+                      <span className="text-sm text-muted-foreground">
+                        Current Raise
+                      </span>
+                      <span>
+                        ₦{tokenization.current_raise?.toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 ))}

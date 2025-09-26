@@ -7,7 +7,6 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DollarSign,
-  TrendingUp,
   Calendar,
   Eye,
   Edit,
@@ -17,8 +16,6 @@ import {
   BarChart3,
   Wrench,
   AlertTriangle,
-  Upload,
-  FileText,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -101,12 +98,6 @@ const PropertyManagement = () => {
           setSelectedProperty(property);
           setTokenizeDialogOpen(true);
         }
-        break;
-      case "Upload Images":
-        navigate(`/property/${propertyId}/images`);
-        break;
-      case "Upload Documents":
-        navigate(`/property/${propertyId}/documents`);
         break;
       case "Delete":
         if (window.confirm("Are you sure you want to delete this property?")) {
@@ -458,34 +449,6 @@ const PropertyManagement = () => {
                                 >
                                   <Edit className="h-4 w-4 mr-1" />
                                   <span className="hidden sm:inline">Edit</span>
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    handlePropertyAction(
-                                      "Upload Images",
-                                      property.id
-                                    )
-                                  }
-                                >
-                                  <Upload className="h-4 w-4 mr-1" />
-                                  <span className="hidden sm:inline">
-                                    Images
-                                  </span>
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    handlePropertyAction(
-                                      "Upload Documents",
-                                      property.id
-                                    )
-                                  }
-                                >
-                                  <FileText className="h-4 w-4 mr-1" />
-                                  <span className="hidden sm:inline">Docs</span>
                                 </Button>
                                 {property.approval_status === "approved" && (
                                   <Button
