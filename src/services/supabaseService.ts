@@ -1,34 +1,39 @@
-import { supabase } from '@/integrations/supabase/client';
-import { User, Tokenization, Property } from '@/types';
+import { supabase } from "@/integrations/supabase/client";
+import { User, Tokenization } from "@/types";
 
 export const supabaseService = {
   // Auth services
   auth: {
     async getProfile(userId: string): Promise<User | null> {
       const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
+        .from("users")
+        .select("*")
+        .eq("id", userId)
         .single();
-      
+
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error("Error fetching profile:", error);
         return null;
       }
-      
+
       return data as unknown as User;
     },
 
-    async upsertProfile(userId: string, profileData: Partial<User>): Promise<User | null> {
+    async upsertProfile(
+      userId: string,
+      profileData: Partial<User>
+    ): Promise<User | null> {
       // Convert Date fields to ISO strings for database
       const dbData = {
         id: userId,
         ...profileData,
       };
-      
+
       // Convert Date objects to ISO strings if present
       if (dbData.date_of_birth instanceof Date) {
-        (dbData as any).date_of_birth = dbData.date_of_birth.toISOString().split('T')[0];
+        (dbData as any).date_of_birth = dbData.date_of_birth
+          .toISOString()
+          .split("T")[0];
       }
       if (dbData.created_at instanceof Date) {
         (dbData as any).created_at = dbData.created_at.toISOString();
@@ -36,18 +41,18 @@ export const supabaseService = {
       if (dbData.updated_at instanceof Date) {
         (dbData as any).updated_at = dbData.updated_at.toISOString();
       }
-      
+
       const { data, error } = await supabase
-        .from('users')
+        .from("users")
         .upsert(dbData as any)
         .select()
         .single();
-      
+
       if (error) {
-        console.error('Error upserting profile:', error);
+        console.error("Error upserting profile:", error);
         return null;
       }
-      
+
       return data as unknown as User;
     },
   },
@@ -56,7 +61,7 @@ export const supabaseService = {
   properties: {
     async create(propertyData: any, userId: string) {
       const { data, error } = await supabase
-        .from('properties')
+        .from("properties")
         .insert({
           title: propertyData.title,
           description: propertyData.description,
@@ -69,14 +74,14 @@ export const supabaseService = {
           },
           estimated_value: parseFloat(propertyData.totalValue),
           owner_id: userId,
-          approval_status: 'pending',
-          listing_status: 'draft',
+          approval_status: "pending",
+          listing_status: "draft",
         })
         .select()
         .single();
 
       if (error) {
-        console.error('Error creating property:', error);
+        console.error("Error creating property:", error);
         throw error;
       }
 
@@ -85,8 +90,9 @@ export const supabaseService = {
 
     async getOwnedProperties(userId: string) {
       const { data, error } = await supabase
-        .from('properties')
-        .select(`
+        .from("properties")
+        .select(
+          `
           *,
           tokenizations(*),
           property_images(
@@ -101,12 +107,13 @@ export const supabaseService = {
             document_type,
             verification_status
           )
-        `)
-        .eq('owner_id', userId)
-        .order('created_at', { ascending: false });
+        `
+        )
+        .eq("owner_id", userId)
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.error('Error fetching owned properties:', error);
+        console.error("Error fetching owned properties:", error);
         throw error;
       }
 
@@ -115,14 +122,14 @@ export const supabaseService = {
 
     async updateProperty(propertyId: string, updates: any) {
       const { data, error } = await supabase
-        .from('properties')
+        .from("properties")
         .update(updates)
-        .eq('id', propertyId)
+        .eq("id", propertyId)
         .select()
         .single();
 
       if (error) {
-        console.error('Error updating property:', error);
+        console.error("Error updating property:", error);
         throw error;
       }
 
@@ -131,71 +138,80 @@ export const supabaseService = {
 
     async deleteProperty(propertyId: string) {
       const { error } = await supabase
-        .from('properties')
-        .update({ listing_status: 'deleted' })
-        .eq('id', propertyId);
+        .from("properties")
+        .update({ listing_status: "deleted" })
+        .eq("id", propertyId);
 
       if (error) {
-        console.error('Error deleting property:', error);
+        console.error("Error deleting property:", error);
         throw error;
       }
     },
 
-    async uploadPropertyImage(propertyId: string, file: File, isPrimary: boolean = false) {
-      const fileExt = file.name.split('.').pop();
+    async uploadPropertyImage(
+      propertyId: string,
+      file: File,
+      isPrimary: boolean = false
+    ) {
+      const fileExt = file.name.split(".").pop();
       const fileName = `${propertyId}/${Date.now()}.${fileExt}`;
-      
+
       const { error: uploadError } = await supabase.storage
-        .from('property-images')
+        .from("property-images")
         .upload(fileName, file);
 
       if (uploadError) {
-        console.error('Error uploading image:', uploadError);
+        console.error("Error uploading image:", uploadError);
         throw uploadError;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('property-images')
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("property-images").getPublicUrl(fileName);
 
       const { data, error } = await supabase
-        .from('property_images')
+        .from("property_images")
         .insert({
           property_id: propertyId,
           image_url: publicUrl,
           is_primary: isPrimary,
-          sort_order: 0
+          sort_order: 0,
         })
         .select()
         .single();
 
       if (error) {
-        console.error('Error saving image record:', error);
+        console.error("Error saving image record:", error);
         throw error;
       }
 
       return data;
     },
 
-    async uploadPropertyDocument(propertyId: string, file: File, documentType: string, documentName: string) {
-      const fileExt = file.name.split('.').pop();
+    async uploadPropertyDocument(
+      propertyId: string,
+      file: File,
+      documentType: string,
+      documentName: string
+    ) {
+      const fileExt = file.name.split(".").pop();
       const fileName = `${propertyId}/docs/${Date.now()}.${fileExt}`;
-      
+
       const { error: uploadError } = await supabase.storage
-        .from('property-images')
+        .from("property-images")
         .upload(fileName, file);
 
       if (uploadError) {
-        console.error('Error uploading document:', uploadError);
+        console.error("Error uploading document:", uploadError);
         throw uploadError;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('property-images')
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("property-images").getPublicUrl(fileName);
 
       const { data, error } = await supabase
-        .from('property_documents')
+        .from("property_documents")
         .insert({
           property_id: propertyId,
           document_name: documentName,
@@ -203,13 +219,13 @@ export const supabaseService = {
           file_url: publicUrl,
           file_size: file.size,
           mime_type: file.type,
-          verification_status: 'pending'
+          verification_status: "pending",
         })
         .select()
         .single();
 
       if (error) {
-        console.error('Error saving document record:', error);
+        console.error("Error saving document record:", error);
         throw error;
       }
 
@@ -218,18 +234,20 @@ export const supabaseService = {
 
     async getPropertyById(propertyId: string) {
       const { data, error } = await supabase
-        .from('properties')
-        .select(`
+        .from("properties")
+        .select(
+          `
           *,
           tokenizations(*),
           property_images(*),
           property_documents(*)
-        `)
-        .eq('id', propertyId)
+        `
+        )
+        .eq("id", propertyId)
         .single();
 
       if (error) {
-        console.error('Error fetching property:', error);
+        console.error("Error fetching property:", error);
         throw error;
       }
 
@@ -239,20 +257,22 @@ export const supabaseService = {
     async getPropertyFinancials(propertyId: string) {
       // Get tokenization data and investment metrics
       const { data: tokenization, error: tokError } = await supabase
-        .from('tokenizations')
-        .select(`
+        .from("tokenizations")
+        .select(
+          `
           *,
           investments(
             amount_ngn,
             payment_status,
             created_at
           )
-        `)
-        .eq('property_id', propertyId)
+        `
+        )
+        .eq("property_id", propertyId)
         .single();
 
-      if (tokError && tokError.code !== 'PGRST116') {
-        console.error('Error fetching property financials:', tokError);
+      if (tokError && tokError.code !== "PGRST116") {
+        console.error("Error fetching property financials:", tokError);
         throw tokError;
       }
 
@@ -261,8 +281,9 @@ export const supabaseService = {
 
     async listActiveTokenizations(): Promise<Tokenization[]> {
       const { data, error } = await supabase
-        .from('tokenizations')
-        .select(`
+        .from("tokenizations")
+        .select(
+          `
           *,
           properties!inner(
             id,
@@ -271,49 +292,52 @@ export const supabaseService = {
             property_type,
             estimated_value
           )
-        `)
-        .in('status', ['upcoming', 'active', 'completed'])
-        .eq('properties.approval_status', 'approved')
-        .eq('properties.listing_status', 'active');
-      
+        `
+        )
+        .in("status", ["upcoming", "active", "completed"])
+        .eq("properties.approval_status", "approved")
+        .eq("properties.listing_status", "active");
+
       if (error) {
-        console.error('Error fetching tokenizations:', error);
+        console.error("Error fetching tokenizations:", error);
         return [];
       }
-      
+
       return data as unknown as Tokenization[];
     },
 
     async getTokenizationById(id: string): Promise<Tokenization | null> {
       const { data, error } = await supabase
-        .from('tokenizations')
-        .select(`
+        .from("tokenizations")
+        .select(
+          `
           *,
           properties!inner(*)
-        `)
-        .eq('id', id)
+        `
+        )
+        .eq("id", id)
         .single();
-      
+
       if (error) {
-        console.error('Error fetching tokenization:', error);
+        console.error("Error fetching tokenization:", error);
         return null;
       }
-      
+
       return data as unknown as Tokenization;
     },
 
     async getPropertyImages(propertyId: string) {
       const { data, error } = await supabase
-        .from('property_images')
-        .select('*')
-        .eq('property_id', propertyId)
-        .order('sort_order', { ascending: true });
-      
+        .from("property_images")
+        .select("*")
+        .eq("property_id", propertyId)
+        .order("sort_order", { ascending: true });
+
       if (error) {
-        console.error('Error fetching property images:', error);
+        console.error("Error fetching property images:", error);
         return [];
       }
-      
+
       return data;
     },
   },
@@ -322,32 +346,32 @@ export const supabaseService = {
   investments: {
     async create(investmentData: any) {
       const { data, error } = await supabase
-        .from('investments')
+        .from("investments")
         .insert(investmentData)
         .select()
         .single();
-      
+
       if (error) {
-        console.error('Error creating investment:', error);
+        console.error("Error creating investment:", error);
         throw error;
       }
-      
+
       return data;
     },
 
     async update(id: string, updates: any) {
       const { data, error } = await supabase
-        .from('investments')
+        .from("investments")
         .update(updates)
-        .eq('id', id)
+        .eq("id", id)
         .select()
         .single();
-      
+
       if (error) {
-        console.error('Error updating investment:', error);
+        console.error("Error updating investment:", error);
         throw error;
       }
-      
+
       return data;
     },
 
@@ -358,54 +382,61 @@ export const supabaseService = {
       tokens_requested: number;
       payment_method?: string;
     }) {
-      const { data: result, error } = await supabase.rpc('create_investment_with_reservation', {
-        p_tokenization_id: data.tokenization_id,
-        p_investor_id: data.investor_id,
-        p_amount_ngn: data.amount_ngn,
-        p_tokens_requested: data.tokens_requested,
-      });
-      
+      const { data: result, error } = await supabase.rpc(
+        "create_investment_with_reservation",
+        {
+          p_tokenization_id: data.tokenization_id,
+          p_investor_id: data.investor_id,
+          p_amount_ngn: data.amount_ngn,
+          p_tokens_requested: data.tokens_requested,
+        }
+      );
+
       if (error) throw error;
       return result;
     },
 
     async listByUser(userId: string) {
       const { data, error } = await supabase
-        .from('investments')
-        .select(`
+        .from("investments")
+        .select(
+          `
           *,
           tokenizations!inner(
             *,
             properties!inner(*)
           )
-        `)
-        .eq('investor_id', userId);
-      
+        `
+        )
+        .eq("investor_id", userId);
+
       if (error) {
-        console.error('Error fetching investments:', error);
+        console.error("Error fetching investments:", error);
         return [];
       }
-      
+
       return data;
     },
 
     async getTokenHoldings(userId: string) {
       const { data, error } = await supabase
-        .from('token_holdings')
-        .select(`
+        .from("token_holdings")
+        .select(
+          `
           *,
           tokenizations!inner(
             *,
             properties!inner(*)
           )
-        `)
-        .eq('user_id', userId);
-      
+        `
+        )
+        .eq("user_id", userId);
+
       if (error) {
-        console.error('Error fetching token holdings:', error);
+        console.error("Error fetching token holdings:", error);
         return [];
       }
-      
+
       return data;
     },
   },
@@ -414,32 +445,32 @@ export const supabaseService = {
   notifications: {
     async listUnreadByUser(userId: string) {
       const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .is('read_at', null)
-        .order('created_at', { ascending: false });
-      
+        .from("notifications")
+        .select("*")
+        .eq("user_id", userId)
+        .is("read_at", null)
+        .order("created_at", { ascending: false });
+
       if (error) {
-        console.error('Error fetching notifications:', error);
+        console.error("Error fetching notifications:", error);
         return [];
       }
-      
+
       return data;
     },
 
     async markAllAsRead(userId: string) {
       const { error } = await supabase
-        .from('notifications')
+        .from("notifications")
         .update({ read_at: new Date().toISOString() })
-        .eq('user_id', userId)
-        .is('read_at', null);
-      
+        .eq("user_id", userId)
+        .is("read_at", null);
+
       if (error) {
-        console.error('Error marking notifications as read:', error);
+        console.error("Error marking notifications as read:", error);
         return false;
       }
-      
+
       return true;
     },
   },
@@ -448,23 +479,30 @@ export const supabaseService = {
   wallets: {
     async listByUser(userId: string) {
       const { data, error } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', userId);
-      
+        .from("wallets")
+        .select("*")
+        .eq("user_id", userId);
+
       if (error) {
-        console.error('Error fetching wallets:', error);
+        console.error("Error fetching wallets:", error);
         return [];
       }
-      
+
       return data;
     },
 
-    async deductBalance(data: { userId: string; amount: number; reference: string }) {
-      const { data: result, error } = await supabase.functions.invoke('deduct-wallet-balance', {
-        body: data,
-      });
-      
+    async deductBalance(data: {
+      userId: string;
+      amount: number;
+      reference: string;
+    }) {
+      const { data: result, error } = await supabase.functions.invoke(
+        "deduct-wallet-balance",
+        {
+          body: data,
+        }
+      );
+
       if (error) throw error;
       return result;
     },
@@ -476,8 +514,9 @@ export const supabaseService = {
       // Since user_chat_rooms_with_last_message is a view, we'll use the regular chat_rooms
       // and join the data we need
       const { data, error } = await supabase
-        .from('chat_rooms')
-        .select(`
+        .from("chat_rooms")
+        .select(
+          `
           *,
           chat_participants!inner(
             user_id,
@@ -494,52 +533,55 @@ export const supabaseService = {
             token_symbol,
             status
           )
-        `)
-        .eq('chat_participants.user_id', userId);
-      
+        `
+        )
+        .eq("chat_participants.user_id", userId);
+
       if (error) {
-        console.error('Error fetching chat rooms:', error);
+        console.error("Error fetching chat rooms:", error);
         return [];
       }
-      
+
       return data || [];
     },
 
     async getChatMessages(roomId: string) {
       const { data, error } = await supabase
-        .from('chat_messages')
-        .select(`
+        .from("chat_messages")
+        .select(
+          `
           *,
           users!inner(first_name, last_name)
-        `)
-        .eq('room_id', roomId)
-        .order('created_at', { ascending: true });
-      
+        `
+        )
+        .eq("room_id", roomId)
+        .order("created_at", { ascending: true });
+
       if (error) {
-        console.error('Error fetching chat messages:', error);
+        console.error("Error fetching chat messages:", error);
         return [];
       }
-      
+
       return data;
     },
 
     async sendMessage(roomId: string, userId: string, message: string) {
       const { data, error } = await supabase
-        .from('chat_messages')
+        .from("chat_messages")
         .insert({
           room_id: roomId,
           sender_id: userId,
           message_text: message,
-          message_type: 'text'
+          message_type: "text",
         })
         .select()
         .single();
-      
+
       if (error) {
-        console.error('Error sending message:', error);
+        console.error("Error sending message:", error);
         throw error;
       }
-      
+
       return data;
     },
   },
@@ -548,57 +590,64 @@ export const supabaseService = {
   tokenizations: {
     async create(tokenizationData: any) {
       const { data, error } = await supabase
-        .from('tokenizations')
+        .from("tokenizations")
         .insert(tokenizationData)
         .select()
         .single();
-      
+
       if (error) {
-        console.error('Error creating tokenization:', error);
+        console.error("Error creating tokenization:", error);
         throw error;
       }
-      
+
       return data;
     },
 
     async getById(id: string) {
       const { data, error } = await supabase
-        .from('tokenizations')
-        .select('*')
-        .eq('id', id)
+        .from("tokenizations")
+        .select("*")
+        .eq("id", id)
         .single();
-      
+
       if (error) {
-        console.error('Error fetching tokenization:', error);
+        console.error("Error fetching tokenization:", error);
         throw error;
       }
-      
+
       return data;
     },
 
     async getByPropertyId(propertyId: string) {
       const { data, error } = await supabase
-        .from('tokenizations')
-        .select('*')
-        .eq('property_id', propertyId)
-        .order('created_at', { ascending: false });
-      
+        .from("tokenizations")
+        .select("*")
+        .eq("property_id", propertyId)
+        .order("created_at", { ascending: false });
+
       if (error) {
-        console.error('Error fetching tokenizations:', error);
+        console.error("Error fetching tokenizations:", error);
         return [];
       }
-      
+
       return data || [];
     },
   },
 
   // Payments services
   payments: {
-    async initializePaystack(data: { amount: number; email: string; reference: string }) {
-      const { data: result, error } = await supabase.functions.invoke('initialize-paystack-payment', {
-        body: data,
-      });
-      
+    async initializePaystack(data: {
+      amount: number;
+      email: string;
+      reference: string;
+    }) {
+      const { data: result, error } = await supabase.functions.invoke(
+        "initialize-paystack-payment",
+        {
+          body: data,
+        }
+      );
+
       if (error) throw error;
       return result;
     },

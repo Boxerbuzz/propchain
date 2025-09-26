@@ -33,8 +33,7 @@ const PropertyManagement = () => {
 
   const { data: managedProperties = [], isLoading, error, refetch } = useUserProperties();
   const updatePropertyMutation = useUpdateProperty();
-
-  // Mock financial summary since it's not in the service yet
+  
   const financialSummary = {
     totalRevenue: 2500000,
     netProfit: 1800000,
@@ -150,13 +149,6 @@ const PropertyManagement = () => {
           description: `${action} action initiated for property ${propertyId}`,
         });
     }
-  };
-
-  const handleMaintenanceUpdate = (requestId: string, newStatus: string) => {
-    toast({
-      title: "Maintenance Updated",
-      description: `Request ${requestId} status updated to ${newStatus}`,
-    });
   };
 
   const getPriorityColor = (priority: string) => {
