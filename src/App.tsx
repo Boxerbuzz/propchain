@@ -37,7 +37,7 @@ import Notifications from "./pages/settings/Notifications";
 import Security from "./pages/settings/Security";
 import Chat from "./pages/chat/Chat";
 import ChatRoom from "./pages/chat/ChatRoom";
-import RegisterProperty from "./pages/properties/Register";
+import RegisterProperty from "./pages/properties/RegisterProperty";
 import UploadDocs from "./pages/properties/UploadDocs";
 import TermsOfService from "./pages/legal/TermsOfService";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";

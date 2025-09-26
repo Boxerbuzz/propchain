@@ -34,57 +34,15 @@ const PropertyManagement = () => {
   const { data: managedProperties = [], isLoading, error, refetch } = useUserProperties();
   const updatePropertyMutation = useUpdateProperty();
 
-  // Mock financial summary since it's not in the service yet
+  // Financial summary - connect to real DB when available
   const financialSummary = {
-    totalRevenue: 2500000,
-    netProfit: 1800000,
-    occupancyRate: 85,
-    totalInvestors: 42
+    totalRevenue: 0,
+    netProfit: 0,
+    occupancyRate: 0,
+    totalInvestors: 0
   };
 
-  // Mock maintenance requests using useMemo to ensure stable reference
-  const maintenanceRequests = useMemo(
-    () => [
-      {
-        id: "req1",
-        propertyId: "prop1",
-        unit: "Unit 4A",
-        issue: "HVAC system not working properly",
-        priority: "high",
-        status: "pending",
-        reportedDate: "2024-09-18",
-        estimatedCost: 850,
-        actualCost: null,
-        description:
-          "Tenant reports inconsistent heating and cooling. May need professional inspection.",
-      },
-      {
-        id: "req2",
-        propertyId: "prop1",
-        unit: "Common Area",
-        issue: "Elevator maintenance required",
-        priority: "medium",
-        status: "in-progress",
-        reportedDate: "2024-09-15",
-        estimatedCost: 1200,
-        actualCost: null,
-        description: "Scheduled quarterly maintenance for elevator system.",
-      },
-      {
-        id: "req3",
-        propertyId: "prop2",
-        unit: "Office 2B",
-        issue: "Window leak during rain",
-        priority: "low",
-        status: "completed",
-        reportedDate: "2024-09-10",
-        estimatedCost: 320,
-        actualCost: 320,
-        description: "Water seepage through window seal during heavy rain.",
-      },
-    ],
-    []
-  );
+  // No maintenance requests - this feature needs to be implemented with proper DB tables
 
   const recentActivity = useMemo(
     () => [
@@ -582,64 +540,15 @@ const PropertyManagement = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {maintenanceRequests.map((request) => (
-                        <div key={request.id} className="border rounded-lg p-4">
-                          <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-3">
-                            <div>
-                              <div className="flex flex-wrap items-center gap-2 mb-2">
-                                <h4 className="font-medium">{request.issue}</h4>
-                                <Badge
-                                  variant="secondary"
-                                  className={getPriorityColor(request.priority)}
-                                >
-                                  {request.priority} priority
-                                </Badge>
-                                <Badge
-                                  variant="secondary"
-                                  className={getStatusColor(request.status)}
-                                >
-                                  {request.status}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                {request.unit} • Reported {request.reportedDate}
-                              </p>
-                              <p className="text-sm mt-1">
-                                {request.description}
-                              </p>
-                            </div>
-                            <div className="text-right mt-2 md:mt-0">
-                              <p className="font-semibold">
-                                $
-                                {(
-                                  request.estimatedCost || request.actualCost
-                                ).toLocaleString()}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {request.actualCost
-                                  ? "Actual cost"
-                                  : "Estimated cost"}
-                              </p>
-                            </div>
-                          </div>
-
-                          {request.status !== "completed" && (
-                            <div className="flex flex-wrap gap-2">
-                              <Button size="sm" variant="outline">
-                                Update Status
-                              </Button>
-                              <Button size="sm" variant="outline">
-                                Assign Contractor
-                              </Button>
-                              <Button size="sm" variant="outline">
-                                <MessageSquare className="h-3 w-3 mr-1" />
-                                Contact Tenant
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                    <div className="text-center py-8">
+                      <Wrench className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-4">
+                        No maintenance requests yet. This feature will be available once you have active properties with proper maintenance tracking.
+                      </p>
+                      <Button variant="outline" size="sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Maintenance Request
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -740,33 +649,10 @@ const PropertyManagement = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {maintenanceRequests
-                    .filter(
-                      (req) =>
-                        req.priority === "high" && req.status === "pending"
-                    )
-                    .map((request) => (
-                      <div
-                        key={request.id}
-                        className="p-3 bg-red-50 dark:bg-red-950/20 rounded-lg"
-                      >
-                        <p className="text-sm font-medium">{request.issue}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {request.unit}
-                        </p>
-                        <Button size="sm" className="mt-2 w-full">
-                          Resolve Now
-                        </Button>
-                      </div>
-                    ))}
-                  {maintenanceRequests.filter(
-                    (req) => req.priority === "high" && req.status === "pending"
-                  ).length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No urgent issues at this time
-                    </p>
-                  )}
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    No urgent issues at the moment
+                  </p>
                 </div>
               </CardContent>
             </Card>
