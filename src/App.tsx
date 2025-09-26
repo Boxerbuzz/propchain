@@ -26,6 +26,7 @@ import Review from "./pages/kyc/Review";
 import KYCStatus from "./pages/kyc/Status";
 import Dashboard from "./pages/Dashboard";
 import UnifiedWalletSetup from "./pages/wallet/UnifiedSetup";
+import WalletDashboard from "./pages/wallet/Dashboard";
 import PropertyManagement from "./pages/property/Management";
 import PropertyView from "./pages/property/PropertyView";
 import PropertyEdit from "./pages/property/PropertyEdit";
@@ -37,7 +38,7 @@ import Notifications from "./pages/settings/Notifications";
 import Security from "./pages/settings/Security";
 import Chat from "./pages/chat/Chat";
 import ChatRoom from "./pages/chat/ChatRoom";
-import RegisterProperty from "./pages/properties/Register";
+import RegisterProperty from "./pages/properties/RegisterProperty";
 import UploadDocs from "./pages/properties/UploadDocs";
 import TermsOfService from "./pages/legal/TermsOfService";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
@@ -92,6 +93,7 @@ const App = () => (
                   element={<PortfolioDetail />}
                 />
                 <Route path="/wallet/setup" element={<UnifiedWalletSetup />} />
+                <Route path="/wallet/dashboard" element={<WalletDashboard />} />
                 <Route
                   path="/property/management"
                   element={<PropertyManagement />}

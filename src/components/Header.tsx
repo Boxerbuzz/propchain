@@ -314,48 +314,48 @@ export default function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="w-72 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800 shadow-2xl rounded-md overflow-hidden backdrop-blur-sm"
+                  className="w-80 bg-card border border-border shadow-lg"
                   align="end"
                   forceMount
                 >
-                  <DropdownMenuLabel className="font-normal p-0 rounded-md">
-                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 p-4 border-b border-blue-200/50 dark:border-blue-700/50 rounded-t-md">
+                  <DropdownMenuLabel className="font-normal p-0">
+                    <div className="bg-gradient-to-br from-primary/5 to-secondary/5 p-4 border-b border-border">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-800">
-                          <User className="h-6 w-6 text-white" />
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shadow-md ring-2 ring-background">
+                          <User className="h-6 w-6 text-primary-foreground" />
                         </div>
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        <div className="flex flex-col space-y-1 min-w-0">
+                          <p className="text-sm font-semibold text-card-foreground truncate">
                             {user?.first_name} {user?.last_name}
                           </p>
-                          <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                          <p className="text-xs text-primary font-medium truncate">
                             {user?.email}
                           </p>
                         </div>
                       </div>
                     </div>
                   </DropdownMenuLabel>
-                  <div className="p-1">
+                  <div className="p-2">
                     {userMenuItems.slice(0, -1).map((item) => (
                       <DropdownMenuItem key={item.name} asChild className="p-0">
                         <Link
                           to={item.href}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-gray-700 dark:text-gray-300 transition-all duration-200 group"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-card-foreground hover:bg-muted/50 transition-all duration-200 group"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 flex items-center justify-center transition-colors duration-200">
-                            <item.icon className="h-4 w-4" />
+                          <div className="w-8 h-8 rounded-lg bg-muted group-hover:bg-primary/10 flex items-center justify-center transition-colors duration-200">
+                            <item.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
                           </div>
                           <span className="font-medium">{item.name}</span>
                         </Link>
                       </DropdownMenuItem>
                     ))}
                   </div>
-                  <div className="border-t border-blue-200/50 dark:border-blue-700/50 p-1">
+                  <div className="border-t border-border p-2">
                     <DropdownMenuItem
                       onClick={() => logout()}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 focus:bg-red-50 dark:focus:bg-red-900/20 transition-all duration-200 group"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 focus:bg-destructive/10 transition-all duration-200 group"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 group-hover:bg-red-200 dark:group-hover:bg-red-900/50 flex items-center justify-center transition-colors duration-200">
+                      <div className="w-8 h-8 rounded-lg bg-destructive/10 group-hover:bg-destructive/20 flex items-center justify-center transition-colors duration-200">
                         <LogOut className="h-4 w-4" />
                       </div>
                       <span className="font-medium">Logout</span>

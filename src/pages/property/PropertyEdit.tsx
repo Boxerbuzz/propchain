@@ -162,9 +162,17 @@ const PropertyEdit = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Edit Property</h1>
-        <Button variant="outline" onClick={() => navigate(`/property/${propertyId}/view`)}>
-          Cancel
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate(`/property/${propertyId}/images`)}>
+            Manage Images
+          </Button>
+          <Button variant="outline" onClick={() => navigate(`/property/${propertyId}/documents`)}>
+            Manage Documents
+          </Button>
+          <Button variant="outline" onClick={() => navigate(`/property/${propertyId}/view`)}>
+            Cancel
+          </Button>
+        </div>
       </div>
 
       <Card>
