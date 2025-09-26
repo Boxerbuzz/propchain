@@ -1,1 +1,4 @@
 project_id = "zjtqptljuggbymcoovey"
+
+[functions.upload-to-hfs]
+verify_jwt = true

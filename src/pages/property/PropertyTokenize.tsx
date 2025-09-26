@@ -17,6 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 import MoneyInput from '@/components/ui/money-input';
 import { useAuth } from "@/context/AuthContext";
+import { useTokenizationHederaSetup } from "@/hooks/useTokenizationHederaSetup";
 
 const tokenizationSchema = z.object({
   token_name: z.string().min(1, "Token name is required"),
@@ -40,6 +41,9 @@ const PropertyTokenize = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
+  
+  // Setup Hedera token creation for auto-approved tokenizations
+  useTokenizationHederaSetup();
 
   const { data: property, isLoading } = useQuery({
     queryKey: ["property", propertyId],

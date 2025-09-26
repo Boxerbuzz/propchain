@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Upload, FileText, CheckCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabaseService } from "@/services/supabaseService";
+import { supabase } from "@/integrations/supabase/client";
 import { Spinner } from "@/components/ui/spinner";
 
 interface PropertyDocumentUploadProps {
@@ -44,17 +45,49 @@ export const PropertyDocumentUpload = ({
         
         if (!docType) continue;
 
+        // First upload to Supabase Storage
         await supabaseService.properties.uploadPropertyDocument(
           propertyId, 
           file,
           selectedType,
           docType.name
         );
+
+        // Then upload to HFS (Hedera File Service)
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('fileName', docType.name);
+        formData.append('propertyId', propertyId);
+
+        const { data: hfsResult, error: hfsError } = await supabase.functions.invoke(
+          'upload-to-hfs',
+          {
+            body: formData,
+          }
+        );
+
+        if (hfsError) {
+          console.error('HFS upload error:', hfsError);
+        } else if (hfsResult?.success) {
+          // Update the document record with HFS details
+          await supabase
+            .from('property_documents')
+            .update({
+              hfs_file_id: hfsResult.data.fileId,
+              file_hash: hfsResult.data.fileHash,
+            })
+            .eq('property_id', propertyId)
+            .eq('document_type', selectedType)
+            .order('uploaded_at', { ascending: false })
+            .limit(1);
+
+          console.log('Document uploaded to HFS:', hfsResult.data);
+        }
       }
 
       toast({
         title: "Documents uploaded successfully",
-        description: `${files.length} document(s) uploaded`,
+        description: `${files.length} document(s) uploaded to storage and HFS`,
       });
 
       setSelectedType("");
