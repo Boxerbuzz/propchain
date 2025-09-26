@@ -21,12 +21,21 @@ import {
   Settings
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useWalletConnect } from "@/hooks/useWalletConnect";
 
 const WalletDashboard = () => {
   const { toast } = useToast();
   const [showBalance, setShowBalance] = useState(true);
   const [depositAmount, setDepositAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  
+  const { 
+    connectedWallets, 
+    disconnectExternalWallet,
+    getActiveWallet,
+    hasExternalWallet,
+    hasCustodialWallet
+  } = useWalletConnect();
 
   // Mock wallet data
   const walletData = {
@@ -34,12 +43,7 @@ const WalletDashboard = () => {
     pendingDeposits: 500,
     totalDeposited: 50000,
     totalWithdrawn: 25000,
-    walletAddress: "0x742d35Cc6634C0532925a3b8D43Df8f6c4C7d28C",
-    connectedWallets: [
-      { type: "MetaMask", address: "0x742d...d28C", connected: true },
-      { type: "Coinbase", address: "Not connected", connected: false },
-      { type: "WalletConnect", address: "Not connected", connected: false }
-    ]
+    walletAddress: getActiveWallet()?.address || "No wallet connected"
   };
 
   const transactions = [
@@ -351,27 +355,54 @@ const WalletDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {walletData.connectedWallets.map((wallet, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <Wallet className="h-5 w-5 text-muted-foreground" />
-                            <div>
-                              <p className="font-medium">{wallet.type}</p>
-                              <p className="text-sm text-muted-foreground">{wallet.address}</p>
+                      {connectedWallets.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Wallet className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p className="mb-4">No wallets connected</p>
+                          <Button onClick={() => window.location.href = '/wallet/connect'}>
+                            Connect Wallet
+                          </Button>
+                        </div>
+                      ) : (
+                        connectedWallets.map((wallet, index) => (
+                          <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <Wallet className="h-5 w-5 text-muted-foreground" />
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">{wallet.name}</p>
+                                  <Badge 
+                                    variant="secondary" 
+                                    className={wallet.type === 'custodial' ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"}
+                                  >
+                                    {wallet.type === 'custodial' ? 'Custodial' : 'External'}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground font-mono">
+                                  {wallet.address.length > 20 
+                                    ? `${wallet.address.substring(0, 10)}...${wallet.address.substring(wallet.address.length - 10)}`
+                                    : wallet.address
+                                  }
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                          {wallet.connected ? (
                             <div className="flex items-center gap-2">
                               <Badge variant="secondary" className="bg-green-100 text-green-800">
                                 Connected
                               </Badge>
-                              <Button variant="outline" size="sm">Disconnect</Button>
+                              {wallet.type === 'external' && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => disconnectExternalWallet()}
+                                >
+                                  Disconnect
+                                </Button>
+                              )}
                             </div>
-                          ) : (
-                            <Button size="sm">Connect</Button>
-                          )}
-                        </div>
-                      ))}
+                          </div>
+                        ))
+                      )}
                     </div>
                   </CardContent>
                 </Card>
