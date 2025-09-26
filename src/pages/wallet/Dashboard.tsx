@@ -28,15 +28,23 @@ import { useToast } from "@/hooks/use-toast";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
-import { useWalletTransactions, type Transaction } from "@/hooks/useWalletTransactions";
+import {
+  useWalletTransactions,
+  type Transaction,
+} from "@/hooks/useWalletTransactions";
 import { useAuth } from "@/context/AuthContext";
-import { TransactionFilters, type FilterOptions } from "@/components/TransactionFilters";
+import {
+  TransactionFilters,
+  type FilterOptions,
+} from "@/components/TransactionFilters";
 
 const WalletDashboard = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [showBalance, setShowBalance] = useState(true);
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<
+    Transaction[]
+  >([]);
 
   const {
     connectedWallets,
@@ -48,32 +56,49 @@ const WalletDashboard = () => {
 
   const { stats, wallets, isLoading: dashboardLoading } = useDashboard();
   const { balance: hederaBalance, syncBalance, isSyncing } = useWalletBalance();
-  const { transactions: allTransactions, isLoading: transactionsLoading, refetch: refetchTransactions } = useWalletTransactions();
+  const {
+    transactions: allTransactions,
+    isLoading: transactionsLoading,
+    refetch: refetchTransactions,
+  } = useWalletTransactions();
 
   // Calculate transaction summaries with proper NGN conversion
-  const transactionSummary = (allTransactions || []).reduce((acc, tx) => {
-    let amountInNGN = tx.amount || 0;
-    
-    // Convert HBAR to NGN if it's a HBAR transaction
-    if (tx.currency === 'HBAR' && hederaBalance?.balanceNgn && hederaBalance?.balanceHbar && hederaBalance.balanceHbar > 0) {
-      const hbarToNgnRate = hederaBalance.balanceNgn / hederaBalance.balanceHbar;
-      amountInNGN = (tx.amount || 0) * hbarToNgnRate;
-    }
-    
-    if (tx.type === 'deposit' || tx.type === 'dividend') {
-      acc.totalDeposited += amountInNGN;
-    } else if (tx.type === 'withdrawal' || tx.type === 'investment') {
-      acc.totalWithdrawn += amountInNGN;
-    }
-    return acc;
-  }, { totalDeposited: 0, totalWithdrawn: 0 });
+  const transactionSummary = (allTransactions || []).reduce(
+    (acc, tx) => {
+      let amountInNGN = tx.amount || 0;
+
+      // Convert HBAR to NGN if it's a HBAR transaction
+      if (
+        tx.currency === "HBAR" &&
+        hederaBalance?.balanceNgn &&
+        hederaBalance?.balanceHbar &&
+        hederaBalance.balanceHbar > 0
+      ) {
+        const hbarToNgnRate =
+          hederaBalance.balanceNgn / hederaBalance.balanceHbar;
+        amountInNGN = (tx.amount || 0) * hbarToNgnRate;
+      }
+
+      if (tx.type === "deposit" || tx.type === "dividend") {
+        acc.totalDeposited += amountInNGN;
+      } else if (tx.type === "withdrawal" || tx.type === "investment") {
+        acc.totalWithdrawn += amountInNGN;
+      }
+      return acc;
+    },
+    { totalDeposited: 0, totalWithdrawn: 0 }
+  );
 
   // Real wallet data from user's account
   const walletData = {
     balance: stats.walletBalance,
     balanceHbar: hederaBalance?.balanceHbar || 0,
     balanceUsd: hederaBalance?.balanceUsd || 0,
-    pendingDeposits: (allTransactions || []).filter(tx => tx.status === 'pending' && (tx.type === 'deposit' || tx.type === 'dividend')).length,
+    pendingDeposits: (allTransactions || []).filter(
+      (tx) =>
+        tx.status === "pending" &&
+        (tx.type === "deposit" || tx.type === "dividend")
+    ).length,
     totalDeposited: transactionSummary.totalDeposited,
     totalWithdrawn: transactionSummary.totalWithdrawn,
     walletAddress: user?.hedera_account_id || "No wallet connected",
@@ -87,48 +112,49 @@ const WalletDashboard = () => {
     // Search filter
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
-      filtered = filtered.filter(tx => 
-        tx.description?.toLowerCase().includes(searchTerm) ||
-        tx.method.toLowerCase().includes(searchTerm) ||
-        tx.reference?.toLowerCase().includes(searchTerm) ||
-        tx.hash?.toLowerCase().includes(searchTerm)
+      filtered = filtered.filter(
+        (tx) =>
+          tx.description?.toLowerCase().includes(searchTerm) ||
+          tx.method.toLowerCase().includes(searchTerm) ||
+          tx.reference?.toLowerCase().includes(searchTerm) ||
+          tx.hash?.toLowerCase().includes(searchTerm)
       );
     }
 
     // Type filter
-    if (filters.type !== 'all') {
-      filtered = filtered.filter(tx => tx.type === filters.type);
+    if (filters.type !== "all") {
+      filtered = filtered.filter((tx) => tx.type === filters.type);
     }
 
     // Status filter
-    if (filters.status !== 'all') {
-      filtered = filtered.filter(tx => tx.status === filters.status);
+    if (filters.status !== "all") {
+      filtered = filtered.filter((tx) => tx.status === filters.status);
     }
 
     // Date range filter
-    if (filters.dateRange !== 'all') {
+    if (filters.dateRange !== "all") {
       const now = new Date();
       const filterDate = new Date();
 
       switch (filters.dateRange) {
-        case 'today':
+        case "today":
           filterDate.setHours(0, 0, 0, 0);
           break;
-        case 'week':
+        case "week":
           filterDate.setDate(now.getDate() - 7);
           break;
-        case 'month':
+        case "month":
           filterDate.setMonth(now.getMonth() - 1);
           break;
-        case 'quarter':
+        case "quarter":
           filterDate.setMonth(now.getMonth() - 3);
           break;
-        case 'year':
+        case "year":
           filterDate.setFullYear(now.getFullYear() - 1);
           break;
       }
 
-      filtered = filtered.filter(tx => new Date(tx.timestamp) >= filterDate);
+      filtered = filtered.filter((tx) => new Date(tx.timestamp) >= filterDate);
     }
 
     setFilteredTransactions(filtered);
@@ -196,18 +222,18 @@ const WalletDashboard = () => {
     }
   };
 
-    const getStatusColor = (status: string) => {
-      switch (status) {
-        case "completed":
-          return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
-        case "pending":
-          return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
-        case "failed":
-          return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-        default:
-          return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
-      }
-    };
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+      case "pending":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
+      case "failed":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background py-4 md:py-8">
@@ -227,10 +253,14 @@ const WalletDashboard = () => {
                 handleSyncBalance();
                 refetchTransactions();
               }}
-              disabled={isSyncing || transactionsLoading || !user?.hedera_account_id}
+              disabled={
+                isSyncing || transactionsLoading || !user?.hedera_account_id
+              }
             >
               <RefreshCw
-                className={`h-4 w-4 mr-2 ${isSyncing || transactionsLoading ? "animate-spin" : ""}`}
+                className={`h-4 w-4 mr-2 ${
+                  isSyncing || transactionsLoading ? "animate-spin" : ""
+                }`}
               />
               <span className="hidden sm:inline">
                 {isSyncing || transactionsLoading ? "Syncing..." : "Sync All"}
@@ -272,12 +302,11 @@ const WalletDashboard = () => {
                   ? `₦${walletData.balance.toLocaleString()}`
                   : "••••••"}
               </div>
-              <p className="text-sm text-muted-foreground">
-                Available for investments
-              </p>
               {walletData.balanceHbar > 0 && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  {walletData.balanceHbar.toFixed(4)} HBAR • ${walletData.balanceUsd.toFixed(2)} • ₦{(hederaBalance?.balanceNgn || 0).toLocaleString()}
+                  {walletData.balanceHbar.toFixed(4)} HBAR • $
+                  {walletData.balanceUsd.toFixed(2)} • ₦
+                  {(hederaBalance?.balanceNgn || 0).toLocaleString()}
                 </p>
               )}
               {walletData.lastSyncAt && (
@@ -344,7 +373,7 @@ const WalletDashboard = () => {
                       totalCount={allTransactions.length}
                       filteredCount={filteredTransactions.length}
                     />
-                    
+
                     <div className="space-y-4">
                       {transactionsLoading ? (
                         <div className="text-center py-8 text-muted-foreground">
@@ -356,31 +385,42 @@ const WalletDashboard = () => {
                           <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
                           <p>No transactions found</p>
                           <p className="text-sm">
-                            {allTransactions.length > 0 ? 'Try adjusting your filters' : 'Your wallet activity will appear here'}
+                            {allTransactions.length > 0
+                              ? "Try adjusting your filters"
+                              : "Your wallet activity will appear here"}
                           </p>
                         </div>
                       ) : (
                         filteredTransactions.slice(0, 50).map((transaction) => (
                           <div
                             key={transaction.id}
-                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors group"
+                            className="flex items-center justify-between p-4 border rounded-lg transition-colors group cursor-pointer"
+                            onClick={() => {
+                              window.open(transaction.explorerUrl, "_blank");
+                            }}
                           >
                             <div className="flex items-center gap-3">
-                              {getTransactionIcon(transaction.type)}
+                              <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full w-10 h-10 flex items-center justify-center border border-blue-200 dark:border-blue-700">
+                                {getTransactionIcon(transaction.type)}
+                              </div>
+
                               <div>
                                 <div className="flex items-center gap-2">
                                   <p className="font-medium capitalize">
-                                    {transaction.type.replace('_', ' ')}
+                                    {transaction.type.replace("_", " ")}
                                   </p>
                                   <Badge
                                     variant="secondary"
-                                    className={getStatusColor(transaction.status)}
+                                    className={getStatusColor(
+                                      transaction.status
+                                    )}
                                   >
                                     {transaction.status}
                                   </Badge>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                  {transaction.description || transaction.method}
+                                  {transaction.description ||
+                                    transaction.method}
                                 </p>
                                 {transaction.reference && (
                                   <p className="text-xs text-muted-foreground font-mono">
@@ -390,43 +430,58 @@ const WalletDashboard = () => {
                               </div>
                             </div>
                             <div className="text-right">
-                               <p
+                              <p
                                 className={`font-semibold ${
-                                  transaction.direction === 'incoming'
+                                  transaction.direction === "incoming"
                                     ? "text-green-600"
                                     : "text-red-600"
                                 }`}
                               >
-                                {transaction.direction === 'incoming' ? '+' : '-'}
-                                {transaction.currency === 'HBAR' 
+                                {transaction.direction === "incoming"
+                                  ? "+"
+                                  : "-"}
+                                {transaction.currency === "HBAR"
                                   ? `${transaction.amount.toFixed(4)} HBAR`
-                                  : transaction.currency === 'NGN'
+                                  : transaction.currency === "NGN"
                                   ? `₦${transaction.amount.toLocaleString()}`
                                   : `${transaction.amount} ${transaction.currency}`}
                               </p>
-                              {transaction.currency === 'HBAR' && hederaBalance?.balanceNgn && (
-                                <p className="text-xs text-muted-foreground">
-                                  ≈ ₦{((transaction.amount * (hederaBalance.balanceNgn / hederaBalance.balanceHbar)) || 0).toLocaleString()}
-                                </p>
-                              )}
-                               <p className="text-xs text-muted-foreground">
-                                 {(() => {
-                                   const date = new Date(transaction.timestamp);
-                                   return isNaN(date.getTime()) ? '—' : date.toLocaleString('en-US', {
-                                     month: 'short',
-                                     day: 'numeric',
-                                     year: 'numeric',
-                                     hour: '2-digit',
-                                     minute: '2-digit'
-                                   });
-                                 })()}
-                               </p>
+                              {transaction.currency === "HBAR" &&
+                                hederaBalance?.balanceNgn && (
+                                  <p className="text-xs text-muted-foreground">
+                                    ≈ ₦
+                                    {(
+                                      transaction.amount *
+                                        (hederaBalance.balanceNgn /
+                                          hederaBalance.balanceHbar) || 0
+                                    ).toLocaleString()}
+                                  </p>
+                                )}
+                              <p className="text-xs text-muted-foreground">
+                                {(() => {
+                                  const date = new Date(transaction.timestamp);
+                                  return isNaN(date.getTime())
+                                    ? "—"
+                                    : date.toLocaleString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      });
+                                })()}
+                              </p>
                               {transaction.explorerUrl && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   className="h-6 p-1"
-                                  onClick={() => window.open(transaction.explorerUrl, '_blank')}
+                                  onClick={() =>
+                                    window.open(
+                                      transaction.explorerUrl,
+                                      "_blank"
+                                    )
+                                  }
                                 >
                                   <ExternalLink className="h-3 w-3" />
                                 </Button>
@@ -484,12 +539,12 @@ const WalletDashboard = () => {
                                   </span>
                                 )}
                                 {method.isDefault && (
-                                   <Badge
-                                     variant="secondary"
-                                     className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 dark:from-blue-900/30 dark:to-purple-900/30 dark:text-blue-300"
-                                   >
-                                     Default
-                                   </Badge>
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 dark:from-blue-900/30 dark:to-purple-900/30 dark:text-blue-300"
+                                  >
+                                    Default
+                                  </Badge>
                                 )}
                               </div>
                             </div>
@@ -525,7 +580,11 @@ const WalletDashboard = () => {
                             <Wallet className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                           </div>
                           <p className="mb-4">No wallets connected</p>
-                          <Button onClick={() => window.location.href = '/wallet/setup'}>
+                          <Button
+                            onClick={() =>
+                              (window.location.href = "/wallet/setup")
+                            }
+                          >
                             Connect Wallet
                           </Button>
                         </div>
@@ -535,43 +594,38 @@ const WalletDashboard = () => {
                             key={index}
                             className="flex items-center justify-between p-4 border rounded-lg"
                           >
-                             <div className="flex items-center gap-3">
-                               <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg w-10 h-10 flex items-center justify-center border border-blue-200 dark:border-blue-700">
-                                 <Wallet className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                               </div>
-                               <div>
-                                 <div className="flex items-center gap-2">
-                                   <p className="font-medium">{wallet.name}</p>
-                                   <Badge
-                                     variant="secondary"
-                                     className={
-                                       wallet.type === "custodial"
-                                         ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                                         : "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
-                                     }
-                                   >
-                                     {wallet.type === "custodial"
-                                       ? "Custodial Wallet"
-                                       : "External Wallet"}
-                                   </Badge>
-                                 </div>
-                                 <p className="text-sm text-muted-foreground font-mono">
-                                   {wallet.address.length > 20
-                                     ? `${wallet.address.substring(
-                                         0,
-                                         10
-                                       )}...${wallet.address.substring(
-                                         wallet.address.length - 10
-                                       )}`
-                                     : wallet.address}
-                                 </p>
-                                 <p className="text-xs text-muted-foreground">
-                                   {wallet.type === "custodial" 
-                                     ? "Managed by the platform for security"
-                                     : "Connected via WalletConnect"}
-                                 </p>
-                               </div>
-                             </div>
+                            <div className="flex items-center gap-3">
+                              <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full w-10 h-10 flex items-center justify-center border border-blue-200 dark:border-blue-700">
+                                <Wallet className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">{wallet.name}</p>
+                                  <Badge
+                                    variant="secondary"
+                                    className={
+                                      wallet.type === "custodial"
+                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                                        : "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
+                                    }
+                                  >
+                                    {wallet.type === "custodial"
+                                      ? "Custodial Wallet"
+                                      : "External Wallet"}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground font-mono">
+                                  {wallet.address.length > 20
+                                    ? `${wallet.address.substring(
+                                        0,
+                                        10
+                                      )}...${wallet.address.substring(
+                                        wallet.address.length - 10
+                                      )}`
+                                    : wallet.address}
+                                </p>
+                              </div>
+                            </div>
                             <div className="flex items-center gap-2">
                               <Badge
                                 variant="secondary"
@@ -601,7 +655,6 @@ const WalletDashboard = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-
             {/* Wallet Address */}
             <Card>
               <CardHeader>
