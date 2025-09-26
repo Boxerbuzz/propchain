@@ -1386,7 +1386,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_chat_rooms_with_last_message: {
+        Row: {
+          joined_at: string | null
+          last_message: string | null
+          last_message_at: string | null
+          last_message_type: string | null
+          last_seen_at: string | null
+          last_sender_first_name: string | null
+          last_sender_last_name: string | null
+          property_location: Json | null
+          property_title: string | null
+          role: string | null
+          room_description: string | null
+          room_id: string | null
+          room_name: string | null
+          room_type: string | null
+          token_symbol: string | null
+          tokenization_status: string | null
+          unread_count: number | null
+          user_id: string | null
+          voting_power: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_participants_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_user_to_chat_room: {
