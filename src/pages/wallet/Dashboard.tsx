@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -30,7 +30,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
+import { useWalletTransactions, type Transaction } from "@/hooks/useWalletTransactions";
 import { useAuth } from "@/context/AuthContext";
+import { TransactionFilters, type FilterOptions } from "@/components/TransactionFilters";
 
 const WalletDashboard = () => {
   const { toast } = useToast();
@@ -38,6 +40,7 @@ const WalletDashboard = () => {
   const [showBalance, setShowBalance] = useState(true);
   const [depositAmount, setDepositAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
 
   const {
     connectedWallets,
@@ -49,33 +52,88 @@ const WalletDashboard = () => {
 
   const { stats, wallets, isLoading: dashboardLoading } = useDashboard();
   const { balance: hederaBalance, syncBalance, isSyncing } = useWalletBalance();
+  const { transactions: allTransactions, isLoading: transactionsLoading, refetch: refetchTransactions } = useWalletTransactions();
+
+  // Calculate transaction summaries
+  const transactionSummary = (allTransactions || []).reduce((acc, tx) => {
+    if (tx.type === 'deposit' || tx.type === 'dividend') {
+      acc.totalDeposited += tx.amount;
+    } else if (tx.type === 'withdrawal' || tx.type === 'investment') {
+      acc.totalWithdrawn += tx.amount;
+    }
+    return acc;
+  }, { totalDeposited: 0, totalWithdrawn: 0 });
 
   // Real wallet data from user's account
   const walletData = {
     balance: stats.walletBalance,
     balanceHbar: hederaBalance?.balanceHbar || 0,
     balanceUsd: hederaBalance?.balanceUsd || 0,
-    pendingDeposits: 0, // TODO: Calculate from pending transactions
-    totalDeposited: 0, // TODO: Calculate from wallet transactions
-    totalWithdrawn: 0, // TODO: Calculate from wallet transactions
+    pendingDeposits: (allTransactions || []).filter(tx => tx.status === 'pending' && (tx.type === 'deposit' || tx.type === 'dividend')).length,
+    totalDeposited: transactionSummary.totalDeposited,
+    totalWithdrawn: transactionSummary.totalWithdrawn,
     walletAddress: user?.hedera_account_id || "No wallet connected",
     lastSyncAt: hederaBalance?.lastSyncAt,
   };
 
-  // TODO: Replace with real transaction data from database
-  const transactions = [
-    {
-      id: "sync-" + Date.now(),
-      type: "sync",
-      amount: walletData.balanceHbar,
-      status: "completed",
-      date: hederaBalance?.lastSyncAt
-        ? new Date(hederaBalance.lastSyncAt).toISOString().split("T")[0]
-        : new Date().toISOString().split("T")[0],
-      method: "Hedera Balance Sync",
-      hash: user?.hedera_account_id || "",
-    },
-  ].filter((tx) => tx.amount > 0); // Only show if there's actually a balance
+  // Filter transactions based on criteria
+  const filterTransactions = (filters: FilterOptions) => {
+    let filtered = allTransactions;
+
+    // Search filter
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      filtered = filtered.filter(tx => 
+        tx.description?.toLowerCase().includes(searchTerm) ||
+        tx.method.toLowerCase().includes(searchTerm) ||
+        tx.reference?.toLowerCase().includes(searchTerm) ||
+        tx.hash?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Type filter
+    if (filters.type !== 'all') {
+      filtered = filtered.filter(tx => tx.type === filters.type);
+    }
+
+    // Status filter
+    if (filters.status !== 'all') {
+      filtered = filtered.filter(tx => tx.status === filters.status);
+    }
+
+    // Date range filter
+    if (filters.dateRange !== 'all') {
+      const now = new Date();
+      const filterDate = new Date();
+
+      switch (filters.dateRange) {
+        case 'today':
+          filterDate.setHours(0, 0, 0, 0);
+          break;
+        case 'week':
+          filterDate.setDate(now.getDate() - 7);
+          break;
+        case 'month':
+          filterDate.setMonth(now.getMonth() - 1);
+          break;
+        case 'quarter':
+          filterDate.setMonth(now.getMonth() - 3);
+          break;
+        case 'year':
+          filterDate.setFullYear(now.getFullYear() - 1);
+          break;
+      }
+
+      filtered = filtered.filter(tx => new Date(tx.timestamp) >= filterDate);
+    }
+
+    setFilteredTransactions(filtered);
+  };
+
+  // Initialize filtered transactions
+  useEffect(() => {
+    setFilteredTransactions(allTransactions);
+  }, [allTransactions]);
 
   const paymentMethods = [
     {
@@ -161,13 +219,17 @@ const WalletDashboard = () => {
   const getTransactionIcon = (type: string) => {
     switch (type) {
       case "deposit":
+      case "token_deposit":
         return <ArrowUpDown className="h-4 w-4 text-green-600 rotate-180" />;
       case "withdrawal":
+      case "token_withdrawal":
         return <ArrowUpDown className="h-4 w-4 text-red-600" />;
       case "investment":
         return <TrendingUp className="h-4 w-4 text-blue-600" />;
       case "dividend":
         return <Plus className="h-4 w-4 text-green-600" />;
+      case "sync":
+        return <RefreshCw className="h-4 w-4 text-blue-600" />;
       default:
         return <ArrowUpDown className="h-4 w-4" />;
     }
@@ -200,14 +262,17 @@ const WalletDashboard = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleSyncBalance}
-              disabled={isSyncing || !user?.hedera_account_id}
+              onClick={() => {
+                handleSyncBalance();
+                refetchTransactions();
+              }}
+              disabled={isSyncing || transactionsLoading || !user?.hedera_account_id}
             >
               <RefreshCw
-                className={`h-4 w-4 mr-2 ${isSyncing ? "animate-spin" : ""}`}
+                className={`h-4 w-4 mr-2 ${isSyncing || transactionsLoading ? "animate-spin" : ""}`}
               />
               <span className="hidden sm:inline">
-                {isSyncing ? "Syncing..." : "Sync Balance"}
+                {isSyncing || transactionsLoading ? "Syncing..." : "Sync All"}
               </span>
             </Button>
             <Button variant="outline" size="sm">
@@ -317,72 +382,100 @@ const WalletDashboard = () => {
                       Recent Transactions
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-4">
+                    <TransactionFilters
+                      onFilter={filterTransactions}
+                      totalCount={allTransactions.length}
+                      filteredCount={filteredTransactions.length}
+                    />
+                    
                     <div className="space-y-4">
-                      {transactions.length === 0 ? (
+                      {transactionsLoading ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <RefreshCw className="h-8 w-8 mx-auto mb-4 animate-spin" />
+                          <p>Loading transactions...</p>
+                        </div>
+                      ) : filteredTransactions.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
                           <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                          <p>No transactions yet</p>
+                          <p>No transactions found</p>
                           <p className="text-sm">
-                            Your wallet activity will appear here
+                            {allTransactions.length > 0 ? 'Try adjusting your filters' : 'Your wallet activity will appear here'}
                           </p>
                         </div>
                       ) : (
-                        transactions.map((transaction) => (
+                        filteredTransactions.slice(0, 50).map((transaction) => (
                           <div
                             key={transaction.id}
-                            className="flex items-center justify-between p-4 border rounded-lg"
+                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                           >
                             <div className="flex items-center gap-3">
                               {getTransactionIcon(transaction.type)}
                               <div>
                                 <div className="flex items-center gap-2">
                                   <p className="font-medium capitalize">
-                                    {transaction.type}
+                                    {transaction.type.replace('_', ' ')}
                                   </p>
                                   <Badge
                                     variant="secondary"
-                                    className={getStatusColor(
-                                      transaction.status
-                                    )}
+                                    className={getStatusColor(transaction.status)}
                                   >
                                     {transaction.status}
                                   </Badge>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                  {transaction.method}
+                                  {transaction.description || transaction.method}
                                 </p>
+                                {transaction.reference && (
+                                  <p className="text-xs text-muted-foreground font-mono">
+                                    {transaction.reference}
+                                  </p>
+                                )}
                               </div>
                             </div>
                             <div className="text-right">
                               <p
                                 className={`font-semibold ${
-                                  transaction.amount > 0
+                                  transaction.direction === 'incoming'
                                     ? "text-green-600"
                                     : "text-red-600"
                                 }`}
                               >
-                                {transaction.type === "sync"
+                                {transaction.direction === 'incoming' ? '+' : '-'}
+                                {transaction.currency === 'HBAR' 
                                   ? `${transaction.amount.toFixed(4)} HBAR`
-                                  : `${
-                                      transaction.amount > 0 ? "+" : ""
-                                    }₦${Math.abs(
-                                      transaction.amount
-                                    ).toLocaleString()}`}
+                                  : transaction.currency === 'NGN'
+                                  ? `₦${transaction.amount.toLocaleString()}`
+                                  : `${transaction.amount} ${transaction.currency}`}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {transaction.date}
+                                {new Date(transaction.timestamp).toLocaleDateString()}
                               </p>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 p-1"
-                              >
-                                <ExternalLink className="h-3 w-3" />
-                              </Button>
+                              {transaction.explorerUrl && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 p-1"
+                                  onClick={() => window.open(transaction.explorerUrl, '_blank')}
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                </Button>
+                              )}
+                              {transaction.fee && (
+                                <p className="text-xs text-muted-foreground">
+                                  Fee: {transaction.fee.toFixed(6)} HBAR
+                                </p>
+                              )}
                             </div>
                           </div>
                         ))
+                      )}
+                      {filteredTransactions.length > 50 && (
+                        <div className="text-center py-4">
+                          <Button variant="outline" size="sm">
+                            Load More Transactions
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </CardContent>
