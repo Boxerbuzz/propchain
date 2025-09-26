@@ -27,40 +27,82 @@ class HederaWalletConnect {
     this.connectedWallet = localStorage.getItem('hedera_connected_wallet');
   }
 
+  private async waitForWallet(walletName: string, timeout: number = 3000): Promise<boolean> {
+    return new Promise((resolve) => {
+      const checkWallet = () => {
+        if (walletName === 'hashpack' && (window as any).hashpack) {
+          return true;
+        }
+        if (walletName === 'blade' && (window as any).bladeAPI) {
+          return true;
+        }
+        return false;
+      };
+
+      if (checkWallet()) {
+        resolve(true);
+        return;
+      }
+
+      let attempts = 0;
+      const maxAttempts = timeout / 100;
+
+      const interval = setInterval(() => {
+        attempts++;
+        if (checkWallet() || attempts >= maxAttempts) {
+          clearInterval(interval);
+          resolve(checkWallet());
+        }
+      }, 100);
+    });
+  }
+
   async connectWallet(walletType: string): Promise<{ success: boolean; account?: string; error?: string }> {
     try {
       // For HashPack
       if (walletType === 'hashpack') {
-        if (typeof window !== 'undefined' && (window as any).hashpack) {
-          const hashpack = (window as any).hashpack;
-          const result = await hashpack.connectToLocalWallet();
+        // Wait for HashPack to be available
+        const isAvailable = await this.waitForWallet('hashpack');
+        
+        if (!isAvailable) {
+          window.open('https://chrome.google.com/webstore/detail/hashpack/gjagmgiddbbciopjhllkdnddhcglnemk', '_blank');
+          return { success: false, error: 'HashPack extension not found. Please install HashPack from the Chrome Web Store.' };
+        }
+
+        const hashpack = (window as any).hashpack;
+        const result = await hashpack.connectToLocalWallet();
+        
+        if (result.success && result.accountIds && result.accountIds.length > 0) {
+          this.connectedAccount = result.accountIds[0];
+          this.connectedWallet = walletType;
           
-          if (result.success) {
-            this.connectedAccount = result.accountIds[0];
-            this.connectedWallet = walletType;
-            
-            // Persist connection
-            localStorage.setItem('hedera_connected_account', this.connectedAccount);
-            localStorage.setItem('hedera_connected_wallet', this.connectedWallet);
-            
-            return { success: true, account: this.connectedAccount };
-          } else {
-            return { success: false, error: result.error || 'Connection failed' };
-          }
+          // Persist connection
+          localStorage.setItem('hedera_connected_account', this.connectedAccount);
+          localStorage.setItem('hedera_connected_wallet', this.connectedWallet);
+          
+          return { success: true, account: this.connectedAccount };
         } else {
-          // HashPack not detected - provide install link
-          return { success: false, error: 'HashPack wallet not found. Please install HashPack extension.' };
+          return { success: false, error: result.error || 'Failed to connect to HashPack' };
         }
       }
       
       // For Blade Wallet
       if (walletType === 'blade') {
-        if (typeof window !== 'undefined' && (window as any).bladeAPI) {
-          const blade = (window as any).bladeAPI;
-          const result = await blade.getInfo();
-          
-          if (result.success) {
-            this.connectedAccount = result.accountId;
+        // Wait for Blade to be available
+        const isAvailable = await this.waitForWallet('blade');
+        
+        if (!isAvailable) {
+          window.open('https://bladewallet.io/', '_blank');
+          return { success: false, error: 'Blade wallet extension not found. Please install Blade wallet from their website.' };
+        }
+
+        const blade = (window as any).bladeAPI;
+        
+        // Try to get account info first
+        try {
+          const accountInfo = await blade.getInfo();
+          if (accountInfo && accountInfo.accountId) {
+            this.connectedAccount = accountInfo.accountId;
             this.connectedWallet = walletType;
             
             // Persist connection
@@ -68,13 +110,26 @@ class HederaWalletConnect {
             localStorage.setItem('hedera_connected_wallet', this.connectedWallet);
             
             return { success: true, account: this.connectedAccount };
-          } else {
-            return { success: false, error: result.error || 'Connection failed' };
           }
-        } else {
-          // Blade not detected - provide install link
-          return { success: false, error: 'Blade wallet not found. Please install Blade wallet.' };
+        } catch (e) {
+          // If getInfo fails, try connecting first
+          const connectResult = await blade.connectWallet();
+          if (connectResult && connectResult.success) {
+            const accountInfo = await blade.getInfo();
+            if (accountInfo && accountInfo.accountId) {
+              this.connectedAccount = accountInfo.accountId;
+              this.connectedWallet = walletType;
+              
+              // Persist connection
+              localStorage.setItem('hedera_connected_account', this.connectedAccount);
+              localStorage.setItem('hedera_connected_wallet', this.connectedWallet);
+              
+              return { success: true, account: this.connectedAccount };
+            }
+          }
         }
+        
+        return { success: false, error: 'Failed to connect to Blade wallet' };
       }
 
       return { success: false, error: 'Unsupported wallet type' };
