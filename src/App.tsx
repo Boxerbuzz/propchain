@@ -30,7 +30,7 @@ import WalletDashboard from "./pages/wallet/Dashboard";
 import PropertyManagement from "./pages/property/Management";
 import PropertyView from "./pages/property/PropertyView";
 import PropertyEdit from "./pages/property/PropertyEdit";
-import PropertyTokenize from "./pages/property/PropertyTokenize";
+
 import PropertyImageManager from "./pages/property/PropertyImageManager";
 import PropertyDocumentManager from "./pages/property/PropertyDocumentManager";
 import Profile from "./pages/settings/Profile";
@@ -105,10 +105,6 @@ const App = () => (
                 <Route
                   path="/property/:propertyId/edit"
                   element={<PropertyEdit />}
-                />
-                <Route
-                  path="/property/:propertyId/tokenize"
-                  element={<PropertyTokenize />}
                 />
                 <Route
                   path="/property/:propertyId/images"

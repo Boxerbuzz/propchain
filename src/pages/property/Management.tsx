@@ -26,12 +26,14 @@ import {
   useUserProperties,
   useUpdateProperty,
 } from "@/hooks/usePropertyManagement";
+import { TokenizationDialog } from "@/components/TokenizationDialog";
 
 const PropertyManagement = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [tokenizeDialogOpen, setTokenizeDialogOpen] = useState(false);
 
   const {
     data: managedProperties = [],
@@ -76,6 +78,8 @@ const PropertyManagement = () => {
   );
 
   const handlePropertyAction = async (action: string, propertyId: string) => {
+    const property = managedProperties.find(p => p.id === propertyId);
+    
     switch (action) {
       case "View":
         navigate(`/property/${propertyId}/view`);
@@ -93,7 +97,10 @@ const PropertyManagement = () => {
         });
         break;
       case "Tokenize":
-        navigate(`/property/${propertyId}/tokenize`);
+        if (property) {
+          setSelectedProperty(property);
+          setTokenizeDialogOpen(true);
+        }
         break;
       case "Upload Images":
         navigate(`/property/${propertyId}/images`);
@@ -633,6 +640,20 @@ const PropertyManagement = () => {
           </div>
         </div>
       </div>
+
+      {/* Tokenization Dialog */}
+      <TokenizationDialog
+        open={tokenizeDialogOpen}
+        onOpenChange={setTokenizeDialogOpen}
+        property={selectedProperty}
+        onSuccess={() => {
+          toast({
+            title: "Tokenization Created",
+            description: "Your property has been successfully tokenized!",
+          });
+          refetch(); // Refresh the properties list
+        }}
+      />
     </div>
   );
 };
