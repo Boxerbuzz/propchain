@@ -54,8 +54,8 @@ const WalletDashboard = () => {
   const transactionSummary = (allTransactions || []).reduce((acc, tx) => {
     let amountInNGN = tx.amount || 0;
     
-    // Convert HBAR to NGN if it's a Hedera transaction
-    if (tx.method === 'hedera' && hederaBalance?.balanceNgn && hederaBalance?.balanceHbar && hederaBalance.balanceHbar > 0) {
+    // Convert HBAR to NGN if it's a HBAR transaction
+    if (tx.currency === 'HBAR' && hederaBalance?.balanceNgn && hederaBalance?.balanceHbar && hederaBalance.balanceHbar > 0) {
       const hbarToNgnRate = hederaBalance.balanceNgn / hederaBalance.balanceHbar;
       amountInNGN = (tx.amount || 0) * hbarToNgnRate;
     }
@@ -276,14 +276,9 @@ const WalletDashboard = () => {
                 Available for investments
               </p>
               {walletData.balanceHbar > 0 && (
-                <div className="mt-2 space-y-1">
-                               <p className="text-sm text-blue-600">
-                    {walletData.balanceHbar.toFixed(4)} HBAR
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    ${walletData.balanceUsd.toFixed(2)} USD • ₦{(hederaBalance?.balanceNgn || 0).toLocaleString()}
-                  </p>
-                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {walletData.balanceHbar.toFixed(4)} HBAR • ${walletData.balanceUsd.toFixed(2)} • ₦{(hederaBalance?.balanceNgn || 0).toLocaleString()}
+                </p>
               )}
               {walletData.lastSyncAt && (
                 <p className="text-xs text-muted-foreground mt-2">
@@ -368,7 +363,7 @@ const WalletDashboard = () => {
                         filteredTransactions.slice(0, 50).map((transaction) => (
                           <div
                             key={transaction.id}
-                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors group"
+                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors group"
                           >
                             <div className="flex items-center gap-3">
                               {getTransactionIcon(transaction.type)}
@@ -415,14 +410,17 @@ const WalletDashboard = () => {
                                 </p>
                               )}
                                <p className="text-xs text-muted-foreground">
-                                {new Date(transaction.timestamp).toLocaleString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </p>
+                                 {(() => {
+                                   const date = new Date(transaction.timestamp);
+                                   return isNaN(date.getTime()) ? '—' : date.toLocaleString('en-US', {
+                                     month: 'short',
+                                     day: 'numeric',
+                                     year: 'numeric',
+                                     hour: '2-digit',
+                                     minute: '2-digit'
+                                   });
+                                 })()}
+                               </p>
                               {transaction.explorerUrl && (
                                 <Button
                                   variant="ghost"
