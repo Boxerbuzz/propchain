@@ -462,11 +462,7 @@ const WalletDashboard = () => {
                             <Wallet className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                           </div>
                           <p className="mb-4">No wallets connected</p>
-                          <Button
-                            onClick={() =>
-                              (window.location.href = "/wallet/connect")
-                            }
-                          >
+                          <Button onClick={() => window.location.href = '/wallet/setup'}>
                             Connect Wallet
                           </Button>
                         </div>

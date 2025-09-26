@@ -265,9 +265,11 @@ export default function BrowseProperties() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                   <p className="text-muted-foreground">
-                    {isLoading
-                      ? "Loading..."
-                      : `Showing ${filteredProperties.length} of ${properties.length} properties`}
+                    {isLoading ? (
+                      <Skeleton className="h-4 w-48" />
+                    ) : (
+                      `Showing ${filteredProperties.length} of ${properties.length} properties`
+                    )}
                   </p>
                 </div>
 

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Upload, FileText, CheckCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabaseService } from "@/services/supabaseService";
+import { Spinner } from "@/components/ui/spinner";
 
 interface PropertyDocumentUploadProps {
   propertyId: string;
@@ -123,7 +124,14 @@ export const PropertyDocumentUpload = ({
               disabled={uploading || !selectedType}
             >
               <FileText className="h-4 w-4 mr-2" />
-              {uploading ? "Uploading..." : "Select Files"}
+              {uploading ? (
+                <div className="flex items-center">
+                  <Spinner size={16} className="mr-2" />
+                  Uploading...
+                </div>
+              ) : (
+                "Select Files"
+              )}
             </Button>
             <p className="text-xs text-muted-foreground mt-2">
               Supported formats: PDF, JPG, PNG. Max size: 10MB per file

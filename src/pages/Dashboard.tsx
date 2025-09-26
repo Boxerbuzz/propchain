@@ -267,7 +267,7 @@ export default function Dashboard() {
                     variant="outline"
                     className="w-full justify-start text-sm"
                   >
-                    <DollarSign className="w-4 h-4 mr-2" />
+                    <Wallet className="w-4 h-4 mr-2" />
                     Set Up Wallet
                   </Button>
                 </Link>
@@ -296,15 +296,6 @@ export default function Dashboard() {
                   >
                     <Building className="w-4 h-4 mr-2" />
                     Manage Properties
-                  </Button>
-                </Link>
-                <Link to="/wallet/dashboard" className="block">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-sm"
-                  >
-                    <Wallet className="w-4 h-4 mr-2" />
-                    Wallet Dashboard
                   </Button>
                 </Link>
               </CardContent>

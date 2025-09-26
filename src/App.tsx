@@ -25,8 +25,7 @@ import Address from "./pages/kyc/Address";
 import Review from "./pages/kyc/Review";
 import KYCStatus from "./pages/kyc/Status";
 import Dashboard from "./pages/Dashboard";
-import WalletSetup from "./pages/wallet/Setup";
-import WalletDashboard from "./pages/wallet/Dashboard";
+import UnifiedWalletSetup from "./pages/wallet/UnifiedSetup";
 import PropertyManagement from "./pages/property/Management";
 import PropertyView from "./pages/property/PropertyView";
 import PropertyEdit from "./pages/property/PropertyEdit";
@@ -38,10 +37,6 @@ import Notifications from "./pages/settings/Notifications";
 import Security from "./pages/settings/Security";
 import Chat from "./pages/chat/Chat";
 import ChatRoom from "./pages/chat/ChatRoom";
-import CreateWallet from "./pages/wallet/Create";
-import ConnectWallet from "./pages/wallet/Connect";
-import FundWallet from "./pages/wallet/Fund";
-import WalletSettings from "./pages/wallet/Settings";
 import RegisterProperty from "./pages/properties/Register";
 import UploadDocs from "./pages/properties/UploadDocs";
 import TermsOfService from "./pages/legal/TermsOfService";
@@ -96,12 +91,7 @@ const App = () => (
                   path="/portfolio/:tokenizationId"
                   element={<PortfolioDetail />}
                 />
-                <Route path="/wallet/setup" element={<WalletSetup />} />
-                <Route path="/wallet/dashboard" element={<WalletDashboard />} />
-                <Route path="/wallet/create" element={<CreateWallet />} />
-                <Route path="/wallet/connect" element={<ConnectWallet />} />
-                <Route path="/wallet/fund" element={<FundWallet />} />
-                <Route path="/wallet/settings" element={<WalletSettings />} />
+                <Route path="/wallet/setup" element={<UnifiedWalletSetup />} />
                 <Route
                   path="/property/management"
                   element={<PropertyManagement />}

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Upload, X, Star, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabaseService } from "@/services/supabaseService";
+import { Spinner } from "@/components/ui/spinner";
 
 interface PropertyImageUploadProps {
   propertyId: string;
@@ -110,7 +111,14 @@ export const PropertyImageUpload = ({
                 disabled={uploading}
               >
                 <Image className="h-4 w-4 mr-2" />
-                {uploading ? "Uploading..." : "Select Images"}
+                {uploading ? (
+                  <div className="flex items-center">
+                    <Spinner size={16} className="mr-2" />
+                    Uploading...
+                  </div>
+                ) : (
+                  "Select Images"
+                )}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
