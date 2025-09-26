@@ -105,7 +105,7 @@ serve(async (req) => {
         amount: Math.abs(amount),
         currency,
         status: tx.result === 'SUCCESS' ? 'completed' : 'failed',
-        timestamp: tx.consensus_timestamp,
+        timestamp: new Date(parseFloat(tx.consensus_timestamp) * 1000).toISOString(),
         date: new Date(parseFloat(tx.consensus_timestamp) * 1000).toISOString().split('T')[0],
         fee: tx.transaction_fee / 100000000, // Convert from tinybars to HBAR
         method: 'Hedera Network',
