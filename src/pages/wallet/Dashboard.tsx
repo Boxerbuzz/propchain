@@ -1,16 +1,21 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { 
-  Wallet, 
-  CreditCard, 
-  ArrowUpDown, 
-  Plus, 
+import {
+  Wallet,
+  CreditCard,
+  ArrowUpDown,
+  Plus,
   Download,
   Eye,
   EyeOff,
@@ -19,7 +24,7 @@ import {
   TrendingUp,
   History,
   Settings,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
@@ -33,13 +38,13 @@ const WalletDashboard = () => {
   const [showBalance, setShowBalance] = useState(true);
   const [depositAmount, setDepositAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  
-  const { 
-    connectedWallets, 
+
+  const {
+    connectedWallets,
     disconnectExternalWallet,
     getActiveWallet,
     hasExternalWallet,
-    hasCustodialWallet
+    hasCustodialWallet,
   } = useWalletConnect();
 
   const { stats, wallets, isLoading: dashboardLoading } = useDashboard();
@@ -54,7 +59,7 @@ const WalletDashboard = () => {
     totalDeposited: 0, // TODO: Calculate from wallet transactions
     totalWithdrawn: 0, // TODO: Calculate from wallet transactions
     walletAddress: user?.hedera_account_id || "No wallet connected",
-    lastSyncAt: hederaBalance?.lastSyncAt
+    lastSyncAt: hederaBalance?.lastSyncAt,
   };
 
   // TODO: Replace with real transaction data from database
@@ -64,11 +69,13 @@ const WalletDashboard = () => {
       type: "sync",
       amount: walletData.balanceHbar,
       status: "completed",
-      date: hederaBalance?.lastSyncAt ? new Date(hederaBalance.lastSyncAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      date: hederaBalance?.lastSyncAt
+        ? new Date(hederaBalance.lastSyncAt).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0],
       method: "Hedera Balance Sync",
-      hash: user?.hedera_account_id || ""
-    }
-  ].filter(tx => tx.amount > 0); // Only show if there's actually a balance
+      hash: user?.hedera_account_id || "",
+    },
+  ].filter((tx) => tx.amount > 0); // Only show if there's actually a balance
 
   const paymentMethods = [
     {
@@ -77,15 +84,15 @@ const WalletDashboard = () => {
       name: "•••• •••• •••• 4242",
       brand: "Visa",
       expiry: "12/27",
-      isDefault: true
+      isDefault: true,
     },
     {
       id: "bank1",
       type: "bank",
       name: "Chase Bank ••••5678",
       brand: "Chase",
-      isDefault: false
-    }
+      isDefault: false,
+    },
   ];
 
   const handleDeposit = () => {
@@ -93,11 +100,11 @@ const WalletDashboard = () => {
       toast({
         title: "Invalid Amount",
         description: "Please enter a valid deposit amount",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     toast({
       title: "Deposit Initiated",
       description: `Deposit of $${depositAmount} has been initiated`,
@@ -108,22 +115,22 @@ const WalletDashboard = () => {
   const handleWithdrawal = () => {
     if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
       toast({
-        title: "Invalid Amount", 
+        title: "Invalid Amount",
         description: "Please enter a valid withdrawal amount",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     if (parseFloat(withdrawAmount) > walletData.balance) {
       toast({
         title: "Insufficient Balance",
         description: "Withdrawal amount exceeds available balance",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     toast({
       title: "Withdrawal Initiated",
       description: `Withdrawal of $${withdrawAmount} has been initiated`,
@@ -146,29 +153,38 @@ const WalletDashboard = () => {
       toast({
         title: "No Wallet Found",
         description: "Please create a Hedera wallet first",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case "deposit": return <ArrowUpDown className="h-4 w-4 text-green-600 rotate-180" />;
-      case "withdrawal": return <ArrowUpDown className="h-4 w-4 text-red-600" />;
-      case "investment": return <TrendingUp className="h-4 w-4 text-blue-600" />;
-      case "dividend": return <Plus className="h-4 w-4 text-green-600" />;
-      default: return <ArrowUpDown className="h-4 w-4" />;
+      case "deposit":
+        return <ArrowUpDown className="h-4 w-4 text-green-600 rotate-180" />;
+      case "withdrawal":
+        return <ArrowUpDown className="h-4 w-4 text-red-600" />;
+      case "investment":
+        return <TrendingUp className="h-4 w-4 text-blue-600" />;
+      case "dividend":
+        return <Plus className="h-4 w-4 text-green-600" />;
+      default:
+        return <ArrowUpDown className="h-4 w-4" />;
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed": return "bg-green-100 text-green-800";
-      case "pending": return "bg-yellow-100 text-yellow-800";
-      case "failed": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case "completed":
+          return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+        case "pending":
+          return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
+        case "failed":
+          return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+        default:
+          return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+      }
+    };
 
   return (
     <div className="min-h-screen bg-background py-4 md:py-8">
@@ -176,18 +192,22 @@ const WalletDashboard = () => {
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Wallet</h1>
-            <p className="text-muted-foreground">Manage your funds and payment methods</p>
+            <p className="text-muted-foreground">
+              Manage your funds and payment methods
+            </p>
           </div>
           <div className="flex gap-3 mt-4 md:mt-0">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleSyncBalance}
               disabled={isSyncing || !user?.hedera_account_id}
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isSyncing ? "animate-spin" : ""}`}
+              />
               <span className="hidden sm:inline">
-                {isSyncing ? 'Syncing...' : 'Sync Balance'}
+                {isSyncing ? "Syncing..." : "Sync Balance"}
               </span>
             </Button>
             <Button variant="outline" size="sm">
@@ -212,13 +232,19 @@ const WalletDashboard = () => {
                   size="sm"
                   onClick={() => setShowBalance(!showBalance)}
                 >
-                  {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showBalance ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold mb-2">
-                {showBalance ? `₦${walletData.balance.toLocaleString()}` : "••••••"}
+                {showBalance
+                  ? `₦${walletData.balance.toLocaleString()}`
+                  : "••••••"}
               </div>
               <p className="text-sm text-muted-foreground">
                 Available for investments
@@ -235,7 +261,8 @@ const WalletDashboard = () => {
               )}
               {walletData.lastSyncAt && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  Last synced: {new Date(walletData.lastSyncAt).toLocaleString()}
+                  Last synced:{" "}
+                  {new Date(walletData.lastSyncAt).toLocaleString()}
                 </p>
               )}
             </CardContent>
@@ -243,21 +270,31 @@ const WalletDashboard = () => {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Deposited</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Deposited
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₦{walletData.totalDeposited.toLocaleString()}</div>
+              <div className="text-2xl font-bold">
+                ₦{walletData.totalDeposited.toLocaleString()}
+              </div>
               <p className="text-xs text-muted-foreground">Lifetime deposits</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Withdrawn</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Withdrawn
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₦{walletData.totalWithdrawn.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Lifetime withdrawals</p>
+              <div className="text-2xl font-bold">
+                ₦{walletData.totalWithdrawn.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Lifetime withdrawals
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -286,41 +323,65 @@ const WalletDashboard = () => {
                         <div className="text-center py-8 text-muted-foreground">
                           <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
                           <p>No transactions yet</p>
-                          <p className="text-sm">Your wallet activity will appear here</p>
+                          <p className="text-sm">
+                            Your wallet activity will appear here
+                          </p>
                         </div>
                       ) : (
                         transactions.map((transaction) => (
-                        <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            {getTransactionIcon(transaction.type)}
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium capitalize">{transaction.type}</p>
-                                <Badge 
-                                  variant="secondary" 
-                                  className={getStatusColor(transaction.status)}
-                                >
-                                  {transaction.status}
-                                </Badge>
+                          <div
+                            key={transaction.id}
+                            className="flex items-center justify-between p-4 border rounded-lg"
+                          >
+                            <div className="flex items-center gap-3">
+                              {getTransactionIcon(transaction.type)}
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium capitalize">
+                                    {transaction.type}
+                                  </p>
+                                  <Badge
+                                    variant="secondary"
+                                    className={getStatusColor(
+                                      transaction.status
+                                    )}
+                                  >
+                                    {transaction.status}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {transaction.method}
+                                </p>
                               </div>
-                              <p className="text-sm text-muted-foreground">{transaction.method}</p>
+                            </div>
+                            <div className="text-right">
+                              <p
+                                className={`font-semibold ${
+                                  transaction.amount > 0
+                                    ? "text-green-600"
+                                    : "text-red-600"
+                                }`}
+                              >
+                                {transaction.type === "sync"
+                                  ? `${transaction.amount.toFixed(4)} HBAR`
+                                  : `${
+                                      transaction.amount > 0 ? "+" : ""
+                                    }₦${Math.abs(
+                                      transaction.amount
+                                    ).toLocaleString()}`}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {transaction.date}
+                              </p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 p-1"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                              </Button>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className={`font-semibold ${
-                              transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-                            }`}>
-                              {transaction.type === 'sync' 
-                                ? `${transaction.amount.toFixed(4)} HBAR`
-                                : `${transaction.amount > 0 ? '+' : ''}₦${Math.abs(transaction.amount).toLocaleString()}`
-                              }
-                            </p>
-                            <p className="text-xs text-muted-foreground">{transaction.date}</p>
-                            <Button variant="ghost" size="sm" className="h-6 p-1">
-                              <ExternalLink className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
                         ))
                       )}
                     </div>
@@ -342,27 +403,41 @@ const WalletDashboard = () => {
                   <CardContent>
                     <div className="space-y-4">
                       {paymentMethods.map((method) => (
-                        <div key={method.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div
+                          key={method.id}
+                          className="flex items-center justify-between p-4 border rounded-lg"
+                        >
                           <div className="flex items-center gap-3">
                             <CreditCard className="h-5 w-5 text-muted-foreground" />
                             <div>
                               <p className="font-medium">{method.name}</p>
                               <div className="flex items-center gap-2">
-                                <p className="text-sm text-muted-foreground">{method.brand}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {method.brand}
+                                </p>
                                 {method.expiry && (
-                                  <span className="text-sm text-muted-foreground">• Expires {method.expiry}</span>
+                                  <span className="text-sm text-muted-foreground">
+                                    • Expires {method.expiry}
+                                  </span>
                                 )}
                                 {method.isDefault && (
-                                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                                    Default
-                                  </Badge>
+                                   <Badge
+                                     variant="secondary"
+                                     className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 dark:from-blue-900/30 dark:to-purple-900/30 dark:text-blue-300"
+                                   >
+                                     Default
+                                   </Badge>
                                 )}
                               </div>
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm">Edit</Button>
-                            <Button variant="outline" size="sm">Remove</Button>
+                            <Button variant="outline" size="sm">
+                              Edit
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              Remove
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -375,48 +450,74 @@ const WalletDashboard = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>Connected Wallets</CardTitle>
-                    <CardDescription>Connect crypto wallets for seamless transactions</CardDescription>
+                    <CardDescription>
+                      Connect crypto wallets for seamless transactions
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {connectedWallets.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
-                          <Wallet className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center border border-blue-200 dark:border-blue-700 shadow-lg">
+                            <Wallet className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                          </div>
                           <p className="mb-4">No wallets connected</p>
-                          <Button onClick={() => window.location.href = '/wallet/connect'}>
+                          <Button
+                            onClick={() =>
+                              (window.location.href = "/wallet/connect")
+                            }
+                          >
                             Connect Wallet
                           </Button>
                         </div>
                       ) : (
                         connectedWallets.map((wallet, index) => (
-                          <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-4 border rounded-lg"
+                          >
                             <div className="flex items-center gap-3">
-                              <Wallet className="h-5 w-5 text-muted-foreground" />
+                              <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center border border-blue-200 dark:border-blue-700 shadow-lg">
+                                <Wallet className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                              </div>
                               <div>
                                 <div className="flex items-center gap-2">
                                   <p className="font-medium">{wallet.name}</p>
-                                  <Badge 
-                                    variant="secondary" 
-                                    className={wallet.type === 'custodial' ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"}
+                                  <Badge
+                                    variant="secondary"
+                                    className={
+                                      wallet.type === "custodial"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : "bg-purple-100 text-purple-800"
+                                    }
                                   >
-                                    {wallet.type === 'custodial' ? 'Custodial' : 'External'}
+                                    {wallet.type === "custodial"
+                                      ? "Custodial"
+                                      : "External"}
                                   </Badge>
                                 </div>
                                 <p className="text-sm text-muted-foreground font-mono">
-                                  {wallet.address.length > 20 
-                                    ? `${wallet.address.substring(0, 10)}...${wallet.address.substring(wallet.address.length - 10)}`
-                                    : wallet.address
-                                  }
+                                  {wallet.address.length > 20
+                                    ? `${wallet.address.substring(
+                                        0,
+                                        10
+                                      )}...${wallet.address.substring(
+                                        wallet.address.length - 10
+                                      )}`
+                                    : wallet.address}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                              <Badge
+                                variant="secondary"
+                                className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 dark:from-blue-900/30 dark:to-purple-900/30 dark:text-blue-300"
+                              >
                                 Connected
                               </Badge>
-                              {wallet.type === 'external' && (
-                                <Button 
-                                  variant="outline" 
+                              {wallet.type === "external" && (
+                                <Button
+                                  variant="outline"
                                   size="sm"
                                   onClick={() => disconnectExternalWallet()}
                                 >
@@ -484,9 +585,15 @@ const WalletDashboard = () => {
               <CardContent>
                 <div className="space-y-3">
                   <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-sm font-mono break-all">{walletData.walletAddress}</p>
+                    <p className="text-sm font-mono break-all">
+                      {walletData.walletAddress}
+                    </p>
                   </div>
-                  <Button variant="outline" onClick={copyAddress} className="w-full">
+                  <Button
+                    variant="outline"
+                    onClick={copyAddress}
+                    className="w-full"
+                  >
                     <Copy className="h-4 w-4 mr-2" />
                     Copy Address
                   </Button>

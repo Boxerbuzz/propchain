@@ -3,7 +3,19 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import InvestmentCalculator from "@/components/InvestmentCalculator";
-import { MapPin, Building, Users, Calendar, TrendingUp, FileText, MessageCircle, Play, ArrowLeft, Share, Heart } from "lucide-react";
+import {
+  MapPin,
+  Building,
+  Users,
+  Calendar,
+  TrendingUp,
+  FileText,
+  MessageCircle,
+  Play,
+  ArrowLeft,
+  Share,
+  Heart,
+} from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabaseService } from "@/services/supabaseService";
@@ -13,31 +25,44 @@ export default function PropertyDetails() {
   const navigate = useNavigate();
 
   // Fetch real property and tokenization data
-  const { data: propertyData, isLoading, error } = useQuery({
-    queryKey: ['property-details', id],
+  const {
+    data: propertyData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["property-details", id],
     queryFn: async () => {
-      if (!id) throw new Error('Property ID is required');
-      
+      if (!id) throw new Error("Property ID is required");
+
       // Get tokenization data with property details
-      const tokenization = await supabaseService.properties.getTokenizationById(id);
-      if (!tokenization) throw new Error('Property not found');
-      
+      const tokenization = await supabaseService.properties.getTokenizationById(
+        id
+      );
+      if (!tokenization) throw new Error("Property not found");
+
       // Get the actual property data
-      const property = await supabaseService.properties.getPropertyById(tokenization.property_id);
-      if (!property) throw new Error('Property details not found');
-      
+      const property = await supabaseService.properties.getPropertyById(
+        tokenization.property_id
+      );
+      if (!property) throw new Error("Property details not found");
+
       // Get property images
-      const images = await supabaseService.properties.getPropertyImages(tokenization.property_id);
-      
+      const images = await supabaseService.properties.getPropertyImages(
+        tokenization.property_id
+      );
+
       return {
         tokenization,
         property,
-        images: images.length > 0 ? images.map(img => img.image_url) : [
-          "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
-          "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
-          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop",
-          "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop"
-        ]
+        images:
+          images.length > 0
+            ? images.map((img) => img.image_url)
+            : [
+                "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop",
+                "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop",
+              ],
       };
     },
     enabled: !!id,
@@ -77,7 +102,9 @@ export default function PropertyDetails() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Property Not Found</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">
+            Property Not Found
+          </h1>
           <p className="text-muted-foreground mb-6">
             The property you're looking for doesn't exist or has been removed.
           </p>
@@ -95,23 +122,26 @@ export default function PropertyDetails() {
   }
 
   const { tokenization, property, images } = propertyData;
-  const progressPercentage = ((tokenization.tokens_sold || 0) / (tokenization.total_supply || 1)) * 100;
-  
+  const progressPercentage =
+    ((tokenization.tokens_sold || 0) / (tokenization.total_supply || 1)) * 100;
+
   const formatLocation = (location: any) => {
-    if (typeof location === 'string') return location;
-    if (typeof location === 'object' && location) {
-      const parts = [location.city, location.state, location.country].filter(Boolean);
-      return parts.join(', ') || 'Location TBD';
+    if (typeof location === "string") return location;
+    if (typeof location === "object" && location) {
+      const parts = [location.city, location.state, location.country].filter(
+        Boolean
+      );
+      return parts.join(", ") || "Location TBD";
     }
-    return 'Location TBD';
+    return "Location TBD";
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -127,7 +157,7 @@ export default function PropertyDetails() {
                 Back to Properties
               </Button>
             </Link>
-            
+
             <div className="flex items-center space-x-2">
               <Button variant="ghost" size="icon">
                 <Heart className="h-5 w-5" />
@@ -148,22 +178,25 @@ export default function PropertyDetails() {
             <div className="mb-8">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <img 
-                    src={images[0]} 
-                    alt={property.title || 'Property Image'}
+                  <img
+                    src={images[0]}
+                    alt={property.title || "Property Image"}
                     className="w-full h-64 md:h-80 object-cover rounded-xl"
                   />
                 </div>
                 {images.slice(1, 4).map((image, index) => (
                   <div key={index} className="relative">
-                    <img 
-                      src={image} 
+                    <img
+                      src={image}
                       alt={`${property.title} ${index + 2}`}
                       className="w-full h-32 md:h-40 object-cover rounded-lg"
                     />
                     {index === 2 && (
                       <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-                        <Button variant="secondary" className="text-white text-sm">
+                        <Button
+                          variant="secondary"
+                          className="text-white text-sm"
+                        >
                           <Play className="h-4 w-4 mr-2" />
                           View All Photos
                         </Button>
@@ -179,17 +212,23 @@ export default function PropertyDetails() {
               <div className="flex items-start justify-between mb-4 mobile-flex gap-4">
                 <div className="flex-1">
                   <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-                    {property.title || 'Property Investment'}
+                    {property.title || "Property Investment"}
                   </h1>
                   <div className="flex items-center text-muted-foreground mb-4">
                     <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
-                    <span className="mobile-text">{formatLocation(property.location)}</span>
+                    <span className="mobile-text">
+                      {formatLocation(property.location)}
+                    </span>
                   </div>
                 </div>
                 <Badge className="status-verified">
-                  {tokenization.status === 'active' ? 'Active' : 
-                   tokenization.status === 'upcoming' ? 'Upcoming' : 
-                   tokenization.status === 'completed' ? 'Completed' : 'Draft'}
+                  {tokenization.status === "active"
+                    ? "Active"
+                    : tokenization.status === "upcoming"
+                    ? "Upcoming"
+                    : tokenization.status === "completed"
+                    ? "Completed"
+                    : "Draft"}
                 </Badge>
               </div>
 
@@ -198,42 +237,52 @@ export default function PropertyDetails() {
                 <div className="bg-background-muted border border-border rounded-lg p-3 md:p-4">
                   <div className="flex items-center mb-2">
                     <Building className="h-4 w-4 text-primary mr-1" />
-                    <span className="text-xs md:text-sm text-muted-foreground">Target Raise</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">
+                      Target Raise
+                    </span>
                   </div>
                   <p className="text-sm md:text-lg font-bold text-foreground">
                     {formatCurrency(tokenization.target_raise || 0)}
                   </p>
                 </div>
-                
+
                 <div className="bg-background-muted border border-border rounded-lg p-3 md:p-4">
                   <div className="flex items-center mb-2">
                     <TrendingUp className="h-4 w-4 text-success mr-1" />
-                    <span className="text-xs md:text-sm text-muted-foreground">Expected ROI</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">
+                      Expected ROI
+                    </span>
                   </div>
                   <p className="text-sm md:text-lg font-bold text-success">
                     {tokenization.expected_roi_annual || 0}% p.a.
                   </p>
                 </div>
-                
+
                 <div className="bg-background-muted border border-border rounded-lg p-3 md:p-4">
                   <div className="flex items-center mb-2">
                     <Users className="h-4 w-4 text-muted-foreground mr-1" />
-                    <span className="text-xs md:text-sm text-muted-foreground">Tokens Sold</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">
+                      Tokens Sold
+                    </span>
                   </div>
                   <p className="text-sm md:text-lg font-bold text-foreground">
                     {(tokenization.tokens_sold || 0).toLocaleString()}
                   </p>
                 </div>
-                
+
                 <div className="bg-background-muted border border-border rounded-lg p-3 md:p-4">
                   <div className="flex items-center mb-2">
                     <Calendar className="h-4 w-4 text-warning mr-1" />
-                    <span className="text-xs md:text-sm text-muted-foreground">Deadline</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">
+                      Deadline
+                    </span>
                   </div>
                   <p className="text-xs md:text-sm font-medium text-foreground">
-                    {tokenization.investment_window_end 
-                      ? new Date(tokenization.investment_window_end).toLocaleDateString()
-                      : 'TBD'}
+                    {tokenization.investment_window_end
+                      ? new Date(
+                          tokenization.investment_window_end
+                        ).toLocaleDateString()
+                      : "TBD"}
                   </p>
                 </div>
               </div>
@@ -241,18 +290,31 @@ export default function PropertyDetails() {
               {/* Investment Progress */}
               <div className="bg-background-muted border border-border rounded-lg p-4 md:p-6 mb-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-foreground mobile-text">Investment Progress</h3>
-                  <span className="text-sm text-muted-foreground">{progressPercentage.toFixed(1)}% Complete</span>
+                  <h3 className="font-semibold text-foreground mobile-text">
+                    Investment Progress
+                  </h3>
+                  <span className="text-sm text-muted-foreground">
+                    {progressPercentage.toFixed(1)}% Complete
+                  </span>
                 </div>
                 <div className="w-full bg-muted rounded-lg h-2 md:h-3 mb-4">
-                  <div 
+                  <div
                     className="bg-primary h-2 md:h-3 rounded-lg transition-all duration-300"
                     style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                   ></div>
                 </div>
                 <div className="flex justify-between text-xs md:text-sm text-muted-foreground">
-                  <span>{(tokenization.tokens_sold || 0).toLocaleString()} tokens sold</span>
-                  <span>{((tokenization.total_supply || 0) - (tokenization.tokens_sold || 0)).toLocaleString()} remaining</span>
+                  <span>
+                    {(tokenization.tokens_sold || 0).toLocaleString()} tokens
+                    sold
+                  </span>
+                  <span>
+                    {(
+                      (tokenization.total_supply || 0) -
+                      (tokenization.tokens_sold || 0)
+                    ).toLocaleString()}{" "}
+                    remaining
+                  </span>
                 </div>
               </div>
             </div>
@@ -265,99 +327,127 @@ export default function PropertyDetails() {
                 <TabsTrigger value="documents">Documents</TabsTrigger>
                 <TabsTrigger value="discussion">Discussion</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="overview" className="mt-6">
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">Property Description</h3>
+                    <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">
+                      Property Description
+                    </h3>
                     <div className="text-muted-foreground space-y-4 mobile-text">
                       <p>
-                        {property.description || 
-                         "This is a premium real estate investment opportunity. Details about the property, its location, amenities, and investment potential will be provided here."}
+                        {property.description ||
+                          "This is a premium real estate investment opportunity. Details about the property, its location, amenities, and investment potential will be provided here."}
                       </p>
                     </div>
                   </div>
-                  
+
                   <div>
-                    <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">Investment Details</h3>
+                    <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">
+                      Investment Details
+                    </h3>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="bg-background-muted border border-border rounded-lg p-4">
-                        <h4 className="font-medium text-foreground mb-2">Minimum Investment</h4>
+                        <h4 className="font-medium text-foreground mb-2">
+                          Minimum Investment
+                        </h4>
                         <p className="text-lg font-semibold text-muted-foreground">
                           {formatCurrency(tokenization.min_investment || 0)}
                         </p>
                       </div>
                       <div className="bg-background-muted border border-border rounded-lg p-4">
-                        <h4 className="font-medium text-foreground mb-2">Price Per Token</h4>
+                        <h4 className="font-medium text-foreground mb-2">
+                          Price Per Token
+                        </h4>
                         <p className="text-lg font-semibold text-muted-foreground">
                           {formatCurrency(tokenization.price_per_token || 0)}
                         </p>
                       </div>
                       <div className="bg-background-muted border border-border rounded-lg p-4">
-                        <h4 className="font-medium text-foreground mb-2">Total Supply</h4>
+                        <h4 className="font-medium text-foreground mb-2">
+                          Total Supply
+                        </h4>
                         <p className="text-lg font-semibold text-muted-foreground">
-                          {(tokenization.total_supply || 0).toLocaleString()} tokens
+                          {(tokenization.total_supply || 0).toLocaleString()}{" "}
+                          tokens
                         </p>
                       </div>
                       <div className="bg-background-muted border border-border rounded-lg p-4">
-                        <h4 className="font-medium text-foreground mb-2">Management Fee</h4>
+                        <h4 className="font-medium text-foreground mb-2">
+                          Management Fee
+                        </h4>
                         <p className="text-lg font-semibold text-muted-foreground">
-                          {tokenization.management_fee_percentage || 2.5}% annually
+                          {tokenization.management_fee_percentage || 2.5}%
+                          annually
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="financials" className="mt-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-background-muted border border-border rounded-lg p-4">
-                    <h4 className="font-medium text-foreground mb-2">Current Raise</h4>
+                    <h4 className="font-medium text-foreground mb-2">
+                      Current Raise
+                    </h4>
                     <p className="text-lg font-semibold text-muted-foreground">
                       {formatCurrency(tokenization.current_raise || 0)}
                     </p>
                   </div>
                   <div className="bg-background-muted border border-border rounded-lg p-4">
-                    <h4 className="font-medium text-foreground mb-2">Target Raise</h4>
+                    <h4 className="font-medium text-foreground mb-2">
+                      Target Raise
+                    </h4>
                     <p className="text-lg font-semibold text-muted-foreground">
                       {formatCurrency(tokenization.target_raise || 0)}
                     </p>
                   </div>
                   <div className="bg-background-muted border border-border rounded-lg p-4">
-                    <h4 className="font-medium text-foreground mb-2">Property Value</h4>
+                    <h4 className="font-medium text-foreground mb-2">
+                      Property Value
+                    </h4>
                     <p className="text-lg font-semibold text-muted-foreground">
                       {formatCurrency(property.estimated_value || 0)}
                     </p>
                   </div>
                   <div className="bg-background-muted border border-border rounded-lg p-4">
-                    <h4 className="font-medium text-foreground mb-2">Platform Fee</h4>
+                    <h4 className="font-medium text-foreground mb-2">
+                      Platform Fee
+                    </h4>
                     <p className="text-lg font-semibold text-muted-foreground">
                       {tokenization.platform_fee_percentage || 1}% on investment
                     </p>
                   </div>
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="documents" className="mt-6">
                 <div className="space-y-4">
                   <div className="bg-background-muted border border-border rounded-lg p-6 text-center">
                     <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Documents Available</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      Documents Available
+                    </h3>
                     <p className="text-muted-foreground mb-4">
-                      Property documents will be available to investors upon investment
+                      Property documents will be available to investors upon
+                      investment
                     </p>
                     <Button variant="outline">Request Access</Button>
                   </div>
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="discussion" className="mt-6">
                 <div className="bg-background-muted border border-border rounded-lg p-6 text-center">
                   <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Join the Discussion</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    Join the Discussion
+                  </h3>
                   <p className="text-muted-foreground mb-4">
-                    Connect with other investors and get answers to your questions
+                    Connect with other investors and get answers to your
+                    questions
                   </p>
                   <Button className="btn-primary">Join Chat Room</Button>
                 </div>
@@ -377,7 +467,9 @@ export default function PropertyDetails() {
 
             {/* Quick Actions */}
             <div className="bg-background border border-border rounded-xl p-6">
-              <h3 className="font-semibold text-foreground mb-4">Quick Actions</h3>
+              <h3 className="font-semibold text-foreground mb-4">
+                Quick Actions
+              </h3>
               <div className="space-y-3">
                 <Button className="w-full" variant="outline">
                   <MessageCircle className="h-4 w-4 mr-2" />
@@ -396,19 +488,29 @@ export default function PropertyDetails() {
 
             {/* Similar Properties */}
             <div className="bg-background border border-border rounded-xl p-6">
-              <h3 className="font-semibold text-foreground mb-4">Similar Properties</h3>
+              <h3 className="font-semibold text-foreground mb-4">
+                Similar Properties
+              </h3>
               <div className="space-y-4">
                 {[1, 2].map((_, index) => (
                   <div key={index} className="flex space-x-3">
-                    <img 
-                      src={`https://images.unsplash.com/photo-${1486406146926 + index}?w=80&h=60&fit=crop`}
+                    <img
+                      src={`https://images.unsplash.com/photo-${
+                        1486406146926 + index
+                      }?w=80&h=60&fit=crop`}
                       alt="Similar property"
                       className="w-20 h-15 object-cover rounded-lg"
                     />
                     <div className="flex-1">
-                      <h4 className="text-sm font-medium text-foreground">Commercial Plaza</h4>
-                      <p className="text-xs text-muted-foreground">Victoria Island</p>
-                      <p className="text-sm font-semibold text-success">15% ROI</p>
+                      <h4 className="text-sm font-medium text-foreground">
+                        Commercial Plaza
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        Victoria Island
+                      </p>
+                      <p className="text-sm font-semibold text-success">
+                        15% ROI
+                      </p>
                     </div>
                   </div>
                 ))}

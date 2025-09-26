@@ -27,7 +27,6 @@ export default function Dashboard() {
     markAllAsRead,
   } = useNotifications();
 
-
   console.log(user);
 
   const formatNumber = (num: number) => {
@@ -313,7 +312,7 @@ export default function Dashboard() {
 
             {/* Notifications */}
             <Card className="border-border">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b border-border/50">
                 <CardTitle className="flex items-center">
                   <Bell className="w-4 h-4 mr-2" />
                   Notifications
@@ -345,41 +344,43 @@ export default function Dashboard() {
                     ))}
                   </div>
                 ) : notifications.length > 0 ? (
-                  <div className="space-y-4 max-h-64 overflow-y-auto">
-                    {notifications.slice(0, 5).map((notification) => (
-                      <div
-                        key={notification.id}
-                        className="flex items-start space-x-3"
-                      >
-                        <div
-                          className={`w-2 h-2 rounded-full mt-2 ${
-                            notification.read_at ? "bg-muted" : "bg-primary"
-                          }`}
-                        ></div>
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={`text-sm ${
-                              notification.read_at
-                                ? "text-muted-foreground"
-                                : "font-medium text-foreground"
+                  <div className="max-h-64 overflow-y-auto">
+                    {notifications.slice(0, 5).map((notification, index) => (
+                      <div key={notification.id}>
+                        <div className="flex items-start space-x-3 py-3">
+                          <div
+                            className={`w-2 h-2 rounded-full mt-2 ${
+                              notification.read_at ? "bg-muted" : "bg-primary"
                             }`}
-                          >
-                            {notification.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground line-clamp-2">
-                            {notification.message}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(
-                              notification.created_at
-                            ).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
+                          ></div>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`text-sm ${
+                                notification.read_at
+                                  ? "text-muted-foreground"
+                                  : "font-medium text-foreground"
+                              }`}
+                            >
+                              {notification.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                              {notification.message}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(
+                                notification.created_at
+                              ).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </p>
+                          </div>
                         </div>
+                        {index < notifications.slice(0, 5).length - 1 && (
+                          <div className="border-t border-border/50"></div>
+                        )}
                       </div>
                     ))}
                     {notifications.length > 5 && (

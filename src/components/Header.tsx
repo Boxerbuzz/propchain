@@ -2,15 +2,26 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { 
-  Bell, 
-  User, 
-  Wallet, 
-  Menu, 
-  Building, 
-  TrendingUp, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Bell,
+  User,
+  Wallet,
+  Menu,
+  Building,
+  TrendingUp,
   MessageCircle,
   Settings,
   LogOut,
@@ -19,7 +30,7 @@ import {
   BarChart3,
   Clock,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -30,15 +41,16 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { isAuthenticated, logout, user } = useAuth();
-  const { notifications, markAllAsRead, clearReadNotifications } = useNotifications();
+  const { notifications, markAllAsRead, clearReadNotifications } =
+    useNotifications();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'investment':
+      case "investment":
         return CheckCircle;
-      case 'property':
+      case "property":
         return Building;
-      case 'payment':
+      case "payment":
         return AlertTriangle;
       default:
         return Bell;
@@ -47,22 +59,24 @@ export default function Header() {
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'investment':
-        return 'success';
-      case 'property':
-        return 'primary';
-      case 'payment':
-        return 'warning';
+      case "investment":
+        return "success";
+      case "property":
+        return "primary";
+      case "payment":
+        return "warning";
       default:
-        return 'primary';
+        return "primary";
     }
   };
 
   const formatNotificationTime = (createdAt: string) => {
     const now = new Date();
     const created = new Date(createdAt);
-    const diffInMinutes = Math.floor((now.getTime() - created.getTime()) / (1000 * 60));
-    
+    const diffInMinutes = Math.floor(
+      (now.getTime() - created.getTime()) / (1000 * 60)
+    );
+
     if (diffInMinutes < 60) {
       return `${diffInMinutes} min ago`;
     } else if (diffInMinutes < 1440) {
@@ -73,24 +87,24 @@ export default function Header() {
   };
 
   const navigation = [
-    { name: 'Home', href: '/', icon: Home },
-    { name: 'Browse', href: '/browse', icon: Search },
-    { name: 'Portfolio', href: '/portfolio', icon: TrendingUp },
-    { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
-    { name: 'Chat', href: '/chat', icon: MessageCircle },
-    { name: 'Manage', href: '/property/management', icon: Building }
+    { name: "Home", href: "/", icon: Home },
+    { name: "Browse", href: "/browse", icon: Search },
+    { name: "Portfolio", href: "/portfolio", icon: TrendingUp },
+    { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
+    { name: "Chat", href: "/chat", icon: MessageCircle },
+    { name: "Manage", href: "/property/management", icon: Building },
   ];
 
   const userMenuItems = [
-    { name: 'Profile', href: '/settings/profile', icon: User },
-    { name: 'Wallet', href: '/wallet/dashboard', icon: Wallet },
-    { name: 'Settings', href: '/settings/security', icon: Settings },
-    { name: 'Logout', href: '#', icon: LogOut }
+    { name: "Profile", href: "/settings/profile", icon: User },
+    { name: "Wallet", href: "/wallet/dashboard", icon: Wallet },
+    { name: "Settings", href: "/settings/security", icon: Settings },
+    { name: "Logout", href: "#", icon: LogOut },
   ];
 
   const isActiveRoute = (path: string) => {
-    if (path === '/' && location.pathname === '/') return true;
-    if (path !== '/' && location.pathname.startsWith(path)) return true;
+    if (path === "/" && location.pathname === "/") return true;
+    if (path !== "/" && location.pathname.startsWith(path)) return true;
     return false;
   };
 
@@ -99,8 +113,8 @@ export default function Header() {
       variant={isWalletConnected ? "secondary" : "default"}
       size="sm"
       className={`flex items-center gap-2 font-medium transition-all duration-200 ${
-        isWalletConnected 
-          ? "bg-success/10 border-success/20 text-success hover:bg-success/20" 
+        isWalletConnected
+          ? "bg-success/10 border-success/20 text-success hover:bg-success/20"
           : "bg-primary hover:bg-primary-hover"
       }`}
       onClick={() => !isWalletConnected && setIsWalletConnected(true)}
@@ -116,11 +130,18 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50 font-spartan">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-3 hover:scale-105 transition-transform duration-200">
+        <Link
+          to="/"
+          className="flex items-center space-x-3 hover:scale-105 transition-transform duration-200"
+        >
           <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-hover rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-primary-foreground font-bold text-lg">PC</span>
+            <span className="text-primary-foreground font-bold text-lg">
+              PC
+            </span>
           </div>
-          <span className="text-xl font-bold text-foreground hidden sm:block tracking-tight">PropChain</span>
+          <span className="text-xl font-bold text-foreground hidden sm:block tracking-tight">
+            PropChain
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -160,68 +181,116 @@ export default function Header() {
           {isAuthenticated && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative hover:bg-muted/50 transition-colors">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative hover:bg-muted/50 transition-colors"
+                >
                   <Bell className="h-5 w-5" />
-                  {notifications.filter(n => !n.read_at).length > 0 && (
+                  {notifications.filter((n) => !n.read_at).length > 0 && (
                     <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-destructive">
-                      {notifications.filter(n => !n.read_at).length}
+                      {notifications.filter((n) => !n.read_at).length}
                     </Badge>
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-0 bg-background border-border/20 shadow-lg" align="end">
+              <PopoverContent
+                className="w-80 p-0 bg-background border-border/20 shadow-lg"
+                align="end"
+              >
                 <div className="flex items-center justify-between p-3 border-b border-border/10">
-                  <h3 className="font-semibold text-sm text-foreground">Notifications</h3>
-                  {notifications.filter(n => !n.read_at).length > 0 && (
-                    <Button variant="link" size="sm" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => markAllAsRead()}>
+                  <h3 className="font-semibold text-sm text-foreground">
+                    Notifications
+                  </h3>
+                  {notifications.filter((n) => !n.read_at).length > 0 && (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => markAllAsRead()}
+                    >
                       Mark all as read
                     </Button>
                   )}
                 </div>
                 <div className="max-h-96 overflow-y-auto">
-                  {notifications.length > 0 ? notifications.map((notification) => {
-                    const NotificationIcon = getNotificationIcon(notification.notification_type);
-                    const color = getNotificationColor(notification.notification_type);
-                    
-                    return (
-                      <div key={notification.id} className="p-4 border-b border-border/10 last:border-b-0 hover:bg-muted/30 transition-colors cursor-pointer">
-                        <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-full ${
-                            color === "success" ? "bg-green-500/10 text-green-600" : 
-                            color === "warning" ? "bg-amber-500/10 text-amber-600" : 
-                            "bg-primary/10 text-primary"
-                          }`}>
-                            <NotificationIcon className="h-4 w-4" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center">
-                              <p className="text-sm font-semibold text-foreground">{notification.title}</p>
-                              <div className="flex items-center gap-2">
-                                {!notification.read_at && (
-                                  <span className="h-2 w-2 rounded-full bg-primary" />
-                                )}
-                                <span className="text-xs text-muted-foreground">{formatNotificationTime(new Date(notification.created_at).toISOString())}</span>
-                              </div>
+                  {notifications.length > 0 ? (
+                    notifications.map((notification) => {
+                      const NotificationIcon = getNotificationIcon(
+                        notification.notification_type
+                      );
+                      const color = getNotificationColor(
+                        notification.notification_type
+                      );
+
+                      return (
+                        <div
+                          key={notification.id}
+                          className="p-4 border-b border-border/10 last:border-b-0 hover:bg-muted/30 transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={`p-2 rounded-full ${
+                                color === "success"
+                                  ? "bg-green-500/10 text-green-600"
+                                  : color === "warning"
+                                  ? "bg-amber-500/10 text-amber-600"
+                                  : "bg-primary/10 text-primary"
+                              }`}
+                            >
+                              <NotificationIcon className="h-4 w-4" />
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{notification.message}</p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-center">
+                                <p className="text-sm font-semibold text-foreground">
+                                  {notification.title}
+                                </p>
+                                <div className="flex items-center gap-2">
+                                  {!notification.read_at && (
+                                    <span className="h-2 w-2 rounded-full bg-primary" />
+                                  )}
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatNotificationTime(
+                                      new Date(
+                                        notification.created_at
+                                      ).toISOString()
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                {notification.message}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  }) : (
+                      );
+                    })
+                  ) : (
                     <div className="p-8 text-center">
                       <Bell className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">No notifications</p>
+                      <p className="text-sm text-muted-foreground">
+                        No notifications
+                      </p>
                     </div>
                   )}
                 </div>
                 <div className="p-3 border-t border-border/10 flex justify-between">
                   <Link to="/settings/notifications" className="flex-1">
-                    <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground hover:text-foreground">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs text-muted-foreground hover:text-foreground"
+                    >
                       View All Notifications
                     </Button>
                   </Link>
-                  <Button variant="ghost" size="sm" className="w-full text-xs text-destructive hover:text-destructive" onClick={() => clearReadNotifications()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs text-destructive hover:text-destructive"
+                    onClick={() => clearReadNotifications()}
+                  >
                     Clear All
                   </Button>
                 </div>
@@ -234,36 +303,64 @@ export default function Header() {
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="hover:bg-muted/50 transition-colors">
-                    <User className="h-5 w-5" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative hover:bg-gradient-to-br hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20 transition-all duration-200 rounded-full border border-transparent hover:border-blue-200 dark:hover:border-blue-700 hover:shadow-md"
+                  >
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64 bg-background border-border/20 shadow-lg" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex items-center gap-3 p-2">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium text-foreground">{user?.first_name} {user?.last_name}</p>
-                        <p className="text-xs text-muted-foreground">{user?.email}</p>
+                <DropdownMenuContent
+                  className="w-72 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800 shadow-2xl rounded-md overflow-hidden backdrop-blur-sm"
+                  align="end"
+                  forceMount
+                >
+                  <DropdownMenuLabel className="font-normal p-0 rounded-md">
+                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 p-4 border-b border-blue-200/50 dark:border-blue-700/50 rounded-t-md">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-800">
+                          <User className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            {user?.first_name} {user?.last_name}
+                          </p>
+                          <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                            {user?.email}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-border/20" />
-                  {userMenuItems.slice(0, -1).map((item) => (
-                    <DropdownMenuItem key={item.name} asChild>
-                      <Link to={item.href} className="flex items-center gap-2 cursor-pointer text-foreground hover:text-foreground">
-                        <item.icon className="h-4 w-4" />
-                        {item.name}
-                      </Link>
+                  <div className="p-1">
+                    {userMenuItems.slice(0, -1).map((item) => (
+                      <DropdownMenuItem key={item.name} asChild className="p-0">
+                        <Link
+                          to={item.href}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-gray-700 dark:text-gray-300 transition-all duration-200 group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 flex items-center justify-center transition-colors duration-200">
+                            <item.icon className="h-4 w-4" />
+                          </div>
+                          <span className="font-medium">{item.name}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </div>
+                  <div className="border-t border-blue-200/50 dark:border-blue-700/50 p-1">
+                    <DropdownMenuItem
+                      onClick={() => logout()}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 focus:bg-red-50 dark:focus:bg-red-900/20 transition-all duration-200 group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 group-hover:bg-red-200 dark:group-hover:bg-red-900/50 flex items-center justify-center transition-colors duration-200">
+                        <LogOut className="h-4 w-4" />
+                      </div>
+                      <span className="font-medium">Logout</span>
                     </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator className="bg-border/20" />
-                  <DropdownMenuItem onClick={() => logout()} className="cursor-pointer text-destructive focus:text-destructive">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
-                  </DropdownMenuItem>
+                  </div>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
@@ -285,17 +382,26 @@ export default function Header() {
           {/* Mobile Menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden hover:bg-muted/50 transition-colors">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden hover:bg-muted/50 transition-colors"
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:w-80 bg-background border-l border-border">
+            <SheetContent
+              side="right"
+              className="w-full sm:w-80 bg-background border-l border-border"
+            >
               <div className="flex flex-col h-full py-6">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-2">
                     <Building className="h-6 w-6 text-primary" />
-                    <span className="font-bold text-lg text-foreground">PropChain</span>
+                    <span className="font-bold text-lg text-foreground">
+                      PropChain
+                    </span>
                   </div>
                 </div>
 
@@ -324,11 +430,13 @@ export default function Header() {
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/80 hover:shadow-sm"
                         }`}
                       >
-                        <div className={`p-2 rounded-lg transition-colors ${
-                          isActive 
-                            ? "bg-primary/20" 
-                            : "bg-muted group-hover:bg-muted-foreground/10"
-                        }`}>
+                        <div
+                          className={`p-2 rounded-lg transition-colors ${
+                            isActive
+                              ? "bg-primary/20"
+                              : "bg-muted group-hover:bg-muted-foreground/10"
+                          }`}
+                        >
                           <item.icon className="h-4 w-4" />
                         </div>
                         <span className="flex-1">{item.name}</span>
@@ -352,7 +460,7 @@ export default function Header() {
                         to={item.href}
                         onClick={() => {
                           setMobileMenuOpen(false);
-                          if (item.name === 'Logout') {
+                          if (item.name === "Logout") {
                             logout();
                           }
                         }}
@@ -370,19 +478,25 @@ export default function Header() {
                 {/* Mobile Auth Buttons (only when not authenticated) */}
                 {!isAuthenticated && (
                   <div className="border-t border-border pt-6 mt-6 space-y-4">
-                    <Link to="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Link
+                      to="/auth/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
                       <Button variant="outline" className="w-full">
                         Sign In
                       </Button>
                     </Link>
-                    <Link to="/auth/signup" onClick={() => setMobileMenuOpen(false)}>
+                    <Link
+                      to="/auth/signup"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
                       <Button className="w-full bg-primary hover:bg-primary/90">
                         Get Started
                       </Button>
                     </Link>
                   </div>
                 )}
-                
+
                 {/* Mobile Auth Buttons (only when not authenticated) */}
                 {!isAuthenticated && (
                   <div className="border-t pt-4">
