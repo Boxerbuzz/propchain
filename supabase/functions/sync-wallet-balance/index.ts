@@ -58,13 +58,33 @@ serve(async (req) => {
 
     console.log(`Account ${hederaAccountId} balance: ${balance.hbars.toString()}`);
 
-    // Convert to different currencies (simplified conversion)
-    const hbarToUsd = 0.05; // Mock exchange rate - should be fetched from an API
-    const usdToNgn = 1500;  // Mock exchange rate - should be fetched from an API
-
     const balanceHbar = Number(hbarBalance.toString()) / 100000000; // Convert tinybars to HBAR
-    const balanceUsd = balanceHbar * hbarToUsd;
-    const balanceNgn = balanceUsd * usdToNgn;
+
+    // Fetch real exchange rates
+    let balanceUsd = 0;
+    let balanceNgn = 0;
+
+    try {
+      // Get HBAR/USD rate from CoinGecko
+      const hbarResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=hedera-hashgraph&vs_currencies=usd');
+      const hbarData = await hbarResponse.json();
+      const hbarToUsd = hbarData['hedera-hashgraph']?.usd || 0.05; // Fallback to mock rate
+
+      // Get USD/NGN rate
+      const usdResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=ngn');
+      const usdData = await usdResponse.json();
+      const usdToNgn = usdData.tether?.ngn || 1500; // Fallback to mock rate
+
+      balanceUsd = balanceHbar * hbarToUsd;
+      balanceNgn = balanceUsd * usdToNgn;
+
+      console.log(`Exchange rates - HBAR/USD: ${hbarToUsd}, USD/NGN: ${usdToNgn}`);
+    } catch (error) {
+      console.error('Failed to fetch exchange rates, using fallbacks:', error);
+      // Use fallback rates if API fails
+      balanceUsd = balanceHbar * 0.05;
+      balanceNgn = balanceUsd * 1500;
+    }
 
     const result = {
       hederaAccountId,

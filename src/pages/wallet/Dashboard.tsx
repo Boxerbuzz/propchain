@@ -7,8 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -38,8 +36,6 @@ const WalletDashboard = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [showBalance, setShowBalance] = useState(true);
-  const [depositAmount, setDepositAmount] = useState("");
-  const [withdrawAmount, setWithdrawAmount] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
 
   const {
@@ -152,49 +148,6 @@ const WalletDashboard = () => {
       isDefault: false,
     },
   ];
-
-  const handleDeposit = () => {
-    if (!depositAmount || parseFloat(depositAmount) <= 0) {
-      toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid deposit amount",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Deposit Initiated",
-      description: `Deposit of $${depositAmount} has been initiated`,
-    });
-    setDepositAmount("");
-  };
-
-  const handleWithdrawal = () => {
-    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
-      toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid withdrawal amount",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (parseFloat(withdrawAmount) > walletData.balance) {
-      toast({
-        title: "Insufficient Balance",
-        description: "Withdrawal amount exceeds available balance",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Withdrawal Initiated",
-      description: `Withdrawal of $${withdrawAmount} has been initiated`,
-    });
-    setWithdrawAmount("");
-  };
 
   const copyAddress = () => {
     navigator.clipboard.writeText(walletData.walletAddress);
@@ -316,11 +269,11 @@ const WalletDashboard = () => {
               </p>
               {walletData.balanceHbar > 0 && (
                 <div className="mt-2 space-y-1">
-                  <p className="text-sm text-blue-600">
+                               <p className="text-sm text-blue-600">
                     {walletData.balanceHbar.toFixed(4)} HBAR
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    ${walletData.balanceUsd.toFixed(2)} USD
+                    ${walletData.balanceUsd.toFixed(2)} USD • ₦{(hederaBalance?.balanceNgn || 0).toLocaleString()}
                   </p>
                 </div>
               )}
@@ -407,7 +360,7 @@ const WalletDashboard = () => {
                         filteredTransactions.slice(0, 50).map((transaction) => (
                           <div
                             key={transaction.id}
-                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors group"
                           >
                             <div className="flex items-center gap-3">
                               {getTransactionIcon(transaction.type)}
@@ -434,7 +387,7 @@ const WalletDashboard = () => {
                               </div>
                             </div>
                             <div className="text-right">
-                              <p
+                               <p
                                 className={`font-semibold ${
                                   transaction.direction === 'incoming'
                                     ? "text-green-600"
@@ -448,8 +401,19 @@ const WalletDashboard = () => {
                                   ? `₦${transaction.amount.toLocaleString()}`
                                   : `${transaction.amount} ${transaction.currency}`}
                               </p>
-                              <p className="text-xs text-muted-foreground">
-                                {new Date(transaction.timestamp).toLocaleDateString()}
+                              {transaction.currency === 'HBAR' && hederaBalance?.balanceNgn && (
+                                <p className="text-xs text-muted-foreground">
+                                  ≈ ₦{((transaction.amount * (hederaBalance.balanceNgn / hederaBalance.balanceHbar)) || 0).toLocaleString()}
+                                </p>
+                              )}
+                               <p className="text-xs text-muted-foreground">
+                                {new Date(transaction.timestamp).toLocaleString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
                               </p>
                               {transaction.explorerUrl && (
                                 <Button
@@ -565,38 +529,43 @@ const WalletDashboard = () => {
                             key={index}
                             className="flex items-center justify-between p-4 border rounded-lg"
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center border border-blue-200 dark:border-blue-700 shadow-lg">
-                                <Wallet className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="font-medium">{wallet.name}</p>
-                                  <Badge
-                                    variant="secondary"
-                                    className={
-                                      wallet.type === "custodial"
-                                        ? "bg-blue-100 text-blue-800"
-                                        : "bg-purple-100 text-purple-800"
-                                    }
-                                  >
-                                    {wallet.type === "custodial"
-                                      ? "Custodial"
-                                      : "External"}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground font-mono">
-                                  {wallet.address.length > 20
-                                    ? `${wallet.address.substring(
-                                        0,
-                                        10
-                                      )}...${wallet.address.substring(
-                                        wallet.address.length - 10
-                                      )}`
-                                    : wallet.address}
-                                </p>
-                              </div>
-                            </div>
+                             <div className="flex items-center gap-3">
+                               <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg w-10 h-10 flex items-center justify-center border border-blue-200 dark:border-blue-700">
+                                 <Wallet className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                               </div>
+                               <div>
+                                 <div className="flex items-center gap-2">
+                                   <p className="font-medium">{wallet.name}</p>
+                                   <Badge
+                                     variant="secondary"
+                                     className={
+                                       wallet.type === "custodial"
+                                         ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                                         : "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
+                                     }
+                                   >
+                                     {wallet.type === "custodial"
+                                       ? "Custodial Wallet"
+                                       : "External Wallet"}
+                                   </Badge>
+                                 </div>
+                                 <p className="text-sm text-muted-foreground font-mono">
+                                   {wallet.address.length > 20
+                                     ? `${wallet.address.substring(
+                                         0,
+                                         10
+                                       )}...${wallet.address.substring(
+                                         wallet.address.length - 10
+                                       )}`
+                                     : wallet.address}
+                                 </p>
+                                 <p className="text-xs text-muted-foreground">
+                                   {wallet.type === "custodial" 
+                                     ? "Managed by the platform for security"
+                                     : "Connected via WalletConnect"}
+                                 </p>
+                               </div>
+                             </div>
                             <div className="flex items-center gap-2">
                               <Badge
                                 variant="secondary"
@@ -626,45 +595,6 @@ const WalletDashboard = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="deposit">Deposit Amount</Label>
-                  <div className="flex gap-2 mt-1">
-                    <Input
-                      id="deposit"
-                      type="number"
-                      placeholder="Enter amount"
-                      value={depositAmount}
-                      onChange={(e) => setDepositAmount(e.target.value)}
-                    />
-                    <Button onClick={handleDeposit}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="withdraw">Withdraw Amount</Label>
-                  <div className="flex gap-2 mt-1">
-                    <Input
-                      id="withdraw"
-                      type="number"
-                      placeholder="Enter amount"
-                      value={withdrawAmount}
-                      onChange={(e) => setWithdrawAmount(e.target.value)}
-                    />
-                    <Button onClick={handleWithdrawal} variant="outline">
-                      <ArrowUpDown className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Wallet Address */}
             <Card>
