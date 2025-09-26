@@ -26,6 +26,7 @@ import Review from "./pages/kyc/Review";
 import KYCStatus from "./pages/kyc/Status";
 import Dashboard from "./pages/Dashboard";
 import UnifiedWalletSetup from "./pages/wallet/UnifiedSetup";
+import WalletDashboard from "./pages/wallet/Dashboard";
 import PropertyManagement from "./pages/property/Management";
 import PropertyView from "./pages/property/PropertyView";
 import PropertyEdit from "./pages/property/PropertyEdit";
@@ -92,6 +93,7 @@ const App = () => (
                   element={<PortfolioDetail />}
                 />
                 <Route path="/wallet/setup" element={<UnifiedWalletSetup />} />
+                <Route path="/wallet/dashboard" element={<WalletDashboard />} />
                 <Route
                   path="/property/management"
                   element={<PropertyManagement />}
