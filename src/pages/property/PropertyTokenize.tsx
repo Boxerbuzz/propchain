@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 import MoneyInput from '@/components/ui/money-input';
+import { useAuth } from "@/context/AuthContext";
 
 const tokenizationSchema = z.object({
   token_name: z.string().min(1, "Token name is required"),
@@ -38,6 +39,7 @@ const PropertyTokenize = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user, isAuthenticated } = useAuth();
 
   const { data: property, isLoading } = useQuery({
     queryKey: ["property", propertyId],
@@ -78,30 +80,82 @@ const PropertyTokenize = () => {
   }, [property, form]);
 
   const createTokenizationMutation = useMutation({
-    mutationFn: (data: TokenizationForm) => {
-      const { investment_window_days, ...tokenizationData } = data;
-      
-      const finalTokenizationData = {
+    mutationFn: async (data: TokenizationForm) => {
+      // Auth and ownership prechecks
+      // using user and isAuthenticated from useAuth() hook
+      if (!isAuthenticated || !user?.id) {
+        throw new Error("You must be logged in to tokenize a property.");
+      }
+      if (!property || property.owner_id !== user.id) {
+        throw new Error("You can only tokenize properties you own.");
+      }
+
+      const {
+        investment_window_days,
+        max_investment,
+        expected_roi_annual,
+        dividend_frequency,
+        management_fee_percentage,
+        ...rest
+      } = data;
+
+      const now = new Date();
+      const investment_window_start = now.toISOString();
+      const investment_window_end = new Date(
+        now.getTime() + investment_window_days * 24 * 60 * 60 * 1000
+      ).toISOString();
+
+      // Strict payload shaping; set nullable id fields explicitly to null
+      const payload: any = {
         property_id: propertyId!,
-        ...tokenizationData,
-        investment_window_start: new Date(),
-        investment_window_end: new Date(Date.now() + investment_window_days * 24 * 60 * 60 * 1000),
-        status: 'draft',
+        token_name: String(rest.token_name).trim(),
+        token_symbol: String(rest.token_symbol).trim().toUpperCase(),
+        total_supply: rest.total_supply,
+        price_per_token: rest.price_per_token,
+        min_investment: rest.min_investment,
+        target_raise: rest.target_raise,
+        minimum_raise: rest.minimum_raise,
+        investment_window_start,
+        investment_window_end,
+        status: "draft",
+        created_by: user.id,
+        token_id: null,
+        minting_transaction_id: null,
+        minted_at: null,
+        approved_at: null,
+        approved_by: null,
       };
-      
-      return supabaseService.tokenizations.create(finalTokenizationData);
+
+      if (typeof max_investment === "number") payload.max_investment = max_investment;
+      if (typeof expected_roi_annual === "number") payload.expected_roi_annual = expected_roi_annual;
+      if (dividend_frequency) payload.dividend_frequency = dividend_frequency;
+      if (typeof management_fee_percentage === "number") payload.management_fee_percentage = management_fee_percentage;
+
+      return supabaseService.tokenizations.create(payload);
     },
     onSuccess: () => {
       toast.success("Tokenization created successfully");
       queryClient.invalidateQueries({ queryKey: ["property", propertyId] });
       navigate(`/property/${propertyId}/view`);
     },
-    onError: (error) => {
-      toast.error("Failed to create tokenization: " + error.message);
+    onError: (error: any) => {
+      const details = error?.details || error?.message || "Unknown error";
+      const hint = error?.hint ? ` ${error.hint}` : "";
+      const code = error?.code ? ` [${error.code}]` : "";
+      toast.error(`Failed to create tokenization: ${details}${hint}${code}`);
     },
   });
 
   const onSubmit = (data: TokenizationForm) => {
+    // using user and isAuthenticated from useAuth() hook
+    if (!isAuthenticated || !user?.id) {
+      toast.error("Please log in to continue.");
+      return;
+    }
+    if (!property || property.owner_id !== user.id) {
+      toast.error("You can only tokenize your own property.");
+      return;
+    }
     createTokenizationMutation.mutate(data);
   };
 
