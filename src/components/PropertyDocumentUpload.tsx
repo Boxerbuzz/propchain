@@ -45,50 +45,65 @@ export const PropertyDocumentUpload = ({
         
         if (!docType) continue;
 
-        // First upload to Supabase Storage
-        await supabaseService.properties.uploadPropertyDocument(
+        // First upload to HFS
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('fileName', file.name);
+        formData.append('propertyId', propertyId);
+
+        const { data: hfsResult, error: hfsError } = await supabase.functions.invoke('upload-to-hfs', {
+          body: formData,
+        });
+
+        if (hfsError) {
+          throw new Error(`HFS upload failed: ${hfsError.message}`);
+        }
+
+        if (!hfsResult.success) {
+          throw new Error(`HFS upload failed: ${hfsResult.error}`);
+        }
+
+        // Then upload to Supabase Storage and save document record
+        const document = await supabaseService.properties.uploadPropertyDocument(
           propertyId, 
           file,
           selectedType,
           docType.name
         );
 
-        // Then upload to HFS (Hedera File Service)
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('fileName', docType.name);
-        formData.append('propertyId', propertyId);
+        // Update document record with HFS details
+        const { error: updateError } = await supabase
+          .from('property_documents')
+          .update({
+            hfs_file_id: hfsResult.data.fileId,
+            file_hash: hfsResult.data.fileHash,
+          })
+          .eq('id', document.id);
 
-        const { data: hfsResult, error: hfsError } = await supabase.functions.invoke(
-          'upload-to-hfs',
-          {
-            body: formData,
-          }
-        );
-
-        if (hfsError) {
-          console.error('HFS upload error:', hfsError);
-        } else if (hfsResult?.success) {
-          // Update the document record with HFS details
-          await supabase
-            .from('property_documents')
-            .update({
-              hfs_file_id: hfsResult.data.fileId,
-              file_hash: hfsResult.data.fileHash,
-            })
-            .eq('property_id', propertyId)
-            .eq('document_type', selectedType)
-            .order('uploaded_at', { ascending: false })
-            .limit(1);
-
-          console.log('Document uploaded to HFS:', hfsResult.data);
+        if (updateError) {
+          console.error('Failed to update document with HFS details:', updateError);
         }
+
+        toast({
+          title: "Document uploaded",
+          description: `${file.name} uploaded to HFS and storage`,
+        });
       }
 
-      toast({
-        title: "Documents uploaded successfully",
-        description: `${files.length} document(s) uploaded to storage and HFS`,
-      });
+      // Update property with HFS file IDs
+      const { data: documents } = await supabase
+        .from('property_documents')
+        .select('hfs_file_id')
+        .eq('property_id', propertyId)
+        .not('hfs_file_id', 'is', null);
+
+      if (documents && documents.length > 0) {
+        const hfsFileIds = documents.map(doc => doc.hfs_file_id);
+        await supabase
+          .from('properties')
+          .update({ hfs_file_ids: hfsFileIds })
+          .eq('id', propertyId);
+      }
 
       setSelectedType("");
       onUploadComplete();
@@ -150,7 +165,7 @@ export const PropertyDocumentUpload = ({
           <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
             <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground mb-4">
-              Select files to upload
+              Select files to upload (will be stored on HFS)
             </p>
             <Button 
               onClick={() => fileInputRef.current?.click()}
@@ -160,7 +175,7 @@ export const PropertyDocumentUpload = ({
               {uploading ? (
                 <div className="flex items-center">
                   <Spinner size={16} className="mr-2" />
-                  Uploading...
+                  Uploading to HFS...
                 </div>
               ) : (
                 "Select Files"
@@ -194,6 +209,9 @@ export const PropertyDocumentUpload = ({
                     <div>
                       <p className="font-medium">{doc.document_name}</p>
                       <p className="text-sm text-muted-foreground">{doc.document_type}</p>
+                      {doc.hfs_file_id && (
+                        <p className="text-xs text-success">HFS: {doc.hfs_file_id}</p>
+                      )}
                     </div>
                   </div>
                   <Badge variant={getStatusColor(doc.verification_status) as any}>

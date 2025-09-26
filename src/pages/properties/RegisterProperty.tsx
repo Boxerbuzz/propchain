@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { PropertyDocumentUpload } from "@/components/PropertyDocumentUpload";
 import { PropertyImageUpload } from "@/components/PropertyImageUpload";
+import { usePropertyPostProcessing } from "@/hooks/usePropertyPostProcessing";
 import { usePropertyHCSSetup } from "@/hooks/usePropertyHCSSetup";
 
 const propertySchema = z.object({
@@ -43,6 +44,9 @@ const RegisterProperty = () => {
   const [propertyId, setPropertyId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  // Enable post-processing for HCS topics and Hedera tokens
+  usePropertyPostProcessing();
   
   // Setup HCS topic creation for auto-approved properties
   usePropertyHCSSetup();
