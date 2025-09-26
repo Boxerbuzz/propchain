@@ -50,12 +50,20 @@ const WalletDashboard = () => {
   const { balance: hederaBalance, syncBalance, isSyncing } = useWalletBalance();
   const { transactions: allTransactions, isLoading: transactionsLoading, refetch: refetchTransactions } = useWalletTransactions();
 
-  // Calculate transaction summaries
+  // Calculate transaction summaries with proper NGN conversion
   const transactionSummary = (allTransactions || []).reduce((acc, tx) => {
+    let amountInNGN = tx.amount || 0;
+    
+    // Convert HBAR to NGN if it's a Hedera transaction
+    if (tx.method === 'hedera' && hederaBalance?.balanceNgn && hederaBalance?.balanceHbar && hederaBalance.balanceHbar > 0) {
+      const hbarToNgnRate = hederaBalance.balanceNgn / hederaBalance.balanceHbar;
+      amountInNGN = (tx.amount || 0) * hbarToNgnRate;
+    }
+    
     if (tx.type === 'deposit' || tx.type === 'dividend') {
-      acc.totalDeposited += tx.amount;
+      acc.totalDeposited += amountInNGN;
     } else if (tx.type === 'withdrawal' || tx.type === 'investment') {
-      acc.totalWithdrawn += tx.amount;
+      acc.totalWithdrawn += amountInNGN;
     }
     return acc;
   }, { totalDeposited: 0, totalWithdrawn: 0 });

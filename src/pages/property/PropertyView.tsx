@@ -68,13 +68,7 @@ const PropertyView = () => {
           <Link to={`/property/${propertyId}/edit`}>
             <Button variant="outline">
               <Edit className="w-4 h-4 mr-2" />
-              Edit
-            </Button>
-          </Link>
-          <Link to={`/property/${propertyId}/tokenize`}>
-            <Button>
-              <Coins className="w-4 h-4 mr-2" />
-              Tokenize
+              Edit Property
             </Button>
           </Link>
         </div>
@@ -89,19 +83,8 @@ const PropertyView = () => {
               className="w-full h-96 object-cover rounded-t-lg"
             />
             <div className="p-4">
-              <div className="flex gap-2 mb-4">
-                <Link to={`/property/${propertyId}/images`}>
-                  <Button variant="outline" size="sm">
-                    <Image className="w-4 h-4 mr-2" />
-                    Manage Images ({property.property_images?.length || 0})
-                  </Button>
-                </Link>
-                <Link to={`/property/${propertyId}/documents`}>
-                  <Button variant="outline" size="sm">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Manage Documents ({property.property_documents?.length || 0})
-                  </Button>
-                </Link>
+              <div className="text-sm text-muted-foreground">
+                Images: {property.property_images?.length || 0} • Documents: {property.property_documents?.length || 0}
               </div>
             </div>
           </CardContent>
