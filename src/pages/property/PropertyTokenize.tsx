@@ -79,15 +79,17 @@ const PropertyTokenize = () => {
 
   const createTokenizationMutation = useMutation({
     mutationFn: (data: TokenizationForm) => {
-      const tokenizationData = {
+      const { investment_window_days, ...tokenizationData } = data;
+      
+      const finalTokenizationData = {
         property_id: propertyId!,
-        ...data,
+        ...tokenizationData,
         investment_window_start: new Date(),
-        investment_window_end: new Date(Date.now() + data.investment_window_days * 24 * 60 * 60 * 1000),
+        investment_window_end: new Date(Date.now() + investment_window_days * 24 * 60 * 60 * 1000),
         status: 'draft',
       };
       
-      return supabaseService.tokenizations.create(tokenizationData);
+      return supabaseService.tokenizations.create(finalTokenizationData);
     },
     onSuccess: () => {
       toast.success("Tokenization created successfully");
