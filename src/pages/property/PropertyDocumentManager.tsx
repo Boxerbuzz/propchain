@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { PropertyDocumentUpload } from "@/components/PropertyDocumentUpload";
 import { supabaseService } from "@/services/supabaseService";
@@ -37,7 +38,22 @@ export const PropertyDocumentManager = () => {
   };
 
   if (loading) {
-    return <div className="container mx-auto px-4 py-8">Loading...</div>;
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="border rounded-lg p-4 space-y-3">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!property) {

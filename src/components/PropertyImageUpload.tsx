@@ -110,7 +110,14 @@ export const PropertyImageUpload = ({
                 disabled={uploading}
               >
                 <Image className="h-4 w-4 mr-2" />
-                {uploading ? "Uploading..." : "Select Images"}
+                {uploading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                    Uploading...
+                  </div>
+                ) : (
+                  "Select Images"
+                )}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
