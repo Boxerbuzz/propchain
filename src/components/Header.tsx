@@ -321,7 +321,7 @@ export default function Header() {
                   <DropdownMenuLabel className="font-normal p-0">
                     <div className="bg-gradient-to-br from-primary/5 to-secondary/5 p-4 border-b border-border">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shadow-md ring-2 ring-background">
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shadow-md ring-2 ring-background">
                           <User className="h-6 w-6 text-primary-foreground" />
                         </div>
                         <div className="flex flex-col space-y-1 min-w-0">
@@ -340,11 +340,9 @@ export default function Header() {
                       <DropdownMenuItem key={item.name} asChild className="p-0">
                         <Link
                           to={item.href}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-card-foreground hover:bg-muted/50 transition-all duration-200 group"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-card-foreground hover:bg-primary/50 transition-all duration-200 group"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-muted group-hover:bg-primary/10 flex items-center justify-center transition-colors duration-200">
-                            <item.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
-                          </div>
+                          <item.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
                           <span className="font-medium">{item.name}</span>
                         </Link>
                       </DropdownMenuItem>
@@ -355,9 +353,7 @@ export default function Header() {
                       onClick={() => logout()}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 focus:bg-destructive/10 transition-all duration-200 group"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-destructive/10 group-hover:bg-destructive/20 flex items-center justify-center transition-colors duration-200">
-                        <LogOut className="h-4 w-4" />
-                      </div>
+                      <LogOut className="h-4 w-4" />
                       <span className="font-medium">Logout</span>
                     </DropdownMenuItem>
                   </div>
