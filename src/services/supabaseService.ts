@@ -65,14 +65,13 @@ export const supabaseService = {
         .insert({
           title: propertyData.title,
           description: propertyData.description,
-          property_type: propertyData.propertyType,
-          location: {
-            address: propertyData.address,
-            city: propertyData.city,
-            state: propertyData.state,
-            country: propertyData.country,
-          },
-          estimated_value: parseFloat(propertyData.totalValue),
+          property_type: propertyData.property_type,
+          location: propertyData.location,
+          estimated_value: propertyData.estimated_value,
+          rental_income_monthly: propertyData.rental_income_monthly || null,
+          bedrooms: propertyData.bedrooms || null,
+          bathrooms: propertyData.bathrooms || null,
+          year_built: propertyData.year_built || null,
           owner_id: userId,
           approval_status: "pending",
           listing_status: "draft",
@@ -589,6 +588,16 @@ export const supabaseService = {
   // Tokenizations services
   tokenizations: {
     async create(tokenizationData: any) {
+      // Ensure we have valid auth before attempting insert
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        throw new Error("Authentication required to create tokenization");
+      }
+
+      console.log("Creating tokenization with data:", tokenizationData);
+      console.log("Authenticated user:", user.id);
+
       const { data, error } = await supabase
         .from("tokenizations")
         .insert(tokenizationData)
