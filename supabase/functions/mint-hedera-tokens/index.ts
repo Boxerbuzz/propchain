@@ -10,16 +10,16 @@ import {
 
 // Load environment variables for Hedera operator
 const OPERATOR_ID = Deno.env.get("HEDERA_OPERATOR_ID");
-const OPERATOR_PRIVATE_KEY = Deno.env.get("HEDERA_OPERATOR_PRIVATE_KEY");
+const HEDERA_OPERATOR_PRIVATE_KEY = Deno.env.get("HEDERA_OPERATOR_PRIVATE_KEY");
 
-if (!OPERATOR_ID || !OPERATOR_PRIVATE_KEY) {
+if (!OPERATOR_ID || !HEDERA_OPERATOR_PRIVATE_KEY) {
   throw new Error(
     "Hedera operator ID and private key must be set in Supabase secrets."
   );
 }
 
 const client = Client.forTestnet(); // Or Client.forMainnet() or Client.forPreviewnet()
-client.setOperator(OPERATOR_ID, PrivateKey.fromString(OPERATOR_PRIVATE_KEY));
+client.setOperator(OPERATOR_ID, PrivateKey.fromString(HEDERA_OPERATOR_PRIVATE_KEY));
 
 serve(async (req) => {
   if (req.method !== "POST") {

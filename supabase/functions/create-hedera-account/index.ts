@@ -9,16 +9,16 @@ import {
 
 // Load environment variables for Hedera operator
 const OPERATOR_ID = Deno.env.get("HEDERA_OPERATOR_ID");
-const OPERATOR_PRIVATE_KEY = Deno.env.get("HEDERA_OPERATOR_PRIVATE_KEY");
+const HEDERA_OPERATOR_PRIVATE_KEY = Deno.env.get("HEDERA_OPERATOR_PRIVATE_KEY");
 
-if (!OPERATOR_ID || !OPERATOR_PRIVATE_KEY) {
+if (!OPERATOR_ID || !HEDERA_OPERATOR_PRIVATE_KEY) {
   throw new Error(
     "Hedera operator ID and private key must be set in Supabase secrets."
   );
 }
 
 const client = Client.forTestnet(); // Or Client.forMainnet() or Client.forPreviewnet()
-client.setOperator(OPERATOR_ID, PrivateKey.fromStringED25519(OPERATOR_PRIVATE_KEY));
+client.setOperator(OPERATOR_ID, PrivateKey.fromStringED25519(HEDERA_OPERATOR_PRIVATE_KEY));
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -54,7 +54,7 @@ serve(async (req) => {
       .freezeWith(client); // Freeze the transaction for signing
 
     const signedTransaction = await createAccountTransaction.sign(
-      PrivateKey.fromStringED25519(OPERATOR_PRIVATE_KEY)
+      PrivateKey.fromStringED25519(HEDERA_OPERATOR_PRIVATE_KEY)
     );
     const txResponse = await signedTransaction.execute(client);
     const receipt = await txResponse.getReceipt(client);
