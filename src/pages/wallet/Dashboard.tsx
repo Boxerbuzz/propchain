@@ -383,7 +383,7 @@ const WalletDashboard = () => {
                         <div className="text-center py-8 text-muted-foreground">
                           <Wallet className="h-12 w-12 mx-auto mb-4 opacity-50" />
                           <p className="mb-4">No wallets connected</p>
-                          <Button onClick={() => window.location.href = '/wallet/connect'}>
+                          <Button onClick={() => window.location.href = '/wallet/setup'}>
                             Connect Wallet
                           </Button>
                         </div>
