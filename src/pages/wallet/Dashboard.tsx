@@ -55,7 +55,7 @@ const WalletDashboard = () => {
   const { transactions: allTransactions, isLoading: transactionsLoading, refetch: refetchTransactions } = useWalletTransactions();
 
   // Calculate transaction summaries
-  const transactionSummary = allTransactions.reduce((acc, tx) => {
+  const transactionSummary = (allTransactions || []).reduce((acc, tx) => {
     if (tx.type === 'deposit' || tx.type === 'dividend') {
       acc.totalDeposited += tx.amount;
     } else if (tx.type === 'withdrawal' || tx.type === 'investment') {
@@ -69,7 +69,7 @@ const WalletDashboard = () => {
     balance: stats.walletBalance,
     balanceHbar: hederaBalance?.balanceHbar || 0,
     balanceUsd: hederaBalance?.balanceUsd || 0,
-    pendingDeposits: allTransactions.filter(tx => tx.status === 'pending' && (tx.type === 'deposit' || tx.type === 'dividend')).length,
+    pendingDeposits: (allTransactions || []).filter(tx => tx.status === 'pending' && (tx.type === 'deposit' || tx.type === 'dividend')).length,
     totalDeposited: transactionSummary.totalDeposited,
     totalWithdrawn: transactionSummary.totalWithdrawn,
     walletAddress: user?.hedera_account_id || "No wallet connected",
