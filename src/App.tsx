@@ -155,6 +155,13 @@ const App = () => (
               <Route path="verify-phone" element={<VerifyPhone />} />
             </Route>
 
+            {/* Legal and Support Routes */}
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/risk-disclosure" element={<RiskDisclosure />} />
+            <Route path="/regulatory" element={<Regulatory />} />
+            <Route path="/support" element={<SupportCenter />} />
+
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
