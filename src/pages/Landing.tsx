@@ -1,56 +1,94 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import PropertyCard from "@/components/PropertyCard";
 import Footer from "@/components/Footer";
 import { ArrowRight, Building, Users, TrendingUp, Shield, Zap, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useProperties } from "@/hooks/useProperties";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Landing() {
-  // Mock data for featured properties
-  const featuredProperties = [
-    {
-      id: "1",
-      title: "Luxury Apartment Complex - Ikoyi",
-      location: "Ikoyi, Lagos",
-      price: 500000000,
-      expectedReturn: 12,
-      tokensSold: 750,
-      totalTokens: 1000,
-      investmentDeadline: "Dec 31, 2024",
-      imageUrl: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop",
-      status: "active" as const
-    },
-    {
-      id: "2", 
-      title: "Commercial Plaza - Victoria Island",
-      location: "Victoria Island, Lagos",
-      price: 750000000,
-      expectedReturn: 15,
-      tokensSold: 600,
-      totalTokens: 1200,
-      investmentDeadline: "Jan 15, 2025",
-      imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop",
-      status: "active" as const
-    },
-    {
-      id: "3",
-      title: "Residential Estate - Lekki", 
-      location: "Lekki, Lagos",
-      price: 300000000,
-      expectedReturn: 10,
-      tokensSold: 400,
-      totalTokens: 800,
-      investmentDeadline: "Feb 28, 2025",
-      imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-      status: "upcoming" as const
-    }
-  ];
+  // Fetch real featured properties data
+  const { data: tokenizations = [], isLoading: propertiesLoading } = useProperties();
 
-  const stats = [
-    { label: "Total Properties", value: "150+", icon: Building },
-    { label: "Active Investors", value: "5,000+", icon: Users },
-    { label: "Total Invested", value: "₦2.5B", icon: TrendingUp },
-    { label: "Average Returns", value: "12.5%", icon: Shield }
+  // Fetch platform statistics
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ['platform-stats'],
+    queryFn: async () => {
+      const [propertiesResult, investmentsResult, usersResult] = await Promise.all([
+        supabase.from('properties').select('id, estimated_value').eq('approval_status', 'approved'),
+        supabase.from('investments').select('amount_ngn, created_at').eq('payment_status', 'confirmed'),
+        supabase.from('users').select('id', { count: 'exact' })
+      ]);
+
+      const properties = propertiesResult.data || [];
+      const investments = investmentsResult.data || [];
+      const usersCount = usersResult.count || 0;
+
+      const totalInvested = investments.reduce((sum, inv) => sum + (inv.amount_ngn || 0), 0);
+      const avgReturn = investments.length > 0 ? 12.5 : 0; // This could be calculated from actual returns
+
+      return {
+        propertiesCount: properties.length,
+        investorsCount: usersCount,
+        totalInvested,
+        avgReturn
+      };
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Transform tokenizations to property cards format
+  const featuredProperties = tokenizations.slice(0, 3).map((tokenization) => {
+    let status: "active" | "upcoming" | "funded" = "upcoming";
+    if (tokenization.status === "active") status = "active";
+    else if (tokenization.status === "completed") status = "funded";
+    
+    return {
+      id: tokenization.id,
+      title: tokenization.property_title || "Property Investment",
+      location: typeof tokenization.property_location === "object"
+        ? `${tokenization.property_location?.city || ""}, ${tokenization.property_location?.state || ""}`.trim().replace(/^,|,$/g, '') || "Nigeria"
+        : tokenization.property_location || "Nigeria",
+      price: tokenization.target_raise || tokenization.current_raise || 0,
+      expectedReturn: tokenization.expected_roi_annual || 0,
+      tokensSold: Number(tokenization.tokens_sold) || 0,
+      totalTokens: Number(tokenization.total_supply) || 1,
+      investmentDeadline: tokenization.investment_window_end
+        ? new Date(tokenization.investment_window_end).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          })
+        : "TBD",
+      imageUrl: tokenization.primary_image || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop",
+      status
+    };
+  });
+
+  const platformStats = [
+    { 
+      label: "Total Properties", 
+      value: statsLoading ? "..." : `${stats?.propertiesCount || 0}+`, 
+      icon: Building 
+    },
+    { 
+      label: "Active Investors", 
+      value: statsLoading ? "..." : `${stats?.investorsCount || 0}+`, 
+      icon: Users 
+    },
+    { 
+      label: "Total Invested", 
+      value: statsLoading ? "..." : `₦${((stats?.totalInvested || 0) / 1000000).toFixed(1)}M`, 
+      icon: TrendingUp 
+    },
+    { 
+      label: "Average Returns", 
+      value: statsLoading ? "..." : `${stats?.avgReturn || 0}%`, 
+      icon: Shield 
+    }
   ];
 
   const features = [
@@ -111,15 +149,19 @@ export default function Landing() {
 
       {/* Stats Section */}
       <section className="py-16 bg-background-muted">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
+        <div className="container mx-auto mobile-padding">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+            {platformStats.map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <stat.icon className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground mb-2">{stat.value}</h3>
-                <p className="text-muted-foreground">{stat.label}</p>
+                {statsLoading ? (
+                  <Skeleton className="h-8 w-16 mx-auto mb-2" />
+                ) : (
+                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">{stat.value}</h3>
+                )}
+                <p className="text-muted-foreground mobile-text">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -127,28 +169,50 @@ export default function Landing() {
       </section>
 
       {/* Featured Properties */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
+      <section className="py-16 md:py-20">
+        <div className="container mx-auto mobile-padding">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
               Featured Investment Opportunities
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="text-muted-foreground mobile-text max-w-2xl mx-auto">
               Discover high-yield real estate investments carefully selected by our team
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {featuredProperties.map((property) => (
-              <PropertyCard key={property.id} {...property} />
-            ))}
-          </div>
+          {propertiesLoading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-12">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="space-y-3">
+                  <Skeleton className="h-48 w-full rounded-lg" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : featuredProperties.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-12">
+              {featuredProperties.map((property) => (
+                <PropertyCard key={property.id} {...property} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 mb-8 md:mb-12">
+              <Building className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                No Properties Available
+              </h3>
+              <p className="text-muted-foreground">
+                New investment opportunities will be available soon.
+              </p>
+            </div>
+          )}
           
           <div className="text-center">
             <Link to="/browse">
-              <Button size="lg" variant="outline">
+              <Button size="lg" variant="outline" className="mobile-text">
                 View All Properties
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
               </Button>
             </Link>
           </div>

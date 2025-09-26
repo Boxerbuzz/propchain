@@ -1,68 +1,119 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import InvestmentCalculator from "@/components/InvestmentCalculator";
 import { MapPin, Building, Users, Calendar, TrendingUp, FileText, MessageCircle, Play, ArrowLeft, Share, Heart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabaseService } from "@/services/supabaseService";
 
 export default function PropertyDetails() {
-  // Mock property data
-  const property = {
-    id: "1",
-    title: "Luxury Apartment Complex - Ikoyi",
-    location: "Ikoyi, Lagos State, Nigeria",
-    price: 500000000,
-    expectedReturn: 12,
-    tokensSold: 750,
-    totalTokens: 1000,
-    tokenPrice: 500000,
-    minimumInvestment: 100000,
-    investmentDeadline: "December 31, 2024",
-    status: "active",
-    images: [
-      "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop"
-    ],
-    description: `This luxury apartment complex in the heart of Ikoyi represents one of Lagos's most prestigious residential developments. 
-    
-    The property features 48 premium units across 12 floors, with stunning views of Lagos Marina and the Atlantic Ocean. Each apartment 
-    boasts high-end finishes, smart home technology, and access to world-class amenities including a rooftop infinity pool, fitness center, 
-    and 24/7 concierge service.
-    
-    Located in one of Nigeria's most sought-after neighborhoods, this property offers both capital appreciation potential and steady rental income 
-    from the thriving luxury rental market in Ikoyi.`,
-    
-    features: [
-      "48 luxury apartments",
-      "12-story modern design", 
-      "Rooftop infinity pool",
-      "State-of-the-art fitness center",
-      "24/7 security & concierge",
-      "Smart home automation",
-      "Marina and ocean views",
-      "Premium location in Ikoyi"
-    ],
-    
-    financials: {
-      propertyValue: "₦500,000,000",
-      rentalYield: "8.5% annually",
-      appreciationForecast: "3.5% annually",
-      totalExpectedReturn: "12% annually",
-      managementFee: "2% of rental income",
-      platformFee: "1% on investment"
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  // Fetch real property and tokenization data
+  const { data: propertyData, isLoading, error } = useQuery({
+    queryKey: ['property-details', id],
+    queryFn: async () => {
+      if (!id) throw new Error('Property ID is required');
+      
+      // Get tokenization data with property details
+      const tokenization = await supabaseService.properties.getTokenizationById(id);
+      if (!tokenization) throw new Error('Property not found');
+      
+      // Get the actual property data
+      const property = await supabaseService.properties.getPropertyById(tokenization.property_id);
+      if (!property) throw new Error('Property details not found');
+      
+      // Get property images
+      const images = await supabaseService.properties.getPropertyImages(tokenization.property_id);
+      
+      return {
+        tokenization,
+        property,
+        images: images.length > 0 ? images.map(img => img.image_url) : [
+          "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
+          "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop",
+          "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop"
+        ]
+      };
     },
-    
-    documents: [
-      { name: "Property Title", type: "Certificate of Occupancy", verified: true },
-      { name: "Building Plans", type: "Architectural Drawings", verified: true },
-      { name: "Valuation Report", type: "Professional Assessment", verified: true },
-      { name: "Legal Documentation", type: "Property Purchase Agreement", verified: true }
-    ]
+    enabled: !!id,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="bg-background-muted py-6">
+          <div className="container mx-auto mobile-padding">
+            <Skeleton className="h-10 w-48" />
+          </div>
+        </div>
+        <div className="container mx-auto mobile-padding py-8">
+          <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Skeleton className="h-80 w-full rounded-xl" />
+              <Skeleton className="h-8 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-24 rounded-lg" />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-6">
+              <Skeleton className="h-96 rounded-xl" />
+              <Skeleton className="h-48 rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !propertyData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Property Not Found</h1>
+          <p className="text-muted-foreground mb-6">
+            The property you're looking for doesn't exist or has been removed.
+          </p>
+          <div className="space-x-4">
+            <Button onClick={() => navigate(-1)} variant="outline">
+              Go Back
+            </Button>
+            <Link to="/browse">
+              <Button>Browse Properties</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { tokenization, property, images } = propertyData;
+  const progressPercentage = ((tokenization.tokens_sold || 0) / (tokenization.total_supply || 1)) * 100;
+  
+  const formatLocation = (location: any) => {
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object' && location) {
+      const parts = [location.city, location.state, location.country].filter(Boolean);
+      return parts.join(', ') || 'Location TBD';
+    }
+    return 'Location TBD';
   };
 
-  const progressPercentage = (property.tokensSold / property.totalTokens) * 100;
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,21 +149,21 @@ export default function PropertyDetails() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <img 
-                    src={property.images[0]} 
-                    alt={property.title}
-                    className="w-full h-80 object-cover rounded-xl"
+                    src={images[0]} 
+                    alt={property.title || 'Property Image'}
+                    className="w-full h-64 md:h-80 object-cover rounded-xl"
                   />
                 </div>
-                {property.images.slice(1, 4).map((image, index) => (
+                {images.slice(1, 4).map((image, index) => (
                   <div key={index} className="relative">
                     <img 
                       src={image} 
                       alt={`${property.title} ${index + 2}`}
-                      className="w-full h-40 object-cover rounded-lg"
+                      className="w-full h-32 md:h-40 object-cover rounded-lg"
                     />
                     {index === 2 && (
                       <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
-                        <Button variant="secondary" className="text-white">
+                        <Button variant="secondary" className="text-white text-sm">
                           <Play className="h-4 w-4 mr-2" />
                           View All Photos
                         </Button>
@@ -125,67 +176,83 @@ export default function PropertyDetails() {
 
             {/* Property Info */}
             <div className="mb-8">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground mb-2">{property.title}</h1>
+              <div className="flex items-start justify-between mb-4 mobile-flex gap-4">
+                <div className="flex-1">
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                    {property.title || 'Property Investment'}
+                  </h1>
                   <div className="flex items-center text-muted-foreground mb-4">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    {property.location}
+                    <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                    <span className="mobile-text">{formatLocation(property.location)}</span>
                   </div>
                 </div>
-                <Badge className="status-verified">Active</Badge>
+                <Badge className="status-verified">
+                  {tokenization.status === 'active' ? 'Active' : 
+                   tokenization.status === 'upcoming' ? 'Upcoming' : 
+                   tokenization.status === 'completed' ? 'Completed' : 'Draft'}
+                </Badge>
               </div>
 
               {/* Key Metrics */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-background-muted border border-border rounded-lg p-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+                <div className="bg-background-muted border border-border rounded-lg p-3 md:p-4">
                   <div className="flex items-center mb-2">
                     <Building className="h-4 w-4 text-primary mr-1" />
-                    <span className="text-sm text-muted-foreground">Property Value</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">Target Raise</span>
                   </div>
-                  <p className="text-lg font-bold text-foreground">₦{property.price.toLocaleString()}</p>
+                  <p className="text-sm md:text-lg font-bold text-foreground">
+                    {formatCurrency(tokenization.target_raise || 0)}
+                  </p>
                 </div>
                 
-                <div className="bg-background-muted border border-border rounded-lg p-4">
+                <div className="bg-background-muted border border-border rounded-lg p-3 md:p-4">
                   <div className="flex items-center mb-2">
                     <TrendingUp className="h-4 w-4 text-success mr-1" />
-                    <span className="text-sm text-muted-foreground">Expected Return</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">Expected ROI</span>
                   </div>
-                  <p className="text-lg font-bold text-success">{property.expectedReturn}% p.a.</p>
+                  <p className="text-sm md:text-lg font-bold text-success">
+                    {tokenization.expected_roi_annual || 0}% p.a.
+                  </p>
                 </div>
                 
-                <div className="bg-background-muted border border-border rounded-lg p-4">
+                <div className="bg-background-muted border border-border rounded-lg p-3 md:p-4">
                   <div className="flex items-center mb-2">
                     <Users className="h-4 w-4 text-muted-foreground mr-1" />
-                    <span className="text-sm text-muted-foreground">Investors</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">Tokens Sold</span>
                   </div>
-                  <p className="text-lg font-bold text-foreground">{property.tokensSold}</p>
+                  <p className="text-sm md:text-lg font-bold text-foreground">
+                    {(tokenization.tokens_sold || 0).toLocaleString()}
+                  </p>
                 </div>
                 
-                <div className="bg-background-muted border border-border rounded-lg p-4">
+                <div className="bg-background-muted border border-border rounded-lg p-3 md:p-4">
                   <div className="flex items-center mb-2">
                     <Calendar className="h-4 w-4 text-warning mr-1" />
-                    <span className="text-sm text-muted-foreground">Deadline</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">Deadline</span>
                   </div>
-                  <p className="text-sm font-medium text-foreground">Dec 31, 2024</p>
+                  <p className="text-xs md:text-sm font-medium text-foreground">
+                    {tokenization.investment_window_end 
+                      ? new Date(tokenization.investment_window_end).toLocaleDateString()
+                      : 'TBD'}
+                  </p>
                 </div>
               </div>
 
               {/* Investment Progress */}
-              <div className="bg-background-muted border border-border rounded-lg p-6 mb-6">
+              <div className="bg-background-muted border border-border rounded-lg p-4 md:p-6 mb-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-foreground">Investment Progress</h3>
+                  <h3 className="font-semibold text-foreground mobile-text">Investment Progress</h3>
                   <span className="text-sm text-muted-foreground">{progressPercentage.toFixed(1)}% Complete</span>
                 </div>
-                <div className="w-full bg-muted rounded-lg h-3 mb-4">
+                <div className="w-full bg-muted rounded-lg h-2 md:h-3 mb-4">
                   <div 
-                    className="bg-primary h-3 rounded-lg transition-all duration-300"
-                    style={{ width: `${progressPercentage}%` }}
+                    className="bg-primary h-2 md:h-3 rounded-lg transition-all duration-300"
+                    style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                   ></div>
                 </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{property.tokensSold} tokens sold</span>
-                  <span>{property.totalTokens - property.tokensSold} remaining</span>
+                <div className="flex justify-between text-xs md:text-sm text-muted-foreground">
+                  <span>{(tokenization.tokens_sold || 0).toLocaleString()} tokens sold</span>
+                  <span>{((tokenization.total_supply || 0) - (tokenization.tokens_sold || 0)).toLocaleString()} remaining</span>
                 </div>
               </div>
             </div>
@@ -202,23 +269,42 @@ export default function PropertyDetails() {
               <TabsContent value="overview" className="mt-6">
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-xl font-semibold text-foreground mb-4">Property Description</h3>
-                    <div className="text-muted-foreground space-y-4">
-                      {property.description.split('\n\n').map((paragraph, index) => (
-                        <p key={index}>{paragraph.trim()}</p>
-                      ))}
+                    <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">Property Description</h3>
+                    <div className="text-muted-foreground space-y-4 mobile-text">
+                      <p>
+                        {property.description || 
+                         "This is a premium real estate investment opportunity. Details about the property, its location, amenities, and investment potential will be provided here."}
+                      </p>
                     </div>
                   </div>
                   
                   <div>
-                    <h3 className="text-xl font-semibold text-foreground mb-4">Key Features</h3>
-                    <div className="grid md:grid-cols-2 gap-3">
-                      {property.features.map((feature, index) => (
-                        <div key={index} className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-primary rounded-full"></div>
-                          <span className="text-muted-foreground">{feature}</span>
-                        </div>
-                      ))}
+                    <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">Investment Details</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-background-muted border border-border rounded-lg p-4">
+                        <h4 className="font-medium text-foreground mb-2">Minimum Investment</h4>
+                        <p className="text-lg font-semibold text-muted-foreground">
+                          {formatCurrency(tokenization.min_investment || 0)}
+                        </p>
+                      </div>
+                      <div className="bg-background-muted border border-border rounded-lg p-4">
+                        <h4 className="font-medium text-foreground mb-2">Price Per Token</h4>
+                        <p className="text-lg font-semibold text-muted-foreground">
+                          {formatCurrency(tokenization.price_per_token || 0)}
+                        </p>
+                      </div>
+                      <div className="bg-background-muted border border-border rounded-lg p-4">
+                        <h4 className="font-medium text-foreground mb-2">Total Supply</h4>
+                        <p className="text-lg font-semibold text-muted-foreground">
+                          {(tokenization.total_supply || 0).toLocaleString()} tokens
+                        </p>
+                      </div>
+                      <div className="bg-background-muted border border-border rounded-lg p-4">
+                        <h4 className="font-medium text-foreground mb-2">Management Fee</h4>
+                        <p className="text-lg font-semibold text-muted-foreground">
+                          {tokenization.management_fee_percentage || 2.5}% annually
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -226,34 +312,43 @@ export default function PropertyDetails() {
               
               <TabsContent value="financials" className="mt-6">
                 <div className="grid md:grid-cols-2 gap-6">
-                  {Object.entries(property.financials).map(([key, value], index) => (
-                    <div key={index} className="bg-background-muted border border-border rounded-lg p-4">
-                      <h4 className="font-medium text-foreground capitalize mb-2">
-                        {key.replace(/([A-Z])/g, ' $1').trim()}
-                      </h4>
-                      <p className="text-lg font-semibold text-muted-foreground">{value}</p>
-                    </div>
-                  ))}
+                  <div className="bg-background-muted border border-border rounded-lg p-4">
+                    <h4 className="font-medium text-foreground mb-2">Current Raise</h4>
+                    <p className="text-lg font-semibold text-muted-foreground">
+                      {formatCurrency(tokenization.current_raise || 0)}
+                    </p>
+                  </div>
+                  <div className="bg-background-muted border border-border rounded-lg p-4">
+                    <h4 className="font-medium text-foreground mb-2">Target Raise</h4>
+                    <p className="text-lg font-semibold text-muted-foreground">
+                      {formatCurrency(tokenization.target_raise || 0)}
+                    </p>
+                  </div>
+                  <div className="bg-background-muted border border-border rounded-lg p-4">
+                    <h4 className="font-medium text-foreground mb-2">Property Value</h4>
+                    <p className="text-lg font-semibold text-muted-foreground">
+                      {formatCurrency(property.estimated_value || 0)}
+                    </p>
+                  </div>
+                  <div className="bg-background-muted border border-border rounded-lg p-4">
+                    <h4 className="font-medium text-foreground mb-2">Platform Fee</h4>
+                    <p className="text-lg font-semibold text-muted-foreground">
+                      {tokenization.platform_fee_percentage || 1}% on investment
+                    </p>
+                  </div>
                 </div>
               </TabsContent>
               
               <TabsContent value="documents" className="mt-6">
                 <div className="space-y-4">
-                  {property.documents.map((doc, index) => (
-                    <div key={index} className="flex items-center justify-between bg-background-muted border border-border rounded-lg p-4">
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-8 w-8 text-primary" />
-                        <div>
-                          <h4 className="font-medium text-foreground">{doc.name}</h4>
-                          <p className="text-sm text-muted-foreground">{doc.type}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        {doc.verified && <Badge className="status-verified">Verified</Badge>}
-                        <Button variant="outline" size="sm">View</Button>
-                      </div>
-                    </div>
-                  ))}
+                  <div className="bg-background-muted border border-border rounded-lg p-6 text-center">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Documents Available</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Property documents will be available to investors upon investment
+                    </p>
+                    <Button variant="outline">Request Access</Button>
+                  </div>
                 </div>
               </TabsContent>
               
@@ -274,10 +369,10 @@ export default function PropertyDetails() {
           <div className="space-y-6">
             {/* Investment Calculator */}
             <InvestmentCalculator
-              propertyValue={property.price}
-              expectedReturn={property.expectedReturn}
-              tokenPrice={property.tokenPrice}
-              minimumInvestment={property.minimumInvestment}
+              propertyValue={tokenization.target_raise || 0}
+              expectedReturn={tokenization.expected_roi_annual || 0}
+              tokenPrice={tokenization.price_per_token || 0}
+              minimumInvestment={tokenization.min_investment || 0}
             />
 
             {/* Quick Actions */}
