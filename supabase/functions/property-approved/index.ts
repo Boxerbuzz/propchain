@@ -37,9 +37,9 @@ serve(async (req) => {
   }
 
   try {
-    const { propertyId } = await req.json();
+    const { record } = await req.json();
 
-    if (!propertyId) {
+    if (!record.id) {
       return new Response(JSON.stringify({ error: "Missing propertyId" }), {
         status: 400,
         headers: corsHeaders,
@@ -68,7 +68,7 @@ serve(async (req) => {
         property_documents(*)
       `
       )
-      .eq("id", propertyId)
+      .eq("id", record.id)
       .single();
 
     if (propertyError || !property) {
@@ -82,7 +82,7 @@ serve(async (req) => {
     console.log(`Processing approval for property: ${property.title}`);
 
     // Step 1: Create HCS Topic for the property
-    const topicMemo = `PropChain Property: ${property.title} (ID: ${propertyId})`;
+    const topicMemo = `PropChain Property: ${property.title} (ID: ${record.id})`;
     const topicCreateTx = await new TopicCreateTransaction()
       .setTopicMemo(topicMemo)
       .setAdminKey(operatorKey)
@@ -193,12 +193,12 @@ serve(async (req) => {
         approval_status: "approved",
         approved_at: new Date().toISOString(),
       })
-      .eq("id", propertyId);
+      .eq("id", record.id);
 
     // Step 4: Submit approval message to HCS topic
     const approvalMessage = {
       event: "property_approved",
-      propertyId,
+      propertyId: record.id,
       propertyTitle: property.title,
       topicId,
       timestamp: new Date().toISOString(),
@@ -231,7 +231,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         data: {
-          propertyId,
+          propertyId: record.id,
           topicId,
           hfsFileIds,
           filesUploaded: uploadedFiles.length,

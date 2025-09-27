@@ -329,9 +329,14 @@ const PropertyView = () => {
                         {getVerificationStatusBadge(
                           document.verification_status
                         )}
-                        <div className="flex gap-2">
+                        <div className="flex gap-1 sm:gap-2">
                           {document.file_url && (
-                            <Button variant="outline" size="sm" asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
+                              className="p-2 sm:px-3 sm:py-2"
+                            >
                               <a
                                 href={document.file_url}
                                 target="_blank"
@@ -343,10 +348,17 @@ const PropertyView = () => {
                             </Button>
                           )}
                           {document.file_url && (
-                            <Button variant="outline" size="sm" asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
+                              className="p-2 sm:px-3 sm:py-2"
+                            >
                               <a href={document.file_url} download>
                                 <Download className="w-4 h-4 sm:mr-1" />
-                                <span className="hidden sm:inline">Download</span>
+                                <span className="hidden sm:inline">
+                                  Download
+                                </span>
                               </a>
                             </Button>
                           )}
