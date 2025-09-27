@@ -509,6 +509,27 @@ export const supabaseService = {
 
       return true;
     },
+
+    async create(userId: string, type: string, title: string, message: string, metadata?: any) {
+      const { data, error } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: userId,
+          type,
+          title,
+          message,
+          metadata: metadata || {},
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating notification:", error);
+        return null;
+      }
+
+      return data;
+    },
   },
 
   // Wallets services

@@ -193,16 +193,19 @@ const PropertyManagement = () => {
 
     switch (action) {
       case "Approve":
+        // Show immediate notification that verification is in progress
+        toast({
+          title: "Property Verification Started",
+          description: "Your property verification is being processed. This may take a few moments while we upload documents to the blockchain.",
+          duration: 8000,
+        });
+        
         updatePropertyMutation.mutate({
           id: propertyId,
           data: {
             approval_status: "approved",
             listing_status: "active",
           },
-        });
-        toast({
-          title: "Property Approved",
-          description: "The property has been approved and is now active.",
         });
         break;
       case "Delist":
