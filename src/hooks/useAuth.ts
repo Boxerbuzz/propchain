@@ -102,6 +102,8 @@ export const useAuth = () => {
       });
 
       if (error) {
+        globalLoading = false;
+        notifySubscribers();
         return error.message;
       }
 
@@ -109,6 +111,8 @@ export const useAuth = () => {
 
       return null;
     } catch (error: any) {
+      globalLoading = false;
+      notifySubscribers();
       return error.message || "Login failed";
     }
   }, []);
@@ -136,6 +140,8 @@ export const useAuth = () => {
         });
 
         if (error) {
+          globalLoading = false;
+          notifySubscribers();
           return error.message;
         }
 
@@ -150,12 +156,15 @@ export const useAuth = () => {
           });
 
           if (profileError) {
+            globalLoading = false;
             console.error("Error creating user profile:", profileError);
           }
         }
 
         return null;
       } catch (error: any) {
+        globalLoading = false;
+        notifySubscribers();
         return error.message || "Signup failed";
       }
     },

@@ -389,3 +389,60 @@ CREATE INDEX idx_votes_proposal ON votes(proposal_id);
 CREATE INDEX idx_token_holdings_user ON token_holdings(user_id);
 CREATE INDEX idx_activity_logs_user ON activity_logs(user_id, created_at);
 CREATE INDEX idx_notifications_user ON notifications(user_id, read_at);
+
+
+
+
+create view public.user_chat_rooms_with_last_message as
+select
+  cp.user_id,
+  cp.room_id,
+  cp.role,
+  cp.joined_at,
+  cp.last_seen_at,
+  cp.voting_power,
+  cr.name as room_name,
+  cr.description as room_description,
+  cr.room_type,
+  p.title as property_title,
+  p.location as property_location,
+  t.token_symbol,
+  t.status as tokenization_status,
+  lm.message_text as last_message,
+  lm.created_at as last_message_at,
+  lm.message_type as last_message_type,
+  u.first_name as last_sender_first_name,
+  u.last_name as last_sender_last_name,
+  (
+    select
+      count(*) as count
+    from
+      chat_messages cm2
+    where
+      cm2.room_id = cp.room_id
+      and cm2.created_at > COALESCE(
+        cp.last_seen_at,
+        '1970-01-01 00:00:00'::timestamp without time zone
+      )
+  ) as unread_count
+from
+  chat_participants cp
+  join chat_rooms cr on cp.room_id = cr.id
+  left join properties p on cr.property_id = p.id
+  left join tokenizations t on cr.tokenization_id = t.id
+  left join lateral (
+    select
+      cm.message_text,
+      cm.created_at,
+      cm.message_type,
+      cm.sender_id
+    from
+      chat_messages cm
+    where
+      cm.room_id = cp.room_id
+    order by
+      cm.created_at desc
+    limit
+      1
+  ) lm on true
+  left join users u on lm.sender_id = u.id;

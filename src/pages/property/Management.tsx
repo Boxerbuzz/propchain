@@ -37,6 +37,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const PropertyManagement = () => {
   const { toast } = useToast();
@@ -44,6 +55,14 @@ const PropertyManagement = () => {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [filter, setFilter] = useState("all");
   const [tokenizeDialogOpen, setTokenizeDialogOpen] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    description: "",
+    action: "",
+    propertyId: "",
+    variant: "default" as "default" | "destructive",
+  });
 
   const {
     data: managedProperties = [],
@@ -90,46 +109,144 @@ const PropertyManagement = () => {
   // Get dropdown-only actions (excluding actions already available as main buttons)
   const getDropdownActions = (property: any) => {
     const actions = [];
-    
+
     // Status-specific actions (not available as main buttons)
     if (property.approval_status === "pending") {
-      actions.push(
-        { label: "Approve Property", action: "Approve", icon: Check, variant: "success" }
-      );
+      actions.push({
+        label: "Approve Property",
+        action: "Approve",
+        icon: Check,
+        variant: "success",
+      });
     }
-    
-    if (property.approval_status === "approved" && property.listing_status === "active") {
-      actions.push(
-        { label: "Suspend Property", action: "Suspend", icon: Pause, variant: "warning" }
-      );
-      
+
+    if (
+      property.approval_status === "approved" &&
+      property.listing_status === "active"
+    ) {
+      actions.push({
+        label: "Delist Property",
+        action: "Delist",
+        icon: Pause,
+        variant: "warning",
+      });
+
       // Only show tokenize if not already tokenized
       if (!property.tokenizations || property.tokenizations.length === 0) {
-        actions.push(
-          { label: "Tokenize Property", action: "Tokenize", icon: DollarSign, variant: "primary" }
-        );
+        actions.push({
+          label: "Tokenize Property",
+          action: "Tokenize",
+          icon: DollarSign,
+          variant: "primary",
+        });
       }
     }
-    
-    if (property.approval_status === "suspended" || property.listing_status === "suspended") {
-      actions.push(
-        { label: "Reactivate Property", action: "Reactivate", icon: Check, variant: "success" }
-      );
+
+    if (
+      property.approval_status === "suspended" ||
+      property.listing_status === "suspended"
+    ) {
+      actions.push({
+        label: "Relist Property",
+        action: "Reactivate",
+        icon: Check,
+        variant: "success",
+      });
     }
-    
+
     // Destructive actions (always at the end)
     if (property.listing_status !== "deleted") {
-      actions.push(
-        { label: "Delete Property", action: "Delete", icon: Trash2, variant: "destructive" }
-      );
+      actions.push({
+        label: "Delete Property",
+        action: "Delete",
+        icon: Trash2,
+        variant: "destructive",
+      });
     }
-    
+
     return actions;
   };
 
+  const showConfirmDialog = (
+    action: string,
+    propertyId: string,
+    title: string,
+    description: string,
+    variant: "default" | "destructive" = "default"
+  ) => {
+    setConfirmDialog({
+      open: true,
+      title,
+      description,
+      action,
+      propertyId,
+      variant,
+    });
+  };
+
+  const handleConfirmedAction = async () => {
+    const { action, propertyId } = confirmDialog;
+
+    switch (action) {
+      case "Approve":
+        updatePropertyMutation.mutate({
+          id: propertyId,
+          data: {
+            approval_status: "approved",
+            listing_status: "active",
+          },
+        });
+        toast({
+          title: "Property Approved",
+          description: "The property has been approved and is now active.",
+        });
+        break;
+      case "Delist":
+        updatePropertyMutation.mutate({
+          id: propertyId,
+          data: {
+            listing_status: "suspended",
+          },
+        });
+        toast({
+          title: "Property Delisted",
+          description:
+            "The property has been delisted and removed from active listings.",
+        });
+        break;
+      case "Reactivate":
+        updatePropertyMutation.mutate({
+          id: propertyId,
+          data: {
+            approval_status: "approved",
+            listing_status: "active",
+          },
+        });
+        toast({
+          title: "Property Relisted",
+          description:
+            "The property has been relisted and is now available for investment.",
+        });
+        break;
+      case "Delete":
+        updatePropertyMutation.mutate({
+          id: propertyId,
+          data: { listing_status: "deleted" },
+        });
+        toast({
+          title: "Property Deleted",
+          description: "The property has been deleted.",
+          variant: "destructive",
+        });
+        break;
+    }
+
+    setConfirmDialog({ ...confirmDialog, open: false });
+  };
+
   const handlePropertyAction = async (action: string, propertyId: string) => {
-    const property = managedProperties.find(p => p.id === propertyId);
-    
+    const property = managedProperties.find((p) => p.id === propertyId);
+
     switch (action) {
       case "View":
         navigate(`/property/${propertyId}/view`);
@@ -138,48 +255,28 @@ const PropertyManagement = () => {
         navigate(`/property/${propertyId}/edit`);
         break;
       case "Approve":
-        if (window.confirm("Are you sure you want to approve this property?")) {
-          updatePropertyMutation.mutate({
-            id: propertyId,
-            data: {
-              approval_status: "approved",
-              listing_status: "active",
-            },
-          });
-          toast({
-            title: "Property Approved",
-            description: "The property has been approved and is now active.",
-          });
-        }
+        showConfirmDialog(
+          action,
+          propertyId,
+          "Approve Property",
+          "Are you sure you want to approve this property? It will be made available for investment."
+        );
         break;
-      case "Suspend":
-        if (window.confirm("Are you sure you want to suspend this property?")) {
-          updatePropertyMutation.mutate({
-            id: propertyId,
-            data: {
-              listing_status: "suspended",
-            },
-          });
-          toast({
-            title: "Property Suspended",
-            description: "The property has been suspended.",
-          });
-        }
+      case "Delist":
+        showConfirmDialog(
+          action,
+          propertyId,
+          "Delist Property",
+          "Are you sure you want to delist this property? It will be removed from active listings."
+        );
         break;
       case "Reactivate":
-        if (window.confirm("Are you sure you want to reactivate this property?")) {
-          updatePropertyMutation.mutate({
-            id: propertyId,
-            data: {
-              approval_status: "approved",
-              listing_status: "active",
-            },
-          });
-          toast({
-            title: "Property Reactivated",
-            description: "The property has been reactivated.",
-          });
-        }
+        showConfirmDialog(
+          action,
+          propertyId,
+          "Relist Property",
+          "Are you sure you want to relist this property? It will be made available for investment again."
+        );
         break;
       case "Tokenize":
         if (property) {
@@ -188,17 +285,13 @@ const PropertyManagement = () => {
         }
         break;
       case "Delete":
-        if (window.confirm("Are you sure you want to delete this property? This action cannot be undone.")) {
-          updatePropertyMutation.mutate({
-            id: propertyId,
-            data: { listing_status: "deleted" },
-          });
-          toast({
-            title: "Property Deleted",
-            description: "The property has been deleted.",
-            variant: "destructive",
-          });
-        }
+        showConfirmDialog(
+          action,
+          propertyId,
+          "Delete Property",
+          "Are you sure you want to delete this property? This action cannot be undone.",
+          "destructive"
+        );
         break;
       default:
         toast({
@@ -543,40 +636,57 @@ const PropertyManagement = () => {
                                   <Edit className="h-4 w-4 mr-1" />
                                   <span className="hidden sm:inline">Edit</span>
                                 </Button>
-                                
+
                                 {/* More Actions Dropdown - Only show if there are additional actions */}
                                 {getDropdownActions(property).length > 0 && (
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <Button variant="outline" size="sm">
                                         <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">More actions</span>
+                                        <span className="sr-only">
+                                          More actions
+                                        </span>
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-48">
-                                      <DropdownMenuLabel>More Actions</DropdownMenuLabel>
+                                    <DropdownMenuContent
+                                      align="end"
+                                      className="w-48"
+                                    >
+                                      <DropdownMenuLabel>
+                                        More Actions
+                                      </DropdownMenuLabel>
                                       <DropdownMenuSeparator />
-                                      {getDropdownActions(property).map((actionItem, index) => {
-                                        const Icon = actionItem.icon;
-                                        return (
-                                          <DropdownMenuItem
-                                            key={index}
-                                            onClick={() => handlePropertyAction(actionItem.action, property.id)}
-                                            className={
-                                              actionItem.variant === "destructive"
-                                                ? "text-red-600 focus:text-red-600"
-                                                : actionItem.variant === "success"
-                                                ? "text-green-600 focus:text-green-600"
-                                                : actionItem.variant === "warning"
-                                                ? "text-orange-600 focus:text-orange-600"
-                                                : ""
-                                            }
-                                          >
-                                            <Icon className="h-4 w-4 mr-2" />
-                                            {actionItem.label}
-                                          </DropdownMenuItem>
-                                        );
-                                      })}
+                                      {getDropdownActions(property).map(
+                                        (actionItem, index) => {
+                                          const Icon = actionItem.icon;
+                                          return (
+                                            <DropdownMenuItem
+                                              key={index}
+                                              onClick={() =>
+                                                handlePropertyAction(
+                                                  actionItem.action,
+                                                  property.id
+                                                )
+                                              }
+                                              className={
+                                                actionItem.variant ===
+                                                "destructive"
+                                                  ? "text-red-600 focus:text-red-600"
+                                                  : actionItem.variant ===
+                                                    "success"
+                                                  ? "text-green-600 focus:text-green-600"
+                                                  : actionItem.variant ===
+                                                    "warning"
+                                                  ? "text-orange-600 focus:text-orange-600"
+                                                  : ""
+                                              }
+                                            >
+                                              <Icon className="h-4 w-4 mr-2" />
+                                              {actionItem.label}
+                                            </DropdownMenuItem>
+                                          );
+                                        }
+                                      )}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 )}
@@ -718,6 +828,34 @@ const PropertyManagement = () => {
           refetch(); // Refresh the properties list
         }}
       />
+
+      {/* Confirmation Dialog */}
+      <AlertDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmDialog.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmedAction}
+              className={
+                confirmDialog.variant === "destructive"
+                  ? "bg-destructive text-white hover:bg-destructive/90"
+                  : ""
+              }
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
