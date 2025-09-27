@@ -1,6 +1,7 @@
 // deno-lint-ignore-file
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { Client, AccountBalanceQuery } from "https://esm.sh/@hashgraph/sdk@2.73.2"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 //2.73.2
 const corsHeaders = {
@@ -84,6 +85,35 @@ serve(async (req) => {
       // Use fallback rates if API fails
       balanceUsd = balanceHbar * 0.05;
       balanceNgn = balanceUsd * 1500;
+    }
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Update wallet balance in database
+    try {
+      const { error: updateError } = await supabase
+        .from('wallets')
+        .update({
+          balance_hbar: balanceHbar,
+          balance_usd: balanceUsd,
+          balance_ngn: balanceNgn,
+          last_sync_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('hedera_account_id', hederaAccountId);
+
+      if (updateError) {
+        console.error('Failed to update wallet balance in database:', updateError);
+        // Continue execution - don't fail the entire request if DB update fails
+      } else {
+        console.log(`Wallet balance updated in database for account: ${hederaAccountId}`);
+      }
+    } catch (dbError) {
+      console.error('Database update error:', dbError);
+      // Continue execution - don't fail the entire request if DB update fails
     }
 
     const result = {
