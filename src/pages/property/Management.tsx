@@ -112,11 +112,15 @@ const PropertyManagement = () => {
 
     // Status-specific actions (not available as main buttons)
     if (property.approval_status === "pending") {
+      // Check if property has at least one document before allowing approval
+      const hasDocuments = property.property_documents && property.property_documents.length > 0;
+      
       actions.push({
-        label: "Approve Property",
+        label: hasDocuments ? "Approve Property" : "Approve Property (No Documents)",
         action: "Approve",
         icon: Check,
-        variant: "success",
+        variant: hasDocuments ? "success" : "secondary",
+        disabled: !hasDocuments,
       });
     }
 
@@ -255,6 +259,18 @@ const PropertyManagement = () => {
         navigate(`/property/${propertyId}/edit`);
         break;
       case "Approve":
+        const property = managedProperties.find((p) => p.id === propertyId);
+        const hasDocuments = property?.property_documents && property.property_documents.length > 0;
+        
+        if (!hasDocuments) {
+          toast({
+            title: "Cannot Approve Property",
+            description: "Please upload at least one document before approving this property.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         showConfirmDialog(
           action,
           propertyId,
@@ -663,14 +679,18 @@ const PropertyManagement = () => {
                                             <DropdownMenuItem
                                               key={index}
                                               onClick={() =>
+                                                !actionItem.disabled &&
                                                 handlePropertyAction(
                                                   actionItem.action,
                                                   property.id
                                                 )
                                               }
+                                              disabled={actionItem.disabled}
                                               className={
-                                                actionItem.variant ===
-                                                "destructive"
+                                                actionItem.disabled
+                                                  ? "text-muted-foreground cursor-not-allowed opacity-50"
+                                                  : actionItem.variant ===
+                                                    "destructive"
                                                   ? "text-red-600 focus:text-red-600"
                                                   : actionItem.variant ===
                                                     "success"

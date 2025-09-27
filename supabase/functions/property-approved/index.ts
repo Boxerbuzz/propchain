@@ -37,11 +37,23 @@ serve(async (req) => {
   }
 
   try {
-    const { record } = await req.json();
+    const { record, old_record } = await req.json();
 
     if (!record.id) {
       return new Response(JSON.stringify({ error: "Missing propertyId" }), {
         status: 400,
+        headers: corsHeaders,
+      });
+    }
+
+    // Only proceed if approval_status actually changed from non-approved to approved
+    if (record.approval_status !== "approved" || 
+        (old_record && old_record.approval_status === "approved")) {
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: "No approval status change detected, skipping processing" 
+      }), {
+        status: 200,
         headers: corsHeaders,
       });
     }
@@ -169,12 +181,14 @@ serve(async (req) => {
           type: "document",
         });
 
-        // Update document record with HFS details
+        // Update document record with HFS details and mark as verified
         await supabaseClient
           .from("property_documents")
           .update({
             hfs_file_id: hfsFileId,
             file_hash: fileHash,
+            verification_status: "verified",
+            verified_at: new Date().toISOString(),
           })
           .eq("id", file.id);
 

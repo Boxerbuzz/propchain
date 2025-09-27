@@ -162,8 +162,8 @@ const WalletDashboard = () => {
 
   // Initialize filtered transactions
   useEffect(() => {
-    setFilteredTransactions(allTransactions);
-  }, [allTransactions]);
+    setFilteredTransactions(allTransactions || []);
+  }, [allTransactions?.length]); // Only depend on the length, not the entire array
 
   const paymentMethods = [
     {
