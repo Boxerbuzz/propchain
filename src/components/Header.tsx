@@ -337,10 +337,10 @@ export default function Header() {
                   </DropdownMenuLabel>
                   <div className="p-2">
                     {userMenuItems.slice(0, -1).map((item) => (
-                      <DropdownMenuItem key={item.name} asChild className="p-0">
+                      <DropdownMenuItem key={item.name} asChild className="p-0 focus:bg-muted/50 focus:text-foreground">
                         <Link
                           to={item.href}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-card-foreground hover:bg-primary/50 transition-all duration-200 group"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-card-foreground hover:bg-muted/50 transition-all duration-200 group"
                         >
                           <item.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
                           <span className="font-medium">{item.name}</span>
@@ -351,7 +351,7 @@ export default function Header() {
                   <div className="border-t border-border p-2">
                     <DropdownMenuItem
                       onClick={() => logout()}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 focus:bg-destructive/10 transition-all duration-200 group"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive transition-all duration-200 group"
                     >
                       <LogOut className="h-4 w-4" />
                       <span className="font-medium">Logout</span>

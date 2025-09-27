@@ -2,13 +2,33 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
-import { FileText, MapPin, DollarSign, Upload, CheckCircle, Camera, FileImage } from "lucide-react";
+import {
+  FileText,
+  MapPin,
+  DollarSign,
+  Upload,
+  CheckCircle,
+  Camera,
+  FileImage,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,8 +38,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { PropertyDocumentUpload } from "@/components/PropertyDocumentUpload";
 import { PropertyImageUpload } from "@/components/PropertyImageUpload";
-import { usePropertyPostProcessing } from "@/hooks/usePropertyPostProcessing";
-import { usePropertyHCSSetup } from "@/hooks/usePropertyHCSSetup";
 
 const propertySchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -29,8 +47,13 @@ const propertySchema = z.object({
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),
   country: z.string().default("Nigeria"),
-  estimated_value: z.number().min(100000, "Property value must be at least ₦100,000"),
-  rental_income_monthly: z.number().min(0, "Rental income cannot be negative").optional(),
+  estimated_value: z
+    .number()
+    .min(100000, "Property value must be at least ₦100,000"),
+  rental_income_monthly: z
+    .number()
+    .min(0, "Rental income cannot be negative")
+    .optional(),
   bedrooms: z.number().min(0).optional(),
   bathrooms: z.number().min(0).optional(),
   year_built: z.number().min(1900).max(new Date().getFullYear()).optional(),
@@ -44,12 +67,6 @@ const RegisterProperty = () => {
   const [propertyId, setPropertyId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
-  
-  // Enable post-processing for HCS topics and Hedera tokens
-  usePropertyPostProcessing();
-  
-  // Setup HCS topic creation for auto-approved properties
-  usePropertyHCSSetup();
 
   const form = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
@@ -69,16 +86,15 @@ const RegisterProperty = () => {
     },
   });
 
-  const propertyTypes = [
-    "residential",
-    "commercial",
-    "industrial",
-    "land",
-  ];
+  const propertyTypes = ["residential", "commercial", "industrial", "land"];
 
   const handleNext = async () => {
     if (step === 1) {
-      const isValid = await form.trigger(["title", "description", "property_type"]);
+      const isValid = await form.trigger([
+        "title",
+        "description",
+        "property_type",
+      ]);
       if (!isValid) return;
     }
     if (step === 2) {
@@ -89,7 +105,7 @@ const RegisterProperty = () => {
       const isValid = await form.trigger(["estimated_value"]);
       if (!isValid) return;
     }
-    
+
     if (step < 6) setStep(step + 1);
   };
 
@@ -121,7 +137,10 @@ const RegisterProperty = () => {
       delete (propertyData as any).state;
       delete (propertyData as any).country;
 
-      const property = await supabaseService.properties.create(propertyData, user.id);
+      const property = await supabaseService.properties.create(
+        propertyData,
+        user.id
+      );
       setPropertyId(property.id);
       toast.success("Property details saved successfully!");
       setStep(4); // Move to image upload step
@@ -230,10 +249,7 @@ const RegisterProperty = () => {
               <FormItem>
                 <FormLabel>Street Address</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="e.g., 123 Ahmadu Bello Way"
-                  />
+                  <Input {...field} placeholder="e.g., 123 Ahmadu Bello Way" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -248,10 +264,7 @@ const RegisterProperty = () => {
                 <FormItem>
                   <FormLabel>City</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="e.g., Lagos"
-                    />
+                    <Input {...field} placeholder="e.g., Lagos" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -265,10 +278,7 @@ const RegisterProperty = () => {
                 <FormItem>
                   <FormLabel>State</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="e.g., Lagos State"
-                    />
+                    <Input {...field} placeholder="e.g., Lagos State" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -283,10 +293,7 @@ const RegisterProperty = () => {
               <FormItem>
                 <FormLabel>Country</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    disabled
-                  />
+                  <Input {...field} disabled />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -300,7 +307,9 @@ const RegisterProperty = () => {
   const renderStep3 = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-4">Property Valuation & Details</h3>
+        <h3 className="text-lg font-semibold mb-4">
+          Property Valuation & Details
+        </h3>
         <div className="space-y-4">
           <FormField
             control={form.control}
@@ -409,7 +418,8 @@ const RegisterProperty = () => {
         <Camera className="h-12 w-12 text-primary mx-auto mb-4" />
         <h3 className="text-lg font-semibold mb-2">Upload Property Images</h3>
         <p className="text-muted-foreground mb-6">
-          Add high-quality images to showcase your property to potential investors.
+          Add high-quality images to showcase your property to potential
+          investors.
         </p>
         {propertyId && (
           <PropertyImageUpload
@@ -425,7 +435,9 @@ const RegisterProperty = () => {
     <div className="space-y-6">
       <div className="text-center">
         <FileImage className="h-12 w-12 text-primary mx-auto mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Upload Property Documents</h3>
+        <h3 className="text-lg font-semibold mb-2">
+          Upload Property Documents
+        </h3>
         <p className="text-muted-foreground mb-6">
           Upload legal documents, certificates, and other required paperwork.
         </p>
@@ -457,7 +469,9 @@ const RegisterProperty = () => {
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Location:</span>
-                <span>{formData.city}, {formData.state}</span>
+                <span>
+                  {formData.city}, {formData.state}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Property Value:</span>
@@ -481,8 +495,9 @@ const RegisterProperty = () => {
               <span className="font-medium">Ready for Review</span>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              Your property details, images, and documents have been uploaded successfully. 
-              Click submit to send your property for admin review and approval.
+              Your property details, images, and documents have been uploaded
+              successfully. Click submit to send your property for admin review
+              and approval.
             </p>
           </div>
         </div>
@@ -514,7 +529,9 @@ const RegisterProperty = () => {
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <span className="text-sm font-medium">Step {step} of 6</span>
-          <span className="text-sm text-muted-foreground">{Math.round(getStepProgress())}% Complete</span>
+          <span className="text-sm text-muted-foreground">
+            {Math.round(getStepProgress())}% Complete
+          </span>
         </div>
         <Progress value={getStepProgress()} className="h-2" />
       </div>
@@ -598,7 +615,11 @@ const RegisterProperty = () => {
                         {isSubmitting ? "Saving..." : "Save & Continue"}
                       </Button>
                     ) : step < 6 ? (
-                      <Button type="button" onClick={handleNext} disabled={!propertyId}>
+                      <Button
+                        type="button"
+                        onClick={handleNext}
+                        disabled={!propertyId}
+                      >
                         Continue
                       </Button>
                     ) : (

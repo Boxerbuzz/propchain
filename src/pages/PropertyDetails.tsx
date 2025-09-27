@@ -19,6 +19,7 @@ import {
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabaseService } from "@/services/supabaseService";
+import { Progress } from "@/components/ui/progress";
 
 export default function PropertyDetails() {
   const { id } = useParams<{ id: string }>();
@@ -297,12 +298,10 @@ export default function PropertyDetails() {
                     {progressPercentage.toFixed(1)}% Complete
                   </span>
                 </div>
-                <div className="w-full bg-muted rounded-lg h-2 md:h-3 mb-4">
-                  <div
-                    className="bg-primary h-2 md:h-3 rounded-lg transition-all duration-300"
-                    style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-                  ></div>
-                </div>
+                <Progress
+                  value={Math.min(progressPercentage, 100)}
+                  className="h-2"
+                />
                 <div className="flex justify-between text-xs md:text-sm text-muted-foreground">
                   <span>
                     {(tokenization.tokens_sold || 0).toLocaleString()} tokens

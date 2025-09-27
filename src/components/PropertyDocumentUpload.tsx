@@ -45,69 +45,34 @@ export const PropertyDocumentUpload = ({
         
         if (!docType) continue;
 
-        // First upload to HFS
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('fileName', file.name);
-        formData.append('propertyId', propertyId);
-
-        const { data: hfsResult, error: hfsError } = await supabase.functions.invoke('upload-to-hfs', {
-          body: formData,
-        });
-
-        if (hfsError) {
-          throw new Error(`HFS upload failed: ${hfsError.message}`);
+        // Validate file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+          toast({
+            title: "File too large",
+            description: `${file.name} exceeds 10MB limit`,
+            variant: "destructive",
+          });
+          continue;
         }
 
-        if (!hfsResult.success) {
-          throw new Error(`HFS upload failed: ${hfsResult.error}`);
-        }
-
-        // Then upload to Supabase Storage and save document record
-        const document = await supabaseService.properties.uploadPropertyDocument(
+        // Upload to Supabase Storage only (HFS upload will happen on approval)
+        await supabaseService.properties.uploadPropertyDocument(
           propertyId, 
           file,
           selectedType,
           docType.name
         );
 
-        // Update document record with HFS details
-        const { error: updateError } = await supabase
-          .from('property_documents')
-          .update({
-            hfs_file_id: hfsResult.data.fileId,
-            file_hash: hfsResult.data.fileHash,
-          })
-          .eq('id', document.id);
-
-        if (updateError) {
-          console.error('Failed to update document with HFS details:', updateError);
-        }
-
         toast({
           title: "Document uploaded",
-          description: `${file.name} uploaded to HFS and storage`,
+          description: `${file.name} uploaded successfully`,
         });
-      }
-
-      // Update property with HFS file IDs
-      const { data: documents } = await supabase
-        .from('property_documents')
-        .select('hfs_file_id')
-        .eq('property_id', propertyId)
-        .not('hfs_file_id', 'is', null);
-
-      if (documents && documents.length > 0) {
-        const hfsFileIds = documents.map(doc => doc.hfs_file_id);
-        await supabase
-          .from('properties')
-          .update({ hfs_file_ids: hfsFileIds })
-          .eq('id', propertyId);
       }
 
       setSelectedType("");
       onUploadComplete();
     } catch (error: any) {
+      console.error('Document upload error:', error);
       toast({
         title: "Upload failed",
         description: error.message || "Failed to upload documents",
@@ -149,6 +114,7 @@ export const PropertyDocumentUpload = ({
           <div>
             <label className="block text-sm font-medium mb-2">Document Type</label>
             <select
+              title="Document Type"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
               className="w-full p-2 border border-input bg-background rounded-md"
@@ -165,7 +131,7 @@ export const PropertyDocumentUpload = ({
           <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
             <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground mb-4">
-              Select files to upload (will be stored on HFS)
+              Select files to upload (will be added to HFS when property is approved)
             </p>
             <Button 
               onClick={() => fileInputRef.current?.click()}
@@ -175,7 +141,7 @@ export const PropertyDocumentUpload = ({
               {uploading ? (
                 <div className="flex items-center">
                   <Spinner size={16} className="mr-2" />
-                  Uploading to HFS...
+                  Uploading...
                 </div>
               ) : (
                 "Select Files"
@@ -187,6 +153,7 @@ export const PropertyDocumentUpload = ({
           </div>
 
           <input
+            title="Files"
             ref={fileInputRef}
             type="file"
             accept=".pdf,.jpg,.jpeg,.png"

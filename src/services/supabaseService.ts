@@ -195,10 +195,10 @@ export const supabaseService = {
       documentName: string
     ) {
       const fileExt = file.name.split(".").pop();
-      const fileName = `${propertyId}/docs/${Date.now()}.${fileExt}`;
+      const fileName = `${propertyId}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("property-images")
+        .from("property-documents")
         .upload(fileName, file);
 
       if (uploadError) {
@@ -208,7 +208,7 @@ export const supabaseService = {
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from("property-images").getPublicUrl(fileName);
+      } = supabase.storage.from("property-documents").getPublicUrl(fileName);
 
       const { data, error } = await supabase
         .from("property_documents")
@@ -336,6 +336,42 @@ export const supabaseService = {
       if (error) {
         console.error("Error fetching property images:", error);
         return [];
+      }
+
+      return data;
+    },
+
+    async approveProperty(propertyId: string, approvedBy?: string) {
+      // Update property status to approved
+      // The database trigger will automatically call the property-approved edge function
+      const { data, error } = await supabase
+        .from("properties")
+        .update({
+          approval_status: "approved",
+          approved_at: new Date().toISOString(),
+          approved_by: approvedBy || null,
+        })
+        .eq("id", propertyId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error approving property:", error);
+        throw error;
+      }
+
+      return data;
+    },
+
+    async processPropertyApproval(propertyId: string) {
+      // Manually call the property-approved edge function
+      const { data, error } = await supabase.functions.invoke('property-approved', {
+        body: { propertyId },
+      });
+
+      if (error) {
+        console.error("Error processing property approval:", error);
+        throw error;
       }
 
       return data;

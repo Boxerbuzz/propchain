@@ -16,6 +16,11 @@ import {
   BarChart3,
   Wrench,
   AlertTriangle,
+  MoreHorizontal,
+  Check,
+  Pause,
+  Trash2,
+  Ban,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +29,14 @@ import {
   useUpdateProperty,
 } from "@/hooks/usePropertyManagement";
 import { TokenizationDialog } from "@/components/TokenizationDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const PropertyManagement = () => {
   const { toast } = useToast();
@@ -74,6 +87,46 @@ const PropertyManagement = () => {
     [managedProperties]
   );
 
+  // Get dropdown-only actions (excluding actions already available as main buttons)
+  const getDropdownActions = (property: any) => {
+    const actions = [];
+    
+    // Status-specific actions (not available as main buttons)
+    if (property.approval_status === "pending") {
+      actions.push(
+        { label: "Approve Property", action: "Approve", icon: Check, variant: "success" }
+      );
+    }
+    
+    if (property.approval_status === "approved" && property.listing_status === "active") {
+      actions.push(
+        { label: "Suspend Property", action: "Suspend", icon: Pause, variant: "warning" }
+      );
+      
+      // Only show tokenize if not already tokenized
+      if (!property.tokenizations || property.tokenizations.length === 0) {
+        actions.push(
+          { label: "Tokenize Property", action: "Tokenize", icon: DollarSign, variant: "primary" }
+        );
+      }
+    }
+    
+    if (property.approval_status === "suspended" || property.listing_status === "suspended") {
+      actions.push(
+        { label: "Reactivate Property", action: "Reactivate", icon: Check, variant: "success" }
+      );
+    }
+    
+    // Destructive actions (always at the end)
+    if (property.listing_status !== "deleted") {
+      actions.push(
+        { label: "Delete Property", action: "Delete", icon: Trash2, variant: "destructive" }
+      );
+    }
+    
+    return actions;
+  };
+
   const handlePropertyAction = async (action: string, propertyId: string) => {
     const property = managedProperties.find(p => p.id === propertyId);
     
@@ -85,13 +138,48 @@ const PropertyManagement = () => {
         navigate(`/property/${propertyId}/edit`);
         break;
       case "Approve":
-        updatePropertyMutation.mutate({
-          id: propertyId,
-          data: {
-            approval_status: "approved",
-            listing_status: "active",
-          },
-        });
+        if (window.confirm("Are you sure you want to approve this property?")) {
+          updatePropertyMutation.mutate({
+            id: propertyId,
+            data: {
+              approval_status: "approved",
+              listing_status: "active",
+            },
+          });
+          toast({
+            title: "Property Approved",
+            description: "The property has been approved and is now active.",
+          });
+        }
+        break;
+      case "Suspend":
+        if (window.confirm("Are you sure you want to suspend this property?")) {
+          updatePropertyMutation.mutate({
+            id: propertyId,
+            data: {
+              listing_status: "suspended",
+            },
+          });
+          toast({
+            title: "Property Suspended",
+            description: "The property has been suspended.",
+          });
+        }
+        break;
+      case "Reactivate":
+        if (window.confirm("Are you sure you want to reactivate this property?")) {
+          updatePropertyMutation.mutate({
+            id: propertyId,
+            data: {
+              approval_status: "approved",
+              listing_status: "active",
+            },
+          });
+          toast({
+            title: "Property Reactivated",
+            description: "The property has been reactivated.",
+          });
+        }
         break;
       case "Tokenize":
         if (property) {
@@ -100,10 +188,15 @@ const PropertyManagement = () => {
         }
         break;
       case "Delete":
-        if (window.confirm("Are you sure you want to delete this property?")) {
+        if (window.confirm("Are you sure you want to delete this property? This action cannot be undone.")) {
           updatePropertyMutation.mutate({
             id: propertyId,
             data: { listing_status: "deleted" },
+          });
+          toast({
+            title: "Property Deleted",
+            description: "The property has been deleted.",
+            variant: "destructive",
           });
         }
         break;
@@ -450,34 +543,42 @@ const PropertyManagement = () => {
                                   <Edit className="h-4 w-4 mr-1" />
                                   <span className="hidden sm:inline">Edit</span>
                                 </Button>
-                                {property.approval_status === "approved" && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      handlePropertyAction(
-                                        "Tokenize",
-                                        property.id
-                                      )
-                                    }
-                                  >
-                                    <DollarSign className="h-4 w-4 mr-1" />
-                                    <span className="hidden sm:inline">
-                                      Tokenize
-                                    </span>
-                                  </Button>
-                                )}
-                                {property.approval_status === "pending" && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      handlePropertyAction(
-                                        "Approve",
-                                        property.id
-                                      )
-                                    }
-                                  >
-                                    Approve
-                                  </Button>
+                                
+                                {/* More Actions Dropdown - Only show if there are additional actions */}
+                                {getDropdownActions(property).length > 0 && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="outline" size="sm">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        <span className="sr-only">More actions</span>
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-48">
+                                      <DropdownMenuLabel>More Actions</DropdownMenuLabel>
+                                      <DropdownMenuSeparator />
+                                      {getDropdownActions(property).map((actionItem, index) => {
+                                        const Icon = actionItem.icon;
+                                        return (
+                                          <DropdownMenuItem
+                                            key={index}
+                                            onClick={() => handlePropertyAction(actionItem.action, property.id)}
+                                            className={
+                                              actionItem.variant === "destructive"
+                                                ? "text-red-600 focus:text-red-600"
+                                                : actionItem.variant === "success"
+                                                ? "text-green-600 focus:text-green-600"
+                                                : actionItem.variant === "warning"
+                                                ? "text-orange-600 focus:text-orange-600"
+                                                : ""
+                                            }
+                                          >
+                                            <Icon className="h-4 w-4 mr-2" />
+                                            {actionItem.label}
+                                          </DropdownMenuItem>
+                                        );
+                                      })}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 )}
                               </div>
                             </div>

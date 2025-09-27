@@ -127,6 +127,7 @@ export const PropertyImageUpload = ({
           </div>
 
           <input
+            title="Images"
             ref={fileInputRef}
             type="file"
             accept="image/*"

@@ -24,14 +24,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { supabaseService } from "@/services/supabaseService";
 import { PropertyImageUpload } from "@/components/PropertyImageUpload";
 import { PropertyDocumentUpload } from "@/components/PropertyDocumentUpload";
@@ -43,9 +35,10 @@ import {
   DollarSign,
   Camera,
   Upload,
-  Coins,
+  ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Progress } from "@/components/ui/progress";
 
 const propertyEditSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -119,6 +112,22 @@ const PropertyEdit: React.FC = () => {
 
   const propertyTypes = ["residential", "commercial", "industrial", "land"];
 
+  // Helper functions for number formatting
+  const formatNumber = (value: number | string): string => {
+    if (!value && value !== 0) return "";
+    const numValue =
+      typeof value === "string" ? parseFloat(value.replace(/,/g, "")) : value;
+    if (isNaN(numValue)) return "";
+    return numValue.toLocaleString("en-US");
+  };
+
+  const parseFormattedNumber = (value: string): number => {
+    if (!value) return 0;
+    const cleanValue = value.replace(/,/g, "");
+    const numValue = parseFloat(cleanValue);
+    return isNaN(numValue) ? 0 : numValue;
+  };
+
   const handleNext = async () => {
     if (step === 1) {
       const isValid = await form.trigger([
@@ -156,7 +165,10 @@ const PropertyEdit: React.FC = () => {
       });
       queryClient.invalidateQueries({ queryKey: ["user-properties"] });
       toast.success("Property updated successfully!");
-      setStep(4); // Move to images step
+      // Only move to next step if we're on step 3 (the form submission step)
+      if (step === 3) {
+        setStep(4); // Move to images step
+      }
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to update property");
@@ -188,7 +200,7 @@ const PropertyEdit: React.FC = () => {
 
   const handleDocumentsUploaded = () => {
     toast.success("Documents updated successfully!");
-    setStep(6); // Move to review step
+    // Stay on step 5 - this is the final step
   };
 
   const handleFinalSubmit = () => {
@@ -333,10 +345,13 @@ const PropertyEdit: React.FC = () => {
                 <FormLabel>Property Value (₦)</FormLabel>
                 <FormControl>
                   <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                    placeholder="e.g., 500000000"
+                    type="text"
+                    value={formatNumber(field.value)}
+                    onChange={(e) => {
+                      const numericValue = parseFormattedNumber(e.target.value);
+                      field.onChange(numericValue);
+                    }}
+                    placeholder="e.g., 500,000,000"
                   />
                 </FormControl>
                 <FormMessage />
@@ -352,10 +367,13 @@ const PropertyEdit: React.FC = () => {
                 <FormLabel>Monthly Rental Income (₦)</FormLabel>
                 <FormControl>
                   <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                    placeholder="e.g., 2500000"
+                    type="text"
+                    value={formatNumber(field.value)}
+                    onChange={(e) => {
+                      const numericValue = parseFormattedNumber(e.target.value);
+                      field.onChange(numericValue);
+                    }}
+                    placeholder="e.g., 2,500,000"
                   />
                 </FormControl>
                 <FormMessage />
@@ -437,6 +455,7 @@ const PropertyEdit: React.FC = () => {
         {propertyId && (
           <PropertyImageUpload
             propertyId={propertyId}
+            existingImages={property?.property_images || []}
             onUploadComplete={handleImagesUploaded}
           />
         )}
@@ -457,6 +476,7 @@ const PropertyEdit: React.FC = () => {
         {propertyId && (
           <PropertyDocumentUpload
             propertyId={propertyId}
+            existingDocuments={property?.property_documents || []}
             onUploadComplete={handleDocumentsUploaded}
           />
         )}
@@ -539,7 +559,10 @@ const PropertyEdit: React.FC = () => {
                 const isCompleted = step > stepInfo.step;
 
                 return (
-                  <div key={stepInfo.step} className="flex items-center min-w-0">
+                  <div
+                    key={stepInfo.step}
+                    className="flex items-center min-w-0"
+                  >
                     <div className="flex flex-col items-center">
                       <div
                         className={`
@@ -583,12 +606,7 @@ const PropertyEdit: React.FC = () => {
                 );
               })}
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div 
-                className="bg-primary h-2 rounded-full transition-all duration-300 ease-in-out" 
-                style={{ width: `${getStepProgress()}%` }}
-              ></div>
-            </div>
+            <Progress value={getStepProgress()} className="h-2" />
           </div>
         </div>
       </div>
@@ -605,51 +623,62 @@ const PropertyEdit: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {step === 1 && renderStep1()}
-              {step === 2 && renderStep2()}
-              {step === 3 && renderStep3()}
-              {step === 4 && renderStep4()}
-              {step === 5 && renderStep5()}
-
-              <div className="flex justify-between pt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={step === 1}
-                >
-                  Previous
-                </Button>
-
-                <div className="flex gap-2">
-                  {step < 3 ? (
-                    <Button type="button" onClick={handleNext}>
-                      Next
-                    </Button>
-                  ) : step === 3 ? (
-                    <Button
-                      type="submit"
-                      disabled={updatePropertyMutation.isPending}
-                    >
-                      {updatePropertyMutation.isPending
-                        ? "Updating..."
-                        : "Update & Continue"}
-                    </Button>
-                  ) : step < 5 ? (
-                    <Button type="button" onClick={handleNext}>
-                      Next
-                    </Button>
-                  ) : (
-                    <Button type="button" onClick={handleFinalSubmit}>
-                      Finish Update
-                    </Button>
-                  )}
-                </div>
+            {(step === 4 || step === 5) ? (
+              // Upload steps - outside of form to prevent conflicts
+              <div className="space-y-6">
+                {step === 4 && renderStep4()}
+                {step === 5 && renderStep5()}
               </div>
-            </form>
-          </Form>
+            ) : (
+              <Form {...form}>
+                <form className="space-y-6">
+                  {step === 1 && renderStep1()}
+                  {step === 2 && renderStep2()}
+                  {step === 3 && renderStep3()}
+                </form>
+              </Form>
+            )}
+
+            <div className="flex justify-between pt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={step === 1}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Previous
+              </Button>
+
+              <div className="flex gap-2">
+                {step < 3 ? (
+                  <Button type="button" onClick={handleNext}>
+                    Next
+                    <ArrowRight className="w-4 h-4 mr-2" />
+                  </Button>
+                ) : step === 3 ? (
+                  <Button
+                    type="button"
+                    onClick={() => form.handleSubmit(onSubmit)()}
+                    disabled={updatePropertyMutation.isPending}
+                  >
+                    {updatePropertyMutation.isPending
+                      ? "Updating..."
+                      : "Update & Continue"}
+                  </Button>
+                ) : step < 5 ? (
+                  <Button type="button" onClick={handleNext}>
+                    <ArrowRight className="w-4 h-4 mr-2" />
+                    Next
+                  </Button>
+                ) : (
+                  <Button type="button" onClick={handleFinalSubmit}>
+                    Finish Update
+                    <ArrowRight className="w-4 h-4 mr-2" />
+                  </Button>
+                )}
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
