@@ -300,7 +300,9 @@ const PropertyView = () => {
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        {getDocumentIcon(document.document_type)}
+                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                          {getDocumentIcon(document.document_type)}
+                        </div>
                         <div>
                           <h4 className="font-medium">
                             {document.document_name}
@@ -335,16 +337,16 @@ const PropertyView = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
-                                <Eye className="w-4 h-4 mr-1" />
-                                View
+                                <Eye className="w-4 h-4 sm:mr-1" />
+                                <span className="hidden sm:inline">View</span>
                               </a>
                             </Button>
                           )}
                           {document.file_url && (
                             <Button variant="outline" size="sm" asChild>
                               <a href={document.file_url} download>
-                                <Download className="w-4 h-4 mr-1" />
-                                Download
+                                <Download className="w-4 h-4 sm:mr-1" />
+                                <span className="hidden sm:inline">Download</span>
                               </a>
                             </Button>
                           )}
@@ -416,77 +418,119 @@ const PropertyView = () => {
                         ₦{tokenization.current_raise?.toLocaleString()}
                       </p>
                     </div>
-                     <div>
-                       <p className="text-sm text-muted-foreground mb-3">Funding Progress</p>
-                       <div className="space-y-3">
-                         {/* Circular Progress */}
-                         <div className="flex items-center justify-center">
-                           <div className="relative w-24 h-24">
-                             <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
-                               {/* Background circle */}
-                               <circle
-                                 cx="50"
-                                 cy="50"
-                                 r="45"
-                                 stroke="currentColor"
-                                 strokeWidth="6"
-                                 fill="transparent"
-                                 className="text-gray-200 dark:text-gray-700"
-                               />
-                               {/* Progress circle */}
-                               <circle
-                                 cx="50"
-                                 cy="50"
-                                 r="45"
-                                 stroke="currentColor"
-                                 strokeWidth="6"
-                                 fill="transparent"
-                                 strokeDasharray={`${2 * Math.PI * 45}`}
-                                 strokeDashoffset={`${2 * Math.PI * 45 * (1 - (tokenization.current_raise / tokenization.target_raise))}`}
-                                 className="text-blue-600 transition-all duration-500 ease-out"
-                                 strokeLinecap="round"
-                               />
-                             </svg>
-                             <div className="absolute inset-0 flex items-center justify-center">
-                               <div className="text-center">
-                                 <div className="text-lg font-bold text-blue-600">
-                                   {((tokenization.current_raise / tokenization.target_raise) * 100).toFixed(0)}%
-                                 </div>
-                                 <div className="text-xs text-muted-foreground">funded</div>
-                               </div>
-                             </div>
-                           </div>
-                         </div>
-                         
-                         {/* Stats */}
-                         <div className="grid grid-cols-2 gap-3 text-center">
-                           <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-2">
-                             <div className="text-sm font-semibold text-blue-600">
-                               {tokenization.investor_count}
-                             </div>
-                             <div className="text-xs text-muted-foreground">Investors</div>
-                           </div>
-                           <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-2">
-                             <div className="text-sm font-semibold text-green-600">
-                               ₦{(tokenization.current_raise / 1000000).toFixed(1)}M
-                             </div>
-                             <div className="text-xs text-muted-foreground">Raised</div>
-                           </div>
-                         </div>
-                         
-                         {/* Linear progress as backup */}
-                         <div className="space-y-1">
-                           <Progress 
-                             value={Math.min((tokenization.current_raise / tokenization.target_raise) * 100, 100)} 
-                             className="h-2"
-                           />
-                           <div className="flex justify-between text-xs text-muted-foreground">
-                             <span>₦{(tokenization.current_raise / 1000000).toFixed(1)}M raised</span>
-                             <span>₦{(tokenization.target_raise / 1000000).toFixed(1)}M goal</span>
-                           </div>
-                         </div>
-                       </div>
-                     </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Funding Progress
+                      </p>
+                      <div className="space-y-3">
+                        {/* Circular Progress */}
+                        <div className="flex items-center justify-center">
+                          <div className="relative w-24 h-24">
+                            <svg
+                              className="w-24 h-24 transform -rotate-90"
+                              viewBox="0 0 100 100"
+                            >
+                              {/* Background circle */}
+                              <circle
+                                cx="50"
+                                cy="50"
+                                r="45"
+                                stroke="currentColor"
+                                strokeWidth="6"
+                                fill="transparent"
+                                className="text-gray-200 dark:text-gray-700"
+                              />
+                              {/* Progress circle */}
+                              <circle
+                                cx="50"
+                                cy="50"
+                                r="45"
+                                stroke="currentColor"
+                                strokeWidth="6"
+                                fill="transparent"
+                                strokeDasharray={`${2 * Math.PI * 45}`}
+                                strokeDashoffset={`${
+                                  2 *
+                                  Math.PI *
+                                  45 *
+                                  (1 -
+                                    tokenization.current_raise /
+                                      tokenization.target_raise)
+                                }`}
+                                className="text-blue-600 transition-all duration-500 ease-out"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="text-center">
+                                <div className="text-lg font-bold text-blue-600">
+                                  {(
+                                    (tokenization.current_raise /
+                                      tokenization.target_raise) *
+                                    100
+                                  ).toFixed(0)}
+                                  %
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  funded
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="grid grid-cols-2 gap-3 text-center">
+                          <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-2">
+                            <div className="text-sm font-semibold text-blue-600">
+                              {tokenization.investor_count}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Investors
+                            </div>
+                          </div>
+                          <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-2">
+                            <div className="text-sm font-semibold text-green-600">
+                              ₦
+                              {(tokenization.current_raise / 1000000).toFixed(
+                                1
+                              )}
+                              M
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Raised
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Linear progress as backup */}
+                        <div className="space-y-1">
+                          <Progress
+                            value={Math.min(
+                              (tokenization.current_raise /
+                                tokenization.target_raise) *
+                                100,
+                              100
+                            )}
+                            className="h-2"
+                          />
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>
+                              ₦
+                              {(tokenization.current_raise / 1000000).toFixed(
+                                1
+                              )}
+                              M raised
+                            </span>
+                            <span>
+                              ₦
+                              {(tokenization.target_raise / 1000000).toFixed(1)}
+                              M goal
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {tokenization.investment_window_start &&
@@ -685,48 +729,86 @@ const PropertyView = () => {
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground mb-4">Funding Progress</p>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Funding Progress
+                        </p>
                         <div className="space-y-4">
                           {/* Enhanced Progress Display */}
                           <div className="relative">
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-2xl font-bold text-blue-600">
-                                {((tokenization.current_raise / tokenization.target_raise) * 100).toFixed(1)}%
+                                {(
+                                  (tokenization.current_raise /
+                                    tokenization.target_raise) *
+                                  100
+                                ).toFixed(1)}
+                                %
                               </span>
                               <span className="text-sm text-muted-foreground">
                                 {tokenization.investor_count} investors
                               </span>
                             </div>
-                            
+
                             {/* Enhanced Progress Bar */}
                             <div className="relative">
-                              <Progress 
-                                value={Math.min((tokenization.current_raise / tokenization.target_raise) * 100, 100)} 
+                              <Progress
+                                value={Math.min(
+                                  (tokenization.current_raise /
+                                    tokenization.target_raise) *
+                                    100,
+                                  100
+                                )}
                                 className="h-3"
                               />
-                              
+
                               {/* Progress markers */}
                               <div className="flex justify-between mt-2 text-xs text-muted-foreground">
                                 <span>₦0</span>
-                                <span className="font-medium">₦{(tokenization.current_raise / 1000000).toFixed(1)}M raised</span>
-                                <span>₦{(tokenization.target_raise / 1000000).toFixed(1)}M goal</span>
+                                <span className="font-medium">
+                                  ₦
+                                  {(
+                                    tokenization.current_raise / 1000000
+                                  ).toFixed(1)}
+                                  M raised
+                                </span>
+                                <span>
+                                  ₦
+                                  {(
+                                    tokenization.target_raise / 1000000
+                                  ).toFixed(1)}
+                                  M goal
+                                </span>
                               </div>
                             </div>
                           </div>
-                          
+
                           {/* Key Metrics */}
                           <div className="grid grid-cols-2 gap-4">
                             <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 rounded-lg p-3 text-center">
                               <div className="text-lg font-bold text-blue-600">
-                                ₦{(tokenization.current_raise / 1000000).toFixed(1)}M
+                                ₦
+                                {(tokenization.current_raise / 1000000).toFixed(
+                                  1
+                                )}
+                                M
                               </div>
-                              <div className="text-sm text-blue-600/70">Raised</div>
+                              <div className="text-sm text-blue-600/70">
+                                Raised
+                              </div>
                             </div>
                             <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 rounded-lg p-3 text-center">
                               <div className="text-lg font-bold text-green-600">
-                                ₦{((tokenization.target_raise - tokenization.current_raise) / 1000000).toFixed(1)}M
+                                ₦
+                                {(
+                                  (tokenization.target_raise -
+                                    tokenization.current_raise) /
+                                  1000000
+                                ).toFixed(1)}
+                                M
                               </div>
-                              <div className="text-sm text-green-600/70">Remaining</div>
+                              <div className="text-sm text-green-600/70">
+                                Remaining
+                              </div>
                             </div>
                           </div>
                         </div>

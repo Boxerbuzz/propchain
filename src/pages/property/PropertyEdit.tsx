@@ -205,7 +205,7 @@ const PropertyEdit: React.FC = () => {
 
   const handleFinalSubmit = () => {
     toast.success("Property updated successfully!");
-    navigate(`/property/${propertyId}`);
+    navigate(-1);
   };
 
   const renderStep1 = () => (
@@ -623,7 +623,7 @@ const PropertyEdit: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {(step === 4 || step === 5) ? (
+            {step === 4 || step === 5 ? (
               // Upload steps - outside of form to prevent conflicts
               <div className="space-y-6">
                 {step === 4 && renderStep4()}
