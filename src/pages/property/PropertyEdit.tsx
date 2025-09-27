@@ -73,7 +73,6 @@ const PropertyEdit: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
-  const [isTokenizeDialogOpen, setIsTokenizeDialogOpen] = useState(false);
 
   const { data: property, isLoading } = useQuery({
     queryKey: ["property", propertyId],
@@ -510,91 +509,102 @@ const PropertyEdit: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8">
-        <Link to={`/property/management`}>
-          <Button variant="outline" size="sm" className="mb-4">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-4xl">
+        <div className="mb-6 md:mb-8">
+          <Button
+            variant="outline"
+            size="sm"
+            className="mb-4"
+            onClick={() => navigate(-1)}
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Property
+            Go Back
           </Button>
-        </Link>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
+          <div className="mb-6">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
               Edit Property
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm md:text-base">
               Update your property information using the same steps as creation
             </p>
           </div>
-        </div>
 
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            {steps.map((stepInfo, index) => {
-              const Icon = stepInfo.icon;
-              const isActive = step === stepInfo.step;
-              const isCompleted = step > stepInfo.step;
+          {/* Progress Steps */}
+          <div className="bg-muted/30 rounded-lg p-4 md:p-6 mb-6 md:mb-8">
+            <div className="flex items-center justify-between mb-4 overflow-x-auto">
+              {steps.map((stepInfo, index) => {
+                const Icon = stepInfo.icon;
+                const isActive = step === stepInfo.step;
+                const isCompleted = step > stepInfo.step;
 
-              return (
-                <div key={stepInfo.step} className="flex items-center">
-                  <div
-                    className={`
-                    flex items-center justify-center w-10 h-10 rounded-full border-2 
-                    ${
-                      isActive
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : isCompleted
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-muted-foreground bg-background text-muted-foreground"
-                    }
-                  `}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <div className="ml-3">
-                    <div
-                      className={`text-sm font-medium ${
-                        isActive ? "text-primary" : "text-muted-foreground"
-                      }`}
-                    >
-                      Step {stepInfo.step}
+                return (
+                  <div key={stepInfo.step} className="flex items-center min-w-0">
+                    <div className="flex flex-col items-center">
+                      <div
+                        className={`
+                        flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border-2 
+                        ${
+                          isActive
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : isCompleted
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-muted-foreground bg-background text-muted-foreground"
+                        }
+                      `}
+                      >
+                        <Icon className="w-4 h-4 md:w-5 md:h-5" />
+                      </div>
+                      <div className="mt-2 text-center hidden sm:block">
+                        <div
+                          className={`text-xs font-medium ${
+                            isActive ? "text-primary" : "text-muted-foreground"
+                          }`}
+                        >
+                          Step {stepInfo.step}
+                        </div>
+                        <div
+                          className={`text-xs ${
+                            isActive ? "text-primary" : "text-muted-foreground"
+                          }`}
+                        >
+                          {stepInfo.title}
+                        </div>
+                      </div>
                     </div>
-                    <div
-                      className={`text-xs ${
-                        isActive ? "text-primary" : "text-muted-foreground"
-                      }`}
-                    >
-                      {stepInfo.title}
-                    </div>
+                    {index < steps.length - 1 && (
+                      <div
+                        className={`flex-1 h-0.5 mx-2 md:mx-4 ${
+                          isCompleted ? "bg-primary" : "bg-muted"
+                        }`}
+                      />
+                    )}
                   </div>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`flex-1 h-0.5 mx-4 ${
-                        isCompleted ? "bg-primary" : "bg-muted"
-                      }`}
-                    />
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div 
+                className="bg-primary h-2 rounded-full transition-all duration-300 ease-in-out" 
+                style={{ width: `${getStepProgress()}%` }}
+              ></div>
+            </div>
           </div>
-          <Progress value={getStepProgress()} className="h-2" />
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {step === 1 && "Property Details"}
-            {step === 2 && "Location Information"}
-            {step === 3 && "Property Valuation & Details"}
-            {step === 4 && "Update Property Images"}
-            {step === 5 && "Update Property Documents"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="container mx-auto px-4 max-w-4xl">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {step === 1 && "Property Details"}
+              {step === 2 && "Location Information"}
+              {step === 3 && "Property Valuation & Details"}
+              {step === 4 && "Update Property Images"}
+              {step === 5 && "Update Property Documents"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {step === 1 && renderStep1()}
@@ -640,8 +650,9 @@ const PropertyEdit: React.FC = () => {
               </div>
             </form>
           </Form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

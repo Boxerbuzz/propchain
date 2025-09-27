@@ -30,16 +30,12 @@ import WalletDashboard from "./pages/wallet/Dashboard";
 import PropertyManagement from "./pages/property/Management";
 import PropertyView from "./pages/property/PropertyView";
 import PropertyEdit from "./pages/property/PropertyEdit";
-
-import PropertyImageManager from "./pages/property/PropertyImageManager";
-import PropertyDocumentManager from "./pages/property/PropertyDocumentManager";
 import Profile from "./pages/settings/Profile";
 import Notifications from "./pages/settings/Notifications";
 import Security from "./pages/settings/Security";
 import Chat from "./pages/chat/Chat";
 import ChatRoom from "./pages/chat/ChatRoom";
 import RegisterProperty from "./pages/properties/RegisterProperty";
-import UploadDocs from "./pages/properties/UploadDocs";
 import TermsOfService from "./pages/legal/TermsOfService";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import RiskDisclosure from "./pages/legal/RiskDisclosure";
@@ -107,20 +103,8 @@ const App = () => (
                   element={<PropertyEdit />}
                 />
                 <Route
-                  path="/property/:propertyId/images"
-                  element={<PropertyImageManager />}
-                />
-                <Route
-                  path="/property/:propertyId/documents"
-                  element={<PropertyDocumentManager />}
-                />
-                <Route
                   path="/properties/register"
                   element={<RegisterProperty />}
-                />
-                <Route
-                  path="/properties/upload-docs"
-                  element={<UploadDocs />}
                 />
                 <Route path="/chat" element={<Chat />} />
                 <Route path="/chat/:roomId" element={<ChatRoom />} />

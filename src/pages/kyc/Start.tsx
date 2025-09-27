@@ -1,38 +1,32 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Shield, FileText, Camera, MapPin, Clock, CheckCircle } from "lucide-react";
+import {
+  Shield,
+  FileText,
+  Camera,
+  MapPin,
+  Clock,
+  CheckCircle,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function KYCStart() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">PC</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">PropChain</span>
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <Shield className="w-10 h-10 text-primary" />
           </div>
-          
+
           <h1 className="text-3xl font-bold text-foreground mb-4">
             Verify Your Identity
           </h1>
-          
+
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            To comply with regulations and secure your account, we need to verify your identity. 
-            This process typically takes 5-10 minutes.
+            To comply with regulations and secure your account, we need to
+            verify your identity. This process typically takes 5-10 minutes.
           </p>
         </div>
 
@@ -96,19 +90,27 @@ export default function KYCStart() {
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <CheckCircle className="w-5 h-5 text-primary" />
-                <span className="text-muted-foreground">Access to all investment opportunities</span>
+                <span className="text-muted-foreground">
+                  Access to all investment opportunities
+                </span>
               </div>
               <div className="flex items-center space-x-3">
                 <CheckCircle className="w-5 h-5 text-primary" />
-                <span className="text-muted-foreground">Higher transaction limits</span>
+                <span className="text-muted-foreground">
+                  Higher transaction limits
+                </span>
               </div>
               <div className="flex items-center space-x-3">
                 <CheckCircle className="w-5 h-5 text-primary" />
-                <span className="text-muted-foreground">Enhanced security for your account</span>
+                <span className="text-muted-foreground">
+                  Enhanced security for your account
+                </span>
               </div>
               <div className="flex items-center space-x-3">
                 <CheckCircle className="w-5 h-5 text-primary" />
-                <span className="text-muted-foreground">Compliance with financial regulations</span>
+                <span className="text-muted-foreground">
+                  Compliance with financial regulations
+                </span>
               </div>
             </div>
           </CardContent>
@@ -118,8 +120,9 @@ export default function KYCStart() {
         <div className="bg-muted/50 rounded-lg p-6 mb-8">
           <h3 className="font-semibold mb-2">Your Privacy is Protected</h3>
           <p className="text-sm text-muted-foreground">
-            All documents are encrypted and stored securely. We never share your personal information 
-            with third parties without your consent. Your data is protected by bank-level security measures.
+            All documents are encrypted and stored securely. We never share your
+            personal information with third parties without your consent. Your
+            data is protected by bank-level security measures.
           </p>
         </div>
 
