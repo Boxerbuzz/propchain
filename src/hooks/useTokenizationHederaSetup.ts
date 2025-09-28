@@ -8,7 +8,7 @@ export const useTokenizationHederaSetup = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Check for tokenizations that need Hedera token creation
+  // Check for tokenizations status (for monitoring purposes)
   const { data: pendingTokenizations } = useQuery({
     queryKey: ['pending-hedera-tokenizations', user?.id],
     queryFn: async () => {
@@ -28,7 +28,7 @@ export const useTokenizationHederaSetup = () => {
       return data || [];
     },
     enabled: !!user?.id,
-    refetchInterval: 5000, // Check every 5 seconds
+    refetchInterval: 30000, // Reduced frequency - now just for monitoring
   });
 
   // Mutation to create Hedera token
@@ -58,20 +58,15 @@ export const useTokenizationHederaSetup = () => {
     },
   });
 
-  // Auto-create Hedera tokens for pending tokenizations
-  useEffect(() => {
-    if (pendingTokenizations && pendingTokenizations.length > 0) {
-      pendingTokenizations.forEach((tokenization) => {
-        if (!tokenization.token_id) {
-          createHederaToken.mutate(tokenization.id);
-        }
-      });
-    }
-  }, [pendingTokenizations]);
+  // Manual retry capability (automatic processing now handled by database triggers)
+  const retryTokenCreation = (tokenizationId: string) => {
+    createHederaToken.mutate(tokenizationId);
+  };
 
   return {
     pendingTokenizations,
     createHederaToken,
+    retryTokenCreation,
     isCreating: createHederaToken.isPending,
   };
 };
