@@ -1,9 +1,21 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Wallet, Shield, Users, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Wallet,
+  Shield,
+  Users,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useHederaAccount } from "@/hooks/useHederaAccount";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
@@ -13,24 +25,27 @@ export default function UnifiedWalletSetup() {
   const navigate = useNavigate();
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const { createAccount, isCreating, hasAccount } = useHederaAccount();
-  const { connectExternalWallet, isConnecting, connectedWallets } = useWalletConnect();
+  const { connectExternalWallet, isConnecting, connectedWallets } =
+    useWalletConnect();
 
   const handleConnect = async (method: string) => {
     setSelectedMethod(method);
-    
-    if (method === 'custodial') {
+
+    if (method === "custodial") {
       createAccount();
     } else {
       // External wallet connection
       const result = await connectExternalWallet(method);
       if (result) {
         // Redirect to main dashboard after successful connection
-        navigate('/dashboard');
+        navigate("/dashboard");
       }
     }
   };
 
-  const isExternalWalletConnected = connectedWallets.some(w => w.type === 'external');
+  const isExternalWalletConnected = connectedWallets.some(
+    (w) => w.type === "external"
+  );
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -51,7 +66,8 @@ export default function UnifiedWalletSetup() {
             <CheckCircle2 className="h-4 w-4" />
             <AlertDescription className="text-green-800">
               {hasAccount && "Custodial wallet created successfully! "}
-              {isExternalWalletConnected && "External wallet connected successfully! "}
+              {isExternalWalletConnected &&
+                "External wallet connected successfully! "}
               You can now start investing in real estate properties.
             </AlertDescription>
           </Alert>
@@ -63,8 +79,9 @@ export default function UnifiedWalletSetup() {
             Set Up Your Wallet
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Choose how you want to manage your investments. Create a new custodial wallet 
-            for easy management, or connect your existing Hedera wallet for full control.
+            Choose how you want to manage your investments. Create a new
+            custodial wallet for easy management, or connect your existing
+            Hedera wallet for full control.
           </p>
         </div>
 
@@ -99,13 +116,13 @@ export default function UnifiedWalletSetup() {
                   <span>No seed phrases to manage</span>
                 </div>
               </div>
-              
-              <Button 
-                onClick={() => handleConnect('custodial')}
+
+              <Button
+                onClick={() => handleConnect("custodial")}
                 disabled={isCreating || hasAccount}
                 className="w-full"
               >
-                {isCreating && selectedMethod === 'custodial' ? (
+                {isCreating && selectedMethod === "custodial" ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Creating Wallet...
@@ -116,10 +133,10 @@ export default function UnifiedWalletSetup() {
                     Wallet Created
                   </>
                 ) : (
-                  'Create Wallet'
+                  "Create Wallet"
                 )}
               </Button>
-              
+
               {hasAccount && (
                 <div className="text-center pt-2">
                   <Link to="/dashboard">

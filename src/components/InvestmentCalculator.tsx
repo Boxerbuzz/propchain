@@ -113,11 +113,11 @@ export default function InvestmentCalculator({
         onOpenChange={setIsModalOpen}
         tokenization={{
           id: property?.tokenizations?.[0]?.id || '',
-          token_name: property?.title || '',
-          token_symbol: `${property?.title?.slice(0, 3).toUpperCase()}T` || 'PROP',
+          token_name: property?.tokenizations?.[0]?.token_name || property?.title || '',
+          token_symbol: property?.tokenizations?.[0]?.token_symbol || '',
           price_per_token: tokenPrice,
           min_investment: minimumInvestment,
-          max_investment: undefined,
+          max_investment: property?.tokenizations?.[0]?.max_investment,
           expected_roi_annual: expectedReturn,
           properties: {
             id: property?.id || '',

@@ -462,6 +462,7 @@ export default function PropertyDetails() {
               expectedReturn={tokenization.expected_roi_annual || 0}
               tokenPrice={tokenization.price_per_token || 0}
               minimumInvestment={tokenization.min_investment || 0}
+              property={property}
             />
 
             {/* Quick Actions */}
