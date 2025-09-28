@@ -88,20 +88,20 @@ const PropertyManagement = () => {
         type: "property",
         message: `New property registration completed`,
         property: managedProperties[0]?.title || "Property",
-        timestamp: "2 hours ago",
-      },
-      {
-        type: "maintenance",
+      timestamp: "2 hours ago",
+    },
+    {
+      type: "maintenance",
         message: "System maintenance scheduled for next week",
         property: "System",
-        timestamp: "5 hours ago",
-      },
-      {
+      timestamp: "5 hours ago",
+    },
+    {
         type: "investment",
         message: "Investment activity updated",
         property: managedProperties[1]?.title || "Property",
-        timestamp: "1 day ago",
-      },
+      timestamp: "1 day ago",
+    },
     ],
     [managedProperties]
   );
@@ -262,7 +262,6 @@ const PropertyManagement = () => {
         navigate(`/property/${propertyId}/edit`);
         break;
       case "Approve":
-        const property = managedProperties.find((p) => p.id === propertyId);
         const hasDocuments = property?.property_documents && property.property_documents.length > 0;
         
         if (!hasDocuments) {
@@ -369,67 +368,67 @@ const PropertyManagement = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Revenue
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl md:text-2xl font-bold">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Revenue
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl md:text-2xl font-bold">
                   ₦{financialSummary.totalRevenue.toLocaleString()}
-                </div>
+              </div>
                 <p className="text-xs text-green-600">Monthly estimated</p>
-              </CardContent>
-            </Card>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
+          <Card>
+            <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">
                   Net Profit
                 </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl md:text-2xl font-bold">
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl md:text-2xl font-bold">
                   ₦{financialSummary.netProfit.toLocaleString()}
-                </div>
+              </div>
                 <p className="text-xs text-green-600">After expenses</p>
-              </CardContent>
-            </Card>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Occupancy Rate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl md:text-2xl font-bold">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">
+                Occupancy Rate
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl md:text-2xl font-bold">
                   {Math.round(financialSummary.occupancyRate)}%
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Across all properties
-                </p>
-              </CardContent>
-            </Card>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Across all properties
+              </p>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Investors
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl md:text-2xl font-bold">
-                  {financialSummary.totalInvestors}
-                </div>
-                <p className="text-xs text-muted-foreground">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Investors
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl md:text-2xl font-bold">
+                {financialSummary.totalInvestors}
+              </div>
+              <p className="text-xs text-muted-foreground">
                   {managedProperties.length} properties
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+              </p>
+            </CardContent>
+          </Card>
+        </div>
         )}
 
         <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
@@ -506,91 +505,91 @@ const PropertyManagement = () => {
                     </Card>
                   ) : (
                     filteredProperties.map((property) => (
-                      <Card
-                        key={property.id}
-                        className="hover:shadow-md transition-shadow"
-                      >
-                        <CardContent className="p-4 md:p-6">
-                          <div className="flex flex-col md:flex-row gap-4">
-                            <img
+                    <Card
+                      key={property.id}
+                      className="hover:shadow-md transition-shadow"
+                    >
+                      <CardContent className="p-4 md:p-6">
+                        <div className="flex flex-col md:flex-row gap-4">
+                          <img
                               src="/placeholder.svg"
-                              alt={property.title}
-                              className="w-full md:w-32 h-32 rounded-lg object-cover"
-                            />
-                            <div className="flex-1">
-                              <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-3">
-                                <div>
-                                  <h3 className="font-semibold text-lg">
-                                    {property.title}
-                                  </h3>
-                                  <p className="text-muted-foreground">
+                            alt={property.title}
+                            className="w-full md:w-32 h-32 rounded-lg object-cover"
+                          />
+                          <div className="flex-1">
+                            <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-3">
+                              <div>
+                                <h3 className="font-semibold text-lg">
+                                  {property.title}
+                                </h3>
+                                <p className="text-muted-foreground">
                                     {property.location?.address ||
                                       "Location not specified"}
-                                  </p>
-                                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                                    <Badge
-                                      variant={
+                                </p>
+                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                  <Badge
+                                    variant={
                                         property.approval_status === "approved"
-                                          ? "default"
+                                        ? "default"
                                           : property.approval_status ===
                                             "pending"
                                           ? "secondary"
                                           : "destructive"
-                                      }
-                                    >
+                                    }
+                                  >
                                       {property.approval_status}
-                                    </Badge>
-                                    <span className="text-sm text-muted-foreground">
+                                  </Badge>
+                                  <span className="text-sm text-muted-foreground">
                                       0 investors
-                                    </span>
-                                  </div>
+                                  </span>
                                 </div>
                               </div>
+                            </div>
 
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                <div>
-                                  <p className="text-muted-foreground">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <p className="text-muted-foreground">
                                     Est. Monthly Revenue
-                                  </p>
-                                  <p className="font-semibold">
+                                </p>
+                                <p className="font-semibold">
                                     ₦
                                     {Math.round(
                                       property.rental_income_monthly || 0
                                     ).toLocaleString()}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">
                                     Est. Net Income
-                                  </p>
-                                  <p className="font-semibold">
+                                </p>
+                                <p className="font-semibold">
                                     ₦
                                     {Math.round(
                                       (property.rental_income_monthly || 0) *
                                         0.8
                                     ).toLocaleString()}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">
                                     Property Value
-                                  </p>
-                                  <p className="font-semibold">
+                                </p>
+                                <p className="font-semibold">
                                     ₦{property.estimated_value.toLocaleString()}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">
                                     Property Type
-                                  </p>
+                                </p>
                                   <p className="font-semibold capitalize">
                                     {property.property_type}
-                                  </p>
-                                </div>
+                                </p>
                               </div>
+                            </div>
 
-                              <div className="mt-4">
-                                <div className="flex justify-between text-sm mb-2">
+                            <div className="mt-4">
+                              <div className="flex justify-between text-sm mb-2">
                                   <span>Tokenization Status</span>
                                   <span>
                                     {property.tokenizations &&
@@ -598,40 +597,40 @@ const PropertyManagement = () => {
                                       ? property.tokenizations[0].status
                                       : "Not Tokenized"}
                                   </span>
-                                </div>
+                              </div>
                                 {property.tokenizations &&
                                 property.tokenizations.length > 0 ? (
-                                  <Progress
+                              <Progress
                                     value={
                                       (property.tokenizations[0].current_raise /
                                         property.tokenizations[0]
                                           .target_raise) *
                                       100
                                     }
-                                    className="h-2"
-                                  />
+                                className="h-2"
+                              />
                                 ) : (
                                   <div className="text-sm text-muted-foreground">
                                     Property not yet tokenized
                                   </div>
                                 )}
-                              </div>
+                            </div>
 
                               <div className="flex flex-wrap gap-2 mt-3 mb-3">
-                                <Badge
-                                  variant="outline"
-                                  className="text-orange-600"
-                                >
+                                  <Badge
+                                    variant="outline"
+                                    className="text-orange-600"
+                                  >
                                   <Wrench className="h-3 w-3 mr-1" />0
                                   maintenance
-                                </Badge>
-                                <Badge
-                                  variant="outline"
-                                  className="text-red-600"
-                                >
+                                  </Badge>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-red-600"
+                                  >
                                   <AlertTriangle className="h-3 w-3 mr-1" />0
                                   urgent
-                                </Badge>
+                                  </Badge>
                               </div>
 
                               <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
@@ -714,10 +713,10 @@ const PropertyManagement = () => {
                                   </DropdownMenu>
                                 )}
                               </div>
-                            </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </CardContent>
+                    </Card>
                     ))
                   )}
                 </div>
@@ -742,26 +741,26 @@ const PropertyManagement = () => {
                       <Button variant="outline" size="sm">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Maintenance Request
-                      </Button>
+                              </Button>
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
               <TabsContent value="analytics" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Revenue Trend</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-muted-foreground">
-                        Revenue analytics chart would be displayed here
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Revenue Trend</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-8">
+                        <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-muted-foreground">
+                          Revenue analytics chart would be displayed here
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
               </TabsContent>
             </Tabs>
           </div>

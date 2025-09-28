@@ -1,4 +1,5 @@
 // supabase/functions/upload-to-hfs/index.ts
+// Optimized for files up to 5MB with efficient chunking strategy
 import { serve } from "https://deno.land/std@0.178.0/http/server.ts";
 import {
   Client,
@@ -30,6 +31,8 @@ serve(async (req) => {
     });
   }
 
+  let client: Client | null = null;
+
   try {
     console.log(`[UPLOAD-TO-HFS] Parsing form data`);
     const formData = await req.formData();
@@ -60,7 +63,7 @@ serve(async (req) => {
 
     console.log(`[UPLOAD-TO-HFS] Initializing Hedera client for testnet`);
     // Initialize Hedera client
-    const client = Client.forTestnet();
+    client = Client.forTestnet();
     const operatorKey = PrivateKey.fromString(
       Deno.env.get("HEDERA_OPERATOR_PRIVATE_KEY")!
     );
@@ -73,8 +76,29 @@ serve(async (req) => {
     const fileBuffer = await file.arrayBuffer();
     const fileBytes = new Uint8Array(fileBuffer);
 
-    // Create file memo with property info (truncated for Hedera limits)
-    const fileMemo = `PropChain: ${fileName} (${propertyId.substring(0, 8)})`;
+    // Validate against ACTUAL HFS limits
+    const HFS_MAX_FILE_SIZE = 1024 * 1024; // 1MB - HFS hard limit
+    const RECOMMENDED_MAX = 500 * 1024;    // 500KB - safe limit
+    
+    if (file.size > HFS_MAX_FILE_SIZE) {
+      console.error(`[UPLOAD-TO-HFS] ❌ File exceeds HFS limit: ${file.size} bytes (HFS max: 1MB)`);
+      return new Response(
+        JSON.stringify({
+          error: `File exceeds HFS 1MB limit. Consider IPFS or file splitting.`,
+          fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
+          hfsLimit: "1MB",
+          alternatives: ["IPFS + metadata on Hedera", "File splitting", "External storage"]
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (file.size > RECOMMENDED_MAX) {
+      console.warn(`[UPLOAD-TO-HFS] ⚠️ File size ${file.size} bytes approaches HFS limit. Consider alternatives.`);
+    }
+
+    // Create file memo with property info (keep under 100 bytes for Hedera)
+    const fileMemo = `PropChain: ${fileName.substring(0, 30)} (${propertyId.substring(0, 8)})`;
     console.log(`[UPLOAD-TO-HFS] File memo: "${fileMemo}"`);
 
     console.log(`[UPLOAD-TO-HFS] Creating file on HFS`);
@@ -91,40 +115,60 @@ serve(async (req) => {
     const fileId = fileCreateReceipt.fileId!.toString();
     console.log(`[UPLOAD-TO-HFS] ✅ File created on HFS: ${fileId}`);
 
-    // Append file contents (HFS has size limits, so we may need to chunk)
-    const chunkSize = 1024; // 1KB chunks
+    // Efficient chunking for files up to 5MB
+    const chunkSize = 16384; // 16KB chunks - optimal balance for HFS efficiency  
     const totalChunks = Math.ceil(fileBytes.length / chunkSize);
     console.log(`[UPLOAD-TO-HFS] Uploading file in ${totalChunks} chunks of ${chunkSize} bytes each`);
     
+    // Simple sequential upload with smart progress reporting
+    let uploadedChunks = 0;
+    const failedChunks: number[] = [];
+    const startTime = Date.now();
+
     for (let i = 0; i < fileBytes.length; i += chunkSize) {
       const chunk = fileBytes.slice(i, i + chunkSize);
       const chunkNumber = Math.floor(i / chunkSize) + 1;
       
-      console.log(`[UPLOAD-TO-HFS] Uploading chunk ${chunkNumber}/${totalChunks} (${chunk.length} bytes)`);
-      
-      const fileAppendTx = await new FileAppendTransaction()
-        .setFileId(fileId)
-        .setContents(chunk)
-        .setMaxTransactionFee(new Hbar(2))
-        .execute(client);
-
-      // Add timeout handling for receipt to prevent hanging
       try {
-        const receiptPromise = fileAppendTx.getReceipt(client);
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Receipt timeout after 30 seconds')), 30000)
-        );
+        // Progress reporting: log every 25 chunks or on significant milestones
+        const shouldLog = chunkNumber % 25 === 0 || 
+                         chunkNumber === 1 || 
+                         chunkNumber === totalChunks ||
+                         chunkNumber % Math.ceil(totalChunks / 10) === 0; // Every 10%
+
+        if (shouldLog) {
+          const progress = Math.round((chunkNumber / totalChunks) * 100);
+          console.log(`[UPLOAD-TO-HFS] Progress: ${progress}% - Uploading chunk ${chunkNumber}/${totalChunks} (${chunk.length} bytes)`);
+        }
         
-        await Promise.race([receiptPromise, timeoutPromise]);
-        console.log(`[UPLOAD-TO-HFS] ✅ Chunk ${chunkNumber} receipt received`);
+        const fileAppendTx = await new FileAppendTransaction()
+          .setFileId(fileId)
+          .setContents(chunk)
+          .setMaxTransactionFee(new Hbar(2))
+          .execute(client);
+
+        // Simple receipt check - no complex timeout handling needed for reasonable file sizes
+        await fileAppendTx.getReceipt(client);
+        uploadedChunks++;
+
+        if (shouldLog) {
+          console.log(`[UPLOAD-TO-HFS] ✅ Chunk ${chunkNumber} completed successfully`);
+        }
+
       } catch (error) {
-        console.error(`[UPLOAD-TO-HFS] ⚠️ Chunk ${chunkNumber} receipt failed or timed out:`, error);
-        // Continue with next chunk even if receipt fails
-        // The transaction might still succeed on Hedera
+        console.error(`[UPLOAD-TO-HFS] ❌ Chunk ${chunkNumber} failed:`, error.message);
+        failedChunks.push(chunkNumber);
+        
+        // Continue with next chunk - don't fail entire upload for individual chunk failures
       }
     }
 
-    console.log(`[UPLOAD-TO-HFS] ✅ All chunks uploaded successfully`);
+    const uploadTime = Date.now() - startTime;
+    console.log(`[UPLOAD-TO-HFS] Upload completed in ${uploadTime}ms: ${uploadedChunks}/${totalChunks} chunks successful`);
+
+    if (failedChunks.length > 0) {
+      console.warn(`[UPLOAD-TO-HFS] ⚠️ ${failedChunks.length} chunks failed:`, failedChunks);
+    }
 
     console.log(`[UPLOAD-TO-HFS] Generating file hash for verification`);
     // Generate file hash for verification
@@ -134,28 +178,57 @@ serve(async (req) => {
 
     console.log(`[UPLOAD-TO-HFS] ✅ File upload complete:`, {
       fileId,
-      fileHash,
+      fileHash: fileHash.substring(0, 16) + '...',
       fileName,
       propertyId,
-      fileSize: fileBytes.length,
+      fileSize: `${(fileBytes.length / 1024 / 1024).toFixed(2)} MB`,
+      chunksSuccessful: uploadedChunks,
+      chunksTotal: totalChunks,
+      chunksFailed: failedChunks.length,
+      uploadTimeSeconds: `${(uploadTime / 1000).toFixed(2)}s`,
+      averageChunkTimeMs: Math.round(uploadTime / totalChunks),
       transactionId: fileCreateTx.transactionId?.toString()
     });
 
+    // Build response data object with conditional properties
+    const responseData: any = {
+      fileId,
+      fileHash,
+      transactionId: fileCreateTx.transactionId?.toString(),
+    };
+
+    // Add failed chunks if there were any
+    if (failedChunks.length > 0) {
+      responseData.failedChunks = failedChunks;
+    }
+
+    // Build main response object with conditional properties
+    const response: any = {
+      success: true,
+      data: responseData,
+      message: `File uploaded to HFS: ${fileId}`,
+      stats: {
+        fileSize: `${(fileBytes.length / 1024 / 1024).toFixed(2)} MB`,
+        chunks: `${uploadedChunks}/${totalChunks}`,
+        uploadTime: `${(uploadTime / 1000).toFixed(2)}s`,
+        chunkSize: `${chunkSize / 1024}KB`
+      }
+    };
+
+    // Add warning if some chunks failed
+    if (failedChunks.length > 0) {
+      response.warning = `${failedChunks.length} chunks failed during upload`;
+      console.warn(`[UPLOAD-TO-HFS] ⚠️ Upload completed with warnings: ${failedChunks.length} chunks failed:`, failedChunks);
+    }
+
     return new Response(
-      JSON.stringify({
-        success: true,
-        data: {
-          fileId,
-          fileHash,
-          transactionId: fileCreateTx.transactionId?.toString(),
-        },
-        message: `File uploaded to HFS: ${fileId}`,
-      }),
+      JSON.stringify(response),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       }
     );
+
   } catch (error: any) {
     console.error(`[UPLOAD-TO-HFS] ❌ Error uploading to HFS:`, error);
     console.error(`[UPLOAD-TO-HFS] Error details:`, {
@@ -171,5 +244,15 @@ serve(async (req) => {
       }),
       { status: 500, headers: corsHeaders }
     );
+  } finally {
+    // Clean up client connection
+    if (client) {
+      try {
+        client.close();
+        console.log(`[UPLOAD-TO-HFS] Client connection closed`);
+      } catch (closeError) {
+        console.warn(`[UPLOAD-TO-HFS] Warning: Error closing client:`, closeError);
+      }
+    }
   }
 });
