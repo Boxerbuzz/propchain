@@ -127,26 +127,41 @@ CREATE TABLE tokenizations (
 );
 
 -- Enhanced Investments table
-CREATE TABLE investments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tokenization_id UUID REFERENCES tokenizations(id),
-  investor_id UUID REFERENCES users(id),
-  amount_ngn DECIMAL NOT NULL,
-  amount_usd DECIMAL, -- converted amount
-  exchange_rate DECIMAL, -- NGN to USD rate at time of investment
-  tokens_requested BIGINT NOT NULL,
-  tokens_allocated BIGINT DEFAULT 0,
-  percentage_ownership DECIMAL, -- calculated percentage of total property
-  paystack_reference TEXT UNIQUE,
-  payment_status TEXT DEFAULT 'pending', -- pending, confirmed, failed, refunded
-  payment_method TEXT, -- paystack, wallet, bank_transfer
-  payment_confirmed_at TIMESTAMP,
-  refund_processed_at TIMESTAMP,
-  refund_amount DECIMAL,
-  investment_source TEXT, -- web, mobile, api
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
+create table public.investments (
+  id uuid not null default gen_random_uuid (),
+  tokenization_id uuid null,
+  investor_id uuid null,
+  amount_ngn numeric not null,
+  amount_usd numeric null,
+  exchange_rate numeric null,
+  tokens_requested bigint not null,
+  tokens_allocated bigint null default 0,
+  percentage_ownership numeric null,
+  paystack_reference text null,
+  payment_status text null default 'pending'::text,
+  payment_method text null,
+  payment_confirmed_at timestamp without time zone null,
+  refund_processed_at timestamp without time zone null,
+  refund_amount numeric null,
+  investment_source text null,
+  created_at timestamp without time zone null default now(),
+  updated_at timestamp without time zone null default now(),
+  reservation_status text null default 'pending'::text,
+  reservation_expires_at timestamp with time zone null,
+  constraint investments_pkey primary key (id),
+  constraint investments_paystack_reference_key unique (paystack_reference),
+  constraint investments_investor_id_fkey foreign KEY (investor_id) references users (id),
+  constraint investments_tokenization_id_fkey foreign KEY (tokenization_id) references tokenizations (id)
+) TABLESPACE pg_default;
+
+create index IF not exists idx_investments_investor on public.investments using btree (investor_id) TABLESPACE pg_default;
+
+create index IF not exists idx_investments_tokenization on public.investments using btree (tokenization_id) TABLESPACE pg_default;
+
+create trigger investment_activity_trigger
+after
+update on investments for EACH row
+execute FUNCTION log_investment_activity ();
 
 -- Chat rooms with enhanced features
 CREATE TABLE chat_rooms (

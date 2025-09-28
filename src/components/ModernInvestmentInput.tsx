@@ -117,7 +117,7 @@ export default function ModernInvestmentInput({
 
           <div className="relative group">
             {/* Currency Symbol */}
-            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-2xl font-bold text-primary">
+            <div className="absolute left-6 top-1/2 transform -translate-y-1/2 text-xl font-semibold text-primary pointer-events-none">
               {inputMode === "amount" ? "₦" : tokenSymbol}
             </div>
 
@@ -129,7 +129,7 @@ export default function ModernInvestmentInput({
                 min={minInvestment}
                 max={maxInvestment}
                 placeholder="0.00"
-                className="pl-12 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none transition-all duration-200 group-hover:scale-[1.02]"
+                className="pl-16 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none transition-all duration-200 group-hover:scale-[1.02]"
               />
             ) : (
               <Input
@@ -139,7 +139,7 @@ export default function ModernInvestmentInput({
                   handleTokenCountChange(parseFloat(e.target.value) || 0)
                 }
                 placeholder="0"
-                className="pl-12 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none transition-all duration-200 group-hover:scale-[1.02]"
+                className="pl-16 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none transition-all duration-200 group-hover:scale-[1.02]"
               />
             )}
 
