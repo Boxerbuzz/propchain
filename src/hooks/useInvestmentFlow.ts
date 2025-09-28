@@ -1,25 +1,22 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabaseService } from "@/services/supabaseService";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from 'sonner';
 
 interface InvestmentData {
-  tokenizationId: string;
-  amount: number;
-  paymentMethod: 'paystack' | 'wallet';
-}
-
-interface PaystackResponse {
-  authorizationUrl: string;
-  reference: string;
+  tokenization_id: string;
+  amount_ngn: number;
+  tokens_requested: number;
+  payment_method: 'paystack' | 'wallet';
 }
 
 interface ReservationResult {
-  success: boolean;
+  type: 'paystack' | 'wallet';
+  authorizationUrl?: string;
   investment_id: string;
-  reservation_expires_at: string;
-  tokens_reserved: number;
-  error?: string;
+  reservation_expires_at?: string;
+  success?: boolean;
 }
 
 export const useInvestmentFlow = () => {
@@ -27,60 +24,44 @@ export const useInvestmentFlow = () => {
   const queryClient = useQueryClient();
 
   const createInvestment = useMutation({
-    mutationFn: async (data: InvestmentData): Promise<PaystackResponse> => {
-      if (!user?.id) throw new Error('User not authenticated');
-
-      // Get tokenization details
-      const tokenization = await supabaseService.tokenizations.getById(data.tokenizationId);
-      if (!tokenization) throw new Error('Tokenization not found');
-
-      const tokensRequested = Math.floor(data.amount / tokenization.price_per_token);
-
-      // Create investment with reservation using the database function
-      const reservationResult = (await supabaseService.investments.createWithReservation({
-        tokenization_id: data.tokenizationId,
-        investor_id: user.id,
-        amount_ngn: data.amount,
-        tokens_requested: tokensRequested,
-        payment_method: data.paymentMethod,
-      }) as unknown) as ReservationResult;
-
-      if (!reservationResult.success) {
-        throw new Error(reservationResult.error || 'Failed to reserve tokens');
+    mutationFn: async (data: InvestmentData) => {
+      if (!user?.id) {
+        throw new Error('User not authenticated');
       }
 
-      // Initialize payment based on method
-      if (data.paymentMethod === 'paystack') {
-        const paymentResult = await supabaseService.payments.initializePaystack({
-          amount: data.amount,
-          email: user.email,
-          reference: reservationResult.investment_id,
-        });
-
-        return {
-          authorizationUrl: paymentResult.authorization_url,
-          reference: reservationResult.investment_id,
-        };
-      } else {
-        // Handle wallet payment
-        const walletResult = await supabaseService.wallets.deductBalance({
-          userId: user.id,
-          amount: data.amount,
-          reference: reservationResult.investment_id,
-        });
-
-        if (!walletResult.success) {
-          throw new Error('Insufficient wallet balance');
+      // Use the comprehensive investment creation edge function
+      const { data: result, error } = await supabase.functions.invoke('create-investment', {
+        body: {
+          tokenization_id: data.tokenization_id,
+          investor_id: user.id,
+          amount_ngn: data.amount_ngn,
+          tokens_requested: data.tokens_requested,
+          payment_method: data.payment_method,
+          email: user.email
         }
+      });
 
+      if (error || !result?.success) {
+        throw new Error(result?.error || error?.message || 'Investment creation failed');
+      }
+
+      if (data.payment_method === 'paystack') {
         return {
-          authorizationUrl: '',
-          reference: reservationResult.investment_id,
-        };
+          type: 'paystack',
+          authorizationUrl: result.payment_url,
+          investment_id: result.investment_id,
+          reservation_expires_at: result.reservation_expires_at
+        } as ReservationResult;
+      } else {
+        return {
+          type: 'wallet',
+          success: true,
+          investment_id: result.investment_id
+        } as ReservationResult;
       }
     },
     onSuccess: (result, variables) => {
-      if (variables.paymentMethod === 'paystack' && result.authorizationUrl) {
+      if (variables.payment_method === 'paystack' && result.authorizationUrl) {
         // Redirect to Paystack payment page
         window.location.href = result.authorizationUrl;
       } else {

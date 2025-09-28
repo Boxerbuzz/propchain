@@ -549,6 +549,8 @@ export type Database = {
           percentage_ownership: number | null
           refund_amount: number | null
           refund_processed_at: string | null
+          reservation_expires_at: string | null
+          reservation_status: string | null
           tokenization_id: string | null
           tokens_allocated: number | null
           tokens_requested: number
@@ -569,6 +571,8 @@ export type Database = {
           percentage_ownership?: number | null
           refund_amount?: number | null
           refund_processed_at?: string | null
+          reservation_expires_at?: string | null
+          reservation_status?: string | null
           tokenization_id?: string | null
           tokens_allocated?: number | null
           tokens_requested: number
@@ -589,6 +593,8 @@ export type Database = {
           percentage_ownership?: number | null
           refund_amount?: number | null
           refund_processed_at?: string | null
+          reservation_expires_at?: string | null
+          reservation_status?: string | null
           tokenization_id?: string | null
           tokens_allocated?: number | null
           tokens_requested?: number
@@ -1386,6 +1392,42 @@ export type Database = {
       }
     }
     Views: {
+      cron_job_status: {
+        Row: {
+          active: boolean | null
+          command: string | null
+          database: string | null
+          jobid: number | null
+          jobname: string | null
+          nodename: string | null
+          nodeport: number | null
+          schedule: string | null
+          username: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          command?: string | null
+          database?: string | null
+          jobid?: number | null
+          jobname?: string | null
+          nodename?: string | null
+          nodeport?: number | null
+          schedule?: string | null
+          username?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          command?: string | null
+          database?: string | null
+          jobid?: number | null
+          jobname?: string | null
+          nodename?: string | null
+          nodeport?: number | null
+          schedule?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       user_chat_rooms_with_last_message: {
         Row: {
           joined_at: string | null

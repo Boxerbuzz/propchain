@@ -164,10 +164,13 @@ export default function InvestmentModal({
     setShowProgress(true);
     setInvestmentStatus({ paymentStatus: "processing" });
     
+    const tokensRequested = Math.floor(values.amount / tokenization.price_per_token);
+
     createInvestment({
-      tokenizationId: tokenization.id,
-      amount: currentAmount,
-      paymentMethod,
+      tokenization_id: tokenization.id,
+      amount_ngn: values.amount,
+      tokens_requested: tokensRequested,
+      payment_method: paymentMethod,
     });
   };
 
