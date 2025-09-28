@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, TrendingUp, Users, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface PropertyCardProps {
   id: string;
@@ -27,6 +28,7 @@ export default function PropertyCard({
   imageUrl,
   status
 }: PropertyCardProps) {
+  const navigate = useNavigate();
   const progressPercentage = (tokensSold / totalTokens) * 100;
   
   const getStatusBadge = () => {
@@ -108,6 +110,7 @@ export default function PropertyCard({
         <Button 
           className="w-full btn-primary"
           disabled={status === "funded"}
+          onClick={() => navigate(`/browse/${id}`)}
         >
           {status === "funded" ? "Fully Funded" : "View Details"}
         </Button>
