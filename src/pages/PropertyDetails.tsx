@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import InvestmentCalculator from "@/components/InvestmentCalculator";
+import FavoriteButton from "@/components/FavoriteButton";
 import {
   MapPin,
   Building,
@@ -14,7 +15,6 @@ import {
   Play,
   ArrowLeft,
   Share,
-  Heart,
 } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -160,9 +160,11 @@ export default function PropertyDetails() {
             </Link>
 
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="icon">
-                <Heart className="h-5 w-5" />
-              </Button>
+              <FavoriteButton
+                propertyId={property.id}
+                variant="ghost"
+                size="icon"
+              />
               <Button variant="ghost" size="icon">
                 <Share className="h-5 w-5" />
               </Button>

@@ -30,6 +30,7 @@ import {
   BarChart3,
   Clock,
   CheckCircle,
+  Heart,
   AlertTriangle,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -97,6 +98,7 @@ export default function Header() {
 
   const userMenuItems = [
     { name: "Profile", href: "/settings/profile", icon: User },
+    { name: "Favorites", href: "/favorites", icon: Heart },
     { name: "Wallet", href: "/wallet/dashboard", icon: Wallet },
     { name: "Settings", href: "/settings/security", icon: Settings },
     { name: "Logout", href: "#", icon: LogOut },

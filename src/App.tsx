@@ -9,6 +9,7 @@ import PropertyDetails from "./pages/PropertyDetails";
 import InvestmentFlow from "./pages/InvestmentFlow";
 import Portfolio from "./pages/Portfolio";
 import PortfolioDetail from "./pages/PortfolioDetail";
+import Favorites from "./pages/Favorites";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -88,6 +89,7 @@ const App = () => (
                   path="/portfolio/:tokenizationId"
                   element={<PortfolioDetail />}
                 />
+                <Route path="/favorites" element={<Favorites />} />
                 <Route path="/wallet/setup" element={<UnifiedWalletSetup />} />
                 <Route path="/wallet/dashboard" element={<WalletDashboard />} />
                 <Route

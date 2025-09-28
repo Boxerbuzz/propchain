@@ -23,6 +23,7 @@ export default function BrowseProperties() {
   // Transform tokenizations to match PropertyCard interface
   const properties = tokenizations.map((tokenization) => ({
     id: tokenization.id,
+    property_id: tokenization.property_id,
     title: tokenization.property_title || "Property Name",
     location:
       typeof tokenization.property_location === "object"

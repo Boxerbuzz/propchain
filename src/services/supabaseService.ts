@@ -195,8 +195,10 @@ export const supabaseService = {
       documentName: string
     ) {
       // Get current user for uploaded_by field
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       const fileExt = file.name.split(".").pop();
       const fileName = `${propertyId}/${Date.now()}.${fileExt}`;
 
@@ -237,10 +239,17 @@ export const supabaseService = {
       return data;
     },
 
-    async updateDocumentHfsData(documentId: string, hfsFileId: string, verificationStatus: string, fileHash?: string) {
+    async updateDocumentHfsData(
+      documentId: string,
+      hfsFileId: string,
+      verificationStatus: string,
+      fileHash?: string
+    ) {
       // Get current user for verified_by field
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       const updateData: any = {
         hfs_file_id: hfsFileId,
         verification_status: verificationStatus,
@@ -254,7 +263,7 @@ export const supabaseService = {
       if (fileHash) {
         updateData.file_hash = fileHash;
       }
-      
+
       const { data, error } = await supabase
         .from("property_documents")
         .update(updateData)
@@ -403,9 +412,12 @@ export const supabaseService = {
 
     async processPropertyApproval(propertyId: string) {
       // Manually call the property-approved edge function
-      const { data, error } = await supabase.functions.invoke('property-approved', {
-        body: { propertyId },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "property-approved",
+        {
+          body: { propertyId },
+        }
+      );
 
       if (error) {
         console.error("Error processing property approval:", error);
@@ -548,7 +560,13 @@ export const supabaseService = {
       return true;
     },
 
-    async create(userId: string, type: string, title: string, message: string, metadata?: any) {
+    async create(
+      userId: string,
+      type: string,
+      title: string,
+      message: string,
+      metadata?: any
+    ) {
       const { data, error } = await supabase
         .from("notifications")
         .insert({
@@ -742,6 +760,116 @@ export const supabaseService = {
 
       if (error) throw error;
       return result;
+    },
+  },
+
+  favorites: {
+    async add(propertyId: string) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("user_favorites")
+        .insert({
+          user_id: user.id,
+          property_id: propertyId,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+
+    async remove(propertyId: string) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error("User not authenticated");
+
+      const { error } = await supabase
+        .from("user_favorites")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("property_id", propertyId);
+
+      if (error) throw error;
+    },
+
+    async toggle(propertyId: string) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error("User not authenticated");
+
+      // Check if already favorited
+      const { data: existing } = await supabase
+        .from("user_favorites")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("property_id", propertyId)
+        .single();
+
+      if (existing) {
+        await this.remove(propertyId);
+        return { action: "removed" };
+      } else {
+        await this.add(propertyId);
+        return { action: "added" };
+      }
+    },
+
+    async getUserFavorites() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("user_favorites")
+        .select(
+          `
+          *,
+          properties (
+            *,
+            property_images (*),
+            tokenizations (*)
+          )
+        `
+        )
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+
+    async isFavorited(propertyId: string) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return false;
+
+      const { data, error } = await supabase
+        .from("user_favorites")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("property_id", propertyId)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error checking favorite status:", error);
+        return false;
+      }
+      
+      return !!data;
     },
   },
 };

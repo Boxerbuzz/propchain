@@ -1,10 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { MapPin, TrendingUp, Users, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import FavoriteButton from "./FavoriteButton";
 
 interface PropertyCardProps {
   id: string;
+  property_id: string;
   title: string;
   location: string;
   price: number;
@@ -18,6 +21,7 @@ interface PropertyCardProps {
 
 export default function PropertyCard({
   id,
+  property_id,
   title,
   location,
   price,
@@ -53,8 +57,16 @@ export default function PropertyCard({
           alt={title}
           className="w-full h-48 object-cover rounded-lg"
         />
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 flex flex-col gap-2">
           {getStatusBadge()}
+        </div>
+        <div className="absolute top-3 left-3">
+          <FavoriteButton 
+            propertyId={property_id}
+            variant="secondary"
+            size="sm"
+            className="bg-white/90 hover:bg-white shadow-sm"
+          />
         </div>
       </div>
 
@@ -92,12 +104,7 @@ export default function PropertyCard({
             </div>
             <span>{progressPercentage.toFixed(1)}%</span>
           </div>
-          <div className="w-full bg-muted rounded-lg h-2">
-            <div 
-              className="bg-primary h-2 rounded-lg transition-all duration-300"
-              style={{ width: `${progressPercentage}%` }}
-            ></div>
-          </div>
+          <Progress value={progressPercentage} className="h-2" />
         </div>
 
         {/* Deadline */}
