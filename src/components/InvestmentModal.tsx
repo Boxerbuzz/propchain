@@ -21,6 +21,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
 import MoneyInput from "@/components/ui/money-input";
 import { useInvestmentFlow } from "@/hooks/useInvestmentFlow";
 import InvestmentProgressIndicator from "./InvestmentProgressIndicator";
@@ -46,6 +47,9 @@ interface InvestmentModalProps {
 
 const investmentFormSchema = z.object({
   amount: z.number().min(1, "Investment amount is required"),
+  acceptTerms: z.boolean().refine(val => val === true, {
+    message: "You must accept the terms and conditions",
+  }),
 });
 
 type InvestmentFormData = z.infer<typeof investmentFormSchema>;
@@ -67,6 +71,7 @@ export default function InvestmentModal({ tokenization, open, onOpenChange }: In
     resolver: zodResolver(investmentFormSchema),
     defaultValues: {
       amount: tokenization.min_investment,
+      acceptTerms: false,
     },
   });
 
@@ -94,7 +99,10 @@ export default function InvestmentModal({ tokenization, open, onOpenChange }: In
   };
 
   const resetForm = () => {
-    form.reset();
+    form.reset({
+      amount: tokenization.min_investment,
+      acceptTerms: false,
+    });
     setPaymentMethod("paystack");
     setShowProgress(false);
     setInvestmentStatus({ paymentStatus: 'pending' });
@@ -169,7 +177,7 @@ export default function InvestmentModal({ tokenization, open, onOpenChange }: In
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground">Token Symbol</p>
                     <Badge variant="secondary" className="mt-1">
-                      {tokenization.token_symbol || 'N/A'}
+                      {tokenization.token_symbol || `${tokenization.properties?.title?.slice(0, 3).toUpperCase()}` || 'TKN'}
                     </Badge>
                   </div>
                   <div className="text-center">
@@ -279,6 +287,38 @@ export default function InvestmentModal({ tokenization, open, onOpenChange }: In
               </CardContent>
             </Card>
 
+            {/* Terms and Conditions */}
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="acceptTerms"
+                checked={form.watch("acceptTerms")}
+                onCheckedChange={(checked) => form.setValue("acceptTerms", !!checked)}
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label
+                  htmlFor="acceptTerms"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  I accept the terms and conditions
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  By investing, you agree to our{" "}
+                  <a href="/legal/terms-of-service" className="underline hover:text-foreground">
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a href="/legal/risk-disclosure" className="underline hover:text-foreground">
+                    Risk Disclosure
+                  </a>.
+                </p>
+              </div>
+            </div>
+            {form.formState.errors.acceptTerms && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.acceptTerms.message}
+              </p>
+            )}
+
             {/* Risk Warning */}
             <Alert>
               <Info className="h-4 w-4" />
@@ -300,7 +340,7 @@ export default function InvestmentModal({ tokenization, open, onOpenChange }: In
               </Button>
               <Button
                 type="submit"
-                disabled={isCreating || watchedAmount < tokenization.min_investment || !hasAccount}
+                disabled={isCreating || watchedAmount < tokenization.min_investment || !hasAccount || !form.watch("acceptTerms")}
                 className="flex-1"
               >
                 {isCreating ? (

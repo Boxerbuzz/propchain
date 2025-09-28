@@ -143,18 +143,26 @@ const InvestmentFlow = () => {
                 {step === 1 && (
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="amount">Investment Amount (USD)</Label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        placeholder="Enter amount"
-                        value={investmentAmount}
-                        onChange={(e) => setInvestmentAmount(e.target.value)}
-                        className="text-lg"
-                      />
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Minimum investment: ${property.minInvestment}
-                      </p>
+                        <Label htmlFor="amount">Investment Amount (USD)</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
+                            $
+                          </span>
+                          <Input
+                            id="amount"
+                            type="text"
+                            placeholder="0"
+                            value={investmentAmount ? parseFloat(investmentAmount).toLocaleString() : ''}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^0-9.]/g, '');
+                              setInvestmentAmount(value);
+                            }}
+                            className="text-lg pl-8"
+                          />
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Minimum investment: ${property.minInvestment.toLocaleString()}
+                        </p>
                     </div>
 
                     {investmentAmount && (
@@ -164,7 +172,7 @@ const InvestmentFlow = () => {
                           <div className="flex justify-between">
                             <span>Investment Amount:</span>
                             <span className="font-medium">
-                              ${investmentAmount}
+                              ${parseFloat(investmentAmount || '0').toLocaleString()}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -176,7 +184,7 @@ const InvestmentFlow = () => {
                           <div className="flex justify-between">
                             <span>Token Price:</span>
                             <span className="font-medium">
-                              ${property.tokenPrice}
+                              ${property.tokenPrice.toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -243,7 +251,7 @@ const InvestmentFlow = () => {
                         <div className="flex justify-between">
                           <span>Investment Amount:</span>
                           <span className="font-medium">
-                            ${investmentAmount}
+                            ${parseFloat(investmentAmount || '0').toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -261,7 +269,7 @@ const InvestmentFlow = () => {
                         <Separator />
                         <div className="flex justify-between font-medium">
                           <span>Total Investment:</span>
-                          <span>${investmentAmount}</span>
+                          <span>${parseFloat(investmentAmount || '0').toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -331,7 +339,7 @@ const InvestmentFlow = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Token Price:</span>
-                    <span className="font-medium">${property.tokenPrice}</span>
+                    <span className="font-medium">${property.tokenPrice.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Available Tokens:</span>
