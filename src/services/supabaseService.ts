@@ -194,6 +194,9 @@ export const supabaseService = {
       documentType: string,
       documentName: string
     ) {
+      // Get current user for uploaded_by field
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const fileExt = file.name.split(".").pop();
       const fileName = `${propertyId}/${Date.now()}.${fileExt}`;
 
@@ -220,12 +223,47 @@ export const supabaseService = {
           file_size: file.size,
           mime_type: file.type,
           verification_status: "pending",
+          uploaded_by: user?.id || null,
+          uploaded_at: new Date().toISOString(),
         })
         .select()
         .single();
 
       if (error) {
         console.error("Error saving document record:", error);
+        throw error;
+      }
+
+      return data;
+    },
+
+    async updateDocumentHfsData(documentId: string, hfsFileId: string, verificationStatus: string, fileHash?: string) {
+      // Get current user for verified_by field
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const updateData: any = {
+        hfs_file_id: hfsFileId,
+        verification_status: verificationStatus,
+        verified_at: new Date().toISOString(),
+        verified_by: user?.id || null,
+        uploaded_by: user?.id || null,
+        uploaded_at: new Date().toISOString(),
+      };
+
+      // Add file hash if provided
+      if (fileHash) {
+        updateData.file_hash = fileHash;
+      }
+      
+      const { data, error } = await supabase
+        .from("property_documents")
+        .update(updateData)
+        .eq("id", documentId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating document HFS data:", error);
         throw error;
       }
 
@@ -515,10 +553,10 @@ export const supabaseService = {
         .from("notifications")
         .insert({
           user_id: userId,
-          type,
+          notification_type: type,
           title,
           message,
-          metadata: metadata || {},
+          action_data: metadata || {},
         })
         .select()
         .single();

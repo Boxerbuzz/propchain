@@ -1,5 +1,5 @@
 // supabase/functions/upload-to-hfs/index.ts
-// Optimized for files up to 5MB with efficient chunking strategy
+// Hash file and upload only the hash to HFS for lightweight storage
 import { serve } from "https://deno.land/std@0.178.0/http/server.ts";
 import {
   Client,
@@ -72,42 +72,32 @@ serve(async (req) => {
     console.log(`[UPLOAD-TO-HFS] Hedera client initialized with operator: ${operatorId}`);
 
     console.log(`[UPLOAD-TO-HFS] Converting file to bytes (${file.size} bytes)`);
-    // Convert file to Uint8Array
+    // Convert file to Uint8Array for hashing
     const fileBuffer = await file.arrayBuffer();
     const fileBytes = new Uint8Array(fileBuffer);
 
-    // Validate against ACTUAL HFS limits
-    const HFS_MAX_FILE_SIZE = 1024 * 1024; // 1MB - HFS hard limit
-    const RECOMMENDED_MAX = 500 * 1024;    // 500KB - safe limit
-    
-    if (file.size > HFS_MAX_FILE_SIZE) {
-      console.error(`[UPLOAD-TO-HFS] ❌ File exceeds HFS limit: ${file.size} bytes (HFS max: 1MB)`);
-      return new Response(
-        JSON.stringify({
-          error: `File exceeds HFS 1MB limit. Consider IPFS or file splitting.`,
-          fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
-          hfsLimit: "1MB",
-          alternatives: ["IPFS + metadata on Hedera", "File splitting", "External storage"]
-        }),
-        { status: 400, headers: corsHeaders }
-      );
-    }
+    // Generate file hash for verification
+    console.log(`[UPLOAD-TO-HFS] Generating SHA-256 hash`);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', fileBytes);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const fileHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    console.log(`[UPLOAD-TO-HFS] Generated file hash: ${fileHash}`);
 
-    if (file.size > RECOMMENDED_MAX) {
-      console.warn(`[UPLOAD-TO-HFS] ⚠️ File size ${file.size} bytes approaches HFS limit. Consider alternatives.`);
-    }
+    // Convert hash string to bytes for HFS storage
+    const hashBytes = new TextEncoder().encode(fileHash);
+    console.log(`[UPLOAD-TO-HFS] Hash as bytes: ${hashBytes.length} bytes`);
 
     // Create file memo with property info (keep under 100 bytes for Hedera)
-    const fileMemo = `PropChain: ${fileName.substring(0, 30)} (${propertyId.substring(0, 8)})`;
+    const fileMemo = `PropChain-HASH: ${fileName.substring(0, 30)} (${propertyId.substring(0, 8)})`;
     console.log(`[UPLOAD-TO-HFS] File memo: "${fileMemo}"`);
 
-    console.log(`[UPLOAD-TO-HFS] Creating file on HFS`);
-    // Create file on HFS
+    console.log(`[UPLOAD-TO-HFS] Creating file on HFS for hash storage`);
+    // Create file on HFS for hash storage
     const fileCreateTx = await new FileCreateTransaction()
       .setContents("")
       .setKeys([operatorKey])
       .setFileMemo(fileMemo)
-      .setMaxTransactionFee(new Hbar(2))
+      .setMaxTransactionFee(new Hbar(5))
       .execute(client);
 
     console.log(`[UPLOAD-TO-HFS] File creation transaction executed, waiting for receipt`);
@@ -115,111 +105,59 @@ serve(async (req) => {
     const fileId = fileCreateReceipt.fileId!.toString();
     console.log(`[UPLOAD-TO-HFS] ✅ File created on HFS: ${fileId}`);
 
-    // Efficient chunking for files up to 5MB
-    const chunkSize = 16384; // 16KB chunks - optimal balance for HFS efficiency  
-    const totalChunks = Math.ceil(fileBytes.length / chunkSize);
-    console.log(`[UPLOAD-TO-HFS] Uploading file in ${totalChunks} chunks of ${chunkSize} bytes each`);
-    
-    // Simple sequential upload with smart progress reporting
-    let uploadedChunks = 0;
-    const failedChunks: number[] = [];
+    // Upload hash as content (single append transaction)
+    console.log(`[UPLOAD-TO-HFS] Uploading hash to HFS`);
     const startTime = Date.now();
+    
+    try {
+      const fileAppendTx = await new FileAppendTransaction()
+        .setFileId(fileId)
+        .setContents(hashBytes)
+        .setMaxTransactionFee(new Hbar(2))
+        .execute(client);
 
-    for (let i = 0; i < fileBytes.length; i += chunkSize) {
-      const chunk = fileBytes.slice(i, i + chunkSize);
-      const chunkNumber = Math.floor(i / chunkSize) + 1;
+      await fileAppendTx.getReceipt(client);
       
-      try {
-        // Progress reporting: log every 25 chunks or on significant milestones
-        const shouldLog = chunkNumber % 25 === 0 || 
-                         chunkNumber === 1 || 
-                         chunkNumber === totalChunks ||
-                         chunkNumber % Math.ceil(totalChunks / 10) === 0; // Every 10%
-
-        if (shouldLog) {
-          const progress = Math.round((chunkNumber / totalChunks) * 100);
-          console.log(`[UPLOAD-TO-HFS] Progress: ${progress}% - Uploading chunk ${chunkNumber}/${totalChunks} (${chunk.length} bytes)`);
-        }
-        
-        const fileAppendTx = await new FileAppendTransaction()
-          .setFileId(fileId)
-          .setContents(chunk)
-          .setMaxTransactionFee(new Hbar(2))
-          .execute(client);
-
-        // Simple receipt check - no complex timeout handling needed for reasonable file sizes
-        await fileAppendTx.getReceipt(client);
-        uploadedChunks++;
-
-        if (shouldLog) {
-          console.log(`[UPLOAD-TO-HFS] ✅ Chunk ${chunkNumber} completed successfully`);
-        }
-
-      } catch (error) {
-        console.error(`[UPLOAD-TO-HFS] ❌ Chunk ${chunkNumber} failed:`, error.message);
-        failedChunks.push(chunkNumber);
-        
-        // Continue with next chunk - don't fail entire upload for individual chunk failures
-      }
+      const uploadTime = Date.now() - startTime;
+      console.log(`[UPLOAD-TO-HFS] ✅ Hash uploaded successfully in ${uploadTime}ms`);
+      
+    } catch (error) {
+      console.error(`[UPLOAD-TO-HFS] ❌ Failed to upload hash:`, error);
+      throw error;
     }
 
     const uploadTime = Date.now() - startTime;
-    console.log(`[UPLOAD-TO-HFS] Upload completed in ${uploadTime}ms: ${uploadedChunks}/${totalChunks} chunks successful`);
-
-    if (failedChunks.length > 0) {
-      console.warn(`[UPLOAD-TO-HFS] ⚠️ ${failedChunks.length} chunks failed:`, failedChunks);
-    }
-
-    console.log(`[UPLOAD-TO-HFS] Generating file hash for verification`);
-    // Generate file hash for verification
-    const hashBuffer = await crypto.subtle.digest('SHA-256', fileBytes);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const fileHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-    console.log(`[UPLOAD-TO-HFS] ✅ File upload complete:`, {
+    console.log(`[UPLOAD-TO-HFS] ✅ Hash upload complete:`, {
       fileId,
       fileHash: fileHash.substring(0, 16) + '...',
       fileName,
       propertyId,
-      fileSize: `${(fileBytes.length / 1024 / 1024).toFixed(2)} MB`,
-      chunksSuccessful: uploadedChunks,
-      chunksTotal: totalChunks,
-      chunksFailed: failedChunks.length,
+      originalFileSize: `${(fileBytes.length / 1024 / 1024).toFixed(2)} MB`,
+      hashSize: `${hashBytes.length} bytes`,
+      uploadTimeMs: uploadTime,
       uploadTimeSeconds: `${(uploadTime / 1000).toFixed(2)}s`,
-      averageChunkTimeMs: Math.round(uploadTime / totalChunks),
       transactionId: fileCreateTx.transactionId?.toString()
     });
 
-    // Build response data object with conditional properties
-    const responseData: any = {
+    // Build response data object
+    const responseData = {
       fileId,
       fileHash,
       transactionId: fileCreateTx.transactionId?.toString(),
     };
 
-    // Add failed chunks if there were any
-    if (failedChunks.length > 0) {
-      responseData.failedChunks = failedChunks;
-    }
-
-    // Build main response object with conditional properties
-    const response: any = {
+    // Build main response object
+    const response = {
       success: true,
       data: responseData,
-      message: `File uploaded to HFS: ${fileId}`,
+      message: `File hash uploaded to HFS: ${fileId}`,
       stats: {
-        fileSize: `${(fileBytes.length / 1024 / 1024).toFixed(2)} MB`,
-        chunks: `${uploadedChunks}/${totalChunks}`,
+        originalFileSize: `${(fileBytes.length / 1024 / 1024).toFixed(2)} MB`,
+        hashSize: `${hashBytes.length} bytes`,
         uploadTime: `${(uploadTime / 1000).toFixed(2)}s`,
-        chunkSize: `${chunkSize / 1024}KB`
+        compressionRatio: `${((fileBytes.length / hashBytes.length) / 1000).toFixed(1)}x`
       }
     };
-
-    // Add warning if some chunks failed
-    if (failedChunks.length > 0) {
-      response.warning = `${failedChunks.length} chunks failed during upload`;
-      console.warn(`[UPLOAD-TO-HFS] ⚠️ Upload completed with warnings: ${failedChunks.length} chunks failed:`, failedChunks);
-    }
 
     return new Response(
       JSON.stringify(response),

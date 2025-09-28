@@ -4,13 +4,10 @@ import {
   AccountId,
   Hbar,
   TopicCreateTransaction,
-  TopicMessageQuery,
   TopicMessageSubmitTransaction,
-  TransferTransaction,
-  TokenMintTransaction,
-  TokenId,
-  TokenAssociateTransaction,
   AccountBalanceQuery,
+  FileCreateTransaction,
+  FileAppendTransaction,
 } from "@hashgraph/sdk";
 import { hederaClient } from "../../lib/hedera";
 
@@ -193,5 +190,192 @@ export class HederaIntegrationService {
       throw new Error(result.error || "Failed to associate Hedera token via Edge Function.");
     }
     return result.data.transactionId;
+  }
+
+  /**
+   * Gets the balance of a token in a Hedera account.
+   * @param accountId The account ID to query.
+   * @param tokenId The ID of the token to query.
+   * @returns The balance of the token.
+   */
+  async getTokenBalance(accountId: string | AccountId, tokenId: string): Promise<number> {
+    const balanceQuery = new AccountBalanceQuery()
+      .setAccountId(AccountId.fromString(accountId.toString()));
+    const accountBalance = await balanceQuery.execute(this.client);
+    console.log(`Account ${accountId} Token ${tokenId} Balance: ${accountBalance.hbars.toString()}`);
+    return accountBalance.hbars.toTinybars().toNumber();
+  }
+
+  /**
+   * Uploads a file to Hedera File Service (HFS).
+   * @param file The file to upload.
+   * @param fileName The name of the file.
+   * @param propertyId The property ID for the memo.
+   * @returns Object containing the HFS file ID and file hash.
+   */
+  async uploadToHFS(file: File, fileName: string, propertyId: string): Promise<{ fileId: string; fileHash: string }> {
+    const startTime = Date.now();
+    console.log(`[HFS] Uploading file: ${fileName} for property: ${propertyId}`);
+    console.log(`[HFS] File size: ${file.size} bytes`);
+
+    // Convert file to bytes
+    const fileBytes = new Uint8Array(await file.arrayBuffer());
+    console.log(`[HFS] Converted file to ${fileBytes.length} bytes`);
+
+    // Generate file hash for verification
+    const hashBuffer = await crypto.subtle.digest("SHA-256", fileBytes);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const fileHash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    console.log(`[HFS] Generated file hash: ${fileHash}`);
+
+    // Create file memo (truncated to fit Hedera's 100 character limit)
+    const shortPropertyId = propertyId.substring(0, 8);
+    const memo = `PropChain: ${fileName.substring(0, 70)} (${shortPropertyId})`;
+    console.log(`[HFS] File memo: "${memo}"`);
+
+    try {
+      // Create initial file with empty content
+      const fileCreateStart = Date.now();
+      const fileCreateTx = new FileCreateTransaction()
+        .setKeys([this.client.operatorPublicKey!])
+        .setMaxTransactionFee(new Hbar(10))
+        .setFileMemo(memo);
+
+      const fileCreateResponse = await fileCreateTx.execute(this.client);
+      const fileCreateReceipt = await fileCreateResponse.getReceipt(this.client);
+      const fileId = fileCreateReceipt.fileId;
+
+      if (!fileId) {
+        throw new Error("Failed to get file ID from file creation receipt");
+      }
+
+      const fileCreateTime = Date.now() - fileCreateStart;
+      console.log(`[HFS] ✅ File created on HFS: ${fileId.toString()} (${fileCreateTime}ms)`);
+
+      // Upload file in chunks (max 1024 bytes per chunk)
+      const chunkUploadStart = Date.now();
+      const chunkSize = 1024;
+      const totalChunks = Math.ceil(fileBytes.length / chunkSize);
+      console.log(`[HFS] Uploading file in ${totalChunks} chunks of ${chunkSize} bytes each`);
+
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * chunkSize;
+        const end = Math.min(start + chunkSize, fileBytes.length);
+        const chunk = fileBytes.slice(start, end);
+
+        const appendTx = new FileAppendTransaction()
+          .setFileId(fileId)
+          .setContents(chunk)
+          .setMaxTransactionFee(new Hbar(5));
+
+        await appendTx.execute(this.client);
+        
+        if ((i + 1) % 10 === 0 || i === totalChunks - 1) {
+          const chunkTime = Date.now() - chunkUploadStart;
+          const avgChunkTime = chunkTime / (i + 1);
+          console.log(`[HFS] Uploaded chunk ${i + 1}/${totalChunks} (${chunk.length} bytes) - Avg: ${avgChunkTime.toFixed(0)}ms/chunk`);
+        }
+      }
+
+      const chunkUploadTime = Date.now() - chunkUploadStart;
+      console.log(`[HFS] ✅ All chunks uploaded in ${chunkUploadTime}ms`);
+
+      const endTime = Date.now();
+      const totalTime = endTime - startTime;
+      const totalTimeSeconds = (totalTime / 1000).toFixed(2);
+      const totalTimeMinutes = (totalTime / 60000).toFixed(2);
+      
+      console.log(`[HFS] ✅ File upload complete: ${fileName} -> ${fileId.toString()}`);
+      console.log(`[HFS] ⏱️ Upload completed in ${totalTime}ms (${totalTimeSeconds}s / ${totalTimeMinutes}min)`);
+      
+      return {
+        fileId: fileId.toString(),
+        fileHash: fileHash
+      };
+
+    } catch (error: any) {
+      console.error(`[HFS] ❌ Failed to upload file to HFS:`, error);
+      throw new Error(`Failed to upload file to HFS: ${error.message}`);
+    }
+  }
+
+  /**
+   * Takes a file, hashes it, and uploads only the hash to Hedera File Service (HFS).
+   * @param file The file to hash and upload the hash.
+   * @param fileName The name of the file.
+   * @param propertyId The property ID for the memo.
+   * @returns Object containing the HFS file ID and the generated file hash.
+   */
+  async uploadFileHashToHFS(file: File, fileName: string, propertyId: string): Promise<{ fileId: string; fileHash: string }> {
+    const startTime = Date.now();
+    console.log(`[HFS-HASH] Processing file: ${fileName} (property: ${propertyId})`);
+    console.log(`[HFS-HASH] File size: ${file.size} bytes`);
+
+    // Convert file to bytes and generate hash
+    const fileBytes = new Uint8Array(await file.arrayBuffer());
+    console.log(`[HFS-HASH] Converted file to ${fileBytes.length} bytes`);
+
+    // Generate file hash for verification
+    const hashBuffer = await crypto.subtle.digest("SHA-256", fileBytes);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const fileHash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    console.log(`[HFS-HASH] Generated file hash: ${fileHash}`);
+
+    // Create file memo (truncated to fit Hedera's 100 character limit)
+    const shortPropertyId = propertyId.substring(0, 8);
+    const memo = `PropChain-HASH: ${fileName.substring(0, 60)} (${shortPropertyId})`;
+    console.log(`[HFS-HASH] File memo: "${memo}"`);
+
+    try {
+      // Convert hash string to bytes
+      const hashBytes = new TextEncoder().encode(fileHash);
+      console.log(`[HFS-HASH] Hash as bytes: ${hashBytes.length} bytes`);
+
+      // Create initial file with empty content
+      const fileCreateStart = Date.now();
+      const fileCreateTx = new FileCreateTransaction()
+        .setKeys([this.client.operatorPublicKey!])
+        .setMaxTransactionFee(new Hbar(5))
+        .setFileMemo(memo);
+
+      const fileCreateResponse = await fileCreateTx.execute(this.client);
+      const fileCreateReceipt = await fileCreateResponse.getReceipt(this.client);
+      const fileId = fileCreateReceipt.fileId;
+
+      if (!fileId) {
+        throw new Error("Failed to get file ID from file creation receipt");
+      }
+
+      const fileCreateTime = Date.now() - fileCreateStart;
+      console.log(`[HFS-HASH] ✅ File created on HFS: ${fileId.toString()} (${fileCreateTime}ms)`);
+
+      // Upload hash as content
+      const hashUploadStart = Date.now();
+      const appendTx = new FileAppendTransaction()
+        .setFileId(fileId)
+        .setContents(hashBytes)
+        .setMaxTransactionFee(new Hbar(2));
+
+      await appendTx.execute(this.client);
+      const hashUploadTime = Date.now() - hashUploadStart;
+      
+      console.log(`[HFS-HASH] ✅ Hash uploaded in ${hashUploadTime}ms`);
+
+      const endTime = Date.now();
+      const totalTime = endTime - startTime;
+      const totalTimeSeconds = (totalTime / 1000).toFixed(2);
+      
+      console.log(`[HFS-HASH] ✅ Hash upload complete: ${fileName} -> ${fileId.toString()}`);
+      console.log(`[HFS-HASH] ⏱️ Upload completed in ${totalTime}ms (${totalTimeSeconds}s)`);
+      
+      return {
+        fileId: fileId.toString(),
+        fileHash: fileHash
+      };
+
+    } catch (error: any) {
+      console.error(`[HFS-HASH] ❌ Failed to upload hash to HFS:`, error);
+      throw new Error(`Failed to upload hash to HFS: ${error.message}`);
+    }
   }
 }

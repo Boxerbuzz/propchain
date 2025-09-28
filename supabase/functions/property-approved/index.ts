@@ -126,11 +126,11 @@ serve(async (req) => {
     
     console.log(`[PROPERTY-APPROVED] ✅ Created HCS topic: ${topicId}`);
 
-    // Step 2: Upload documents to HFS using existing function
-    console.log(`[PROPERTY-APPROVED] Step 2: Uploading documents to HFS`);
+    // Step 2: Upload documents to HFS (hash only) using existing function
+    console.log(`[PROPERTY-APPROVED] Step 2: Uploading document hashes to HFS`);
     const hfsFileIds: string[] = [];
     const totalDocs = property.property_documents?.length || 0;
-    console.log(`[PROPERTY-APPROVED] Processing ${totalDocs} documents for HFS upload`);
+    console.log(`[PROPERTY-APPROVED] Processing ${totalDocs} documents for HFS hash upload`);
     console.log(`[PROPERTY-APPROVED] Property documents:`, property.property_documents);
 
     if (totalDocs === 0) {
@@ -139,6 +139,7 @@ serve(async (req) => {
 
     for (const [index, doc] of (property.property_documents || []).entries()) {
       console.log(`[PROPERTY-APPROVED] Processing document ${index + 1}/${totalDocs}: ${doc.document_name}`);
+      
       try {
         // Download file from Supabase Storage
         console.log(`[PROPERTY-APPROVED] Downloading file from: ${doc.file_url}`);
@@ -149,17 +150,16 @@ serve(async (req) => {
         }
 
         const fileBuffer = await fileResponse.arrayBuffer();
-        const fileBytes = new Uint8Array(fileBuffer);
-        console.log(`[PROPERTY-APPROVED] Downloaded ${fileBytes.length} bytes`);
+        const file = new File([fileBuffer], doc.document_name, { type: doc.mime_type });
+        console.log(`[PROPERTY-APPROVED] Downloaded ${fileBuffer.byteLength} bytes`);
 
-        // Create FormData for upload-to-hfs function
+        // Upload to HFS using existing function
+        console.log(`[PROPERTY-APPROVED] Uploading ${doc.document_name} hash to HFS`);
         const formData = new FormData();
-        formData.append("file", new Blob([fileBytes]), doc.document_name);
+        formData.append("file", file);
         formData.append("fileName", doc.document_name);
         formData.append("propertyId", record.id);
 
-        console.log(`[PROPERTY-APPROVED] Uploading ${doc.document_name} to HFS`);
-        // Upload to HFS using existing function
         const hfsResponse = await supabaseClient.functions.invoke(
           "upload-to-hfs",
           {
@@ -168,38 +168,23 @@ serve(async (req) => {
         );
 
         console.log(`[PROPERTY-APPROVED] HFS Response:`, hfsResponse);
-        console.log(`[PROPERTY-APPROVED] HFS Response Data:`, hfsResponse.data);
-        console.log(`[PROPERTY-APPROVED] HFS Response Data Type:`, typeof hfsResponse.data);
 
         if (hfsResponse.error) {
           console.error(`[PROPERTY-APPROVED] ❌ Failed to upload ${doc.document_name} to HFS:`, hfsResponse.error);
           continue;
         }
 
-        // Try different ways to access the fileId
-        let hfsFileId = hfsResponse.data?.fileId;
-        if (!hfsFileId && hfsResponse.data?.data?.fileId) {
-          hfsFileId = hfsResponse.data.data.fileId;
-        }
-        if (!hfsFileId && typeof hfsResponse.data === 'string') {
-          try {
-            const parsedData = JSON.parse(hfsResponse.data);
-            hfsFileId = parsedData.fileId || parsedData.data?.fileId;
-          } catch (e) {
-            console.error(`[PROPERTY-APPROVED] Failed to parse HFS response data:`, e);
-          }
+        // Extract HFS file ID and hash from response
+        const hfsFileId = hfsResponse.data?.fileId || hfsResponse.data?.data?.fileId;
+        const fileHash = hfsResponse.data?.fileHash || hfsResponse.data?.data?.fileHash;
+        
+        if (!hfsFileId || !fileHash) {
+          console.error(`[PROPERTY-APPROVED] ❌ Missing HFS file ID or hash for ${doc.document_name}`);
+          continue;
         }
         
         hfsFileIds.push(hfsFileId);
-        console.log(`[PROPERTY-APPROVED] ✅ Uploaded ${doc.document_name} to HFS: ${hfsFileId}`);
-
-        // Generate file hash
-        console.log(`[PROPERTY-APPROVED] Generating file hash for verification`);
-        const hashBuffer = await crypto.subtle.digest("SHA-256", fileBytes);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const fileHash = hashArray
-          .map((b) => b.toString(16).padStart(2, "0"))
-          .join("");
+        console.log(`[PROPERTY-APPROVED] ✅ Uploaded ${doc.document_name} hash to HFS: ${hfsFileId}`);
 
         // Update document record with HFS details and mark as verified
         console.log(`[PROPERTY-APPROVED] Updating document record with HFS details:`, {
@@ -229,7 +214,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`[PROPERTY-APPROVED] ✅ Document upload complete: ${hfsFileIds.length}/${totalDocs} documents uploaded to HFS`);
+    console.log(`[PROPERTY-APPROVED] ✅ Document hash upload complete: ${hfsFileIds.length}/${totalDocs} documents uploaded to HFS`);
     console.log(`[PROPERTY-APPROVED] HFS File IDs:`, hfsFileIds);
 
     // Step 3: Update property with HCS topic and HFS file IDs
@@ -301,7 +286,7 @@ serve(async (req) => {
           user_id: property.owner_id,
           type: "property_verification_complete",
           title: "Property Verification Complete",
-          message: `Your property "${property.title}" has been successfully verified and uploaded to the blockchain. It's now available for investment.`,
+          message: `Your property "${property.title}" has been successfully verified and is now available for investment.`,
           metadata: {
             property_id: record.id,
             topic_id: topicId,
@@ -337,7 +322,7 @@ serve(async (req) => {
           hfsFileIds,
           filesUploaded: hfsFileIds.length,
         },
-        message: `Property approved and ${hfsFileIds.length} documents uploaded to HFS`,
+        message: `Property approved and ${hfsFileIds.length} document hashes uploaded to HFS`,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

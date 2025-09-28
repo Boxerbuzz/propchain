@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Upload, FileText, CheckCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabaseService } from "@/services/supabaseService";
-import { supabase } from "@/integrations/supabase/client";
 import { Spinner } from "@/components/ui/spinner";
 
 interface PropertyDocumentUploadProps {
@@ -55,8 +54,15 @@ export const PropertyDocumentUpload = ({
           continue;
         }
 
-        // Upload to Supabase Storage only (HFS upload will happen on approval)
-        await supabaseService.properties.uploadPropertyDocument(
+        // Show upload progress
+        toast({
+          title: "Uploading to blockchain",
+          description: `Uploading ${file.name} to Hedera File Service...`,
+          duration: 5000,
+        });
+
+        // Upload to Supabase Storage first
+        const documentRecord = await supabaseService.properties.uploadPropertyDocument(
           propertyId, 
           file,
           selectedType,
@@ -65,7 +71,8 @@ export const PropertyDocumentUpload = ({
 
         toast({
           title: "Document uploaded",
-          description: `${file.name} uploaded successfully`,
+          description: `${file.name} uploaded successfully. HFS upload will happen during property approval.`,
+          duration: 4000,
         });
       }
 
@@ -131,7 +138,7 @@ export const PropertyDocumentUpload = ({
           <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
             <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground mb-4">
-              Select files to upload (will be added to HFS when property is approved)
+              Select files to upload (will be uploaded to Hedera File Service during property approval)
             </p>
             <Button 
               onClick={() => fileInputRef.current?.click()}
