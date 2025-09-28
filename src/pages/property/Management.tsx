@@ -20,7 +20,6 @@ import {
   Check,
   Pause,
   Trash2,
-  Ban,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +27,7 @@ import {
   useUserProperties,
   useUpdateProperty,
 } from "@/hooks/usePropertyManagement";
+import { supabase } from "@/integrations/supabase/client";
 import { TokenizationDialog } from "@/components/TokenizationDialog";
 import {
   DropdownMenu,
@@ -46,7 +46,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 const PropertyManagement = () => {
@@ -113,10 +112,13 @@ const PropertyManagement = () => {
     // Status-specific actions (not available as main buttons)
     if (property.approval_status === "pending") {
       // Check if property has at least one document before allowing approval
-      const hasDocuments = property.property_documents && property.property_documents.length > 0;
-      
+      const hasDocuments =
+        property.property_documents && property.property_documents.length > 0;
+
       actions.push({
-        label: hasDocuments ? "Approve Property" : "Approve Property (No Documents)",
+        label: hasDocuments
+          ? "Approve Property"
+          : "Approve Property (No Documents)",
         action: "Approve",
         icon: Check,
         variant: hasDocuments ? "success" : "secondary",
@@ -143,6 +145,19 @@ const PropertyManagement = () => {
           icon: DollarSign,
           variant: "primary",
         });
+      } else {
+        // Check if there's a tokenization that needs approval
+        const hasUnapprovedToken = property.tokenizations.some(
+          (token: any) => token.status === "pending" || token.status === "draft"
+        );
+        if (hasUnapprovedToken) {
+          actions.push({
+            label: "Approve Token",
+            action: "ApproveToken",
+            icon: Check,
+            variant: "success",
+          });
+        }
       }
     }
 
@@ -193,16 +208,20 @@ const PropertyManagement = () => {
 
     switch (action) {
       case "Approve":
+        // Show immediate notification that verification is in progress
+        toast({
+          title: "Property Verification Started",
+          description:
+            "Your property verification is being processed. This may take a few moments while we upload documents to the blockchain.",
+          duration: 8000,
+        });
+
         updatePropertyMutation.mutate({
           id: propertyId,
           data: {
             approval_status: "approved",
             listing_status: "active",
           },
-        });
-        toast({
-          title: "Property Approved",
-          description: "The property has been approved and is now active.",
         });
         break;
       case "Delist":
@@ -232,6 +251,47 @@ const PropertyManagement = () => {
             "The property has been relisted and is now available for investment.",
         });
         break;
+      case "ApproveToken":
+        // Find the tokenization that needs approval
+        const property = managedProperties.find((p) => p.id === propertyId);
+        const tokenization = property?.tokenizations?.find(
+          (token: any) => token.status === "pending" || token.status === "draft"
+        );
+
+        if (tokenization) {
+          // Update tokenization status to approved
+          try {
+            const { error } = await supabase
+              .from("tokenizations")
+              .update({
+                status: "active",
+                approved_at: new Date().toISOString(),
+                approved_by: (await supabase.auth.getUser()).data.user?.id,
+              })
+              .eq("id", tokenization.id);
+
+            if (error) {
+              throw error;
+            }
+
+            toast({
+              title: "Token Approved",
+              description:
+                "The tokenization has been approved and is now available for investment.",
+            });
+
+            // Refresh the properties list
+            refetch();
+          } catch (error: any) {
+            console.error("Error approving token:", error);
+            toast({
+              title: "Approval Failed",
+              description: error.message || "Failed to approve tokenization.",
+              variant: "destructive",
+            });
+          }
+        }
+        break;
       case "Delete":
         updatePropertyMutation.mutate({
           id: propertyId,
@@ -259,18 +319,20 @@ const PropertyManagement = () => {
         navigate(`/property/${propertyId}/edit`);
         break;
       case "Approve":
-        const property = managedProperties.find((p) => p.id === propertyId);
-        const hasDocuments = property?.property_documents && property.property_documents.length > 0;
-        
+        const hasDocuments =
+          property?.property_documents &&
+          property.property_documents.length > 0;
+
         if (!hasDocuments) {
           toast({
             title: "Cannot Approve Property",
-            description: "Please upload at least one document before approving this property.",
+            description:
+              "Please upload at least one document before approving this property.",
             variant: "destructive",
           });
           return;
         }
-        
+
         showConfirmDialog(
           action,
           propertyId,
@@ -300,6 +362,14 @@ const PropertyManagement = () => {
           setTokenizeDialogOpen(true);
         }
         break;
+      case "ApproveToken":
+        showConfirmDialog(
+          action,
+          propertyId,
+          "Approve Token",
+          "Are you sure you want to approve this tokenization? It will be made available for investment."
+        );
+        break;
       case "Delete":
         showConfirmDialog(
           action,
@@ -319,7 +389,37 @@ const PropertyManagement = () => {
 
   const filteredProperties = managedProperties.filter((prop) => {
     if (filter === "all") return true;
-    return prop.approval_status === filter || prop.listing_status === filter;
+
+    switch (filter) {
+      case "active":
+        return (
+          prop.approval_status === "approved" &&
+          prop.listing_status === "active"
+        );
+      case "funded":
+        return (
+          prop.tokenizations &&
+          prop.tokenizations.some(
+            (token: any) =>
+              token.status === "completed" ||
+              token.current_raise >= token.target_raise
+          )
+        );
+      case "tokenized":
+        return prop.tokenizations && prop.tokenizations.length > 0;
+      case "pending":
+        return prop.approval_status === "pending";
+      case "approved":
+        return prop.approval_status === "approved";
+      case "draft":
+        return prop.listing_status === "draft";
+      case "suspended":
+        return prop.listing_status === "withdrawn";
+      default:
+        return (
+          prop.approval_status === filter || prop.listing_status === filter
+        );
+    }
   });
 
   return (
