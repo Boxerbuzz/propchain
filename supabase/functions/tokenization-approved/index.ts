@@ -38,16 +38,16 @@ serve(async (req) => {
       });
     }
 
-    // Only proceed if status actually changed from non-active to active
+    // Only proceed if status actually changed from non-approved to approved
     if (
-      record.status !== "active" ||
-      (old_record && old_record.status === "active")
+      record.status !== "approved" ||
+      (old_record && old_record.status === "approved")
     ) {
-      console.log(`[TOKENIZATION-APPROVED] ⏭️ No status change to active detected, skipping processing`);
+      console.log(`[TOKENIZATION-APPROVED] ⏭️ No status change to approved detected, skipping processing`);
       return new Response(
         JSON.stringify({
           success: true,
-          message: "No status change to active detected, skipping processing",
+          message: "No status change to approved detected, skipping processing",
         }),
         {
           status: 200,
@@ -56,7 +56,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[TOKENIZATION-APPROVED] ✅ Status change to active detected, proceeding with workflow`);
+    console.log(`[TOKENIZATION-APPROVED] ✅ Status change to approved detected, proceeding with workflow`);
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -68,8 +68,10 @@ serve(async (req) => {
       .from('tokenizations')
       .select(`
         *,
-        properties (
-          *,
+        properties!inner (
+          id,
+          title,
+          owner_id,
           hcs_topic_id
         )
       `)

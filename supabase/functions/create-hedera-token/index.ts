@@ -87,7 +87,7 @@ serve(async (req) => {
 
     // Add metadata if provided
     if (tokenMetadata) {
-      tokenCreateTx.setTokenMetadata(tokenMetadata);
+      tokenCreateTx.setMetadata(new TextEncoder().encode(JSON.stringify(tokenMetadata)));
     }
 
     const executedTx = await tokenCreateTx.execute(client);
