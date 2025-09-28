@@ -7,11 +7,15 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log(`[TOKENIZATION-APPROVED] Request received: ${req.method}`);
+  
   if (req.method === 'OPTIONS') {
+    console.log(`[TOKENIZATION-APPROVED] CORS preflight request handled`);
     return new Response(null, { headers: corsHeaders });
   }
 
   if (req.method !== 'POST') {
+    console.error(`[TOKENIZATION-APPROVED] Invalid method: ${req.method}`);
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
       headers: corsHeaders,
@@ -19,36 +23,86 @@ serve(async (req) => {
   }
 
   try {
-    const { tokenizationId } = await req.json();
+    const { record, old_record } = await req.json();
+    console.log(`[TOKENIZATION-APPROVED] Processing tokenization approval:`, {
+      tokenizationId: record?.id,
+      oldStatus: old_record?.status,
+      newStatus: record?.status
+    });
 
-    if (!tokenizationId) {
+    if (!record.id) {
+      console.error(`[TOKENIZATION-APPROVED] ❌ Missing tokenizationId in request`);
       return new Response(JSON.stringify({ error: 'Missing tokenizationId' }), {
         status: 400,
         headers: corsHeaders,
       });
     }
 
+    // Only proceed if status actually changed from non-active to active
+    if (
+      record.status !== "active" ||
+      (old_record && old_record.status === "active")
+    ) {
+      console.log(`[TOKENIZATION-APPROVED] ⏭️ No status change to active detected, skipping processing`);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "No status change to active detected, skipping processing",
+        }),
+        {
+          status: 200,
+          headers: corsHeaders,
+        }
+      );
+    }
+
+    console.log(`[TOKENIZATION-APPROVED] ✅ Status change to active detected, proceeding with workflow`);
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Get tokenization details
+    // Get tokenization details with property HCS topic
     const { data: tokenization, error: tokenError } = await supabaseClient
       .from('tokenizations')
-      .select('*, properties(*)')
-      .eq('id', tokenizationId)
+      .select(`
+        *,
+        properties (
+          *,
+          hcs_topic_id
+        )
+      `)
+      .eq('id', record.id)
       .single();
 
     if (tokenError || !tokenization) {
-      console.error('Error fetching tokenization:', tokenError);
+      console.error(`[TOKENIZATION-APPROVED] ❌ Error fetching tokenization:`, tokenError);
       return new Response(JSON.stringify({ error: 'Tokenization not found' }), {
         status: 404,
         headers: corsHeaders,
       });
     }
 
+    console.log(`[TOKENIZATION-APPROVED] 📋 Tokenization details:`, {
+      id: tokenization.id,
+      tokenName: tokenization.token_name,
+      tokenSymbol: tokenization.token_symbol,
+      totalSupply: tokenization.total_supply,
+      propertyId: tokenization.property_id,
+      hcsTopicId: tokenization.properties?.hcs_topic_id
+    });
+
+    // Create metadata for token creation
+    const tokenMetadata = {
+      property_id: tokenization.property_id,
+      tokenization_id: tokenization.id
+    };
+
+    console.log(`[TOKENIZATION-APPROVED] 📝 Token metadata:`, tokenMetadata);
+
     // Call create-hedera-token edge function
+    console.log(`[TOKENIZATION-APPROVED] 🔗 Creating Hedera token...`);
     const tokenResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/create-hedera-token`, {
       method: 'POST',
       headers: {
@@ -60,20 +114,28 @@ serve(async (req) => {
         tokenSymbol: tokenization.token_symbol,
         totalSupply: tokenization.total_supply,
         decimals: 0,
+        metadata: tokenMetadata,
       }),
     });
 
     const tokenResult = await tokenResponse.json();
+    console.log(`[TOKENIZATION-APPROVED] 📤 Token creation response:`, tokenResult);
 
     if (!tokenResult.success) {
-      console.error('Error creating Hedera token:', tokenResult.error);
+      console.error(`[TOKENIZATION-APPROVED] ❌ Error creating Hedera token:`, tokenResult.error);
       return new Response(JSON.stringify({ error: 'Failed to create token' }), {
         status: 500,
         headers: corsHeaders,
       });
     }
 
+    console.log(`[TOKENIZATION-APPROVED] ✅ Token created successfully:`, {
+      tokenId: tokenResult.data.tokenId,
+      transactionId: tokenResult.data.transactionId
+    });
+
     // Update tokenization with Hedera token details
+    console.log(`[TOKENIZATION-APPROVED] 📝 Updating tokenization with Hedera details...`);
     const { error: updateError } = await supabaseClient
       .from('tokenizations')
       .update({
@@ -83,17 +145,77 @@ serve(async (req) => {
         minted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq('id', tokenizationId);
+      .eq('id', record.id);
 
     if (updateError) {
-      console.error('Error updating tokenization:', updateError);
+      console.error(`[TOKENIZATION-APPROVED] ❌ Error updating tokenization:`, updateError);
       return new Response(JSON.stringify({ error: 'Failed to update tokenization' }), {
         status: 500,
         headers: corsHeaders,
       });
     }
 
+    console.log(`[TOKENIZATION-APPROVED] ✅ Tokenization updated successfully`);
+
+    // Log token creation to property's HCS topic
+    if (tokenization.properties?.hcs_topic_id) {
+      console.log(`[TOKENIZATION-APPROVED] 📝 Logging token creation to HCS topic: ${tokenization.properties.hcs_topic_id}`);
+      
+      const hcsMessage = {
+        event: "token_created",
+        tokenization_id: tokenization.id,
+        property_id: tokenization.property_id,
+        token_id: tokenResult.data.tokenId,
+        transaction_id: tokenResult.data.transactionId,
+        token_name: tokenization.token_name,
+        token_symbol: tokenization.token_symbol,
+        total_supply: tokenization.total_supply,
+        price_per_token: tokenization.price_per_token,
+        expected_roi_annual: tokenization.expected_roi_annual,
+        dividend_frequency: tokenization.dividend_frequency,
+        management_fee_percentage: tokenization.management_fee_percentage,
+        platform_fee_percentage: tokenization.platform_fee_percentage,
+        investment_window_start: tokenization.investment_window_start,
+        investment_window_end: tokenization.investment_window_end,
+        minimum_raise: tokenization.minimum_raise,
+        target_raise: tokenization.target_raise,
+        created_by: tokenization.created_by,
+        approved_by: tokenization.approved_by,
+        created_at: new Date().toISOString(),
+        token_memo: tokenResult.data.memo,
+        token_metadata: tokenResult.data.metadata
+      };
+
+      try {
+        const hcsResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/submit-to-hcs`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            topicId: tokenization.properties.hcs_topic_id,
+            message: hcsMessage
+          }),
+        });
+
+        const hcsResult = await hcsResponse.json();
+        console.log(`[TOKENIZATION-APPROVED] 📤 HCS message response:`, hcsResult);
+
+        if (hcsResult.success) {
+          console.log(`[TOKENIZATION-APPROVED] ✅ Token creation logged to HCS topic successfully`);
+        } else {
+          console.error(`[TOKENIZATION-APPROVED] ❌ Failed to log to HCS topic:`, hcsResult.error);
+        }
+      } catch (hcsError) {
+        console.error(`[TOKENIZATION-APPROVED] ❌ Error logging to HCS topic:`, hcsError);
+      }
+    } else {
+      console.log(`[TOKENIZATION-APPROVED] ⚠️ Property has no HCS topic ID, skipping HCS logging`);
+    }
+
     // Create notification for property owner
+    console.log(`[TOKENIZATION-APPROVED] 📬 Creating notification for property owner...`);
     await supabaseClient
       .from('notifications')
       .insert({
@@ -104,7 +226,7 @@ serve(async (req) => {
         action_url: `/property/${tokenization.properties.id}/view`,
       });
 
-    console.log(`Tokenization ${tokenizationId} successfully activated with token ID: ${tokenResult.data.tokenId}`);
+    console.log(`[TOKENIZATION-APPROVED] ✅ Tokenization ${record.id} successfully activated with token ID: ${tokenResult.data.tokenId}`);
 
     return new Response(JSON.stringify({ 
       success: true,
@@ -118,7 +240,7 @@ serve(async (req) => {
     });
 
   } catch (error: any) {
-    console.error('Error in tokenization-approved:', error);
+    console.error(`[TOKENIZATION-APPROVED] ❌ Error in tokenization-approved:`, error);
     return new Response(JSON.stringify({ 
       success: false, 
       error: error.message 

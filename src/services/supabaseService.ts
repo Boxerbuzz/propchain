@@ -682,6 +682,7 @@ export const supabaseService = {
         .from("tokenizations")
         .insert({
           ...tokenizationData,
+          created_by: user.id,
         })
         .select()
         .single();
