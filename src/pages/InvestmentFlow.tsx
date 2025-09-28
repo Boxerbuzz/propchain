@@ -1,12 +1,26 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, CreditCard, Wallet, Building2, TrendingUp, Shield, Clock } from "lucide-react";
+import {
+  ArrowLeft,
+  CreditCard,
+  Wallet,
+  Building2,
+  TrendingUp,
+  Shield,
+  Clock,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const InvestmentFlow = () => {
@@ -27,7 +41,7 @@ const InvestmentFlow = () => {
     tokenPrice: 100,
     minInvestment: 1000,
     totalTokens: 25000,
-    availableTokens: 15000
+    availableTokens: 15000,
   };
 
   const calculateTokens = () => {
@@ -37,11 +51,14 @@ const InvestmentFlow = () => {
 
   const handleInvest = () => {
     if (step === 1) {
-      if (!investmentAmount || parseFloat(investmentAmount) < property.minInvestment) {
+      if (
+        !investmentAmount ||
+        parseFloat(investmentAmount) < property.minInvestment
+      ) {
         toast({
           title: "Invalid Amount",
           description: `Minimum investment is $${property.minInvestment}`,
-          variant: "destructive"
+          variant: "destructive",
         });
         return;
       }
@@ -51,7 +68,7 @@ const InvestmentFlow = () => {
         toast({
           title: "Payment Method Required",
           description: "Please select a payment method",
-          variant: "destructive"
+          variant: "destructive",
         });
         return;
       }
@@ -75,7 +92,9 @@ const InvestmentFlow = () => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Invest in Property</h1>
-            <p className="text-muted-foreground">Complete your investment in 3 simple steps</p>
+            <p className="text-muted-foreground">
+              Complete your investment in 3 simple steps
+            </p>
           </div>
         </div>
 
@@ -86,12 +105,22 @@ const InvestmentFlow = () => {
             <div className="flex items-center gap-4 mb-8">
               {[1, 2, 3].map((stepNum) => (
                 <div key={stepNum} className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    stepNum <= step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                  }`}>
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                      stepNum <= step
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
                     {stepNum}
                   </div>
-                  {stepNum < 3 && <div className={`w-16 h-0.5 ${stepNum < step ? "bg-primary" : "bg-muted"}`} />}
+                  {stepNum < 3 && (
+                    <div
+                      className={`w-16 h-0.5 ${
+                        stepNum < step ? "bg-primary" : "bg-muted"
+                      }`}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -127,22 +156,28 @@ const InvestmentFlow = () => {
                         Minimum investment: ${property.minInvestment}
                       </p>
                     </div>
-                    
+
                     {investmentAmount && (
                       <div className="bg-muted/50 p-4 rounded-lg">
                         <h4 className="font-medium mb-2">Investment Summary</h4>
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span>Investment Amount:</span>
-                            <span className="font-medium">${investmentAmount}</span>
+                            <span className="font-medium">
+                              ${investmentAmount}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span>Tokens to Receive:</span>
-                            <span className="font-medium">{calculateTokens()} tokens</span>
+                            <span className="font-medium">
+                              {calculateTokens()} tokens
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span>Token Price:</span>
-                            <span className="font-medium">${property.tokenPrice}</span>
+                            <span className="font-medium">
+                              ${property.tokenPrice}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -153,9 +188,11 @@ const InvestmentFlow = () => {
                 {step === 2 && (
                   <div className="space-y-4">
                     <div className="grid gap-4">
-                      <div 
+                      <div
                         className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                          paymentMethod === "card" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                          paymentMethod === "card"
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
                         }`}
                         onClick={() => setPaymentMethod("card")}
                       >
@@ -163,14 +200,18 @@ const InvestmentFlow = () => {
                           <CreditCard className="h-5 w-5" />
                           <div>
                             <h4 className="font-medium">Credit/Debit Card</h4>
-                            <p className="text-sm text-muted-foreground">Pay instantly with your card</p>
+                            <p className="text-sm text-muted-foreground">
+                              Pay instantly with your card
+                            </p>
                           </div>
                         </div>
                       </div>
-                      
-                      <div 
+
+                      <div
                         className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                          paymentMethod === "wallet" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                          paymentMethod === "wallet"
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
                         }`}
                         onClick={() => setPaymentMethod("wallet")}
                       >
@@ -178,7 +219,9 @@ const InvestmentFlow = () => {
                           <Wallet className="h-5 w-5" />
                           <div>
                             <h4 className="font-medium">Digital Wallet</h4>
-                            <p className="text-sm text-muted-foreground">Pay with your connected wallet</p>
+                            <p className="text-sm text-muted-foreground">
+                              Pay with your connected wallet
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -189,7 +232,9 @@ const InvestmentFlow = () => {
                 {step === 3 && (
                   <div className="space-y-6">
                     <div className="bg-muted/50 p-6 rounded-lg">
-                      <h4 className="font-medium mb-4">Investment Confirmation</h4>
+                      <h4 className="font-medium mb-4">
+                        Investment Confirmation
+                      </h4>
                       <div className="space-y-3 text-sm">
                         <div className="flex justify-between">
                           <span>Property:</span>
@@ -197,15 +242,21 @@ const InvestmentFlow = () => {
                         </div>
                         <div className="flex justify-between">
                           <span>Investment Amount:</span>
-                          <span className="font-medium">${investmentAmount}</span>
+                          <span className="font-medium">
+                            ${investmentAmount}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Tokens:</span>
-                          <span className="font-medium">{calculateTokens()} tokens</span>
+                          <span className="font-medium">
+                            {calculateTokens()} tokens
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Payment Method:</span>
-                          <span className="font-medium capitalize">{paymentMethod}</span>
+                          <span className="font-medium capitalize">
+                            {paymentMethod}
+                          </span>
                         </div>
                         <Separator />
                         <div className="flex justify-between font-medium">
@@ -219,9 +270,12 @@ const InvestmentFlow = () => {
                       <div className="flex gap-2">
                         <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
                         <div>
-                          <h4 className="font-medium text-blue-900 dark:text-blue-100">Investment Protection</h4>
+                          <h4 className="font-medium text-blue-900 dark:text-blue-100">
+                            Investment Protection
+                          </h4>
                           <p className="text-sm text-blue-700 dark:text-blue-200">
-                            Your investment is secured by blockchain technology and protected by our insurance policy.
+                            Your investment is secured by blockchain technology
+                            and protected by our insurance policy.
                           </p>
                         </div>
                       </div>
@@ -255,9 +309,11 @@ const InvestmentFlow = () => {
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-medium">{property.title}</h4>
-                  <p className="text-sm text-muted-foreground">{property.location}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {property.location}
+                  </p>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Property Value:</span>
@@ -265,7 +321,10 @@ const InvestmentFlow = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Expected Return:</span>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    <Badge
+                      variant="secondary"
+                      className="bg-green-100 text-green-800"
+                    >
                       <TrendingUp className="h-3 w-3 mr-1" />
                       {property.expectedReturn}
                     </Badge>
@@ -276,7 +335,9 @@ const InvestmentFlow = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Available Tokens:</span>
-                    <span className="font-medium">{property.availableTokens.toLocaleString()}</span>
+                    <span className="font-medium">
+                      {property.availableTokens.toLocaleString()}
+                    </span>
                   </div>
                 </div>
 

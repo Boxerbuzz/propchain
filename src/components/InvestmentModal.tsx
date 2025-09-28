@@ -123,8 +123,7 @@ export default function InvestmentModal({ tokenization, open, onOpenChange }: In
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <div className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <TrendingUp className="w-5 h-5" />
@@ -315,8 +314,7 @@ export default function InvestmentModal({ tokenization, open, onOpenChange }: In
               </Button>
             </div>
           </form>
-        </DialogContent>
-      </div>
+      </DialogContent>
     </Dialog>
   );
 }
