@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,14 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { 
-  TrendingUp, 
-  Wallet, 
-  CreditCard, 
-  Info,
-  ArrowRight,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { TrendingUp, Wallet, CreditCard, Info, ArrowRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -105,8 +98,12 @@ export default function InvestmentModal({
     },
   });
 
-  const watchedAmount = form.watch("amount");
-  const watchedTokenCount = form.watch("tokenCount");
+  // Local state for real-time feedback (not connected to form during typing)
+  const [currentAmount, setCurrentAmount] = useState(tokenization.min_investment);
+  const [currentTokenCount, setCurrentTokenCount] = useState(
+    Math.floor(tokenization.min_investment / tokenization.price_per_token)
+  );
+  const isTypingRef = useRef(false);
 
   const calculateTokens = (amount: number) => {
     if (!amount || !tokenization.price_per_token) return 0;
@@ -128,28 +125,45 @@ export default function InvestmentModal({
     };
   };
 
-  const currentAmount = watchedAmount;
-  const currentTokenCount = watchedTokenCount || calculateTokens(watchedAmount);
   const roi = calculateROI(currentAmount);
 
+  // Handle real-time input changes (no form updates)
   const handleAmountChange = (value: number) => {
-    form.setValue("amount", value);
-    form.setValue("tokenCount", calculateTokens(value));
+    isTypingRef.current = true;
+    setCurrentAmount(value);
+    setCurrentTokenCount(calculateTokens(value));
   };
 
   const handleTokenCountChange = (value: number) => {
-    form.setValue("tokenCount", value);
-    form.setValue("amount", calculateAmount(value));
+    isTypingRef.current = true;
+    setCurrentTokenCount(value);
+    setCurrentAmount(calculateAmount(value));
+  };
+
+  // Sync with form only when typing stops (on blur)
+  const handleInputBlur = () => {
+    if (isTypingRef.current) {
+      form.setValue("amount", currentAmount);
+      form.setValue("tokenCount", currentTokenCount);
+      isTypingRef.current = false;
+    }
   };
 
   const resetForm = () => {
+    const minAmount = tokenization.min_investment;
+    const minTokens = Math.floor(minAmount / tokenization.price_per_token);
+    
     form.reset({
-      amount: tokenization.min_investment,
-      tokenCount: Math.floor(
-        tokenization.min_investment / tokenization.price_per_token
-      ),
+      amount: minAmount,
+      tokenCount: minTokens,
       acceptTerms: false,
     });
+    
+    // Reset local state too
+    setCurrentAmount(minAmount);
+    setCurrentTokenCount(minTokens);
+    isTypingRef.current = false;
+    
     setPaymentMethod("paystack");
     setShowProgress(false);
     setInvestmentStatus({ paymentStatus: "pending" });
@@ -163,8 +177,10 @@ export default function InvestmentModal({
 
     setShowProgress(true);
     setInvestmentStatus({ paymentStatus: "processing" });
-    
-    const tokensRequested = Math.floor(values.amount / tokenization.price_per_token);
+
+    const tokensRequested = Math.floor(
+      values.amount / tokenization.price_per_token
+    );
 
     createInvestment({
       tokenization_id: tokenization.id,
@@ -180,7 +196,10 @@ export default function InvestmentModal({
   };
 
   const InvestmentForm = ({ className }: { className?: string }) => (
-    <form onSubmit={form.handleSubmit(handleInvest)} className={`space-y-6 ${className || ''}`}>
+    <form
+      onSubmit={form.handleSubmit(handleInvest)}
+      className={`space-y-6 ${className || ""}`}
+    >
       {/* Token Information */}
       <Card>
         <CardContent className="p-4">
@@ -192,9 +211,7 @@ export default function InvestmentModal({
               </Badge>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">
-                Price per Token
-              </p>
+              <p className="text-sm text-muted-foreground">Price per Token</p>
               <p className="text-lg font-semibold">
                 ₦{tokenization.price_per_token.toLocaleString()}
               </p>
@@ -214,6 +231,7 @@ export default function InvestmentModal({
         walletBalance={walletBalance?.balanceNgn || 0}
         onAmountChange={handleAmountChange}
         onTokenCountChange={handleTokenCountChange}
+        onBlur={handleInputBlur}
       />
 
       {/* Investment Calculator */}
@@ -221,9 +239,7 @@ export default function InvestmentModal({
         <CardContent className="p-4">
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
-              <p className="text-sm text-muted-foreground">
-                Tokens to receive
-              </p>
+              <p className="text-sm text-muted-foreground">Tokens to receive</p>
               <p className="text-xl font-bold">
                 {currentTokenCount.toLocaleString()}
               </p>
@@ -298,9 +314,7 @@ export default function InvestmentModal({
                 </p>
                 <div className="text-right">
                   {isLoadingBalance ? (
-                    <p className="text-sm text-muted-foreground">
-                      Loading...
-                    </p>
+                    <p className="text-sm text-muted-foreground">Loading...</p>
                   ) : walletBalance ? (
                     <div>
                       <p className="text-sm font-medium">
@@ -313,9 +327,7 @@ export default function InvestmentModal({
                       )}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No balance
-                    </p>
+                    <p className="text-sm text-muted-foreground">No balance</p>
                   )}
                 </div>
               </div>
@@ -371,9 +383,7 @@ export default function InvestmentModal({
         <Checkbox
           id="acceptTerms"
           checked={form.watch("acceptTerms")}
-          onCheckedChange={(checked) =>
-            form.setValue("acceptTerms", !!checked)
-          }
+          onCheckedChange={(checked) => form.setValue("acceptTerms", !!checked)}
         />
         <div className="grid gap-1.5 leading-none">
           <Label
@@ -417,8 +427,8 @@ export default function InvestmentModal({
             <AlertDescription>
               Your wallet balance is ₦
               {(walletBalance.balanceNgn || 0).toLocaleString()}, but you're
-              trying to invest ₦{currentAmount.toLocaleString()}. Please top
-              up your wallet or reduce your investment amount.
+              trying to invest ₦{currentAmount.toLocaleString()}. Please top up
+              your wallet or reduce your investment amount.
             </AlertDescription>
           </Alert>
         )}
@@ -427,9 +437,9 @@ export default function InvestmentModal({
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          Real estate investments carry inherent risks. Past performance
-          does not guarantee future results. Please invest only what you can
-          afford to lose.
+          Real estate investments carry inherent risks. Past performance does
+          not guarantee future results. Please invest only what you can afford
+          to lose.
         </AlertDescription>
       </Alert>
 
@@ -470,8 +480,8 @@ export default function InvestmentModal({
   );
 
   if (isDesktop) {
-  return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    return (
+      <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
@@ -489,8 +499,8 @@ export default function InvestmentModal({
               <AlertTitle>Blockchain Wallet Required</AlertTitle>
               <AlertDescription className="space-y-2">
                 <p>You need a blockchain wallet to receive your tokens.</p>
-                <Button 
-                  onClick={() => createAccount()} 
+                <Button
+                  onClick={() => createAccount()}
                   disabled={isCreatingAccount}
                   size="sm"
                 >
@@ -528,7 +538,7 @@ export default function InvestmentModal({
             Purchase tokenized shares of this premium property
           </DrawerDescription>
         </DrawerHeader>
-        
+
         <div className="px-4 pb-4 max-h-[80vh] overflow-y-auto">
           {!hasAccount && (
             <Alert className="mb-4">
@@ -558,7 +568,7 @@ export default function InvestmentModal({
           )}
 
           <InvestmentForm />
-            </div>
+        </div>
       </DrawerContent>
     </Drawer>
   );

@@ -144,13 +144,13 @@ const Portfolio = () => {
                   ₦{portfolioStats.totalInvested.toLocaleString()}
                 </div>
               )}
-              <p className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 {isLoading ? (
                   <Skeleton className="h-4 w-32" />
                 ) : (
                   `Across ${portfolioStats.totalProperties} properties`
                 )}
-              </p>
+              </div>
             </CardContent>
           </Card>
 

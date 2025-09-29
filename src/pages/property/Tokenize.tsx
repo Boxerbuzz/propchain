@@ -176,6 +176,30 @@ const createTokenizationSchema = (propertyValue: number) =>
           "Target raise exceeds the allowed limit for this tokenization type",
         path: ["target_raise"],
       }
+    )
+    .refine(
+      (data) => {
+        // Validate that total token value doesn't exceed tokenization type limits
+        const maxPossibleRaise = data.total_supply * data.price_per_token;
+        
+        if (data.tokenization_type === "equity") {
+          // Equity can't exceed 100% of property value
+          return maxPossibleRaise <= propertyValue;
+        } else if (data.tokenization_type === "debt") {
+          // Debt can't exceed 80% LTV ratio
+          const maxDebtValue = propertyValue * 0.8;
+          return maxPossibleRaise <= maxDebtValue;
+        } else if (data.tokenization_type === "revenue") {
+          // Revenue sharing - allow up to 2x property value for flexibility
+          const maxRevenueValue = propertyValue * 2;
+          return maxPossibleRaise <= maxRevenueValue;
+        }
+        return true;
+      },
+      {
+        message: "Total token value (supply × price) exceeds the allowed limit for this tokenization type",
+        path: ["total_supply"],
+      }
     );
 
 type TokenizationForm = z.infer<ReturnType<typeof createTokenizationSchema>>;
@@ -344,7 +368,15 @@ const TokenizeProperty = () => {
     setStep(1);
   };
 
-  const nextStep = async () => {
+  const nextStep = async (e?: React.MouseEvent) => {
+    console.log("🔄 nextStep called, current step:", step);
+    
+    // Prevent any form submission
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     const isValid = await form.trigger([
       "token_name",
       "token_symbol",
@@ -352,8 +384,13 @@ const TokenizeProperty = () => {
       "price_per_token",
     ]);
 
+    console.log("Form validation result:", isValid);
+    
     if (isValid) {
+      console.log("✅ Setting step to 2");
       setStep(2);
+    } else {
+      console.log("❌ Form validation failed, staying on step 1");
     }
   };
 
@@ -366,10 +403,17 @@ const TokenizeProperty = () => {
   };
 
   const onSubmit = (data: TokenizationForm) => {
-    // Only allow submission on the final step
+    console.log("🚨 onSubmit called with step:", step);
+    console.log("🚨 Form data:", data);
+    
+    // STRICT guard - only allow submission on the final step (step 2)
     if (step !== 2) {
+      console.log("🚨 BLOCKED - not on final step. Current step:", step);
+      toast.error(`Cannot submit on step ${step}. Please complete all steps first.`);
       return;
     }
+    
+    console.log("✅ Step check passed, proceeding with submission...");
     
     if (!isAuthenticated || !user?.id) {
       toast.error("Please log in to continue.");
@@ -379,6 +423,8 @@ const TokenizeProperty = () => {
       toast.error("You can only tokenize your own property.");
       return;
     }
+    
+    console.log("🚀 Creating tokenization...");
     createTokenizationMutation.mutate(data);
   };
 
@@ -430,7 +476,7 @@ const TokenizeProperty = () => {
               <p className="text-muted-foreground">
                 {step === 0
                   ? "Choose your tokenization type"
-                  : `Step ${step} of 2 - Configure your tokenization`}
+                  : `Step ${step} of 3 - Configure your tokenization`}
               </p>
             </div>
             <div className="text-right">
@@ -442,7 +488,7 @@ const TokenizeProperty = () => {
           </div>
 
           <Progress
-            value={step === 0 ? 0 : step * 50}
+            value={step === 0 ? 0 : (step / 3) * 100}
             className="w-full mt-4"
           />
         </div>
@@ -487,7 +533,12 @@ const TokenizeProperty = () => {
           <CardContent className="p-6">
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (step === 2) {
+                    form.handleSubmit(onSubmit)(e);
+                  }
+                }}
                 className="space-y-6"
               >
                 {step === 0 && (
@@ -694,6 +745,20 @@ const TokenizeProperty = () => {
                                   {(
                                     field.value * pricePerToken
                                   ).toLocaleString()}
+                                </span>
+                              )}
+                              {property && (
+                                <span className="block text-xs text-muted-foreground mt-1">
+                                  {selectedType === "equity" &&
+                                    `Equity limit: Max token value ≤ ₦${property.estimated_value?.toLocaleString()}`}
+                                  {selectedType === "debt" &&
+                                    `Debt limit: Max token value ≤ ₦${(
+                                      property.estimated_value * 0.8
+                                    ).toLocaleString()} (80% LTV)`}
+                                  {selectedType === "revenue" &&
+                                    `Revenue limit: Max token value ≤ ₦${(
+                                      property.estimated_value * 2
+                                    ).toLocaleString()} (flexible)`}
                                 </span>
                               )}
                             </FormDescription>
@@ -994,7 +1059,14 @@ const TokenizeProperty = () => {
                         <ChevronLeft className="mr-2 h-4 w-4" />
                         Back to Types
                       </Button>
-                      <Button type="button" onClick={nextStep}>
+                      <Button 
+                        type="button" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          nextStep(e);
+                        }}
+                      >
                         Next Step
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>

@@ -126,11 +126,13 @@ export const useAuth = () => {
       password: string;
     }) => {
       try {
+        console.log("🚀 Starting signup process for:", formData.email);
         globalLoading = true;
         notifySubscribers();
 
         const redirectUrl = `${window.location.origin}/`;
 
+        console.log("📧 Creating Supabase auth user...");
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -140,12 +142,16 @@ export const useAuth = () => {
         });
 
         if (error) {
+          console.error("❌ Supabase auth signup error:", error);
           globalLoading = false;
           notifySubscribers();
           return error.message;
         }
 
+        console.log("✅ Supabase auth user created:", data.user?.id);
+
         if (data.user) {
+          console.log("👤 Creating user profile in database...");
           // Insert user profile
           const { error: profileError } = await supabase.from("users").insert({
             id: data.user.id,
@@ -156,13 +162,17 @@ export const useAuth = () => {
           });
 
           if (profileError) {
+            console.error("❌ Error creating user profile:", profileError);
             globalLoading = false;
-            console.error("Error creating user profile:", profileError);
+          } else {
+            console.log("✅ User profile created successfully");
           }
         }
 
+        console.log("🎉 Signup process completed successfully");
         return null;
       } catch (error: any) {
+        console.error("💥 Signup process failed:", error);
         globalLoading = false;
         notifySubscribers();
         return error.message || "Signup failed";

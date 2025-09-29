@@ -106,7 +106,7 @@ export default function PropertyCard({
           <div className="flex justify-between text-sm text-muted-foreground mb-2">
             <div className="flex items-center">
               <Coins className="h-4 w-4 mr-1" />
-              {tokensSold} / {totalTokens} tokens sold
+              {tokensSold.toLocaleString()} / {totalTokens.toLocaleString()} tokens sold
             </div>
             <span>{progressPercentage.toFixed(1)}%</span>
           </div>
