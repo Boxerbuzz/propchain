@@ -164,6 +164,19 @@ export const useAuth = () => {
           if (profileError) {
             console.error("❌ Error creating user profile:", profileError);
             globalLoading = false;
+            notifySubscribers();
+            
+            // Return specific error message based on error type
+            if (profileError.code === '23505') {
+              if (profileError.message.includes('phone')) {
+                return "Phone number is already registered. Please use a different phone number or contact support.";
+              } else if (profileError.message.includes('email')) {
+                return "Email is already registered. Please use a different email or try logging in.";
+              } else {
+                return "Account already exists. Please try logging in instead.";
+              }
+            }
+            return profileError.message || "Failed to create user profile";
           } else {
             console.log("✅ User profile created successfully");
           }
