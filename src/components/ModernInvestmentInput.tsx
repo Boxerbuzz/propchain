@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,8 @@ interface StableInputFieldProps {
   onModeToggle: () => void;
   onBlur: () => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  externalValue: string;
+  externalSyncKey: number;
 }
 
 const StableInputField = ({
@@ -36,8 +38,15 @@ const StableInputField = ({
   onModeToggle,
   onBlur,
   onKeyDown,
+  externalValue,
+  externalSyncKey,
 }: StableInputFieldProps) => {
-  const [localValue, setLocalValue] = useState("");
+  const [localValue, setLocalValue] = useState(externalValue);
+
+  // Sync local input value when programmatic updates occur (e.g., quick buttons, mode toggle)
+  useEffect(() => {
+    setLocalValue(externalValue);
+  }, [externalSyncKey, externalValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -351,6 +360,12 @@ export default function ModernInvestmentInput({
             onModeToggle={handleModeToggle}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
+            externalValue={
+              inputMode === "amount"
+                ? (amount ? String(amount) : "")
+                : (tokenCount ? String(tokenCount) : "")
+            }
+            externalSyncKey={inputMode === "amount" ? 1 : 2}
           />
 
           {/* Live Display Info - Re-renders with live data */}
