@@ -129,7 +129,7 @@ export default function ModernInvestmentInput({
                 min={minInvestment}
                 max={maxInvestment}
                 placeholder="0.00"
-                className="pl-16 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none transition-all duration-200 group-hover:scale-[1.02]"
+                className="pl-16 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none"
               />
             ) : (
               <Input
@@ -139,7 +139,7 @@ export default function ModernInvestmentInput({
                   handleTokenCountChange(parseFloat(e.target.value) || 0)
                 }
                 placeholder="0"
-                className="pl-16 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none transition-all duration-200 group-hover:scale-[1.02]"
+                className="pl-16 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none"
               />
             )}
 
@@ -196,10 +196,7 @@ export default function ModernInvestmentInput({
           {/* Investment Progress Bar */}
           <div className="flex items-center space-x-2">
             <div className="w-20">
-              <Progress 
-                value={getProgressPercentage()} 
-                className="h-1"
-              />
+              <Progress value={getProgressPercentage()} className="h-1" />
             </div>
             <span className="text-xs text-muted-foreground">
               {Math.round(getProgressPercentage())}%

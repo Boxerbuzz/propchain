@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Calculator, TrendingUp, DollarSign } from "lucide-react";
 import InvestmentModal from "@/components/InvestmentModal";
-import MoneyInput from '@/components/ui/money-input';
+import MoneyInput from "@/components/ui/money-input";
 
 interface InvestmentCalculatorProps {
   propertyValue: number;
@@ -17,11 +17,11 @@ export default function InvestmentCalculator({
   expectedReturn,
   tokenPrice,
   minimumInvestment,
-  property
+  property,
 }: InvestmentCalculatorProps & { property?: any }) {
   const [investmentAmount, setInvestmentAmount] = useState(minimumInvestment);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const tokensReceived = Math.floor(investmentAmount / tokenPrice);
   const ownershipPercentage = (investmentAmount / propertyValue) * 100;
   const annualReturn = (investmentAmount * expectedReturn) / 100;
@@ -59,7 +59,9 @@ export default function InvestmentCalculator({
               <DollarSign className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Tokens</span>
             </div>
-            <p className="text-xl font-bold text-foreground">{tokensReceived}</p>
+            <p className="text-xl font-bold text-foreground">
+              {tokensReceived}
+            </p>
             <p className="text-xs text-muted-foreground">
               @ ₦{tokenPrice.toLocaleString()} each
             </p>
@@ -70,7 +72,9 @@ export default function InvestmentCalculator({
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Ownership</span>
             </div>
-            <p className="text-xl font-bold text-foreground">{ownershipPercentage.toFixed(3)}%</p>
+            <p className="text-xl font-bold text-foreground">
+              {ownershipPercentage.toFixed(3)}%
+            </p>
             <p className="text-xs text-muted-foreground">of property</p>
           </div>
         </div>
@@ -81,22 +85,28 @@ export default function InvestmentCalculator({
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Monthly</span>
-              <span className="font-semibold text-success">₦{monthlyReturn.toLocaleString()}</span>
+              <span className="font-semibold text-success">
+                ₦{monthlyReturn.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Annual</span>
-              <span className="font-semibold text-success">₦{annualReturn.toLocaleString()}</span>
+              <span className="font-semibold text-success">
+                ₦{annualReturn.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between pt-2 border-t border-success/20">
               <span className="text-sm font-medium">ROI</span>
-              <span className="font-bold text-success">{expectedReturn}% p.a.</span>
+              <span className="font-bold text-success">
+                {expectedReturn}% p.a.
+              </span>
             </div>
           </div>
         </div>
 
         {/* Investment Button */}
-        <Button 
-          className="w-full btn-primary" 
+        <Button
+          className="w-full btn-primary"
           size="lg"
           onClick={() => setIsModalOpen(true)}
         >
@@ -107,22 +117,24 @@ export default function InvestmentCalculator({
           * Returns are projected and not guaranteed
         </p>
       </div>
-      
+
       <InvestmentModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         tokenization={{
-          id: property?.tokenizations?.[0]?.id || '',
-          token_name: property?.tokenizations?.[0]?.token_name || property?.title || '',
-          token_symbol: property?.tokenizations?.[0]?.token_symbol || '',
+          id: property?.tokenizations?.[0]?.id || "",
+          token_name:
+            property?.tokenizations?.[0]?.token_name || property?.title || "",
+          token_symbol: property?.tokenizations?.[0]?.token_symbol || "",
           price_per_token: tokenPrice,
           min_investment: minimumInvestment,
           max_investment: property?.tokenizations?.[0]?.max_investment,
           expected_roi_annual: expectedReturn,
+
           properties: {
-            id: property?.id || '',
-            title: property?.title || ''
-          }
+            id: property?.id || "",
+            title: property?.title || "",
+          },
         }}
       />
     </div>

@@ -28,7 +28,6 @@ import {
   useUpdateProperty,
 } from "@/hooks/usePropertyManagement";
 import { supabase } from "@/integrations/supabase/client";
-import { TokenizationDialog } from "@/components/TokenizationDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,13 +46,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 const PropertyManagement = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [selectedProperty, setSelectedProperty] = useState(null);
   const [filter, setFilter] = useState("all");
-  const [tokenizeDialogOpen, setTokenizeDialogOpen] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
     title: "",
@@ -66,7 +64,6 @@ const PropertyManagement = () => {
   const {
     data: managedProperties = [],
     isLoading,
-    error,
     refetch,
   } = useUserProperties();
   const updatePropertyMutation = useUpdateProperty();
@@ -357,10 +354,7 @@ const PropertyManagement = () => {
         );
         break;
       case "Tokenize":
-        if (property) {
-          setSelectedProperty(property);
-          setTokenizeDialogOpen(true);
-        }
+        navigate(`/property/${propertyId}/tokenize`);
         break;
       case "ApproveToken":
         showConfirmDialog(
@@ -809,7 +803,7 @@ const PropertyManagement = () => {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent
                                       align="end"
-                                      className="w-48"
+                                      className="w-48 bg-background border-2 border-primary"
                                     >
                                       <DropdownMenuLabel>
                                         More Actions
@@ -829,20 +823,21 @@ const PropertyManagement = () => {
                                                 )
                                               }
                                               disabled={actionItem.disabled}
-                                              className={
+                                              className={cn(
                                                 actionItem.disabled
                                                   ? "text-muted-foreground cursor-not-allowed opacity-50"
                                                   : actionItem.variant ===
                                                     "destructive"
-                                                  ? "text-red-600 focus:text-red-600"
+                                                  ? "text-red-600 focus:text-red-600 hover:bg-gray-100"
                                                   : actionItem.variant ===
                                                     "success"
-                                                  ? "text-green-600 focus:text-green-600"
+                                                  ? "text-green-600 focus:text-green-600 hover:bg-gray-100"
                                                   : actionItem.variant ===
                                                     "warning"
-                                                  ? "text-orange-600 focus:text-orange-600"
-                                                  : ""
-                                              }
+                                                  ? "text-orange-600 focus:text-orange-600 hover:bg-gray-100"
+                                                  : "hover:bg-gray-100",
+                                                  "focus:bg-primary/50 focus:text-white"
+                                              )}
                                             >
                                               <Icon className="h-4 w-4 mr-2" />
                                               {actionItem.label}
@@ -977,20 +972,6 @@ const PropertyManagement = () => {
           </div>
         </div>
       </div>
-
-      {/* Tokenization Dialog */}
-      <TokenizationDialog
-        open={tokenizeDialogOpen}
-        onOpenChange={setTokenizeDialogOpen}
-        property={selectedProperty}
-        onSuccess={() => {
-          toast({
-            title: "Tokenization Created",
-            description: "Your property has been successfully tokenized!",
-          });
-          refetch(); // Refresh the properties list
-        }}
-      />
 
       {/* Confirmation Dialog */}
       <AlertDialog

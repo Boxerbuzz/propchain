@@ -31,6 +31,7 @@ import WalletDashboard from "./pages/wallet/Dashboard";
 import PropertyManagement from "./pages/property/Management";
 import PropertyView from "./pages/property/PropertyView";
 import PropertyEdit from "./pages/property/PropertyEdit";
+import TokenizeProperty from "./pages/property/Tokenize";
 import Profile from "./pages/settings/Profile";
 import Notifications from "./pages/settings/Notifications";
 import Security from "./pages/settings/Security";
@@ -103,6 +104,10 @@ const App = () => (
                 <Route
                   path="/property/:propertyId/edit"
                   element={<PropertyEdit />}
+                />
+                <Route
+                  path="/property/:propertyId/tokenize"
+                  element={<TokenizeProperty />}
                 />
                 <Route
                   path="/properties/register"
