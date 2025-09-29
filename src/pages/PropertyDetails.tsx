@@ -304,7 +304,7 @@ export default function PropertyDetails() {
                   value={Math.min(progressPercentage, 100)}
                   className="h-2"
                 />
-                <div className="flex justify-between text-xs md:text-sm text-muted-foreground">
+                <div className="flex justify-between text-xs md:text-sm text-muted-foreground mt-3">
                   <span>
                     {(tokenization.tokens_sold || 0).toLocaleString()} tokens
                     sold
@@ -495,11 +495,9 @@ export default function PropertyDetails() {
               </h3>
               <div className="space-y-4">
                 {[1, 2].map((_, index) => (
-                  <div key={index} className="flex space-x-3">
+                  <div key={index} className="flex space-x-3 mobile-flex items-center border border-border rounded-lg p-4 cursor-pointer">
                     <img
-                      src={`https://images.unsplash.com/photo-${
-                        1486406146926 + index
-                      }?w=80&h=60&fit=crop`}
+                      src={`https://zjtqptljuggbymcoovey.supabase.co/storage/v1/object/public/property-images/placeholder.svg`}
                       alt="Similar property"
                       className="w-20 h-15 object-cover rounded-lg"
                     />

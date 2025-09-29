@@ -617,6 +617,129 @@ export type Database = {
           },
         ]
       }
+      kyc_verifications: {
+        Row: {
+          address: string | null
+          adverse_media_check: boolean | null
+          city: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          expires_at: string | null
+          first_name: string | null
+          id: string
+          id_document_back_url: string | null
+          id_document_front_url: string | null
+          id_expiry_date: string | null
+          id_number: string | null
+          id_type: string | null
+          investment_limit_ngn: number | null
+          kyc_level: string
+          last_name: string | null
+          nationality: string | null
+          pep_check: boolean | null
+          phone_number: string | null
+          postal_code: string | null
+          proof_of_address_url: string | null
+          provider: string | null
+          provider_reference_id: string | null
+          provider_response: Json | null
+          rejection_reason: string | null
+          sanction_check: boolean | null
+          selfie_url: string | null
+          state: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          address?: string | null
+          adverse_media_check?: boolean | null
+          city?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          expires_at?: string | null
+          first_name?: string | null
+          id?: string
+          id_document_back_url?: string | null
+          id_document_front_url?: string | null
+          id_expiry_date?: string | null
+          id_number?: string | null
+          id_type?: string | null
+          investment_limit_ngn?: number | null
+          kyc_level?: string
+          last_name?: string | null
+          nationality?: string | null
+          pep_check?: boolean | null
+          phone_number?: string | null
+          postal_code?: string | null
+          proof_of_address_url?: string | null
+          provider?: string | null
+          provider_reference_id?: string | null
+          provider_response?: Json | null
+          rejection_reason?: string | null
+          sanction_check?: boolean | null
+          selfie_url?: string | null
+          state?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          address?: string | null
+          adverse_media_check?: boolean | null
+          city?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          expires_at?: string | null
+          first_name?: string | null
+          id?: string
+          id_document_back_url?: string | null
+          id_document_front_url?: string | null
+          id_expiry_date?: string | null
+          id_number?: string | null
+          id_type?: string | null
+          investment_limit_ngn?: number | null
+          kyc_level?: string
+          last_name?: string | null
+          nationality?: string | null
+          pep_check?: boolean | null
+          phone_number?: string | null
+          postal_code?: string | null
+          proof_of_address_url?: string | null
+          provider?: string | null
+          provider_reference_id?: string | null
+          provider_response?: Json | null
+          rejection_reason?: string | null
+          sanction_check?: boolean | null
+          selfie_url?: string | null
+          state?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_verifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kyc_verifications_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           action_data: Json | null
@@ -1520,6 +1643,14 @@ export type Database = {
       increment_tokenization_raise: {
         Args: { p_investment_id: string }
         Returns: undefined
+      }
+      reserve_tokens_with_timeout: {
+        Args: {
+          p_investment_id: string
+          p_tokenization_id: string
+          p_tokens_requested: number
+        }
+        Returns: Json
       }
       upsert_token_holdings: {
         Args: {

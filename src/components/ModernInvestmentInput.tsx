@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, CoinsIcon, DollarSign } from "lucide-react";
 
 interface ModernInvestmentInputProps {
   amount: number;
@@ -114,9 +114,9 @@ const StableInputField = ({
 
       <div className="relative group">
         {/* Currency Symbol */}
-        {/* <div className="absolute left-6 top-1/2 transform -translate-y-1/2 text-xl font-semibold text-primary pointer-events-none z-10">
-          {inputMode === "amount" ? "₦" : tokenSymbol}
-        </div> */}
+        <div className="absolute top-1/2 transform -translate-y-1/2 text-xl font-semibold text-primary pointer-events-none z-10">
+          {inputMode === "amount" ? <DollarSign /> : <CoinsIcon />}
+        </div>
 
         {/* Input Field */}
         <Input
@@ -128,7 +128,7 @@ const StableInputField = ({
           onFocus={handleFocus}
           onKeyDown={handleKeyDown}
           placeholder={inputMode === "amount" ? "0.00" : "0"}
-          className="pl-4 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none"
+          className="pl-8 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none"
         />
       </div>
     </div>
@@ -180,7 +180,7 @@ const LiveDisplayInfo = ({
   return (
     <>
       {/* Conversion Display */}
-      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-medium text-muted-foreground">
+      <div className="absolute right-4 top-20 transform -translate-y-1/2 text-sm font-medium text-muted-foreground">
         ≈ {getConversionText()}
       </div>
 

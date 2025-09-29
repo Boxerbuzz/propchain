@@ -461,3 +461,69 @@ from
       1
   ) lm on true
   left join users u on lm.sender_id = u.id;
+
+
+
+  -- KYC verification table
+CREATE TABLE public.kyc_verifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  
+  -- Verification status
+  status TEXT NOT NULL DEFAULT 'not_started', -- not_started, pending, approved, rejected, expired
+  kyc_level TEXT NOT NULL DEFAULT 'tier_1', -- tier_1, tier_2, tier_3
+  
+  -- Personal information
+  first_name TEXT,
+  last_name TEXT,
+  date_of_birth DATE,
+  nationality TEXT,
+  phone_number TEXT,
+  address TEXT,
+  city TEXT,
+  state TEXT,
+  postal_code TEXT,
+  
+  -- Document information
+  id_type TEXT, -- nin, bvn, drivers_license, passport, voters_card
+  id_number TEXT,
+  id_expiry_date DATE,
+  
+  -- Document uploads (store URLs from storage)
+  id_document_front_url TEXT,
+  id_document_back_url TEXT,
+  selfie_url TEXT,
+  proof_of_address_url TEXT,
+  
+  -- Verification details
+  verified_at TIMESTAMP,
+  verified_by UUID REFERENCES users(id),
+  rejection_reason TEXT,
+  
+  -- Third-party verification
+  provider TEXT, -- smile_identity, youverify, verified_africa
+  provider_reference_id TEXT,
+  provider_response JSONB,
+  
+  -- Compliance
+  pep_check BOOLEAN DEFAULT false, -- Politically Exposed Person
+  sanction_check BOOLEAN DEFAULT false,
+  adverse_media_check BOOLEAN DEFAULT false,
+  
+  -- Investment limits based on KYC level
+  investment_limit_ngn NUMERIC,
+  
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  expires_at TIMESTAMP, -- KYC typically expires after 1-2 years
+  
+  CONSTRAINT kyc_verifications_user_id_key UNIQUE(user_id)
+);
+
+-- Add KYC status to users table
+ALTER TABLE users ADD COLUMN kyc_status TEXT DEFAULT 'not_started';
+ALTER TABLE users ADD COLUMN kyc_level TEXT DEFAULT 'tier_1';
+
+-- Index for performance
+CREATE INDEX idx_kyc_status ON kyc_verifications(status);
+CREATE INDEX idx_kyc_user_id ON kyc_verifications(user_id);

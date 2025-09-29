@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { Calculator, TrendingUp, DollarSign } from "lucide-react";
+import { Calculator, TrendingUp, DollarSign, CoinsIcon } from "lucide-react";
 import InvestmentModal from "@/components/InvestmentModal";
 import MoneyInput from "@/components/ui/money-input";
 
@@ -56,7 +56,7 @@ export default function InvestmentCalculator({
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-background border border-border rounded-lg p-4">
             <div className="flex items-center space-x-2 mb-2">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <CoinsIcon className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Tokens</span>
             </div>
             <p className="text-xl font-bold text-foreground">
