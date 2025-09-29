@@ -36,7 +36,7 @@ import { Progress } from "@/components/ui/progress";
 import MoneyInput from "@/components/ui/money-input";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const tokenizationSchema = z.object({
+const createTokenizationSchema = (propertyValue: number) => z.object({
   token_name: z.string().min(1, "Token name is required"),
   token_symbol: z
     .string()
@@ -50,7 +50,9 @@ const tokenizationSchema = z.object({
   max_investment: z.number().optional(),
   min_tokens_per_purchase: z.number().int().min(1).optional(),
   max_tokens_per_purchase: z.number().int().min(1).optional(),
-  target_raise: z.number().min(1, "Target raise is required"),
+  target_raise: z.number()
+    .min(1, "Target raise is required")
+    .max(propertyValue, `Target raise cannot exceed property value of ₦${propertyValue.toLocaleString()}`),
   minimum_raise: z.number().min(1, "Minimum raise is required"),
   investment_window_days: z
     .number()
@@ -61,9 +63,15 @@ const tokenizationSchema = z.object({
   management_fee_percentage: z.number().min(0).max(10).optional(),
   platform_fee_percentage: z.number().min(0).max(5).optional(),
   auto_refund: z.boolean().optional(),
+}).refine((data) => {
+  const maxPossibleRaise = data.total_supply * data.price_per_token;
+  return data.target_raise <= maxPossibleRaise;
+}, {
+  message: "Target raise cannot exceed total supply × price per token",
+  path: ["target_raise"],
 });
 
-type TokenizationForm = z.infer<typeof tokenizationSchema>;
+type TokenizationForm = z.infer<ReturnType<typeof createTokenizationSchema>>;
 
 interface TokenizationDialogProps {
   open: boolean;
@@ -83,7 +91,7 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
   const queryClient = useQueryClient();
 
   const form = useForm<TokenizationForm>({
-    resolver: zodResolver(tokenizationSchema),
+    resolver: zodResolver(createTokenizationSchema(property?.estimated_value || 0)),
     defaultValues: {
       token_name: property ? `${property.title} Token` : "",
       token_symbol: property
@@ -97,7 +105,7 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
       min_investment: 10000,
       max_investment: 1000000,
       target_raise: property
-        ? Math.floor((property.estimated_value || 0) * 0.8)
+        ? Math.min(Math.floor((property.estimated_value || 0) * 0.8), property.estimated_value || 0)
         : 0,
       minimum_raise: property
         ? Math.floor((property.estimated_value || 0) * 0.3)
@@ -112,6 +120,11 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
       auto_refund: true,
     },
   });
+
+  // Watch form values for real-time calculations
+  const totalSupply = form.watch("total_supply");
+  const pricePerToken = form.watch("price_per_token");
+  const maxPossibleRaise = totalSupply && pricePerToken ? totalSupply * pricePerToken : 0;
 
   const createTokenizationMutation = useMutation({
     mutationFn: async (data: TokenizationForm) => {
@@ -296,6 +309,11 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                         </FormControl>
                         <FormDescription>
                           Number of tokens to create
+                          {pricePerToken > 0 && (
+                            <span className="block text-xs mt-1">
+                              Max raise: ₦{(field.value * pricePerToken).toLocaleString()}
+                            </span>
+                          )}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -315,6 +333,13 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                             placeholder="100"
                           />
                         </FormControl>
+                        <FormDescription>
+                          {totalSupply > 0 && (
+                            <span className="text-xs">
+                              Max raise: ₦{(totalSupply * field.value).toLocaleString()}
+                            </span>
+                          )}
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -341,7 +366,17 @@ export const TokenizationDialog: React.FC<TokenizationDialogProps> = ({
                             placeholder="1000000"
                           />
                         </FormControl>
-                        <FormDescription>Goal amount to raise</FormDescription>
+                        <FormDescription>
+                          Goal amount to raise
+                          {maxPossibleRaise > 0 && (
+                            <span className="block text-xs mt-1">
+                              Max possible: ₦{maxPossibleRaise.toLocaleString()} ({totalSupply?.toLocaleString()} tokens × ₦{pricePerToken?.toLocaleString()})
+                            </span>
+                          )}
+                          <span className="block text-xs text-muted-foreground">
+                            Property limit: ₦{property?.estimated_value?.toLocaleString()}
+                          </span>
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

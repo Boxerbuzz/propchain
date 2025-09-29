@@ -637,6 +637,22 @@ const PropertyManagement = () => {
                                     >
                                       {property.approval_status}
                                     </Badge>
+
+                                    {/* Tokenization Ready Badge */}
+                                    {property.approval_status === "approved" &&
+                                    property.listing_status === "active" &&
+                                    (!property.tokenizations ||
+                                      property.tokenizations.length === 0) &&
+                                    property.property_documents &&
+                                    property.property_documents.length > 0 ? (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-green-600 border-green-200"
+                                      >
+                                        Ready for Tokenization
+                                      </Badge>
+                                    ) : null}
+
                                     <span className="text-sm text-muted-foreground">
                                       0 investors
                                     </span>
@@ -687,14 +703,43 @@ const PropertyManagement = () => {
                               </div>
 
                               <div className="mt-4">
-                                <div className="flex justify-between text-sm mb-2">
+                                <div className="flex justify-between items-center text-sm mb-2">
                                   <span>Tokenization Status</span>
-                                  <span>
-                                    {property.tokenizations &&
-                                    property.tokenizations.length > 0
-                                      ? property.tokenizations[0].status
-                                      : "Not Tokenized"}
-                                  </span>
+                                  {property.tokenizations &&
+                                  property.tokenizations.length > 0 ? (
+                                    property.tokenizations[0].status ===
+                                    "active" ? (
+                                      <Badge
+                                        variant="default"
+                                        className="bg-green-600"
+                                      >
+                                        Active
+                                      </Badge>
+                                    ) : (
+                                      <Badge
+                                        variant={
+                                          property.tokenizations[0].status ===
+                                          "completed"
+                                            ? "secondary"
+                                            : property.tokenizations[0]
+                                                .status === "pending" ||
+                                              property.tokenizations[0]
+                                                .status === "draft"
+                                            ? "outline"
+                                            : "destructive"
+                                        }
+                                      >
+                                        {property.tokenizations[0].status}
+                                      </Badge>
+                                    )
+                                  ) : (
+                                    <Badge
+                                      variant="default"
+                                      className="bg-green-600"
+                                    >
+                                      Not Tokenized
+                                    </Badge>
+                                  )}
                                 </div>
                                 {property.tokenizations &&
                                 property.tokenizations.length > 0 ? (
@@ -708,9 +753,7 @@ const PropertyManagement = () => {
                                     className="h-2"
                                   />
                                 ) : (
-                                  <div className="text-sm text-muted-foreground">
-                                    Property not yet tokenized
-                                  </div>
+                                  <div className="text-sm text-muted-foreground"></div>
                                 )}
                               </div>
 

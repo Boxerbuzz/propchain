@@ -244,25 +244,25 @@ export default function Header() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex justify-between items-center">
-                                <p className="text-sm font-semibold text-foreground">
+                                <p className="text-xs font-semibold text-foreground">
                                   {notification.title}
                                 </p>
-                                <div className="flex items-center gap-2">
-                                  {!notification.read_at && (
-                                    <span className="h-2 w-2 rounded-full bg-primary" />
-                                  )}
-                                  <span className="text-xs text-muted-foreground">
-                                    {formatNotificationTime(
-                                      new Date(
-                                        notification.created_at
-                                      ).toISOString()
-                                    )}
-                                  </span>
-                                </div>
                               </div>
                               <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                 {notification.message}
                               </p>
+                              <div className="flex items-center gap-2">
+                                {!notification.read_at && (
+                                  <span className="h-1 w-1 rounded-full bg-primary" />
+                                )}
+                                <span className="text-[9px] text-muted-foreground">
+                                  {formatNotificationTime(
+                                    new Date(
+                                      notification.created_at
+                                    ).toISOString()
+                                  )}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -339,7 +339,11 @@ export default function Header() {
                   </DropdownMenuLabel>
                   <div className="p-2">
                     {userMenuItems.slice(0, -1).map((item) => (
-                      <DropdownMenuItem key={item.name} asChild className="p-0 focus:bg-muted/50 focus:text-foreground">
+                      <DropdownMenuItem
+                        key={item.name}
+                        asChild
+                        className="p-0 focus:bg-muted/50 focus:text-foreground"
+                      >
                         <Link
                           to={item.href}
                           className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-card-foreground hover:bg-muted/50 transition-all duration-200 group"
