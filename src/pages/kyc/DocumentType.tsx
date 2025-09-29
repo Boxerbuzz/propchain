@@ -2,10 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CreditCard, FileText, BookOpen, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export default function DocumentType() {
+  const navigate = useNavigate();
   const [selectedType, setSelectedType] = useState<string>("");
 
   const documentTypes = [
@@ -126,15 +127,36 @@ export default function DocumentType() {
 
         {/* Action Buttons */}
         <div className="text-center">
-          <Link to={selectedType ? "/kyc/upload-id" : "#"}>
-            <Button 
-              size="lg" 
-              className="px-8" 
-              disabled={!selectedType}
-            >
-              Continue with {selectedType ? documentTypes.find(t => t.id === selectedType)?.title : 'Selected ID'}
-            </Button>
-          </Link>
+          <Button 
+            size="lg" 
+            className="px-8" 
+            disabled={!selectedType}
+            onClick={() => {
+              if (selectedType) {
+                navigate('/kyc/upload-id', { 
+                  state: { 
+                    documentType: selectedType,
+                    // Add other form data here as we build the flow
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    phone: '',
+                    dateOfBirth: '',
+                    address: {
+                      street: '',
+                      city: '',
+                      state: '',
+                      postalCode: '',
+                      country: 'Nigeria'
+                    },
+                    documentNumber: ''
+                  } 
+                });
+              }
+            }}
+          >
+            Continue with {selectedType ? documentTypes.find(t => t.id === selectedType)?.title : 'Selected ID'}
+          </Button>
         </div>
       </div>
     </div>

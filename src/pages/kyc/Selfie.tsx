@@ -1,12 +1,127 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Camera, RefreshCw, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Camera, RefreshCw, ArrowLeft, Upload, AlertCircle } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { kycService } from "@/services/kycService";
+import { toast } from "@/components/ui/use-toast";
+
+interface SelfieData {
+  documentType: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  dateOfBirth: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
+  documentNumber: string;
+  documentImageUrl: string;
+  kycId?: string;
+}
 
 export default function Selfie() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const [photoTaken, setPhotoTaken] = useState(false);
+  const [selfieFile, setSelfieFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [selfieData, setSelfieData] = useState<SelfieData | null>(null);
+
+  // Load data from previous step
+  useEffect(() => {
+    const stateData = location.state as SelfieData;
+    if (stateData) {
+      setSelfieData(stateData);
+    } else {
+      navigate('/kyc/start');
+    }
+  }, [location.state, navigate]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Validate file
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Please select an image file');
+        return;
+      }
+      
+      if (file.size > 10 * 1024 * 1024) {
+        setUploadError('File size must be less than 10MB');
+        return;
+      }
+      
+      setSelfieFile(file);
+      setPhotoTaken(true);
+    }
+  };
+
+  const uploadSelfie = async (file: File): Promise<string> => {
+    if (!user) throw new Error('User not authenticated');
+    
+    const fileUrls = await kycService.uploadKYCFiles([
+      { file, type: 'selfie' }
+    ], user.id);
+    
+    return fileUrls.selfie;
+  };
+
+  const handleContinue = async () => {
+    if (!selfieFile || !selfieData || !user) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      // Upload selfie file
+      const selfieUrl = await uploadSelfie(selfieFile);
+      
+      // Update KYC verification with selfie
+      if (selfieData.kycId) {
+        // Update existing KYC record with selfie URL
+        const { error } = await supabase
+          .from('kyc_verifications')
+          .update({
+            selfie_url: selfieUrl,
+          })
+          .eq('id', selfieData.kycId);
+
+        if (error) {
+          throw new Error(`Failed to update KYC record: ${error.message}`);
+        }
+      }
+
+      toast({
+        title: "Selfie Uploaded Successfully!",
+        description: "Your selfie has been uploaded. Please continue with address verification.",
+      });
+      
+      // Navigate to address page
+      navigate('/kyc/address', { 
+        state: { 
+          ...selfieData, 
+          selfieUrl 
+        } 
+      });
+    } catch (error: any) {
+      setUploadError(error.message || 'Upload failed');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,30 +196,77 @@ export default function Selfie() {
                 <div className="text-center space-y-4">
                   {photoTaken ? (
                     <div className="flex justify-center space-x-4">
-                      <Button variant="outline" onClick={() => setPhotoTaken(false)}>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setPhotoTaken(false);
+                          setSelfieFile(null);
+                          setUploadError(null);
+                        }}
+                      >
                         <RefreshCw className="w-4 h-4 mr-2" />
                         Retake
                       </Button>
-                      <Link to="/kyc/address">
-                        <Button>
-                          Use This Photo
-                        </Button>
-                      </Link>
+                      <Button 
+                        onClick={handleContinue}
+                        disabled={isUploading}
+                      >
+                        {isUploading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Uploading...
+                          </>
+                        ) : (
+                          'Use This Photo'
+                        )}
+                      </Button>
                     </div>
                   ) : (
-                    <Button 
-                      size="lg" 
-                      onClick={() => setPhotoTaken(true)}
-                      className="px-8"
-                    >
-                      <Camera className="w-5 h-5 mr-2" />
-                      Take Photo
-                    </Button>
+                    <div className="space-y-4">
+                      <Button 
+                        size="lg" 
+                        onClick={() => setPhotoTaken(true)}
+                        className="px-8"
+                      >
+                        <Camera className="w-5 h-5 mr-2" />
+                        Take Photo
+                      </Button>
+                      
+                      <div className="text-sm text-muted-foreground">or</div>
+                      
+                      <div>
+                        <input
+                          type="file"
+                          id="selfie-upload"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          className="hidden"
+                        />
+                        <label htmlFor="selfie-upload">
+                          <Button variant="outline" className="cursor-pointer">
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload Photo
+                          </Button>
+                        </label>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Error Message */}
+          {uploadError && (
+            <Card className="border-red-200 bg-red-50 mb-8">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                  <p className="text-red-800">{uploadError}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Instructions */}
           <Card className="border-border mb-8">

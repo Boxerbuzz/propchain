@@ -3,6 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import { usePortfolio } from "./usePortfolio";
 import { supabaseService } from "@/services/supabaseService";
 import { Wallet } from "../types";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardStats {
   portfolioValue: number;
@@ -12,6 +13,13 @@ interface DashboardStats {
   monthlyReturns: number;
   walletBalance: number;
   returnPercentage: number;
+}
+
+interface KYCStatus {
+  status: string;
+  kyc_level: string;
+  investment_limit_ngn: number;
+  expires_at: string | null;
 }
 
 export const useDashboard = () => {
@@ -28,8 +36,31 @@ export const useDashboard = () => {
     staleTime: 2 * 60 * 1000,
   });
 
+  const kycQuery = useQuery({
+    queryKey: ['kyc-status', user?.id],
+    queryFn: async () => {
+      if (!isAuthenticated || !user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('kyc_verifications')
+        .select('status, kyc_level, investment_limit_ngn, expires_at')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching KYC status:', error);
+        return null;
+      }
+      
+      return data as KYCStatus | null;
+    },
+    enabled: !!user?.id && isAuthenticated,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
   const portfolioData = portfolioQuery.data;
   const wallets = walletsQuery.data || [];
+  const kycStatus = kycQuery.data;
   
   const stats: DashboardStats = {
     portfolioValue: portfolioData?.portfolioStats?.currentValue || 0,
@@ -43,17 +74,20 @@ export const useDashboard = () => {
       : 0
   };
 
-  const shouldShowKycAlert = user?.kyc_status !== 'verified';
+  const shouldShowKycAlert = !kycStatus || kycStatus.status !== 'approved' || 
+    (kycStatus.expires_at && new Date(kycStatus.expires_at) < new Date());
 
   return {
     stats,
     wallets,
-    isLoading: portfolioQuery.isLoading || walletsQuery.isLoading,
-    error: portfolioQuery.error?.message || walletsQuery.error?.message || null,
+    kycStatus,
+    isLoading: portfolioQuery.isLoading || walletsQuery.isLoading || kycQuery.isLoading,
+    error: portfolioQuery.error?.message || walletsQuery.error?.message || kycQuery.error?.message || null,
     shouldShowKycAlert,
     refetch: () => {
       portfolioQuery.refetch();
       walletsQuery.refetch();
+      kycQuery.refetch();
     }
   };
 };

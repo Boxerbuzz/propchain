@@ -1,13 +1,74 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Upload, Camera, FileImage, ArrowLeft, X } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import {
+  Upload,
+  Camera,
+  FileImage,
+  ArrowLeft,
+  X,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { kycService } from "@/services/kycService";
+import { useToast } from "@/hooks/use-toast";
+
+interface KYCFormData {
+  documentType: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  dateOfBirth: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
+  documentNumber: string;
+}
 
 export default function UploadID() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [kycData, setKycData] = useState<KYCFormData | null>(null);
+
+  // Load KYC data from previous steps
+  useEffect(() => {
+    const stateData = location.state as KYCFormData;
+    if (stateData) {
+      setKycData(stateData);
+    } else {
+      // Redirect to start if no data
+      navigate("/kyc/start");
+    }
+  }, [location.state, navigate]);
+
+  const validateFile = (file: File): string | null => {
+    // Check file type
+    if (!file.type.startsWith("image/")) {
+      return "Please upload an image file (JPG, PNG, etc.)";
+    }
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      return "File size must be less than 10MB";
+    }
+
+    return null;
+  };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -23,15 +84,107 @@ export default function UploadID() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+    setUploadError(null);
+
+    console.log("🎯 File dropped:", e.dataTransfer.files);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setUploadedFile(e.dataTransfer.files[0]);
+      const file = e.dataTransfer.files[0];
+      console.log("📄 Dropped file:", file.name, file.size, file.type);
+      const error = validateFile(file);
+      if (error) {
+        console.log("❌ Drop validation error:", error);
+        setUploadError(error);
+      } else {
+        console.log("✅ Drop validated successfully");
+        setUploadedFile(file);
+      }
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("📁 File input changed:", e.target.files);
+    setUploadError(null);
     if (e.target.files && e.target.files[0]) {
-      setUploadedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      console.log("📄 Selected file:", file.name, file.size, file.type);
+      const error = validateFile(file);
+      if (error) {
+        console.log("❌ File validation error:", error);
+        setUploadError(error);
+      } else {
+        console.log("✅ File validated successfully");
+        setUploadedFile(file);
+      }
+    } else {
+      console.log("❌ No file selected");
+    }
+  };
+
+  const uploadFile = async (file: File): Promise<string> => {
+    if (!user) throw new Error("User not authenticated");
+
+    // Use the new uploadKYCFiles method for better organization
+    const fileUrls = await kycService.uploadKYCFiles(
+      [{ file, type: "id_front" }],
+      user.id
+    );
+
+    return fileUrls.id_front;
+  };
+
+  const handleContinue = async () => {
+    if (!uploadedFile || !kycData || !user) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      // Upload the file
+      const fileUrl = await uploadFile(uploadedFile);
+
+      // Prepare KYC submission data
+      const submissionData = {
+        userId: user.id,
+        firstName: kycData.firstName,
+        lastName: kycData.lastName,
+        email: kycData.email,
+        phone: kycData.phone,
+        dateOfBirth: kycData.dateOfBirth,
+        address: kycData.address,
+        documentType: kycData.documentType as
+          | "national_id"
+          | "passport"
+          | "drivers_license",
+        documentNumber: kycData.documentNumber,
+        documentImages: [fileUrl], // Front image
+        selfieImage: "", // Will be added in next step
+      };
+
+      // Submit KYC verification
+      const result = await kycService.submitKYCVerification(submissionData);
+
+      if (result.success) {
+        toast({
+          title: "ID Uploaded Successfully!",
+          description:
+            "Your ID document has been uploaded. Please continue with the selfie verification.",
+        });
+
+        // Navigate to selfie page with updated data
+        navigate("/kyc/selfie", {
+          state: {
+            ...kycData,
+            documentImageUrl: fileUrl,
+            kycId: result.verificationId,
+          },
+        });
+      } else {
+        setUploadError(result.error || "Failed to upload document");
+      }
+    } catch (error: any) {
+      setUploadError(error.message || "Upload failed");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -50,12 +203,16 @@ export default function UploadID() {
               </Link>
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">PC</span>
+                  <span className="text-primary-foreground font-bold text-sm">
+                    PC
+                  </span>
                 </div>
-                <span className="text-xl font-bold text-foreground">PropChain</span>
+                <span className="text-xl font-bold text-foreground">
+                  PropChain
+                </span>
               </div>
             </div>
-            
+
             {/* Progress */}
             <div className="flex items-center space-x-3">
               <span className="text-sm text-muted-foreground">Step 2 of 5</span>
@@ -71,7 +228,14 @@ export default function UploadID() {
             Upload Your ID Document
           </h1>
           <p className="text-muted-foreground">
-            Please upload a clear photo of your National ID (NIN)
+            Please upload a clear photo of your{" "}
+            {kycData?.documentType === "nin"
+              ? "National ID (NIN)"
+              : kycData?.documentType === "drivers-license"
+              ? "Driver's License"
+              : kycData?.documentType === "passport"
+              ? "International Passport"
+              : "ID Document"}
           </p>
         </div>
 
@@ -81,9 +245,9 @@ export default function UploadID() {
             <CardContent className="p-8">
               <div
                 className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
-                  dragActive 
-                    ? 'border-primary bg-primary/5' 
-                    : 'border-border hover:border-primary/50'
+                  dragActive
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
                 }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -92,19 +256,24 @@ export default function UploadID() {
               >
                 {uploadedFile ? (
                   <div className="space-y-4">
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
-                      <FileImage className="w-8 h-8 text-primary" />
+                    <div className="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto">
+                      <CheckCircle className="w-8 h-8 text-green-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">{uploadedFile.name}</p>
+                      <p className="font-medium text-foreground">
+                        {uploadedFile.name}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
-                      onClick={() => setUploadedFile(null)}
+                      onClick={() => {
+                        setUploadedFile(null);
+                        setUploadError(null);
+                      }}
                     >
                       <X className="w-4 h-4 mr-2" />
                       Remove
@@ -115,7 +284,7 @@ export default function UploadID() {
                     <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mx-auto">
                       <Upload className="w-8 h-8 text-primary" />
                     </div>
-                    
+
                     <div>
                       <p className="text-lg font-medium text-foreground mb-2">
                         Drag and drop your ID here
@@ -127,19 +296,25 @@ export default function UploadID() {
 
                     <div className="flex justify-center space-x-4">
                       <input
+                        title="File Upload"
                         type="file"
                         id="file-upload"
                         accept="image/*"
                         onChange={handleFileChange}
                         className="hidden"
                       />
-                      <label htmlFor="file-upload">
-                        <Button variant="outline" className="cursor-pointer">
-                          <FileImage className="w-4 h-4 mr-2" />
-                          Choose File
-                        </Button>
-                      </label>
-                      
+                      <Button
+                        variant="outline"
+                        className="cursor-pointer"
+                        onClick={() => {
+                          console.log("🔘 Choose File button clicked");
+                          document.getElementById("file-upload")?.click();
+                        }}
+                      >
+                        <FileImage className="w-4 h-4 mr-2" />
+                        Choose File
+                      </Button>
+
                       <Button variant="outline">
                         <Camera className="w-4 h-4 mr-2" />
                         Take Photo
@@ -151,6 +326,18 @@ export default function UploadID() {
             </CardContent>
           </Card>
 
+          {/* Error Message */}
+          {uploadError && (
+            <Card className="border-red-200 bg-red-50 mb-8">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                  <p className="text-red-800">{uploadError}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Guidelines */}
           <Card className="border-border mb-8">
             <CardHeader>
@@ -159,7 +346,9 @@ export default function UploadID() {
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-foreground mb-2">✅ Good Photo</h4>
+                  <h4 className="font-medium text-foreground mb-2">
+                    ✅ Good Photo
+                  </h4>
                   <ul className="space-y-1 text-sm text-muted-foreground">
                     <li>• All four corners visible</li>
                     <li>• Text is clear and readable</li>
@@ -182,15 +371,21 @@ export default function UploadID() {
 
           {/* Action Buttons */}
           <div className="text-center">
-            <Link to={uploadedFile ? "/kyc/selfie" : "#"}>
-              <Button 
-                size="lg" 
-                className="px-8" 
-                disabled={!uploadedFile}
-              >
-                Continue to Selfie
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              className="px-8"
+              disabled={!uploadedFile || isUploading}
+              onClick={handleContinue}
+            >
+              {isUploading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Uploading...
+                </>
+              ) : (
+                "Continue to Selfie"
+              )}
+            </Button>
           </div>
         </div>
       </div>

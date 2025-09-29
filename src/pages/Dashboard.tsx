@@ -12,9 +12,7 @@ import {
   Activity,
   Wallet,
   Bell,
-  ArrowUpRight,
   ArrowDownLeft,
-  CreditCard,
   Clock,
   CheckCircle,
   XCircle,
@@ -27,7 +25,7 @@ import { useActivityFeed } from "../hooks/useActivityFeed";
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { stats, isLoading, shouldShowKycAlert } = useDashboard();
+  const { stats, isLoading, shouldShowKycAlert, kycStatus } = useDashboard();
   const {
     notifications,
     isLoading: notificationsLoading,
@@ -129,13 +127,30 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-amber-800">
-                      Complete Your Verification
+                      {!kycStatus
+                        ? "Complete Your Verification"
+                        : kycStatus.status === "pending"
+                        ? "KYC Under Review"
+                        : kycStatus.status === "rejected"
+                        ? "KYC Verification Failed"
+                        : "KYC Verification Expired"}
                     </h3>
                     <p className="text-sm text-amber-700">
-                      {user?.kyc_status === "pending"
-                        ? "Your KYC is being processed. Complete verification to unlock all features."
-                        : "Verify your identity to unlock all features and higher limits"}
+                      {!kycStatus
+                        ? "Verify your identity to unlock all features and higher investment limits"
+                        : kycStatus.status === "pending"
+                        ? "Your KYC is being processed. You will be notified once approved."
+                        : kycStatus.status === "rejected"
+                        ? "Please resubmit your KYC documents with correct information."
+                        : "Your KYC verification has expired. Please reverify to continue investing."}
                     </p>
+                    {kycStatus && (
+                      <p className="text-xs text-amber-600 mt-1">
+                        Current Level: {kycStatus.kyc_level?.toUpperCase()} |
+                        Investment Limit: ₦
+                        {kycStatus.investment_limit_ngn?.toLocaleString()}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <Link to="/kyc/start">
@@ -143,9 +158,11 @@ export default function Dashboard() {
                     variant="outline"
                     className="border-amber-300 text-amber-700 hover:bg-amber-100 w-full md:w-auto"
                   >
-                    {user?.kyc_status === "pending"
+                    {!kycStatus
+                      ? "Verify Now"
+                      : kycStatus.status === "pending"
                       ? "Check Status"
-                      : "Verify Now"}
+                      : "Reverify"}
                   </Button>
                 </Link>
               </div>
@@ -314,12 +331,15 @@ export default function Dashboard() {
                               {activity.description}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {new Date(activity.timestamp).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {new Date(activity.timestamp).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
                             </p>
                           </div>
                         </div>
