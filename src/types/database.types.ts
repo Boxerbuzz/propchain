@@ -549,6 +549,8 @@ export type Database = {
           percentage_ownership: number | null
           refund_amount: number | null
           refund_processed_at: string | null
+          reservation_expires_at: string | null
+          reservation_status: string | null
           tokenization_id: string | null
           tokens_allocated: number | null
           tokens_requested: number
@@ -569,6 +571,8 @@ export type Database = {
           percentage_ownership?: number | null
           refund_amount?: number | null
           refund_processed_at?: string | null
+          reservation_expires_at?: string | null
+          reservation_status?: string | null
           tokenization_id?: string | null
           tokens_allocated?: number | null
           tokens_requested: number
@@ -589,6 +593,8 @@ export type Database = {
           percentage_ownership?: number | null
           refund_amount?: number | null
           refund_processed_at?: string | null
+          reservation_expires_at?: string | null
+          reservation_status?: string | null
           tokenization_id?: string | null
           tokens_allocated?: number | null
           tokens_requested?: number
@@ -1386,6 +1392,42 @@ export type Database = {
       }
     }
     Views: {
+      cron_job_status: {
+        Row: {
+          active: boolean | null
+          command: string | null
+          database: string | null
+          jobid: number | null
+          jobname: string | null
+          nodename: string | null
+          nodeport: number | null
+          schedule: string | null
+          username: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          command?: string | null
+          database?: string | null
+          jobid?: number | null
+          jobname?: string | null
+          nodename?: string | null
+          nodeport?: number | null
+          schedule?: string | null
+          username?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          command?: string | null
+          database?: string | null
+          jobid?: number | null
+          jobname?: string | null
+          nodename?: string | null
+          nodeport?: number | null
+          schedule?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       user_chat_rooms_with_last_message: {
         Row: {
           joined_at: string | null
@@ -1440,9 +1482,9 @@ export type Database = {
         }
         Returns: Json
       }
-      cleanup_expired_reservations_for_property: {
-        Args: { p_property_id: string }
-        Returns: number
+      cleanup_expired_token_reservations: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       create_chat_room_for_tokenization: {
         Args: { p_tokenization_id: string }
@@ -1478,22 +1520,6 @@ export type Database = {
       increment_tokenization_raise: {
         Args: { p_investment_id: string }
         Returns: undefined
-      }
-      release_expired_reservation: {
-        Args: {
-          p_investment_id: string
-          p_tokenization_id: string
-          p_tokens_to_release: number
-        }
-        Returns: undefined
-      }
-      reserve_tokens_with_timeout: {
-        Args: {
-          p_investment_id: string
-          p_tokenization_id: string
-          p_tokens_requested: number
-        }
-        Returns: Json
       }
       upsert_token_holdings: {
         Args: {

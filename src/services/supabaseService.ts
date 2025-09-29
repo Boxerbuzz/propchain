@@ -872,4 +872,159 @@ export const supabaseService = {
       return !!data;
     },
   },
+
+  activity: {
+    async getActivityFeed(userId: string, limit = 20) {
+      // Get investments
+      const { data: investments, error: investmentsError } = await supabase
+        .from("investments")
+        .select(`
+          id,
+          amount_ngn,
+          tokens_requested,
+          tokens_allocated,
+          payment_status,
+          payment_method,
+          created_at,
+          updated_at,
+          tokenizations!inner (
+            id,
+            token_symbol,
+            property_title,
+            properties!inner (
+              id,
+              title,
+              location
+            )
+          )
+        `)
+        .eq("investor_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (investmentsError) throw investmentsError;
+
+      // Get wallet transactions (from wallets table updates)
+      const { data: walletActivities, error: walletError } = await supabase
+        .from("activity_logs")
+        .select(`
+          id,
+          activity_type,
+          description,
+          metadata,
+          created_at
+        `)
+        .eq("user_id", userId)
+        .in("activity_type", ["wallet_transaction", "balance_update", "payment_processed"])
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (walletError) throw walletError;
+
+      // Get dividend payments
+      const { data: dividends, error: dividendsError } = await supabase
+        .from("dividend_payments")
+        .select(`
+          id,
+          amount_ngn,
+          amount_usd,
+          payment_status,
+          created_at,
+          tokenizations!inner (
+            id,
+            token_symbol,
+            property_title,
+            properties!inner (
+              id,
+              title,
+              location
+            )
+          )
+        `)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (dividendsError) throw dividendsError;
+
+      // Combine and format all activities
+      const activities = [];
+
+      // Add investments
+      investments?.forEach((investment) => {
+        activities.push({
+          id: `investment_${investment.id}`,
+          type: "investment",
+          title: investment.payment_status === "confirmed" 
+            ? "Investment Confirmed" 
+            : investment.payment_status === "pending"
+            ? "Investment Pending"
+            : "Investment Created",
+          description: `${investment.tokens_allocated || investment.tokens_requested} ${investment.tokenizations.token_symbol} tokens in ${investment.tokenizations.property_title}`,
+          amount: investment.amount_ngn,
+          status: investment.payment_status,
+          payment_method: investment.payment_method,
+          timestamp: investment.created_at,
+          updated_at: investment.updated_at,
+          metadata: {
+            investment_id: investment.id,
+            property_id: investment.tokenizations.properties.id,
+            property_title: investment.tokenizations.property_title,
+            property_location: investment.tokenizations.properties.location,
+            token_symbol: investment.tokenizations.token_symbol,
+            tokens_requested: investment.tokens_requested,
+            tokens_allocated: investment.tokens_allocated
+          }
+        });
+      });
+
+      // Add wallet activities
+      walletActivities?.forEach((activity) => {
+        activities.push({
+          id: `wallet_${activity.id}`,
+          type: "wallet",
+          title: activity.activity_type === "wallet_transaction" 
+            ? "Wallet Transaction"
+            : activity.activity_type === "balance_update"
+            ? "Balance Updated"
+            : "Payment Processed",
+          description: activity.description,
+          amount: activity.metadata?.amount || null,
+          status: activity.metadata?.status || "completed",
+          timestamp: activity.created_at,
+          metadata: activity.metadata
+        });
+      });
+
+      // Add dividend payments
+      dividends?.forEach((dividend) => {
+        activities.push({
+          id: `dividend_${dividend.id}`,
+          type: "dividend",
+          title: dividend.payment_status === "paid" 
+            ? "Dividend Received" 
+            : dividend.payment_status === "pending"
+            ? "Dividend Pending"
+            : "Dividend Declared",
+          description: `Dividend payment from ${dividend.tokenizations.property_title}`,
+          amount: dividend.amount_ngn,
+          status: dividend.payment_status,
+          timestamp: dividend.created_at,
+          metadata: {
+            dividend_id: dividend.id,
+            property_id: dividend.tokenizations.properties.id,
+            property_title: dividend.tokenizations.property_title,
+            property_location: dividend.tokenizations.properties.location,
+            token_symbol: dividend.tokenizations.token_symbol,
+            amount_usd: dividend.amount_usd
+          }
+        });
+      });
+
+      // Sort by timestamp (most recent first)
+      activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+      return activities.slice(0, limit);
+    },
+  },
 };

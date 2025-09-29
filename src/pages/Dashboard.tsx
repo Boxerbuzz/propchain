@@ -12,11 +12,18 @@ import {
   Activity,
   Wallet,
   Bell,
+  ArrowUpRight,
+  ArrowDownLeft,
+  CreditCard,
+  Clock,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
 import { useNotifications } from "../hooks/useNotifications";
+import { useActivityFeed } from "../hooks/useActivityFeed";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -26,6 +33,7 @@ export default function Dashboard() {
     isLoading: notificationsLoading,
     markAllAsRead,
   } = useNotifications();
+  const { activities, isLoading: activitiesLoading } = useActivityFeed(10);
 
   console.log(user);
 
@@ -41,6 +49,43 @@ export default function Dashboard() {
   const getDisplayName = () => {
     if (!user) return "User";
     return user.first_name || user.email?.split("@")[0] || "User";
+  };
+
+  const getActivityIcon = (type: string, status: string) => {
+    switch (type) {
+      case "investment":
+        return status === "confirmed" ? (
+          <CheckCircle className="w-5 h-5 text-green-600" />
+        ) : status === "pending" ? (
+          <Clock className="w-5 h-5 text-amber-600" />
+        ) : (
+          <XCircle className="w-5 h-5 text-red-600" />
+        );
+      case "wallet":
+        return <Wallet className="w-5 h-5 text-blue-600" />;
+      case "dividend":
+        return status === "paid" ? (
+          <ArrowDownLeft className="w-5 h-5 text-green-600" />
+        ) : (
+          <Clock className="w-5 h-5 text-amber-600" />
+        );
+      default:
+        return <Activity className="w-5 h-5 text-muted-foreground" />;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "confirmed":
+      case "paid":
+        return <Badge className="bg-green-100 text-green-800">Confirmed</Badge>;
+      case "pending":
+        return <Badge className="bg-amber-100 text-amber-800">Pending</Badge>;
+      case "failed":
+        return <Badge className="bg-red-100 text-red-800">Failed</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
   };
 
   if (isLoading) {
@@ -228,20 +273,87 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <Activity className="w-8 h-8 text-muted-foreground" />
+                {activitiesLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-muted rounded-full"></div>
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-muted rounded w-3/4"></div>
+                            <div className="h-3 bg-muted rounded w-1/2"></div>
+                          </div>
+                          <div className="h-6 bg-muted rounded w-16"></div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">
-                    No Recent Activity
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    Start investing to see your activity here
-                  </p>
-                  <Link to="/browse">
-                    <Button>Browse Properties</Button>
-                  </Link>
-                </div>
+                ) : activities.length > 0 ? (
+                  <div className="space-y-4">
+                    {activities.slice(0, 8).map((activity, index) => (
+                      <div key={activity.id}>
+                        <div className="flex items-start space-x-3 py-2">
+                          <div className="flex-shrink-0 mt-1">
+                            {getActivityIcon(activity.type, activity.status)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-medium text-foreground">
+                                {activity.title}
+                              </p>
+                              <div className="flex items-center space-x-2">
+                                {activity.amount && (
+                                  <span className="text-sm font-semibold text-foreground">
+                                    {formatNumber(activity.amount)}
+                                  </span>
+                                )}
+                                {getStatusBadge(activity.status)}
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {activity.description}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(activity.timestamp).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                        {index < activities.slice(0, 8).length - 1 && (
+                          <div className="border-t border-border/50 mt-4"></div>
+                        )}
+                      </div>
+                    ))}
+                    {activities.length > 8 && (
+                      <div className="text-center pt-4">
+                        <Link to="/portfolio">
+                          <Button variant="ghost" size="sm">
+                            View All Activity
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Activity className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-2">
+                      No Recent Activity
+                    </h3>
+                    <p className="text-muted-foreground mb-6">
+                      Start investing to see your activity here
+                    </p>
+                    <Link to="/browse">
+                      <Button>Browse Properties</Button>
+                    </Link>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

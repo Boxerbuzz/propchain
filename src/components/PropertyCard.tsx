@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { MapPin, TrendingUp, Users, Calendar } from "lucide-react";
+import { MapPin, TrendingUp, Calendar, Coins } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FavoriteButton from "./FavoriteButton";
 
@@ -30,11 +30,11 @@ export default function PropertyCard({
   totalTokens,
   investmentDeadline,
   imageUrl,
-  status
+  status,
 }: PropertyCardProps) {
   const navigate = useNavigate();
   const progressPercentage = (tokensSold / totalTokens) * 100;
-  
+
   const getStatusBadge = () => {
     switch (status) {
       case "active":
@@ -42,7 +42,11 @@ export default function PropertyCard({
       case "funded":
         return <Badge className="status-pending">Fully Funded</Badge>;
       case "upcoming":
-        return <Badge className="bg-accent/10 text-accent border border-accent/20">Upcoming</Badge>;
+        return (
+          <Badge className="bg-accent/10 text-accent border border-accent/20">
+            Upcoming
+          </Badge>
+        );
       default:
         return null;
     }
@@ -52,8 +56,8 @@ export default function PropertyCard({
     <div className="property-card">
       {/* Property Image */}
       <div className="relative mb-4">
-        <img 
-          src={imageUrl} 
+        <img
+          src={imageUrl}
           alt={title}
           className="w-full h-48 object-cover rounded-lg"
         />
@@ -61,7 +65,7 @@ export default function PropertyCard({
           {getStatusBadge()}
         </div>
         <div className="absolute top-3 left-3">
-          <FavoriteButton 
+          <FavoriteButton
             propertyId={property_id}
             variant="secondary"
             size="sm"
@@ -84,7 +88,9 @@ export default function PropertyCard({
         <div className="flex justify-between items-center">
           <div>
             <p className="text-sm text-muted-foreground">Property Value</p>
-            <p className="text-xl font-bold text-foreground">₦{price.toLocaleString()}</p>
+            <p className="text-xl font-bold text-foreground">
+              ₦{price.toLocaleString()}
+            </p>
           </div>
           <div className="text-right">
             <p className="text-sm text-muted-foreground">Expected Return</p>
@@ -99,7 +105,7 @@ export default function PropertyCard({
         <div>
           <div className="flex justify-between text-sm text-muted-foreground mb-2">
             <div className="flex items-center">
-              <Users className="h-4 w-4 mr-1" />
+              <Coins className="h-4 w-4 mr-1" />
               {tokensSold} / {totalTokens} tokens sold
             </div>
             <span>{progressPercentage.toFixed(1)}%</span>
@@ -114,7 +120,7 @@ export default function PropertyCard({
         </div>
 
         {/* CTA Button */}
-        <Button 
+        <Button
           className="w-full btn-primary"
           disabled={status === "funded"}
           onClick={() => navigate(`/browse/${id}`)}

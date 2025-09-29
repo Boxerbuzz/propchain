@@ -1482,9 +1482,9 @@ export type Database = {
         }
         Returns: Json
       }
-      cleanup_expired_reservations_for_property: {
-        Args: { p_property_id: string }
-        Returns: number
+      cleanup_expired_token_reservations: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       create_chat_room_for_tokenization: {
         Args: { p_tokenization_id: string }
@@ -1520,22 +1520,6 @@ export type Database = {
       increment_tokenization_raise: {
         Args: { p_investment_id: string }
         Returns: undefined
-      }
-      release_expired_reservation: {
-        Args: {
-          p_investment_id: string
-          p_tokenization_id: string
-          p_tokens_to_release: number
-        }
-        Returns: undefined
-      }
-      reserve_tokens_with_timeout: {
-        Args: {
-          p_investment_id: string
-          p_tokenization_id: string
-          p_tokens_requested: number
-        }
-        Returns: Json
       }
       upsert_token_holdings: {
         Args: {
