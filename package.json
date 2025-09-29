@@ -43,6 +43,7 @@
     "@supabase/supabase-js": "^2.57.4",
     "@tailwindcss/forms": "^0.5.10",
     "@tanstack/react-query": "^5.83.0",
+    "@vercel/speed-insights": "^1.2.0",
     "@walletconnect/utils": "^2.21.9",
     "@walletconnect/web3wallet": "^1.16.1",
     "class-variance-authority": "^0.7.1",
