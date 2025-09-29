@@ -45,7 +45,23 @@ const StableInputField = ({
 
   // Sync local input value when programmatic updates occur (e.g., quick buttons, mode toggle)
   useEffect(() => {
-    setLocalValue(externalValue);
+    const formatForMode = (val: string) => {
+      if (!val) return "";
+      const unformatted = val.replace(/,/g, "");
+      if (inputMode === "tokens") {
+        const intPart = unformatted.replace(/\D/g, "");
+        return intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      } else {
+        const parts = unformatted.split(".");
+        const intPart = parts[0].replace(/\D/g, "");
+        const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        if (parts.length > 1) {
+          return `${formattedInt}.${parts[1]}`;
+        }
+        return formattedInt;
+      }
+    };
+    setLocalValue(formatForMode(externalValue));
   }, [externalSyncKey, externalValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,11 +75,23 @@ const StableInputField = ({
   };
 
   const handleBlur = () => {
+    const unformatted = localValue.replace(/,/g, "");
+    // Format for display on blur
+    const parts = unformatted.split(".");
+    const intPart = parts[0].replace(/\D/g, "");
+    const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const formatted = inputMode === "amount" && parts.length > 1 ? `${formattedInt}.${parts[1]}` : formattedInt;
+    setLocalValue(formatted);
     onBlur();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     onKeyDown(e);
+  };
+
+  const handleFocus = () => {
+    // Unformat for easier editing
+    setLocalValue((prev) => prev.replace(/,/g, ""));
   };
 
   return (
@@ -97,6 +125,7 @@ const StableInputField = ({
           value={localValue}
           onChange={handleChange}
           onBlur={handleBlur}
+          onFocus={handleFocus}
           onKeyDown={handleKeyDown}
           placeholder={inputMode === "amount" ? "0.00" : "0"}
           className="pl-16 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none"
