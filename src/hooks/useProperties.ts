@@ -30,14 +30,20 @@ export const useProperties = (filters?: any) => {
     queryFn: async () => {
       const tokenizations = await supabaseService.properties.listActiveTokenizations();
       
-      return tokenizations.map((tokenization: any) => ({
-        ...tokenization,
-        property_title: tokenization.properties?.title || "Unknown Property",
-        property_location: tokenization.properties?.location || {},
-        property_type: tokenization.properties?.property_type || "Unknown",
-        primary_image: null,
-        image_count: 0,
-      }));
+      return tokenizations.map((tokenization: any) => {
+        const images = tokenization.properties?.property_images || [];
+        const primaryImage = images.find(img => img.is_primary)?.image_url || images[0]?.image_url;
+        
+        return {
+          ...tokenization,
+          property_title: tokenization.properties?.title || "Unknown Property",
+          property_location: tokenization.properties?.location || {},
+          property_type: tokenization.properties?.property_type || "Unknown",
+          primary_image: primaryImage,
+          image_count: images.length,
+          images: images,
+        };
+      });
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,

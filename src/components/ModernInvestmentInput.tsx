@@ -147,7 +147,7 @@ const LiveDisplayInfo = ({
       </div>
 
       {/* Quick Amount Buttons */}
-      <div className="grid grid-cols-4 gap-2 pt-2">
+      <div className="grid grid-cols-4 gap-2 pt-2 pb-3">
         {quickAmountButtons.map(({ label, value }) => {
           const maxAmount = maxInvestment || walletBalance;
           const buttonAmount = Math.floor(maxAmount * value);
@@ -175,7 +175,7 @@ const LiveDisplayInfo = ({
       </div>
 
       {/* Investment Limits & Progress */}
-      <div className="flex items-center justify-between pt-2 border-t border-border/50">
+      <div className="flex items-center justify-between pt-4 border-t border-border/50">
         <div className="flex items-center space-x-4 text-xs text-muted-foreground">
           <span className="flex items-center space-x-1">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>

@@ -337,7 +337,13 @@ export const supabaseService = {
             title,
             location,
             property_type,
-            estimated_value
+            estimated_value,
+            property_images(
+              id,
+              image_url,
+              is_primary,
+              sort_order
+            )
           )
         `
         )
