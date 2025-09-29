@@ -114,9 +114,9 @@ const StableInputField = ({
 
       <div className="relative group">
         {/* Currency Symbol */}
-        <div className="absolute left-6 top-1/2 transform -translate-y-1/2 text-xl font-semibold text-primary pointer-events-none z-10">
+        {/* <div className="absolute left-6 top-1/2 transform -translate-y-1/2 text-xl font-semibold text-primary pointer-events-none z-10">
           {inputMode === "amount" ? "₦" : tokenSymbol}
-        </div>
+        </div> */}
 
         {/* Input Field */}
         <Input
@@ -128,7 +128,7 @@ const StableInputField = ({
           onFocus={handleFocus}
           onKeyDown={handleKeyDown}
           placeholder={inputMode === "amount" ? "0.00" : "0"}
-          className="pl-16 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none"
+          className="pl-4 pr-4 text-3xl font-bold h-16 bg-transparent border-0 focus:ring-0 focus:outline-none"
         />
       </div>
     </div>
