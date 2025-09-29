@@ -146,6 +146,31 @@ serve(async (req) => {
             "[PROCESS-COMPLETION] Failed to add user to chat:",
             participantError
           );
+        } else {
+          // Send welcome message to chat room
+          console.log("[PROCESS-COMPLETION] Sending welcome message to chat");
+          const { error: messageError } = await supabase
+            .from("chat_messages")
+            .insert({
+              room_id: roomId,
+              sender_id: null, // System message
+              message_type: "system",
+              message_text: `🎉 New investor joined! Welcome to the ${investment.tokenizations.properties.title} investor community.`,
+              metadata: {
+                event_type: "user_joined",
+                user_id: investment.investor_id,
+                tokens_invested: investment.tokens_requested,
+                amount_invested: investment.amount_ngn,
+                investment_id: investment.id,
+              },
+            });
+
+          if (messageError) {
+            console.error(
+              "[PROCESS-COMPLETION] Failed to send welcome message:",
+              messageError
+            );
+          }
         }
       }
     }
