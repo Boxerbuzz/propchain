@@ -6,6 +6,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { kycService } from "@/services/kycService";
+import { kycDraftService } from "@/services/kycDraftService";
 import { toast } from "@/components/ui/use-toast";
 
 interface SelfieData {
@@ -37,16 +38,53 @@ export default function Selfie() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [selfieData, setSelfieData] = useState<SelfieData | null>(null);
+  const [draft, setDraft] = useState<any>(null);
 
-  // Load data from previous step
+  // Load data from draft or previous step
   useEffect(() => {
-    const stateData = location.state as SelfieData;
-    if (stateData) {
-      setSelfieData(stateData);
-    } else {
-      navigate('/kyc/start');
-    }
-  }, [location.state, navigate]);
+    const loadDraftData = async () => {
+      if (!user?.id) return;
+
+      try {
+        // Try to get existing draft
+        const draftData = await kycDraftService.getDraft(user.id);
+        
+        if (draftData) {
+          setDraft(draftData);
+          setSelfieData({
+            documentType: draftData.form_data.documentType || "",
+            firstName: draftData.form_data.firstName || "",
+            lastName: draftData.form_data.lastName || "",
+            email: draftData.form_data.email || "",
+            phone: draftData.form_data.phone || "",
+            dateOfBirth: draftData.form_data.dateOfBirth || "",
+            address: draftData.form_data.address || {
+              street: "",
+              city: "",
+              state: "",
+              postalCode: "",
+              country: "Nigeria"
+            },
+            documentNumber: draftData.form_data.documentNumber || "",
+            documentImageUrl: draftData.document_image_url || "",
+          });
+        } else {
+          // Fallback to location state
+          const stateData = location.state as SelfieData;
+          if (stateData) {
+            setSelfieData(stateData);
+          } else {
+            navigate('/kyc/start');
+          }
+        }
+      } catch (error) {
+        console.error("Error loading draft data:", error);
+        navigate('/kyc/start');
+      }
+    };
+
+    loadDraftData();
+  }, [user?.id, location.state, navigate]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadError(null);
@@ -89,35 +127,28 @@ export default function Selfie() {
       // Upload selfie file
       const selfieUrl = await uploadSelfie(selfieFile);
       
-      // Update KYC verification with selfie
-      if (selfieData.kycId) {
-        // Update existing KYC record with selfie URL
-        const { error } = await supabase
-          .from('kyc_verifications')
-          .update({
-            selfie_url: selfieUrl,
-          })
-          .eq('id', selfieData.kycId);
+      // Update draft with selfie URL and complete step
+      const success = await kycDraftService.completeStep(
+        user.id,
+        "selfie",
+        "address",
+        undefined,
+        { key: "selfie_url", url: selfieUrl }
+      );
 
-        if (error) {
-          throw new Error(`Failed to update KYC record: ${error.message}`);
-        }
+      if (!success) {
+        throw new Error("Failed to save draft data");
       }
 
       toast({
         title: "Selfie Uploaded Successfully!",
         description: "Your selfie has been uploaded. Please continue with address verification.",
       });
-      
+
       // Navigate to address page
-      navigate('/kyc/address', { 
-        state: { 
-          ...selfieData, 
-          selfieUrl 
-        } 
-      });
+      navigate("/kyc/address");
     } catch (error: any) {
-      setUploadError(error.message || 'Upload failed');
+      setUploadError(error.message || "Upload failed");
     } finally {
       setIsUploading(false);
     }
@@ -169,7 +200,7 @@ export default function Selfie() {
             <CardContent className="p-8">
               <div className="relative">
                 {/* Camera Preview/Placeholder */}
-                <div className="aspect-[3/4] bg-muted rounded-lg relative overflow-hidden mb-6">
+                <div className="aspect-[3/3] bg-muted rounded-lg relative overflow-hidden mb-6">
                   {photoTaken ? (
                     <div className="w-full h-full bg-primary/10 flex items-center justify-center">
                       <div className="text-center">
@@ -236,18 +267,24 @@ export default function Selfie() {
                       
                       <div>
                         <input
+                        title="Selfie"
                           type="file"
                           id="selfie-upload"
                           accept="image/*"
                           onChange={handleFileChange}
                           className="hidden"
                         />
-                        <label htmlFor="selfie-upload">
-                          <Button variant="outline" className="cursor-pointer">
-                            <Upload className="w-4 h-4 mr-2" />
-                            Upload Photo
-                          </Button>
-                        </label>
+                        <Button 
+                          variant="outline" 
+                          className="cursor-pointer"
+                          onClick={() => {
+                            console.log("🔘 Upload Photo button clicked");
+                            document.getElementById("selfie-upload")?.click();
+                          }}
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload Photo
+                        </Button>
                       </div>
                     </div>
                   )}

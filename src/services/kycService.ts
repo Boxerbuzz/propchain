@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { KYCLevel } from "@/types/kyc";
+import { KYC_LEVELS, KYCLevel } from "@/types/kyc";
 
 export interface KYCSubmissionData {
   userId: string;
@@ -7,6 +7,7 @@ export interface KYCSubmissionData {
   lastName: string;
   email: string;
   phone?: string;
+  nationality?: string;
   dateOfBirth: string;
   address: {
     street: string;
@@ -19,6 +20,7 @@ export interface KYCSubmissionData {
   documentNumber: string;
   documentImages: string[]; // Array of image URLs
   selfieImage: string; // Selfie image URL
+  proofOfAddressUrl?: string; // Proof of address document URL
 }
 
 export interface KYCVerificationResult {
@@ -48,18 +50,22 @@ class KYCService {
   /**
    * Upload file to Supabase Storage
    */
-  async uploadFile(file: File, userId: string, fileName: string): Promise<string> {
+  async uploadFile(
+    file: File,
+    userId: string,
+    fileName: string
+  ): Promise<string> {
     try {
       console.log(`📤 Uploading file ${fileName} for user ${userId}`);
-      
+
       // Create file path: {userId}/{fileName} (no bucket prefix needed)
       const filePath = `${userId}/${fileName}`;
-      
+
       const { data, error } = await supabase.storage
-        .from('kyc-documents')
+        .from("kyc-documents")
         .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true // Overwrite if file exists
+          cacheControl: "3600",
+          upsert: true, // Overwrite if file exists
         });
 
       if (error) {
@@ -69,7 +75,7 @@ class KYCService {
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from('kyc-documents')
+        .from("kyc-documents")
         .getPublicUrl(filePath);
 
       console.log("✅ File uploaded successfully:", urlData.publicUrl);
@@ -84,23 +90,23 @@ class KYCService {
    * Upload multiple files for KYC verification
    */
   async uploadKYCFiles(
-    files: { file: File; type: 'id_front' | 'id_back' | 'selfie' }[],
+    files: { file: File; type: "id_front" | "id_back" | "selfie" }[],
     userId: string
   ): Promise<{ [key: string]: string }> {
     try {
       console.log(`📤 Uploading ${files.length} files for user ${userId}`);
-      
+
       const uploadPromises = files.map(async ({ file, type }) => {
         const timestamp = Date.now();
-        const fileExtension = file.name.split('.').pop();
+        const fileExtension = file.name.split(".").pop();
         const fileName = `${type}-${timestamp}.${fileExtension}`;
-        
+
         const url = await this.uploadFile(file, userId, fileName);
         return { type, url };
       });
 
       const results = await Promise.all(uploadPromises);
-      
+
       // Convert array to object
       const fileUrls: { [key: string]: string } = {};
       results.forEach(({ type, url }) => {
@@ -131,31 +137,33 @@ class KYCService {
         user_id: data.userId,
         status: "pending" as const,
         kyc_level: "tier_1", // Default to tier_1, will be updated after processing
-        investment_limit_ngn: 1000000, // Default 1M NGN, will be updated after processing
+        investment_limit_ngn: KYC_LEVELS.basic.maxInvestment, // Default 1M NGN, will be updated after processing
         expires_at: null, // Will be set after approval
-        
-        // Personal information (using actual column names)
+
+        // Personal information (from signup via AuthContext)
         first_name: data.firstName,
         last_name: data.lastName,
         phone_number: data.phone || null,
-        date_of_birth: data.dateOfBirth,
+        nationality: data.nationality || "Nigeria",
+        date_of_birth: null,
         address: data.address.street,
         city: data.address.city,
         state: data.address.state,
         postal_code: data.address.postalCode,
-        
+
         // Document information (using actual column names)
         id_type: data.documentType,
         id_number: data.documentNumber,
         id_document_front_url: data.documentImages[0] || null,
         id_document_back_url: null, // Will be added later if needed
         selfie_url: data.selfieImage || null,
-        
+        proof_of_address_url: data.proofOfAddressUrl || null,
+
         // Verification details
         verified_at: null,
         verified_by: null,
         rejection_reason: null,
-        
+
         // Compliance checks (default to false)
         pep_check: false,
         sanction_check: false,
@@ -175,14 +183,14 @@ class KYCService {
 
       console.log("✅ KYC record created:", kycRecord.id);
 
-      // Update user table with KYC status
+      // Update user table with KYC status and missing personal data
       const { error: userError } = await supabase
         .from("users")
         .update({
           kyc_status: "pending",
-          first_name: data.firstName,
-          last_name: data.lastName,
-          phone: data.phone || null,
+          date_of_birth: data.dateOfBirth,
+          nationality: data.nationality || "Nigeria",
+          state_of_residence: data.address.state,
         })
         .eq("id", data.userId);
 
@@ -265,8 +273,8 @@ class KYCService {
           kyc_level: randomLevel,
           investment_limit_ngn: investmentLimit,
           expires_at: expiresAt.toISOString(),
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: "system", // Mock reviewer
+          verified_at: new Date().toISOString(),
+          verified_by: null, // Set to null since 'system' is not a valid UUID
           rejection_reason: null,
         })
         .eq("id", kycId);
@@ -329,8 +337,8 @@ class KYCService {
         .from("kyc_verifications")
         .update({
           status: "rejected",
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: "system", // Mock reviewer
+          verified_at: new Date().toISOString(),
+          verified_by: null, // Set to null since 'system' is not a valid UUID
           rejection_reason: randomReason,
         })
         .eq("id", kycId);

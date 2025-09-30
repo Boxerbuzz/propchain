@@ -617,6 +617,56 @@ export type Database = {
           },
         ]
       }
+      kyc_drafts: {
+        Row: {
+          completed_steps: string[] | null
+          created_at: string | null
+          current_step: string
+          document_image_url: string | null
+          expires_at: string | null
+          form_data: Json
+          id: string
+          proof_of_address_url: string | null
+          selfie_url: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_steps?: string[] | null
+          created_at?: string | null
+          current_step?: string
+          document_image_url?: string | null
+          expires_at?: string | null
+          form_data?: Json
+          id?: string
+          proof_of_address_url?: string | null
+          selfie_url?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_steps?: string[] | null
+          created_at?: string | null
+          current_step?: string
+          document_image_url?: string | null
+          expires_at?: string | null
+          form_data?: Json
+          id?: string
+          proof_of_address_url?: string | null
+          selfie_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_drafts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kyc_verifications: {
         Row: {
           address: string | null
@@ -1604,6 +1654,10 @@ export type Database = {
           p_voting_power: number
         }
         Returns: Json
+      }
+      cleanup_expired_kyc_drafts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       cleanup_expired_token_reservations: {
         Args: Record<PropertyKey, never>

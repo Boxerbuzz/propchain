@@ -14,6 +14,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { kycService } from "@/services/kycService";
+import { kycDraftService } from "@/services/kycDraftService";
 import { useToast } from "@/hooks/use-toast";
 
 interface KYCFormData {
@@ -44,17 +45,52 @@ export default function UploadID() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [kycData, setKycData] = useState<KYCFormData | null>(null);
+  const [draft, setDraft] = useState<any>(null);
 
-  // Load KYC data from previous steps
+  // Load KYC data from draft or previous steps
   useEffect(() => {
-    const stateData = location.state as KYCFormData;
-    if (stateData) {
-      setKycData(stateData);
-    } else {
-      // Redirect to start if no data
-      navigate("/kyc/start");
-    }
-  }, [location.state, navigate]);
+    const loadDraftData = async () => {
+      if (!user?.id) return;
+
+      try {
+        // Try to get existing draft
+        const draftData = await kycDraftService.getOrCreateDraft(user.id);
+        
+        if (draftData) {
+          setDraft(draftData);
+          setKycData({
+            documentType: draftData.form_data.documentType || "",
+            firstName: draftData.form_data.firstName || "",
+            lastName: draftData.form_data.lastName || "",
+            email: draftData.form_data.email || "",
+            phone: draftData.form_data.phone || "",
+            dateOfBirth: draftData.form_data.dateOfBirth || "",
+            address: draftData.form_data.address || {
+              street: "",
+              city: "",
+              state: "",
+              postalCode: "",
+              country: "Nigeria"
+            },
+            documentNumber: draftData.form_data.documentNumber || "",
+          });
+        } else {
+          // Fallback to location state
+          const stateData = location.state as KYCFormData;
+          if (stateData) {
+            setKycData(stateData);
+          } else {
+            navigate("/kyc/start");
+          }
+        }
+      } catch (error) {
+        console.error("Error loading draft data:", error);
+        navigate("/kyc/start");
+      }
+    };
+
+    loadDraftData();
+  }, [user?.id, location.state, navigate]);
 
   const validateFile = (file: File): string | null => {
     // Check file type
@@ -142,45 +178,27 @@ export default function UploadID() {
       // Upload the file
       const fileUrl = await uploadFile(uploadedFile);
 
-      // Prepare KYC submission data
-      const submissionData = {
-        userId: user.id,
-        firstName: kycData.firstName,
-        lastName: kycData.lastName,
-        email: kycData.email,
-        phone: kycData.phone,
-        dateOfBirth: kycData.dateOfBirth,
-        address: kycData.address,
-        documentType: kycData.documentType as
-          | "national_id"
-          | "passport"
-          | "drivers_license",
-        documentNumber: kycData.documentNumber,
-        documentImages: [fileUrl], // Front image
-        selfieImage: "", // Will be added in next step
-      };
+      // Update draft with document image URL and complete step
+      const success = await kycDraftService.completeStep(
+        user.id,
+        "upload_id",
+        "selfie",
+        undefined,
+        { key: "document_image_url", url: fileUrl }
+      );
 
-      // Submit KYC verification
-      const result = await kycService.submitKYCVerification(submissionData);
-
-      if (result.success) {
-        toast({
-          title: "ID Uploaded Successfully!",
-          description:
-            "Your ID document has been uploaded. Please continue with the selfie verification.",
-        });
-
-        // Navigate to selfie page with updated data
-        navigate("/kyc/selfie", {
-          state: {
-            ...kycData,
-            documentImageUrl: fileUrl,
-            kycId: result.verificationId,
-          },
-        });
-      } else {
-        setUploadError(result.error || "Failed to upload document");
+      if (!success) {
+        throw new Error("Failed to save draft data");
       }
+
+      toast({
+        title: "ID Uploaded Successfully!",
+        description:
+          "Your ID document has been uploaded. Please continue with the selfie verification.",
+      });
+
+      // Navigate to selfie page
+      navigate("/kyc/selfie");
     } catch (error: any) {
       setUploadError(error.message || "Upload failed");
     } finally {

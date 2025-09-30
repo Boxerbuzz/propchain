@@ -4,9 +4,12 @@ import { Progress } from "@/components/ui/progress";
 import { CreditCard, FileText, BookOpen, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { kycDraftService } from "@/services/kycDraftService";
 
 export default function DocumentType() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedType, setSelectedType] = useState<string>("");
 
   const documentTypes = [
@@ -127,36 +130,23 @@ export default function DocumentType() {
 
         {/* Action Buttons */}
         <div className="text-center">
-          <Button 
-            size="lg" 
-            className="px-8" 
-            disabled={!selectedType}
-            onClick={() => {
-              if (selectedType) {
-                navigate('/kyc/upload-id', { 
-                  state: { 
-                    documentType: selectedType,
-                    // Add other form data here as we build the flow
-                    firstName: '',
-                    lastName: '',
-                    email: '',
-                    phone: '',
-                    dateOfBirth: '',
-                    address: {
-                      street: '',
-                      city: '',
-                      state: '',
-                      postalCode: '',
-                      country: 'Nigeria'
-                    },
-                    documentNumber: ''
-                  } 
-                });
-              }
-            }}
-          >
-            Continue with {selectedType ? documentTypes.find(t => t.id === selectedType)?.title : 'Selected ID'}
-          </Button>
+        <Button 
+          size="lg" 
+          className="px-8" 
+          disabled={!selectedType}
+          onClick={async () => {
+            if (selectedType && user?.id) {
+              // Update draft with document type
+              await kycDraftService.updateDraftFormData(user.id, {
+                documentType: selectedType
+              });
+              
+              navigate('/kyc/upload-id');
+            }
+          }}
+        >
+          Continue with {selectedType ? documentTypes.find(t => t.id === selectedType)?.title : 'Selected ID'}
+        </Button>
         </div>
       </div>
     </div>

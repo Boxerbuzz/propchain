@@ -30,10 +30,32 @@ serve(async (req) => {
     const { record } = payload;
     const kycId = record.id;
     const userId = record.user_id;
+    const currentStatus = record.status;
 
     console.log(
-      `[KYC-WEBHOOK] 🔄 Processing for user ${userId}, KYC ID: ${kycId}`
+      `[KYC-WEBHOOK] 🔄 Processing for user ${userId}, KYC ID: ${kycId}, Status: ${currentStatus}`
     );
+
+    // Only process records that are in "pending" status
+    if (currentStatus !== "pending") {
+      console.log(
+        `[KYC-WEBHOOK] ⏭️ Skipping processing - KYC record ${kycId} is not in pending status (current: ${currentStatus})`
+      );
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: `KYC record ${kycId} skipped - not in pending status`,
+          kycId,
+          userId,
+          status: currentStatus,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    }
 
     // Simulate ID validation process
     const validationResult = await simulateIDValidation(record);
@@ -53,6 +75,15 @@ serve(async (req) => {
           pep_check: validationResult.pepCheck,
           sanction_check: validationResult.sanctionCheck,
           adverse_media_check: validationResult.adverseMediaCheck,
+          
+          // Add provider and verification details
+          provider: validationResult.provider,
+          provider_reference_id: validationResult.providerReferenceId,
+          provider_response: validationResult.providerResponse,
+          
+          // Set ID expiry date if ID type is provided
+          id_expiry_date: record.id_type ? generateRandomExpiryDate() : null,
+          
           updated_at: new Date().toISOString(),
         })
         .eq("id", kycId);
@@ -67,12 +98,16 @@ serve(async (req) => {
         );
       }
 
-      // Update user table
+      // Update user table with KYC verification results
       const { error: userError } = await supabaseClient
         .from("users")
         .update({
           kyc_status: "verified",
           kyc_level: validationResult.kycLevel,
+          // Copy personal information from KYC verification
+          date_of_birth: record.date_of_birth || generateRandomDateOfBirth(),
+          nationality: record.nationality || "Nigeria",
+          state_of_residence: record.state || null,
         })
         .eq("id", userId);
 
@@ -184,8 +219,8 @@ async function simulateIDValidation(record: any) {
     setTimeout(resolve, 1000 + Math.random() * 2000)
   );
 
-  // Mock validation logic (85% approval rate)
-  const isValid = Math.random() > 0.15;
+  // Mock validation logic (100% approval rate for testing)
+  const isValid = true; // Always approve for testing
 
   if (isValid) {
     // Mock KYC level determination
@@ -197,22 +232,40 @@ async function simulateIDValidation(record: any) {
     // Mock investment limits based on KYC level
     const investmentLimits = {
       tier_1: 1000000, // 1M NGN
-      tier_2: 5000000, // 5M NGN
-      tier_3: 10000000, // 10M NGN
+      tier_2: 10000000, // 10M NGN
+      tier_3: 100000000, // 100M NGN
     };
 
     const investmentLimit = investmentLimits[randomLevel];
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 1); // Expires in 1 year
 
+    // Randomly select verification provider
+    const providers = ["dojah", "smile_id", "youverify", "identity_pass", "seamfix"];
+    const selectedProvider = providers[Math.floor(Math.random() * providers.length)];
+    const providerReferenceId = generateProviderReferenceId(selectedProvider);
+
     return {
       isValid: true,
       kycLevel: randomLevel,
       investmentLimit,
       expiresAt: expiresAt.toISOString(),
-      pepCheck: Math.random() > 0.1, // 90% pass PEP check
-      sanctionCheck: Math.random() > 0.05, // 95% pass sanction check
-      adverseMediaCheck: Math.random() > 0.2, // 80% pass adverse media check
+      pepCheck: true, // 100% pass PEP check for testing
+      sanctionCheck: true, // 100% pass sanction check for testing
+      adverseMediaCheck: true, // 100% pass adverse media check for testing
+      provider: selectedProvider,
+      providerReferenceId: providerReferenceId,
+      providerResponse: {
+        verification_id: providerReferenceId,
+        status: "verified",
+        confidence_score: Math.floor(Math.random() * 20) + 80, // 80-100%
+        document_type: record.id_type || "unknown",
+        document_number: record.id_number || "N/A",
+        verification_timestamp: new Date().toISOString(),
+        provider: selectedProvider,
+        checks_performed: ["document_authenticity", "face_match", "data_extraction"],
+        risk_score: Math.floor(Math.random() * 10) + 1, // 1-10 (low risk)
+      },
     };
   } else {
     // Mock rejection reasons
@@ -265,4 +318,57 @@ async function createNotification(
   } catch (error) {
     console.error("[KYC-WEBHOOK] 💥 Error creating notification:", error);
   }
+}
+
+/**
+ * Generate a random date of birth (age between 18-65)
+ */
+function generateRandomDateOfBirth(): string {
+  const currentYear = new Date().getFullYear();
+  const minAge = 18;
+  const maxAge = 65;
+
+  const randomAge = Math.floor(Math.random() * (maxAge - minAge + 1)) + minAge;
+  const birthYear = currentYear - randomAge;
+
+  // Random month (1-12)
+  const month = Math.floor(Math.random() * 12) + 1;
+
+  // Random day (1-28 to avoid month-specific issues)
+  const day = Math.floor(Math.random() * 28) + 1;
+
+  const dateOfBirth = new Date(birthYear, month - 1, day);
+  return dateOfBirth.toISOString().split("T")[0]; // Return YYYY-MM-DD format
+}
+
+/**
+ * Generate a provider-specific reference ID
+ */
+function generateProviderReferenceId(provider: string): string {
+  const randomNumber = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+  
+  switch (provider) {
+    case "dojah":
+      return `DJH-${randomNumber}`;
+    case "smile_id":
+      return `SMI-${randomNumber}`;
+    case "youverify":
+      return `YV-${randomNumber}`;
+    case "identity_pass":
+      return `IDP-${randomNumber}`;
+    case "seamfix":
+      return `SFX-${randomNumber}`;
+    default:
+      return `MOCK-${randomNumber}`;
+  }
+}
+
+/**
+ * Generate a random ID expiry date (1-10 years from now)
+ */
+function generateRandomExpiryDate(): string {
+  const currentDate = new Date();
+  const yearsToAdd = Math.floor(Math.random() * 10) + 1; // 1-10 years
+  const expiryDate = new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate());
+  return expiryDate.toISOString().split('T')[0]; // Return YYYY-MM-DD format
 }
