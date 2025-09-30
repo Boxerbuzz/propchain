@@ -3,3 +3,9 @@ project_id = "zjtqptljuggbymcoovey"
 verify_jwt = false
 [functions.paystack-webhook]
 verify_jwt = false
+[functions.check-investment-windows]
+verify_jwt = false
+[functions.mint-tokens-for-closed-window]
+verify_jwt = false
+[functions.distribute-tokens-to-kyc-users]
+verify_jwt = false

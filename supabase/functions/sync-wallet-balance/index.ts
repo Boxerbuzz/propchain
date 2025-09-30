@@ -1,5 +1,5 @@
 // deno-lint-ignore-file
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { serve } from 'https://deno.land/std@0.178.0/http/server.ts'
 import { Client, AccountBalanceQuery } from "https://esm.sh/@hashgraph/sdk@2.73.2"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
