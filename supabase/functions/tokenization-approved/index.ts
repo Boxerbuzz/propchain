@@ -137,14 +137,13 @@ serve(async (req) => {
     });
 
     // Update tokenization with Hedera token details
-    console.log(`[TOKENIZATION-APPROVED] 📝 Updating tokenization with Hedera details...`);
+    // Note: minted_at will be set later when tokens are actually minted (after investment window closes)
+    console.log(`[TOKENIZATION-APPROVED] 📝 Updating tokenization with Hedera token details...`);
     const { error: updateError } = await supabaseClient
       .from('tokenizations')
       .update({
         token_id: tokenResult.data.tokenId,
-        minting_transaction_id: tokenResult.data.transactionId,
         status: 'active',
-        minted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq('id', record.id);
