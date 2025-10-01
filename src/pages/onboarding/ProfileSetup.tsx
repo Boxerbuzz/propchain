@@ -237,14 +237,16 @@ export default function ProfileSetup() {
                 <Alert>
                   <Wallet className="h-4 w-4" />
                   <AlertDescription>
-                    Your blockchain wallet has been created successfully. You're ready to start investing!
+                    Your blockchain wallet has been created successfully. You're
+                    ready to start investing!
                   </AlertDescription>
                 </Alert>
               ) : (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    We'll create a secure blockchain wallet for you to hold your tokenized real estate investments. 
-                    This wallet uses Hedera's enterprise-grade security.
+                    We'll create a secure blockchain wallet for you to hold your
+                    tokenized real estate investments. This wallet uses Hedera's
+                    enterprise-grade security.
                   </p>
                   <Button
                     type="button"
@@ -253,7 +255,9 @@ export default function ProfileSetup() {
                     className="w-full"
                   >
                     <Wallet className="w-4 h-4 mr-2" />
-                    {isCreating ? 'Creating Wallet...' : 'Create Blockchain Wallet'}
+                    {isCreating
+                      ? "Creating Wallet..."
+                      : "Create Blockchain Wallet"}
                   </Button>
                 </div>
               )}

@@ -41,7 +41,7 @@ serve(async (req) => {
       console.log(
         `[KYC-WEBHOOK] ⏭️ Skipping processing - KYC record ${kycId} is not in pending status (current: ${currentStatus})`
       );
-      
+
       return new Response(
         JSON.stringify({
           success: true,
@@ -75,15 +75,15 @@ serve(async (req) => {
           pep_check: validationResult.pepCheck,
           sanction_check: validationResult.sanctionCheck,
           adverse_media_check: validationResult.adverseMediaCheck,
-          
+
           // Add provider and verification details
           provider: validationResult.provider,
           provider_reference_id: validationResult.providerReferenceId,
           provider_response: validationResult.providerResponse,
-          
+
           // Set ID expiry date if ID type is provided
           id_expiry_date: record.id_type ? generateRandomExpiryDate() : null,
-          
+
           updated_at: new Date().toISOString(),
         })
         .eq("id", kycId);
@@ -108,6 +108,8 @@ serve(async (req) => {
           date_of_birth: record.date_of_birth || generateRandomDateOfBirth(),
           nationality: record.nationality || "Nigeria",
           state_of_residence: record.state || null,
+          email_verified_at: new Date().toISOString(),
+          phone_verified_at: new Date().toISOString(),
         })
         .eq("id", userId);
 
@@ -241,8 +243,15 @@ async function simulateIDValidation(record: any) {
     expiresAt.setFullYear(expiresAt.getFullYear() + 1); // Expires in 1 year
 
     // Randomly select verification provider
-    const providers = ["dojah", "smile_id", "youverify", "identity_pass", "seamfix"];
-    const selectedProvider = providers[Math.floor(Math.random() * providers.length)];
+    const providers = [
+      "dojah",
+      "smile_id",
+      "youverify",
+      "identity_pass",
+      "seamfix",
+    ];
+    const selectedProvider =
+      providers[Math.floor(Math.random() * providers.length)];
     const providerReferenceId = generateProviderReferenceId(selectedProvider);
 
     return {
@@ -263,7 +272,11 @@ async function simulateIDValidation(record: any) {
         document_number: record.id_number || "N/A",
         verification_timestamp: new Date().toISOString(),
         provider: selectedProvider,
-        checks_performed: ["document_authenticity", "face_match", "data_extraction"],
+        checks_performed: [
+          "document_authenticity",
+          "face_match",
+          "data_extraction",
+        ],
         risk_score: Math.floor(Math.random() * 10) + 1, // 1-10 (low risk)
       },
     };
@@ -345,8 +358,10 @@ function generateRandomDateOfBirth(): string {
  * Generate a provider-specific reference ID
  */
 function generateProviderReferenceId(provider: string): string {
-  const randomNumber = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-  
+  const randomNumber = Math.floor(Math.random() * 1000000)
+    .toString()
+    .padStart(6, "0");
+
   switch (provider) {
     case "dojah":
       return `DJH-${randomNumber}`;
@@ -369,6 +384,10 @@ function generateProviderReferenceId(provider: string): string {
 function generateRandomExpiryDate(): string {
   const currentDate = new Date();
   const yearsToAdd = Math.floor(Math.random() * 10) + 1; // 1-10 years
-  const expiryDate = new Date(currentDate.getFullYear() + yearsToAdd, currentDate.getMonth(), currentDate.getDate());
-  return expiryDate.toISOString().split('T')[0]; // Return YYYY-MM-DD format
+  const expiryDate = new Date(
+    currentDate.getFullYear() + yearsToAdd,
+    currentDate.getMonth(),
+    currentDate.getDate()
+  );
+  return expiryDate.toISOString().split("T")[0]; // Return YYYY-MM-DD format
 }
