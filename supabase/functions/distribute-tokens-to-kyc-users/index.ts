@@ -101,7 +101,7 @@ serve(async (req) => {
       distributed: 0,
       skipped: 0,
       failed: 0,
-      details: []
+      details: [] as any[]
     };
 
     for (const investment of investments) {

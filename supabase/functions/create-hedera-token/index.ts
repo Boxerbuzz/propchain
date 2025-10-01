@@ -83,7 +83,8 @@ serve(async (req) => {
       .setSupplyKey(operatorKey)
       .setKycKey(operatorKey) // Enable KYC requirements
       .setFreezeKey(operatorKey)
-      .setTokenMemo(tokenMemo);
+      .setTokenMemo(tokenMemo)
+      .setWipeKey(operatorKey);
 
     // Add metadata if provided
     if (tokenMetadata) {

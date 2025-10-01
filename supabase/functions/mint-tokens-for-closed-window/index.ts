@@ -65,7 +65,7 @@ serve(async (req) => {
     let processedCount = 0;
     let succeededCount = 0;
     let failedCount = 0;
-    const results = [];
+    const results: any[] = [];
 
     // Process each tokenization
     for (const tokenization of tokenizations) {
