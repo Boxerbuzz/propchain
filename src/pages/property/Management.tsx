@@ -261,7 +261,7 @@ const PropertyManagement = () => {
             const { error } = await supabase
               .from("tokenizations")
               .update({
-                status: "approved",
+                status: "active",
                 approved_at: new Date().toISOString(),
                 approved_by: (await supabase.auth.getUser()).data.user?.id,
               })

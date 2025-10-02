@@ -29,12 +29,16 @@ export const useInvestmentFlow = () => {
         throw new Error('User not authenticated');
       }
 
+      // Convert NGN to kobo (multiply by 100)
+      const amount_kobo = data.amount_ngn * 100;
+
       // Use the comprehensive investment creation edge function
       const { data: result, error } = await supabase.functions.invoke('create-investment', {
         body: {
           tokenization_id: data.tokenization_id,
           investor_id: user.id,
           amount_ngn: data.amount_ngn,
+          amount_kobo: amount_kobo,
           tokens_requested: data.tokens_requested,
           payment_method: data.payment_method,
           email: user.email
