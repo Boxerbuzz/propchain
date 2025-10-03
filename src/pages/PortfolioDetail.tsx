@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { usePortfolioDetail } from "@/hooks/usePortfolioDetail";
@@ -406,7 +404,7 @@ const PortfolioDetail = () => {
                           </div>
                         </div>
                         <Button variant="ghost" size="sm" asChild>
-                          <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                          <a title="Download Document" href={doc.file_url} target="_blank" rel="noopener noreferrer">
                             <Download className="h-4 w-4" />
                           </a>
                         </Button>
