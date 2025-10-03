@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,6 +21,7 @@ import {
   Edit,
   Info,
   MessageSquare,
+  MessageCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -147,7 +147,8 @@ const Profile = () => {
     setModificationRequested(true);
     toast({
       title: "Modification Request Sent",
-      description: "Your request to modify personal details has been submitted. We'll review and get back to you within 24-48 hours.",
+      description:
+        "Your request to modify personal details has been submitted. We'll review and get back to you within 24-48 hours.",
     });
   };
 
@@ -400,11 +401,17 @@ const Profile = () => {
                         Personal Details Modification
                       </h3>
                       <p className="text-sm text-blue-700">
-                        Personal details (name, email, phone, address, date of birth) can only be modified through the KYC verification process. 
-                        Complete your identity verification to update these details.
+                        Personal details (name, email, phone, address, date of
+                        birth) can only be modified through the KYC verification
+                        process. Complete your identity verification to update
+                        these details.
                       </p>
                       <Link to="/kyc/start" className="inline-block mt-2">
-                        <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-100">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                        >
                           Complete KYC Verification
                         </Button>
                       </Link>
@@ -416,17 +423,26 @@ const Profile = () => {
               <Card className="border-green-200 bg-green-50">
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
-                    <MessageSquare className="w-5 h-5 text-green-600 mt-0.5" />
+                    <div
+                      className={`rounded-full p-2 ${
+                        user?.kyc_status === "verified"
+                          ? "bg-green-400"
+                          : "bg-amber-400"
+                      }`}
+                    >
+                      <MessageCircle className="w-5 h-5 text-white mt-0.5" />
+                    </div>
                     <div className="flex-1">
                       <h3 className="font-medium text-green-800 mb-1">
                         Personal Details Modification
                       </h3>
                       <p className="text-sm text-green-700 mb-3">
-                        Need to update your personal details? Submit a modification request and our team will review it.
+                        Need to update your personal details? Submit a
+                        modification request and our team will review it.
                       </p>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
+                      <Button
+                        size="sm"
+                        variant="outline"
                         className="border-green-300 text-green-700 hover:bg-green-100"
                         onClick={handleModificationRequest}
                         disabled={modificationRequested}
@@ -514,13 +530,21 @@ const Profile = () => {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Verified
-                        className={`h-5 w-5 ${
-                          user?.email_verified_at
-                            ? "text-green-600"
-                            : "text-amber-600"
+                      <div
+                        className={`rounded-full p-2 ${
+                          user?.phone_verified_at
+                            ? "bg-green-400"
+                            : "bg-amber-400"
                         }`}
-                      />
+                      >
+                        <Verified
+                          className={`h-5 w-5 ${
+                            user?.phone_verified_at
+                              ? "text-white"
+                              : "text-white"
+                          }`}
+                        />
+                      </div>
                       <div>
                         <p className="font-medium">Email Verified</p>
                         <p className="text-sm text-muted-foreground">
@@ -548,11 +572,15 @@ const Profile = () => {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Shield
-                        className={`h-5 w-5 ${
-                          getKYCStatusInfo(user?.kyc_status).iconClass
+                      <div
+                        className={`rounded-full p-2 ${
+                          user?.phone_verified_at
+                            ? "bg-green-400"
+                            : "bg-amber-400"
                         }`}
-                      />
+                      >
+                        <Shield className={`h-5 w-5 ${"text-white"}`} />
+                      </div>
                       <div>
                         <p className="font-medium">KYC Verification</p>
                         <p className="text-sm text-muted-foreground">
@@ -576,13 +604,21 @@ const Profile = () => {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Phone
-                        className={`h-5 w-5 ${
+                      <div
+                        className={`rounded-full p-2 ${
                           user?.phone_verified_at
-                            ? "text-green-600"
-                            : "text-amber-600"
+                            ? "bg-green-400"
+                            : "bg-amber-400"
                         }`}
-                      />
+                      >
+                        <Phone
+                          className={`h-5 w-5 ${
+                            user?.phone_verified_at
+                              ? "text-white"
+                              : "text-white"
+                          }`}
+                        />
+                      </div>
                       <div>
                         <p className="font-medium">Phone Verification</p>
                         <p className="text-sm text-muted-foreground">
