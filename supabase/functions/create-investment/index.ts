@@ -84,12 +84,17 @@ serve(async (req) => {
 
       // Initialize Paystack payment
       console.log('[CREATE-INVESTMENT] Initializing Paystack payment');
+      // Ensure amount is a clean number (remove any commas or formatting)
+      const cleanAmount = typeof amount_ngn === 'string' 
+        ? parseFloat(amount_ngn.replace(/,/g, ''))
+        : amount_ngn;
+      
       const { data: paystackData, error: paystackError } = await supabase.functions.invoke(
         'initialize-paystack-payment',
         {
           body: {
             email,
-            amount: Math.round(amount_ngn * 100), // Convert to kobo
+            amount: Math.round(cleanAmount * 100), // Convert to kobo
             reference: investment_id
           }
         }
