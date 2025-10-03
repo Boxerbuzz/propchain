@@ -650,7 +650,7 @@ export const supabaseService = {
         .select(
           `
           *,
-          users!inner(first_name, last_name)
+          users(first_name, last_name)
         `
         )
         .eq("room_id", roomId)

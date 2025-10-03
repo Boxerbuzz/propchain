@@ -7,10 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Send, Paperclip, Users, Settings, AlertCircle } from "lucide-react";
+import { Send, Paperclip, Users, Settings, AlertCircle, ArrowLeft, MoreVertical } from "lucide-react";
 import { useChatMessages, useSendMessage } from "@/hooks/useUserChatRooms";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 const ChatRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -18,17 +19,20 @@ const ChatRoom = () => {
   const { user, isAuthenticated } = useAuth();
   const [message, setMessage] = useState("");
   const [roomInfo, setRoomInfo] = useState<any>(null);
+  const [participantCount, setParticipantCount] = useState(0);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch messages and room info
   const { data: messages = [], isLoading, error } = useChatMessages(roomId || "");
   const sendMessageMutation = useSendMessage();
 
-  // Fetch room info
+  // Fetch room info and participant count
   useEffect(() => {
     if (!roomId) return;
     
-    const fetchRoomInfo = async () => {
+    const fetchRoomData = async () => {
+      // Fetch room info
       const { data, error } = await supabase
         .from("chat_rooms")
         .select(`
@@ -44,9 +48,19 @@ const ChatRoom = () => {
       } else {
         setRoomInfo(data);
       }
+
+      // Fetch participant count
+      const { count, error: countError } = await supabase
+        .from("chat_participants")
+        .select("*", { count: "exact", head: true })
+        .eq("room_id", roomId);
+
+      if (!countError && count !== null) {
+        setParticipantCount(count);
+      }
     };
 
-    fetchRoomInfo();
+    fetchRoomData();
   }, [roomId]);
 
   // Auto-scroll to bottom when new messages arrive
@@ -69,15 +83,19 @@ const ChatRoom = () => {
   };
 
   // Transform messages for display
-  const displayMessages = messages.map((msg: any) => ({
-    id: msg.id,
-    user: msg.users ? `${msg.users.first_name} ${msg.users.last_name}` : "Unknown User",
-    avatar: "/placeholder.svg",
-    message: msg.message_text || "",
-    timestamp: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    isCurrentUser: msg.sender_id === user?.id,
-    isOfficial: false, // Could be determined by role
-  }));
+  const displayMessages = messages.map((msg: any) => {
+    const isSystemMessage = msg.message_type === 'system' || !msg.sender_id;
+    return {
+      id: msg.id,
+      user: isSystemMessage ? "System" : (msg.users ? `${msg.users.first_name} ${msg.users.last_name}` : "Unknown User"),
+      avatar: "/placeholder.svg",
+      message: msg.message_text || "",
+      timestamp: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isCurrentUser: msg.sender_id === user?.id,
+      isOfficial: isSystemMessage || msg.message_type === 'announcement',
+      messageType: msg.message_type,
+    };
+  });
 
   if (!isAuthenticated) {
     return (
@@ -105,9 +123,9 @@ const ChatRoom = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl h-[calc(100vh-120px)]">
+    <div className="container mx-auto px-4 py-8 max-w-4xl h-screen flex flex-col">
       {/* Chat Header */}
-      <Card className="mb-4">
+      <Card className="mb-4 flex-shrink-0">
         <CardHeader className="pb-4">
           {isLoading || !roomInfo ? (
             <div className="space-y-2">
@@ -116,22 +134,27 @@ const ChatRoom = () => {
             </div>
           ) : (
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-xl">
-                  {roomInfo.name || (roomInfo.properties?.title ? `${roomInfo.properties.title} Investors` : "Chat Room")}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {roomInfo.description || 
-                    (roomInfo.tokenizations ? `Discussion for ${roomInfo.tokenizations.token_name} (${roomInfo.tokenizations.token_symbol})` : "Property investment discussion")}
-                </p>
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="sm" onClick={() => navigate("/chat")}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div>
+                  <CardTitle className="text-xl">
+                    {roomInfo.name || (roomInfo.properties?.title ? `${roomInfo.properties.title} Investors` : "Chat Room")}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {roomInfo.description || 
+                      (roomInfo.tokenizations ? `Discussion for ${roomInfo.tokenizations.token_name} (${roomInfo.tokenizations.token_symbol})` : "Property investment discussion")}
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Users className="h-4 w-4" />
-                  {displayMessages.length > 0 ? new Set(displayMessages.map(m => m.user)).size : 0}
+                  {participantCount}
                 </div>
-                <Button variant="ghost" size="sm">
-                  <Settings className="h-4 w-4" />
+                <Button variant="ghost" size="sm" onClick={() => setShowSettingsMenu(true)}>
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -140,8 +163,8 @@ const ChatRoom = () => {
       </Card>
 
       {/* Messages Area */}
-      <Card className="flex-1 mb-4 h-[calc(100vh-280px)]">
-        <CardContent className="p-0 h-full">
+      <Card className="flex-1 mb-4 overflow-hidden flex flex-col">
+        <CardContent className="p-0 h-full overflow-hidden flex flex-col">
           {isLoading ? (
             <div className="p-6 space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -166,29 +189,31 @@ const ChatRoom = () => {
               <p className="text-muted-foreground mb-4">No messages yet. Start the conversation!</p>
             </div>
           ) : (
-            <div className="overflow-y-auto h-full p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {displayMessages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-3 ${msg.isCurrentUser ? 'flex-row-reverse' : ''}`}
+                className={`flex gap-3 ${msg.isCurrentUser && !msg.isOfficial ? 'flex-row-reverse' : ''}`}
               >
-                <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarImage src={msg.avatar} />
-                  <AvatarFallback>
-                    {msg.user.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
+                {!msg.isOfficial && (
+                  <Avatar className="h-8 w-8 flex-shrink-0">
+                    <AvatarImage src={msg.avatar} />
+                    <AvatarFallback>
+                      {msg.user.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
                 
-                <div className={`flex-1 max-w-xs md:max-w-md ${msg.isCurrentUser ? 'text-right' : ''}`}>
+                <div className={`flex-1 max-w-xs md:max-w-md ${msg.isCurrentUser && !msg.isOfficial ? 'text-right' : ''}`}>
                   <div className="flex items-center gap-2 mb-1">
-                    {!msg.isCurrentUser && (
+                    {(!msg.isCurrentUser || msg.isOfficial) && (
                       <span className="text-sm font-medium text-foreground">
                         {msg.user}
                       </span>
                     )}
                     {msg.isOfficial && (
                       <Badge variant="secondary" className="text-xs">
-                        Official
+                        {msg.messageType === 'system' ? 'System' : 'Official'}
                       </Badge>
                     )}
                     <span className="text-xs text-muted-foreground">
@@ -198,8 +223,10 @@ const ChatRoom = () => {
                   
                   <div
                     className={`rounded-lg p-3 text-sm ${
-                      msg.isCurrentUser
+                      msg.isCurrentUser && !msg.isOfficial
                         ? 'bg-primary text-primary-foreground'
+                        : msg.isOfficial
+                        ? 'bg-accent text-accent-foreground'
                         : 'bg-muted'
                     }`}
                   >
@@ -215,7 +242,7 @@ const ChatRoom = () => {
       </Card>
 
       {/* Message Input */}
-      <Card>
+      <Card className="flex-shrink-0">
         <CardContent className="p-4">
           <div className="flex gap-3">
             <Button variant="ghost" size="sm">
@@ -240,6 +267,28 @@ const ChatRoom = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Settings Command Menu */}
+      <CommandDialog open={showSettingsMenu} onOpenChange={setShowSettingsMenu}>
+        <CommandInput placeholder="Type a command or search..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Chat Actions">
+            <CommandItem onSelect={() => { setShowSettingsMenu(false); navigate("/chat"); }}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              <span>Back to Chat List</span>
+            </CommandItem>
+            <CommandItem onSelect={() => setShowSettingsMenu(false)}>
+              <Users className="mr-2 h-4 w-4" />
+              <span>View Participants ({participantCount})</span>
+            </CommandItem>
+            <CommandItem onSelect={() => setShowSettingsMenu(false)}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Room Settings</span>
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </div>
   );
 };
