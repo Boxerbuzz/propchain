@@ -7,11 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Send, Paperclip, Users, Settings, AlertCircle, ArrowLeft, MoreVertical } from "lucide-react";
+import { Send, Paperclip, Users, AlertCircle, ArrowLeft, MoreVertical, Bot, Vote, DollarSign, FileText, Scale } from "lucide-react";
 import { useChatMessages, useSendMessage } from "@/hooks/useUserChatRooms";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const ChatRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -20,7 +20,6 @@ const ChatRoom = () => {
   const [message, setMessage] = useState("");
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const [participantCount, setParticipantCount] = useState(0);
-  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch messages and room info
@@ -85,14 +84,15 @@ const ChatRoom = () => {
   // Transform messages for display
   const displayMessages = messages.map((msg: any) => {
     const isSystemMessage = msg.message_type === 'system' || !msg.sender_id;
+    const isBot = isSystemMessage || msg.message_type === 'announcement';
     return {
       id: msg.id,
-      user: isSystemMessage ? "System" : (msg.users ? `${msg.users.first_name} ${msg.users.last_name}` : "Unknown User"),
+      user: isBot ? "Assistant Bot" : (msg.users ? `${msg.users.first_name} ${msg.users.last_name}` : "Unknown User"),
       avatar: "/placeholder.svg",
       message: msg.message_text || "",
       timestamp: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isCurrentUser: msg.sender_id === user?.id,
-      isOfficial: isSystemMessage || msg.message_type === 'announcement',
+      isBot: isBot,
       messageType: msg.message_type,
     };
   });
@@ -153,9 +153,43 @@ const ChatRoom = () => {
                   <Users className="h-4 w-4" />
                   {participantCount}
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => setShowSettingsMenu(true)}>
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Chat Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/chat")}>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      <span>Back to Chat List</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Users className="mr-2 h-4 w-4" />
+                      <span>View Participants ({participantCount})</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Governance Tools</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => navigate(`/properties/${roomInfo?.property_id}/governance`)}>
+                      <Vote className="mr-2 h-4 w-4" />
+                      <span>View Proposals</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate(`/properties/${roomInfo?.property_id}/governance/new`)}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      <span>Create Proposal</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <DollarSign className="mr-2 h-4 w-4" />
+                      <span>Raise a Pool</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Scale className="mr-2 h-4 w-4" />
+                      <span>Voting History</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           )}
@@ -193,25 +227,31 @@ const ChatRoom = () => {
               {displayMessages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-3 ${msg.isCurrentUser && !msg.isOfficial ? 'flex-row-reverse' : ''}`}
+                className={`flex gap-3 ${msg.isCurrentUser ? 'flex-row-reverse' : ''}`}
               >
-                {!msg.isOfficial && (
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarImage src={msg.avatar} />
-                    <AvatarFallback>
-                      {msg.user.split(' ').map(n => n[0]).join('')}
+                <Avatar className="h-8 w-8 flex-shrink-0">
+                  {msg.isBot ? (
+                    <AvatarFallback className="bg-primary/10">
+                      <Bot className="h-4 w-4 text-primary" />
                     </AvatarFallback>
-                  </Avatar>
-                )}
+                  ) : (
+                    <>
+                      <AvatarImage src={msg.avatar} />
+                      <AvatarFallback>
+                        {msg.user.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </>
+                  )}
+                </Avatar>
                 
-                <div className={`flex-1 max-w-xs md:max-w-md ${msg.isCurrentUser && !msg.isOfficial ? 'text-right' : ''}`}>
+                <div className={`flex-1 max-w-xs md:max-w-md ${msg.isCurrentUser ? 'text-right' : ''}`}>
                   <div className="flex items-center gap-2 mb-1">
-                    {(!msg.isCurrentUser || msg.isOfficial) && (
+                    {!msg.isCurrentUser && (
                       <span className="text-sm font-medium text-foreground">
                         {msg.user}
                       </span>
                     )}
-                    {msg.isOfficial && (
+                    {msg.isBot && (
                       <Badge variant="secondary" className="text-xs">
                         {msg.messageType === 'system' ? 'System' : 'Official'}
                       </Badge>
@@ -223,10 +263,10 @@ const ChatRoom = () => {
                   
                   <div
                     className={`rounded-lg p-3 text-sm ${
-                      msg.isCurrentUser && !msg.isOfficial
+                      msg.isCurrentUser
                         ? 'bg-primary text-primary-foreground'
-                        : msg.isOfficial
-                        ? 'bg-accent text-accent-foreground'
+                        : msg.isBot
+                        ? 'bg-accent/50 text-accent-foreground border border-border'
                         : 'bg-muted'
                     }`}
                   >
@@ -268,27 +308,6 @@ const ChatRoom = () => {
         </CardContent>
       </Card>
 
-      {/* Settings Command Menu */}
-      <CommandDialog open={showSettingsMenu} onOpenChange={setShowSettingsMenu}>
-        <CommandInput placeholder="Type a command or search..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Chat Actions">
-            <CommandItem onSelect={() => { setShowSettingsMenu(false); navigate("/chat"); }}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              <span>Back to Chat List</span>
-            </CommandItem>
-            <CommandItem onSelect={() => setShowSettingsMenu(false)}>
-              <Users className="mr-2 h-4 w-4" />
-              <span>View Participants ({participantCount})</span>
-            </CommandItem>
-            <CommandItem onSelect={() => setShowSettingsMenu(false)}>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Room Settings</span>
-            </CommandItem>
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
     </div>
   );
 };
