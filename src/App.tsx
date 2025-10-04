@@ -29,6 +29,7 @@ import Dashboard from "./pages/Dashboard";
 import UnifiedWalletSetup from "./pages/wallet/UnifiedSetup";
 import WalletDashboard from "./pages/wallet/Dashboard";
 import PropertyManagement from "./pages/property/Management";
+import EventSimulator from "./pages/property/EventSimulator";
 import PropertyView from "./pages/property/PropertyView";
 import PropertyEdit from "./pages/property/PropertyEdit";
 import TokenizeProperty from "./pages/property/Tokenize";
@@ -99,6 +100,7 @@ const App = () => (
                   path="/property/management"
                   element={<PropertyManagement />}
                 />
+                <Route path="/property/events" element={<EventSimulator />} />
                 <Route
                   path="/property/:propertyId/view"
                   element={<PropertyView />}
