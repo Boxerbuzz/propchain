@@ -429,6 +429,14 @@ const PropertyManagement = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/property/events")}
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Record Events</span>
+            </Button>
             <Button variant="outline" size="sm">
               <Filter className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Filter</span>
