@@ -82,7 +82,19 @@ serve(async (req) => {
       );
     }
 
-    // Step 2: Update token holdings using database function
+    // Step 2: Check if user already has holdings for this tokenization (is recurring investor)
+    console.log("[PROCESS-COMPLETION] Checking if recurring investor");
+    const { data: existingHoldings } = await supabase
+      .from("token_holdings")
+      .select("id, balance")
+      .eq("user_id", investment.investor_id)
+      .eq("tokenization_id", investment.tokenization_id)
+      .single();
+
+    const isRecurringInvestor = !!existingHoldings && existingHoldings.balance > 0;
+    console.log(`[PROCESS-COMPLETION] Recurring investor: ${isRecurringInvestor}`);
+
+    // Update token holdings using database function
     console.log("[PROCESS-COMPLETION] Upserting token holdings");
     const { error: holdingsError } = await supabase.rpc(
       "upsert_token_holdings",
@@ -147,27 +159,33 @@ serve(async (req) => {
             participantError
           );
         } else {
-          // Send welcome message to chat room
-          console.log("[PROCESS-COMPLETION] Sending welcome message to chat");
+          // Send appropriate message based on whether this is a new or recurring investor
+          console.log("[PROCESS-COMPLETION] Sending investor message to chat");
+          
+          const messageText = isRecurringInvestor
+            ? `💰 Investor added ${investment.tokens_requested.toLocaleString()} more ${investment.tokenizations.token_symbol} tokens to their position.`
+            : `🎉 New investor joined! Welcome to the ${investment.tokenizations.properties.title} investor community.`;
+
           const { error: messageError } = await supabase
             .from("chat_messages")
             .insert({
               room_id: roomId,
               sender_id: null, // System message
               message_type: "system",
-              message_text: `🎉 New investor joined! Welcome to the ${investment.tokenizations.properties.title} investor community.`,
+              message_text: messageText,
               metadata: {
-                event_type: "user_joined",
+                event_type: isRecurringInvestor ? "additional_investment" : "user_joined",
                 user_id: investment.investor_id,
                 tokens_invested: investment.tokens_requested,
                 amount_invested: investment.amount_ngn,
                 investment_id: investment.id,
+                is_recurring: isRecurringInvestor,
               },
             });
 
           if (messageError) {
             console.error(
-              "[PROCESS-COMPLETION] Failed to send welcome message:",
+              "[PROCESS-COMPLETION] Failed to send message:",
               messageError
             );
           }
