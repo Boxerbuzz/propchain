@@ -16,7 +16,7 @@ export interface PropertyEvent {
 
 export interface CreateEventData {
   property_id: string;
-  event_type: "inspection" | "rental" | "purchase";
+  event_type: "inspection" | "rental" | "purchase" | "maintenance";
   event_data: any;
 }
 
@@ -84,6 +84,24 @@ export const usePropertyPurchases = (propertyId: string) => {
         .select("*")
         .eq("property_id", propertyId)
         .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!propertyId,
+  });
+};
+
+// Hook to fetch property maintenance
+export const usePropertyMaintenance = (propertyId: string) => {
+  return useQuery({
+    queryKey: ["property-maintenance", propertyId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("property_maintenance" as any)
+        .select("*")
+        .eq("property_id", propertyId)
+        .order("maintenance_date", { ascending: false });
 
       if (error) throw error;
       return data || [];

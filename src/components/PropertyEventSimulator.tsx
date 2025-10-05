@@ -3,11 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardCheck, Home, DollarSign } from "lucide-react";
+import { ClipboardCheck, Home, DollarSign, Wrench } from "lucide-react";
 import { useUserProperties } from "@/hooks/usePropertyManagement";
 import { InspectionForm } from "./event-forms/InspectionForm";
 import { RentalForm } from "./event-forms/RentalForm";
 import { PurchaseForm } from "./event-forms/PurchaseForm";
+import { MaintenanceForm } from "./event-forms/MaintenanceForm";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const PropertyEventSimulator = () => {
@@ -65,7 +66,7 @@ export const PropertyEventSimulator = () => {
 
             {selectedProperty && (
               <Tabs defaultValue="inspection" className="mt-6">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="inspection" className="flex items-center gap-2">
                     <ClipboardCheck className="w-4 h-4" />
                     Inspection
@@ -77,6 +78,10 @@ export const PropertyEventSimulator = () => {
                   <TabsTrigger value="purchase" className="flex items-center gap-2">
                     <DollarSign className="w-4 h-4" />
                     Purchase
+                  </TabsTrigger>
+                  <TabsTrigger value="maintenance" className="flex items-center gap-2">
+                    <Wrench className="w-4 h-4" />
+                    Maintenance
                   </TabsTrigger>
                 </TabsList>
 
@@ -90,6 +95,10 @@ export const PropertyEventSimulator = () => {
 
                 <TabsContent value="purchase" className="mt-6">
                   <PurchaseForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
+                </TabsContent>
+
+                <TabsContent value="maintenance" className="mt-6">
+                  <MaintenanceForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
                 </TabsContent>
               </Tabs>
             )}

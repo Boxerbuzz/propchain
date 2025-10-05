@@ -617,6 +617,56 @@ export type Database = {
           },
         ]
       }
+      kyc_drafts: {
+        Row: {
+          completed_steps: string[] | null
+          created_at: string | null
+          current_step: string
+          document_image_url: string | null
+          expires_at: string | null
+          form_data: Json
+          id: string
+          proof_of_address_url: string | null
+          selfie_url: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_steps?: string[] | null
+          created_at?: string | null
+          current_step?: string
+          document_image_url?: string | null
+          expires_at?: string | null
+          form_data?: Json
+          id?: string
+          proof_of_address_url?: string | null
+          selfie_url?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_steps?: string[] | null
+          created_at?: string | null
+          current_step?: string
+          document_image_url?: string | null
+          expires_at?: string | null
+          form_data?: Json
+          id?: string
+          proof_of_address_url?: string | null
+          selfie_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_drafts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kyc_verifications: {
         Row: {
           address: string | null
@@ -996,6 +1046,110 @@ export type Database = {
           },
         ]
       }
+      property_events: {
+        Row: {
+          amount_ngn: number | null
+          amount_usd: number | null
+          conducted_by: string | null
+          conducted_by_company: string | null
+          conducted_by_name: string | null
+          created_at: string | null
+          created_by: string | null
+          documents: Json | null
+          event_date: string
+          event_details: Json
+          event_status: string | null
+          event_type: string
+          hcs_sequence_number: string | null
+          hcs_topic_id: string | null
+          hcs_transaction_id: string | null
+          id: string
+          notes: string | null
+          photos: Json | null
+          property_event_id: string | null
+          property_id: string
+          summary: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount_ngn?: number | null
+          amount_usd?: number | null
+          conducted_by?: string | null
+          conducted_by_company?: string | null
+          conducted_by_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          documents?: Json | null
+          event_date: string
+          event_details: Json
+          event_status?: string | null
+          event_type: string
+          hcs_sequence_number?: string | null
+          hcs_topic_id?: string | null
+          hcs_transaction_id?: string | null
+          id?: string
+          notes?: string | null
+          photos?: Json | null
+          property_event_id?: string | null
+          property_id: string
+          summary?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount_ngn?: number | null
+          amount_usd?: number | null
+          conducted_by?: string | null
+          conducted_by_company?: string | null
+          conducted_by_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          documents?: Json | null
+          event_date?: string
+          event_details?: Json
+          event_status?: string | null
+          event_type?: string
+          hcs_sequence_number?: string | null
+          hcs_topic_id?: string | null
+          hcs_transaction_id?: string | null
+          id?: string
+          notes?: string | null
+          photos?: Json | null
+          property_event_id?: string | null
+          property_id?: string
+          summary?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_events_conducted_by_fkey"
+            columns: ["conducted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_events_property_event_id_fkey"
+            columns: ["property_event_id"]
+            isOneToOne: false
+            referencedRelation: "property_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_events_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       property_images: {
         Row: {
           caption: string | null
@@ -1033,6 +1187,492 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "property_images_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_inspections: {
+        Row: {
+          created_at: string | null
+          electrical_status: string | null
+          estimated_repair_cost: number | null
+          foundation_status: string | null
+          hcs_transaction_id: string | null
+          id: string
+          inspection_date: string
+          inspection_photos: Json | null
+          inspection_report_url: string | null
+          inspection_type: string
+          inspector_company: string | null
+          inspector_id: string | null
+          inspector_license: string | null
+          inspector_name: string | null
+          issues_found: Json | null
+          market_value_estimate: number | null
+          overall_rating: number | null
+          plumbing_status: string | null
+          property_event_id: string | null
+          property_id: string | null
+          rental_value_estimate: number | null
+          required_repairs: Json | null
+          roof_status: string | null
+          room_assessments: Json | null
+          structural_condition: string | null
+          updated_at: string | null
+          walls_status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          electrical_status?: string | null
+          estimated_repair_cost?: number | null
+          foundation_status?: string | null
+          hcs_transaction_id?: string | null
+          id?: string
+          inspection_date: string
+          inspection_photos?: Json | null
+          inspection_report_url?: string | null
+          inspection_type: string
+          inspector_company?: string | null
+          inspector_id?: string | null
+          inspector_license?: string | null
+          inspector_name?: string | null
+          issues_found?: Json | null
+          market_value_estimate?: number | null
+          overall_rating?: number | null
+          plumbing_status?: string | null
+          property_event_id?: string | null
+          property_id?: string | null
+          rental_value_estimate?: number | null
+          required_repairs?: Json | null
+          roof_status?: string | null
+          room_assessments?: Json | null
+          structural_condition?: string | null
+          updated_at?: string | null
+          walls_status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          electrical_status?: string | null
+          estimated_repair_cost?: number | null
+          foundation_status?: string | null
+          hcs_transaction_id?: string | null
+          id?: string
+          inspection_date?: string
+          inspection_photos?: Json | null
+          inspection_report_url?: string | null
+          inspection_type?: string
+          inspector_company?: string | null
+          inspector_id?: string | null
+          inspector_license?: string | null
+          inspector_name?: string | null
+          issues_found?: Json | null
+          market_value_estimate?: number | null
+          overall_rating?: number | null
+          plumbing_status?: string | null
+          property_event_id?: string | null
+          property_id?: string | null
+          rental_value_estimate?: number | null
+          required_repairs?: Json | null
+          roof_status?: string | null
+          room_assessments?: Json | null
+          structural_condition?: string | null
+          updated_at?: string | null
+          walls_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_inspections_inspector_id_fkey"
+            columns: ["inspector_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_inspections_property_event_id_fkey"
+            columns: ["property_event_id"]
+            isOneToOne: false
+            referencedRelation: "property_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_inspections_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_maintenance: {
+        Row: {
+          actual_cost_ngn: number | null
+          after_photos: Json | null
+          before_photos: Json | null
+          completion_date: string | null
+          contractor_company: string | null
+          contractor_license: string | null
+          contractor_name: string | null
+          contractor_phone: string | null
+          created_at: string | null
+          created_by: string | null
+          estimated_cost_ngn: number | null
+          follow_up_date: string | null
+          follow_up_required: boolean | null
+          hcs_transaction_id: string | null
+          id: string
+          invoice_url: string | null
+          issue_category: string | null
+          issue_description: string
+          issue_severity: string | null
+          maintenance_date: string
+          maintenance_status: string | null
+          maintenance_type: string
+          notes: string | null
+          parts_replaced: Json | null
+          payment_method: string | null
+          payment_status: string | null
+          property_event_id: string | null
+          property_id: string | null
+          updated_at: string | null
+          warranty_expiry_date: string | null
+          warranty_info: string | null
+          work_performed: string | null
+        }
+        Insert: {
+          actual_cost_ngn?: number | null
+          after_photos?: Json | null
+          before_photos?: Json | null
+          completion_date?: string | null
+          contractor_company?: string | null
+          contractor_license?: string | null
+          contractor_name?: string | null
+          contractor_phone?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          estimated_cost_ngn?: number | null
+          follow_up_date?: string | null
+          follow_up_required?: boolean | null
+          hcs_transaction_id?: string | null
+          id?: string
+          invoice_url?: string | null
+          issue_category?: string | null
+          issue_description: string
+          issue_severity?: string | null
+          maintenance_date: string
+          maintenance_status?: string | null
+          maintenance_type: string
+          notes?: string | null
+          parts_replaced?: Json | null
+          payment_method?: string | null
+          payment_status?: string | null
+          property_event_id?: string | null
+          property_id?: string | null
+          updated_at?: string | null
+          warranty_expiry_date?: string | null
+          warranty_info?: string | null
+          work_performed?: string | null
+        }
+        Update: {
+          actual_cost_ngn?: number | null
+          after_photos?: Json | null
+          before_photos?: Json | null
+          completion_date?: string | null
+          contractor_company?: string | null
+          contractor_license?: string | null
+          contractor_name?: string | null
+          contractor_phone?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          estimated_cost_ngn?: number | null
+          follow_up_date?: string | null
+          follow_up_required?: boolean | null
+          hcs_transaction_id?: string | null
+          id?: string
+          invoice_url?: string | null
+          issue_category?: string | null
+          issue_description?: string
+          issue_severity?: string | null
+          maintenance_date?: string
+          maintenance_status?: string | null
+          maintenance_type?: string
+          notes?: string | null
+          parts_replaced?: Json | null
+          payment_method?: string | null
+          payment_status?: string | null
+          property_event_id?: string | null
+          property_id?: string | null
+          updated_at?: string | null
+          warranty_expiry_date?: string | null
+          warranty_info?: string | null
+          work_performed?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_maintenance_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_maintenance_property_event_id_fkey"
+            columns: ["property_event_id"]
+            isOneToOne: false
+            referencedRelation: "property_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_maintenance_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_purchases: {
+        Row: {
+          agreement_signed: boolean | null
+          buyer_email: string | null
+          buyer_id_number: string | null
+          buyer_name: string | null
+          buyer_phone: string | null
+          buyer_user_id: string | null
+          completion_date: string | null
+          created_at: string | null
+          created_by: string | null
+          down_payment_ngn: number | null
+          hcs_transaction_id: string | null
+          id: string
+          payment_method: string | null
+          payment_plan: string | null
+          percentage_sold: number | null
+          property_event_id: string | null
+          property_id: string | null
+          purchase_price_ngn: number
+          purchase_price_usd: number | null
+          remaining_balance_ngn: number | null
+          sale_agreement_url: string | null
+          seller_name: string | null
+          seller_user_id: string | null
+          signed_at: string | null
+          title_transfer_doc_url: string | null
+          tokens_involved: number | null
+          transaction_status: string | null
+          transaction_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          agreement_signed?: boolean | null
+          buyer_email?: string | null
+          buyer_id_number?: string | null
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          buyer_user_id?: string | null
+          completion_date?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          down_payment_ngn?: number | null
+          hcs_transaction_id?: string | null
+          id?: string
+          payment_method?: string | null
+          payment_plan?: string | null
+          percentage_sold?: number | null
+          property_event_id?: string | null
+          property_id?: string | null
+          purchase_price_ngn: number
+          purchase_price_usd?: number | null
+          remaining_balance_ngn?: number | null
+          sale_agreement_url?: string | null
+          seller_name?: string | null
+          seller_user_id?: string | null
+          signed_at?: string | null
+          title_transfer_doc_url?: string | null
+          tokens_involved?: number | null
+          transaction_status?: string | null
+          transaction_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          agreement_signed?: boolean | null
+          buyer_email?: string | null
+          buyer_id_number?: string | null
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          buyer_user_id?: string | null
+          completion_date?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          down_payment_ngn?: number | null
+          hcs_transaction_id?: string | null
+          id?: string
+          payment_method?: string | null
+          payment_plan?: string | null
+          percentage_sold?: number | null
+          property_event_id?: string | null
+          property_id?: string | null
+          purchase_price_ngn?: number
+          purchase_price_usd?: number | null
+          remaining_balance_ngn?: number | null
+          sale_agreement_url?: string | null
+          seller_name?: string | null
+          seller_user_id?: string | null
+          signed_at?: string | null
+          title_transfer_doc_url?: string | null
+          tokens_involved?: number | null
+          transaction_status?: string | null
+          transaction_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_purchases_buyer_user_id_fkey"
+            columns: ["buyer_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_purchases_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_purchases_property_event_id_fkey"
+            columns: ["property_event_id"]
+            isOneToOne: false
+            referencedRelation: "property_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_purchases_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_purchases_seller_user_id_fkey"
+            columns: ["seller_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_rentals: {
+        Row: {
+          agency_fee_ngn: number | null
+          agreement_signed: boolean | null
+          amount_paid_ngn: number | null
+          created_at: string | null
+          created_by: string | null
+          end_date: string
+          hcs_transaction_id: string | null
+          id: string
+          lease_agreement_url: string | null
+          lease_duration_months: number | null
+          legal_fee_ngn: number | null
+          monthly_rent_ngn: number
+          payment_method: string | null
+          payment_status: string | null
+          property_event_id: string | null
+          property_id: string | null
+          rental_status: string | null
+          rental_type: string | null
+          security_deposit_ngn: number | null
+          signed_at: string | null
+          special_terms: string | null
+          start_date: string
+          tenant_email: string | null
+          tenant_id_number: string | null
+          tenant_name: string
+          tenant_phone: string | null
+          updated_at: string | null
+          utilities_included: Json | null
+        }
+        Insert: {
+          agency_fee_ngn?: number | null
+          agreement_signed?: boolean | null
+          amount_paid_ngn?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          end_date: string
+          hcs_transaction_id?: string | null
+          id?: string
+          lease_agreement_url?: string | null
+          lease_duration_months?: number | null
+          legal_fee_ngn?: number | null
+          monthly_rent_ngn: number
+          payment_method?: string | null
+          payment_status?: string | null
+          property_event_id?: string | null
+          property_id?: string | null
+          rental_status?: string | null
+          rental_type?: string | null
+          security_deposit_ngn?: number | null
+          signed_at?: string | null
+          special_terms?: string | null
+          start_date: string
+          tenant_email?: string | null
+          tenant_id_number?: string | null
+          tenant_name: string
+          tenant_phone?: string | null
+          updated_at?: string | null
+          utilities_included?: Json | null
+        }
+        Update: {
+          agency_fee_ngn?: number | null
+          agreement_signed?: boolean | null
+          amount_paid_ngn?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          end_date?: string
+          hcs_transaction_id?: string | null
+          id?: string
+          lease_agreement_url?: string | null
+          lease_duration_months?: number | null
+          legal_fee_ngn?: number | null
+          monthly_rent_ngn?: number
+          payment_method?: string | null
+          payment_status?: string | null
+          property_event_id?: string | null
+          property_id?: string | null
+          rental_status?: string | null
+          rental_type?: string | null
+          security_deposit_ngn?: number | null
+          signed_at?: string | null
+          special_terms?: string | null
+          start_date?: string
+          tenant_email?: string | null
+          tenant_id_number?: string | null
+          tenant_name?: string
+          tenant_phone?: string | null
+          updated_at?: string | null
+          utilities_included?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_rentals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_rentals_property_event_id_fkey"
+            columns: ["property_event_id"]
+            isOneToOne: false
+            referencedRelation: "property_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_rentals_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
@@ -1605,6 +2245,10 @@ export type Database = {
         }
         Returns: Json
       }
+      cleanup_expired_kyc_drafts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_expired_token_reservations: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -1665,7 +2309,13 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      investment_phase:
+        | "reservation"
+        | "confirmed"
+        | "minted"
+        | "distributed"
+        | "refunded"
+        | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1792,6 +2442,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      investment_phase: [
+        "reservation",
+        "confirmed",
+        "minted",
+        "distributed",
+        "refunded",
+        "failed",
+      ],
+    },
   },
 } as const

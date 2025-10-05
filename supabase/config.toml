@@ -9,3 +9,5 @@ verify_jwt = false
 verify_jwt = false
 [functions.distribute-tokens-to-kyc-users]
 verify_jwt = false
+[functions.create-proposal]
+verify_jwt = true

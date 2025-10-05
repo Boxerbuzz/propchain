@@ -9,7 +9,7 @@ const corsHeaders = {
 
 interface PropertyEventRequest {
   property_id: string;
-  event_type: "inspection" | "rental" | "purchase";
+  event_type: "inspection" | "rental" | "purchase" | "maintenance";
   event_data: any;
 }
 
@@ -199,6 +199,34 @@ serve(async (req) => {
 
       if (purchaseError) throw purchaseError;
       specificEventId = purchase.id;
+    } else if (event_type === "maintenance") {
+      const { data: maintenance, error: maintenanceError } = await supabase
+        .from("property_maintenance")
+        .insert({
+          property_event_id: eventId,
+          property_id,
+          maintenance_type: event_data.maintenance_type,
+          maintenance_date: new Date().toISOString(),
+          issue_category: event_data.issue_category,
+          issue_severity: event_data.issue_severity,
+          issue_description: event_data.issue_description,
+          contractor_name: event_data.contractor_name || null,
+          contractor_company: event_data.contractor_company || null,
+          contractor_phone: event_data.contractor_phone || null,
+          estimated_cost_ngn: event_data.estimated_cost_ngn || null,
+          actual_cost_ngn: event_data.actual_cost_ngn || null,
+          work_performed: event_data.work_performed || null,
+          maintenance_status: event_data.maintenance_status || "scheduled",
+          payment_status: event_data.payment_status || "pending",
+          follow_up_required: event_data.follow_up_required || false,
+          notes: event_data.notes || null,
+          created_by: userData.user.id,
+        })
+        .select()
+        .single();
+
+      if (maintenanceError) throw maintenanceError;
+      specificEventId = maintenance.id;
     }
 
     // Submit to HCS
@@ -307,6 +335,8 @@ function generateEventSummary(eventType: string, eventData: any): string {
       return `Property rented to ${eventData.tenant_name} for ₦${eventData.monthly_rent_ngn?.toLocaleString()}/month from ${eventData.start_date} to ${eventData.end_date}`;
     case "purchase":
       return `${eventData.transaction_type || "Purchase"} transaction for ₦${eventData.purchase_price_ngn?.toLocaleString()} - ${eventData.transaction_status}`;
+    case "maintenance":
+      return `${eventData.maintenance_type} maintenance: ${eventData.issue_category} - ${eventData.issue_severity} severity - ${eventData.maintenance_status}`;
     default:
       return `Property ${eventType} event recorded`;
   }

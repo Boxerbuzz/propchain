@@ -7,11 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Send, Paperclip, Users, AlertCircle, ArrowLeft, MoreVertical, Bot, Vote, DollarSign, FileText, Scale } from "lucide-react";
+import { Send, Paperclip, Users, AlertCircle, ArrowLeft, MoreVertical, Bot, Vote, DollarSign, FileText, Scale, Plus } from "lucide-react";
 import { useChatMessages, useSendMessage } from "@/hooks/useUserChatRooms";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ProposalCreator } from "@/components/ProposalCreator";
+import { ProposalMessage } from "@/components/ProposalMessage";
 
 const ChatRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -20,6 +22,7 @@ const ChatRoom = () => {
   const [message, setMessage] = useState("");
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const [participantCount, setParticipantCount] = useState(0);
+  const [showProposalCreator, setShowProposalCreator] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch messages and room info
@@ -94,6 +97,8 @@ const ChatRoom = () => {
       isCurrentUser: msg.sender_id === user?.id,
       isBot: isBot,
       messageType: msg.message_type,
+      metadata: msg.metadata,
+      createdAt: msg.created_at,
     };
   });
 
@@ -172,17 +177,13 @@ const ChatRoom = () => {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuLabel>Governance Tools</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => navigate(`/properties/${roomInfo?.property_id}/governance`)}>
-                      <Vote className="mr-2 h-4 w-4" />
-                      <span>View Proposals</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate(`/properties/${roomInfo?.property_id}/governance/new`)}>
-                      <FileText className="mr-2 h-4 w-4" />
+                    <DropdownMenuItem onClick={() => setShowProposalCreator(!showProposalCreator)}>
+                      <Plus className="mr-2 h-4 w-4" />
                       <span>Create Proposal</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <DollarSign className="mr-2 h-4 w-4" />
-                      <span>Raise a Pool</span>
+                    <DropdownMenuItem onClick={() => navigate(`/properties/${roomInfo?.property_id}/governance`)}>
+                      <Vote className="mr-2 h-4 w-4" />
+                      <span>View All Proposals</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                       <Scale className="mr-2 h-4 w-4" />
@@ -224,56 +225,68 @@ const ChatRoom = () => {
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {showProposalCreator && roomInfo && (
+                <ProposalCreator
+                  roomId={roomId || ''}
+                  propertyId={roomInfo.property_id}
+                  tokenizationId={roomInfo.tokenization_id}
+                  onClose={() => setShowProposalCreator(false)}
+                />
+              )}
+              
               {displayMessages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex gap-3 ${msg.isCurrentUser ? 'flex-row-reverse' : ''}`}
-              >
-                <Avatar className="h-8 w-8 flex-shrink-0">
-                  {msg.isBot ? (
-                    <AvatarFallback className="bg-primary/10">
-                      <Bot className="h-4 w-4 text-primary" />
-                    </AvatarFallback>
+                <div key={msg.id}>
+                  {msg.messageType === 'proposal' ? (
+                    <ProposalMessage metadata={msg.metadata} createdAt={msg.createdAt} />
                   ) : (
-                    <>
-                      <AvatarImage src={msg.avatar} />
-                      <AvatarFallback>
-                        {msg.user.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </>
+                    <div className={`flex gap-3 ${msg.isCurrentUser ? 'flex-row-reverse' : ''}`}>
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        {msg.isBot ? (
+                          <AvatarFallback className="bg-primary/10">
+                            <Bot className="h-4 w-4 text-primary" />
+                          </AvatarFallback>
+                        ) : (
+                          <>
+                            <AvatarImage src={msg.avatar} />
+                            <AvatarFallback>
+                              {msg.user.split(' ').map(n => n[0]).join('')}
+                            </AvatarFallback>
+                          </>
+                        )}
+                      </Avatar>
+                      
+                      <div className={`flex-1 max-w-xs md:max-w-md ${msg.isCurrentUser ? 'text-right' : ''}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          {!msg.isCurrentUser && (
+                            <span className="text-sm font-medium text-foreground">
+                              {msg.user}
+                            </span>
+                          )}
+                          {msg.isBot && (
+                            <Badge variant="secondary" className="text-xs">
+                              {msg.messageType === 'system' ? 'System' : 'Official'}
+                            </Badge>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {msg.timestamp}
+                          </span>
+                        </div>
+                        
+                        <div
+                          className={`rounded-lg p-3 text-sm ${
+                            msg.isCurrentUser
+                              ? 'bg-primary text-primary-foreground'
+                              : msg.isBot
+                              ? 'bg-accent/50 text-accent-foreground border border-border'
+                              : 'bg-muted'
+                          }`}
+                        >
+                          {msg.message}
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </Avatar>
-                
-                <div className={`flex-1 max-w-xs md:max-w-md ${msg.isCurrentUser ? 'text-right' : ''}`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    {!msg.isCurrentUser && (
-                      <span className="text-sm font-medium text-foreground">
-                        {msg.user}
-                      </span>
-                    )}
-                    {msg.isBot && (
-                      <Badge variant="secondary" className="text-xs">
-                        {msg.messageType === 'system' ? 'System' : 'Official'}
-                      </Badge>
-                    )}
-                    <span className="text-xs text-muted-foreground">
-                      {msg.timestamp}
-                    </span>
-                  </div>
-                  
-                  <div
-                    className={`rounded-lg p-3 text-sm ${
-                      msg.isCurrentUser
-                        ? 'bg-primary text-primary-foreground'
-                        : msg.isBot
-                        ? 'bg-accent/50 text-accent-foreground border border-border'
-                        : 'bg-muted'
-                    }`}
-                  >
-                    {msg.message}
-                  </div>
                 </div>
-              </div>
               ))}
               <div ref={messagesEndRef} />
             </div>
