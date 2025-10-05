@@ -70,7 +70,7 @@ export const InspectionForm = ({ propertyId, propertyTitle }: InspectionFormProp
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card>
         <CardContent className="pt-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Inspection Type *</Label>
               <Select
@@ -121,7 +121,7 @@ export const InspectionForm = ({ propertyId, propertyTitle }: InspectionFormProp
 
           <div className="pt-4">
             <h3 className="font-semibold mb-4">Property Condition Assessment</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {["structural_condition", "foundation_status", "roof_status", "walls_status", "electrical_status", "plumbing_status"].map((field) => (
                 <div key={field} className="space-y-2">
                   <Label>{field.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}</Label>
@@ -145,7 +145,7 @@ export const InspectionForm = ({ propertyId, propertyTitle }: InspectionFormProp
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
             <div className="space-y-2">
               <Label>Overall Rating (1-10) *</Label>
               <Input

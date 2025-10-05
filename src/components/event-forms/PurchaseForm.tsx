@@ -74,7 +74,7 @@ export const PurchaseForm = ({ propertyId, propertyTitle }: PurchaseFormProps) =
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card>
         <CardContent className="pt-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2 col-span-2">
               <Label>Transaction Type *</Label>
               <Select
@@ -142,7 +142,7 @@ export const PurchaseForm = ({ propertyId, propertyTitle }: PurchaseFormProps) =
 
           <div className="pt-4">
             <h3 className="font-semibold mb-4">Financial Details</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Purchase Price (₦) *</Label>
                 <Input
@@ -189,7 +189,7 @@ export const PurchaseForm = ({ propertyId, propertyTitle }: PurchaseFormProps) =
 
           <div className="pt-4">
             <h3 className="font-semibold mb-4">Payment Terms</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Payment Plan</Label>
                 <Select
@@ -247,7 +247,7 @@ export const PurchaseForm = ({ propertyId, propertyTitle }: PurchaseFormProps) =
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
             <div className="space-y-2">
               <Label>Transaction Status</Label>
               <Select

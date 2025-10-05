@@ -74,7 +74,7 @@ export const RentalForm = ({ propertyId, propertyTitle }: RentalFormProps) => {
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card>
         <CardContent className="pt-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Rental Type *</Label>
               <Select
@@ -133,7 +133,7 @@ export const RentalForm = ({ propertyId, propertyTitle }: RentalFormProps) => {
 
           <div className="pt-4">
             <h3 className="font-semibold mb-4">Financial Terms</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Monthly Rent (₦) *</Label>
                 <Input
@@ -179,7 +179,7 @@ export const RentalForm = ({ propertyId, propertyTitle }: RentalFormProps) => {
 
           <div className="pt-4">
             <h3 className="font-semibold mb-4">Rental Period</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Start Date *</Label>
                 <Input
@@ -212,7 +212,7 @@ export const RentalForm = ({ propertyId, propertyTitle }: RentalFormProps) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
             <div className="space-y-2">
               <Label>Payment Method</Label>
               <Select
