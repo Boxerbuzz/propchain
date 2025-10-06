@@ -21,7 +21,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
 import { useNotifications } from "../hooks/useNotifications";
-import { useActivityFeed } from "../hooks/useActivityFeed";
+import { useUnifiedActivityFeed } from "../hooks/useUnifiedActivityFeed";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -31,7 +31,7 @@ export default function Dashboard() {
     isLoading: notificationsLoading,
     markAllAsRead,
   } = useNotifications();
-  const { activities, isLoading: activitiesLoading } = useActivityFeed(10);
+  const { activities, isLoading: activitiesLoading } = useUnifiedActivityFeed(10);
 
   console.log(user);
 
@@ -52,21 +52,23 @@ export default function Dashboard() {
   const getActivityIcon = (type: string, status: string) => {
     switch (type) {
       case "investment":
-        return status === "confirmed" ? (
+        return status === "completed" || status === "confirmed" ? (
           <CheckCircle className="w-5 h-5 text-green-600" />
         ) : status === "pending" ? (
           <Clock className="w-5 h-5 text-amber-600" />
         ) : (
           <XCircle className="w-5 h-5 text-red-600" />
         );
-      case "wallet":
-        return <Wallet className="w-5 h-5 text-blue-600" />;
       case "dividend":
-        return status === "paid" ? (
-          <ArrowDownLeft className="w-5 h-5 text-green-600" />
-        ) : (
-          <Clock className="w-5 h-5 text-amber-600" />
-        );
+        return <ArrowDownLeft className="w-5 h-5 text-green-600" />;
+      case "deposit":
+      case "token_deposit":
+        return <TrendingUp className="w-5 h-5 text-green-600" />;
+      case "withdrawal":
+      case "token_withdrawal":
+        return <TrendingDown className="w-5 h-5 text-red-600" />;
+      case "property_event":
+        return <Building className="w-5 h-5 text-primary" />;
       default:
         return <Activity className="w-5 h-5 text-muted-foreground" />;
     }
@@ -74,13 +76,17 @@ export default function Dashboard() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
+      case "completed":
       case "confirmed":
       case "paid":
-        return <Badge className="bg-green-100 text-green-800">Confirmed</Badge>;
+      case "success":
+        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
       case "pending":
         return <Badge className="bg-amber-100 text-amber-800">Pending</Badge>;
       case "failed":
         return <Badge className="bg-red-100 text-red-800">Failed</Badge>;
+      case "info":
+        return <Badge variant="secondary">Info</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
