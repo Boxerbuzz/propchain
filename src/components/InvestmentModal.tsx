@@ -419,13 +419,13 @@ export default function InvestmentModal({
     setShowProgress(true);
     setInvestmentStatus({ paymentStatus: "processing" });
 
-    const tokensRequested = Math.floor(
-      values.amount / tokenization.price_per_token
-    );
+    // Use current displayed values instead of form values to ensure
+    // the actual amount shown to user is what gets invested
+    const tokensRequested = currentTokenCount;
 
     createInvestment({
       tokenization_id: tokenization.id,
-      amount_ngn: values.amount,
+      amount_ngn: currentAmount,
       tokens_requested: tokensRequested,
       payment_method: paymentMethod,
     });

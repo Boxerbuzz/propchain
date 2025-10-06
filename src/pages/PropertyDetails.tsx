@@ -19,6 +19,7 @@ import {
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabaseService } from "@/services/supabaseService";
+import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 
 export default function PropertyDetails() {
@@ -52,9 +53,33 @@ export default function PropertyDetails() {
         tokenization.property_id
       );
 
+      // Fetch owner and manager profiles
+      const { data: ownerProfile } = await supabase
+        .from("users")
+        .select("id, first_name, last_name, kyc_status, created_at")
+        .eq("id", property.owner_id)
+        .single();
+
+      const { data: managerProfile } = property.property_manager_id
+        ? await supabase
+            .from("users")
+            .select("id, first_name, last_name, kyc_status")
+            .eq("id", property.property_manager_id)
+            .single()
+        : { data: null };
+
+      // Count owner's properties
+      const { count: ownerPropertyCount } = await supabase
+        .from("properties")
+        .select("*", { count: "exact", head: true })
+        .eq("owner_id", property.owner_id);
+
       return {
         tokenization,
         property,
+        ownerProfile,
+        managerProfile,
+        ownerPropertyCount: ownerPropertyCount || 0,
         images:
           images.length > 0
             ? images.map((img) => img.image_url)
@@ -122,9 +147,24 @@ export default function PropertyDetails() {
     );
   }
 
-  const { tokenization, property, images } = propertyData;
+  const { tokenization, property, images, ownerProfile, managerProfile, ownerPropertyCount } = propertyData;
   const progressPercentage =
     ((tokenization.tokens_sold || 0) / (tokenization.total_supply || 1)) * 100;
+
+  const getYearsOnPlatform = (createdAt: string | undefined) => {
+    if (!createdAt) return "New member";
+    const years = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24 * 365);
+    return years < 1 ? "Less than 1 year" : `${Math.floor(years)} year${Math.floor(years) > 1 ? 's' : ''}`;
+  };
+
+  // Type-safe metadata access for fund allocation
+  const metadata = tokenization as any;
+  const fundAllocation = metadata?.metadata?.fund_allocation || {
+    property_acquisition: 70,
+    legal_fees: 10,
+    platform_fees: 5,
+    reserves: 15,
+  };
 
   const formatLocation = (location: any) => {
     if (typeof location === "string") return location;
@@ -340,6 +380,94 @@ export default function PropertyDetails() {
                         {property.description ||
                           "This is a premium real estate investment opportunity. Details about the property, its location, amenities, and investment potential will be provided here."}
                       </p>
+                    </div>
+                  </div>
+
+                  {/* Property Owner Section */}
+                  {ownerProfile && (
+                    <div>
+                      <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">
+                        Property Owner
+                      </h3>
+                      <div className="bg-background-muted border border-border rounded-lg p-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-medium text-foreground">
+                                {ownerProfile.first_name} {ownerProfile.last_name}
+                              </h4>
+                              {ownerProfile.kyc_status === 'verified' && (
+                                <Badge variant="secondary" className="status-verified">
+                                  Verified
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-sm text-muted-foreground space-y-1">
+                              <p>Properties Listed: {ownerPropertyCount}</p>
+                              <p>On Platform: {getYearsOnPlatform(ownerProfile.created_at)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Property Manager Section */}
+                  {managerProfile && (
+                    <div>
+                      <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">
+                        Property Manager
+                      </h3>
+                      <div className="bg-background-muted border border-border rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-medium text-foreground">
+                            {managerProfile.first_name} {managerProfile.last_name}
+                          </h4>
+                          {managerProfile.kyc_status === 'verified' && (
+                            <Badge variant="secondary" className="status-verified">
+                              Verified
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Professional property management services
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Use of Funds Section */}
+                  <div>
+                    <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">
+                      Use of Funds
+                    </h3>
+                    <div className="bg-background-muted border border-border rounded-lg p-4">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Here's how the raised funds will be allocated:
+                      </p>
+                      <div className="space-y-3">
+                        {Object.entries(fundAllocation).map(([key, value]) => {
+                          const label = key.split('_').map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1)
+                          ).join(' ');
+                          const percentage = typeof value === 'number' ? value : 0;
+                          return (
+                            <div key={key}>
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-sm text-foreground">{label}</span>
+                                <span className="text-sm font-medium text-foreground">{percentage}%</span>
+                              </div>
+                              <Progress value={percentage} className="h-2" />
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium text-foreground">Total</span>
+                          <span className="font-medium text-foreground">100%</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
