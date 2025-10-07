@@ -18,11 +18,11 @@ import {
   Eye,
   EyeOff,
   Copy,
-  ExternalLink,
   TrendingUp,
   History,
   Settings,
   RefreshCw,
+  Hash,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
@@ -423,8 +423,16 @@ const WalletDashboard = () => {
                                     transaction.method}
                                 </p>
                                 {transaction.reference && (
-                                  <p className="text-xs text-muted-foreground font-mono">
-                                    {transaction.reference}
+                                  <p className="text-xs text-muted-foreground font-mono flex items-center gap-1">
+                                    <Hash className="h-3 w-3" />
+                                    {transaction.reference.length >= 36
+                                      ? `${transaction.reference.substring(
+                                          0,
+                                          8
+                                        )}...${transaction.reference.substring(
+                                          transaction.reference.length - 4
+                                        )}`
+                                      : transaction.reference}
                                   </p>
                                 )}
                               </div>
@@ -471,21 +479,6 @@ const WalletDashboard = () => {
                                       });
                                 })()}
                               </p>
-                              {transaction.explorerUrl && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 p-1"
-                                  onClick={() =>
-                                    window.open(
-                                      transaction.explorerUrl,
-                                      "_blank"
-                                    )
-                                  }
-                                >
-                                  <ExternalLink className="h-3 w-3" />
-                                </Button>
-                              )}
                               {transaction.fee && (
                                 <p className="text-xs text-muted-foreground">
                                   Fee: {transaction.fee.toFixed(6)} HBAR

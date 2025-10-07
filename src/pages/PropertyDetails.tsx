@@ -21,6 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabaseService } from "@/services/supabaseService";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function PropertyDetails() {
   const { id } = useParams<{ id: string }>();
@@ -147,14 +148,25 @@ export default function PropertyDetails() {
     );
   }
 
-  const { tokenization, property, images, ownerProfile, managerProfile, ownerPropertyCount } = propertyData;
+  const {
+    tokenization,
+    property,
+    images,
+    ownerProfile,
+    managerProfile,
+    ownerPropertyCount,
+  } = propertyData;
   const progressPercentage =
     ((tokenization.tokens_sold || 0) / (tokenization.total_supply || 1)) * 100;
 
   const getYearsOnPlatform = (createdAt: string | undefined) => {
     if (!createdAt) return "New member";
-    const years = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24 * 365);
-    return years < 1 ? "Less than 1 year" : `${Math.floor(years)} year${Math.floor(years) > 1 ? 's' : ''}`;
+    const years =
+      (Date.now() - new Date(createdAt).getTime()) /
+      (1000 * 60 * 60 * 24 * 365);
+    return years < 1
+      ? "Less than 1 year"
+      : `${Math.floor(years)} year${Math.floor(years) > 1 ? "s" : ""}`;
   };
 
   // Type-safe metadata access for fund allocation
@@ -390,23 +402,36 @@ export default function PropertyDetails() {
                         Property Owner
                       </h3>
                       <div className="bg-background-muted border border-border rounded-lg p-4">
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start justify-start gap-4">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src="/placeholder.svg" />
+                              <AvatarFallback className="text-2xl">
+                                {ownerProfile.first_name[0]}
+                                {ownerProfile.last_name[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
                           <div>
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center gap-2 mb-0">
                               <h4 className="font-medium text-foreground">
-                                {ownerProfile.first_name} {ownerProfile.last_name}
+                                {ownerProfile.first_name}{" "}
+                                {ownerProfile.last_name}
                               </h4>
-                              {ownerProfile.kyc_status === 'verified' && (
-                                <Badge variant="secondary" className="status-verified">
-                                  Verified
-                                </Badge>
-                              )}
                             </div>
                             <div className="text-sm text-muted-foreground space-y-1">
                               <p>Properties Listed: {ownerPropertyCount}</p>
-                              <p>On Platform: {getYearsOnPlatform(ownerProfile.created_at)}</p>
                             </div>
                           </div>
+
+                          {ownerProfile.kyc_status === "verified" && (
+                            <Badge
+                              variant="secondary"
+                              className="status-verified"
+                            >
+                              Verified
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -421,10 +446,14 @@ export default function PropertyDetails() {
                       <div className="bg-background-muted border border-border rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-2">
                           <h4 className="font-medium text-foreground">
-                            {managerProfile.first_name} {managerProfile.last_name}
+                            {managerProfile.first_name}{" "}
+                            {managerProfile.last_name}
                           </h4>
-                          {managerProfile.kyc_status === 'verified' && (
-                            <Badge variant="secondary" className="status-verified">
+                          {managerProfile.kyc_status === "verified" && (
+                            <Badge
+                              variant="secondary"
+                              className="status-verified"
+                            >
                               Verified
                             </Badge>
                           )}
@@ -447,15 +476,24 @@ export default function PropertyDetails() {
                       </p>
                       <div className="space-y-3">
                         {Object.entries(fundAllocation).map(([key, value]) => {
-                          const label = key.split('_').map(word => 
-                            word.charAt(0).toUpperCase() + word.slice(1)
-                          ).join(' ');
-                          const percentage = typeof value === 'number' ? value : 0;
+                          const label = key
+                            .split("_")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1)
+                            )
+                            .join(" ");
+                          const percentage =
+                            typeof value === "number" ? value : 0;
                           return (
                             <div key={key}>
                               <div className="flex justify-between items-center mb-1">
-                                <span className="text-sm text-foreground">{label}</span>
-                                <span className="text-sm font-medium text-foreground">{percentage}%</span>
+                                <span className="text-sm text-foreground">
+                                  {label}
+                                </span>
+                                <span className="text-sm font-medium text-foreground">
+                                  {percentage}%
+                                </span>
                               </div>
                               <Progress value={percentage} className="h-2" />
                             </div>
@@ -464,8 +502,12 @@ export default function PropertyDetails() {
                       </div>
                       <div className="mt-4 pt-4 border-t border-border">
                         <div className="flex justify-between items-center">
-                          <span className="font-medium text-foreground">Total</span>
-                          <span className="font-medium text-foreground">100%</span>
+                          <span className="font-medium text-foreground">
+                            Total
+                          </span>
+                          <span className="font-medium text-foreground">
+                            100%
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -623,7 +665,10 @@ export default function PropertyDetails() {
               </h3>
               <div className="space-y-4">
                 {[1, 2].map((_, index) => (
-                  <div key={index} className="flex space-x-3 mobile-flex items-center border border-border rounded-lg p-4 cursor-pointer">
+                  <div
+                    key={index}
+                    className="flex space-x-3 mobile-flex items-center border border-border rounded-lg p-4 cursor-pointer"
+                  >
                     <img
                       src={`https://zjtqptljuggbymcoovey.supabase.co/storage/v1/object/public/property-images/placeholder.svg`}
                       alt="Similar property"

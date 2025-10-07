@@ -31,7 +31,8 @@ export default function Dashboard() {
     isLoading: notificationsLoading,
     markAllAsRead,
   } = useNotifications();
-  const { activities, isLoading: activitiesLoading } = useUnifiedActivityFeed(10);
+  const { activities, isLoading: activitiesLoading } =
+    useUnifiedActivityFeed(10);
 
   console.log(user);
 
@@ -50,27 +51,69 @@ export default function Dashboard() {
   };
 
   const getActivityIcon = (type: string, status: string) => {
+    const getIconWithCircle = (
+      icon: React.ReactNode,
+      bgColor: string,
+      iconColor: string
+    ) => (
+      <div
+        className={`flex items-center justify-center w-8 h-8 rounded-full ${bgColor}`}
+      >
+        <div className={`${iconColor}`}>{icon}</div>
+      </div>
+    );
+
     switch (type) {
       case "investment":
-        return status === "completed" || status === "confirmed" ? (
-          <CheckCircle className="w-5 h-5 text-green-600" />
-        ) : status === "pending" ? (
-          <Clock className="w-5 h-5 text-amber-600" />
-        ) : (
-          <XCircle className="w-5 h-5 text-red-600" />
-        );
+        return status === "completed" || status === "confirmed"
+          ? getIconWithCircle(
+              <CheckCircle className="w-4 h-4" />,
+              "bg-green-100 dark:bg-green-900/20",
+              "text-green-600 dark:text-green-400"
+            )
+          : status === "pending"
+          ? getIconWithCircle(
+              <Clock className="w-4 h-4" />,
+              "bg-amber-100 dark:bg-amber-900/20",
+              "text-amber-600 dark:text-amber-400"
+            )
+          : getIconWithCircle(
+              <XCircle className="w-4 h-4" />,
+              "bg-red-100 dark:bg-red-900/20",
+              "text-red-600 dark:text-red-400"
+            );
       case "dividend":
-        return <ArrowDownLeft className="w-5 h-5 text-green-600" />;
+        return getIconWithCircle(
+          <ArrowDownLeft className="w-4 h-4" />,
+          "bg-green-100 dark:bg-green-900/20",
+          "text-green-600 dark:text-green-400"
+        );
       case "deposit":
       case "token_deposit":
-        return <TrendingUp className="w-5 h-5 text-green-600" />;
+        return getIconWithCircle(
+          <TrendingUp className="w-4 h-4" />,
+          "bg-green-100 dark:bg-green-900/20",
+          "text-green-600 dark:text-green-400"
+        );
       case "withdrawal":
       case "token_withdrawal":
-        return <TrendingDown className="w-5 h-5 text-red-600" />;
+        return getIconWithCircle(
+          <TrendingDown className="w-4 h-4" />,
+          "bg-red-100 dark:bg-red-900/20",
+          "text-red-600 dark:text-red-400"
+        );
       case "property_event":
-        return <Building className="w-5 h-5 text-primary" />;
+        return getIconWithCircle(
+          <Building className="w-4 h-4" />,
+          "bg-blue-100 dark:bg-blue-900/20",
+          "text-blue-600 dark:text-blue-400"
+        );
       default:
-        return <Activity className="w-5 h-5 text-muted-foreground" />;
+        return getIconWithCircle(
+          <Activity className="w-4 h-4" />,
+          "bg-gray-100 dark:bg-gray-900/20",
+          "text-gray-600 dark:text-gray-400"
+        );
     }
   };
 
