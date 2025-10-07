@@ -37,6 +37,8 @@ import {
   TransactionFilters,
   type FilterOptions,
 } from "@/components/TransactionFilters";
+import WithdrawalModal from "@/components/WithdrawalModal";
+import { useWithdrawals } from "@/hooks/useWithdrawals";
 
 const WalletDashboard = () => {
   const { toast } = useToast();
@@ -45,6 +47,7 @@ const WalletDashboard = () => {
   const [filteredTransactions, setFilteredTransactions] = useState<
     Transaction[]
   >([]);
+  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
 
   const {
     connectedWallets,
@@ -61,6 +64,7 @@ const WalletDashboard = () => {
     isLoading: transactionsLoading,
     refetch: refetchTransactions,
   } = useWalletTransactions();
+  const { withdrawals, isLoading: withdrawalsLoading, cancelWithdrawal } = useWithdrawals();
 
   // Calculate transaction summaries with proper NGN conversion
   const transactionSummary = (allTransactions || []).reduce(
@@ -266,13 +270,18 @@ const WalletDashboard = () => {
                 {isSyncing || transactionsLoading ? "Syncing..." : "Sync All"}
               </span>
             </Button>
+            <Button 
+              variant="default" 
+              size="sm"
+              onClick={() => setShowWithdrawalModal(true)}
+              disabled={!user?.hedera_account_id || stats.walletBalance <= 0}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Withdraw</span>
+            </Button>
             <Button variant="outline" size="sm">
               <Settings className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Settings</span>
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Export</span>
             </Button>
           </div>
         </div>
@@ -353,10 +362,11 @@ const WalletDashboard = () => {
           {/* Main Content */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="transactions" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="transactions">Transactions</TabsTrigger>
+                <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
                 <TabsTrigger value="methods">Payment Methods</TabsTrigger>
-                <TabsTrigger value="wallets">Connected Wallets</TabsTrigger>
+                <TabsTrigger value="wallets">Wallets</TabsTrigger>
               </TabsList>
 
               <TabsContent value="transactions" className="space-y-6">
@@ -496,6 +506,87 @@ const WalletDashboard = () => {
                         </div>
                       )}
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="withdrawals" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Withdrawal Requests</CardTitle>
+                    <CardDescription>
+                      View and manage your withdrawal requests
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {withdrawalsLoading ? (
+                      <div className="text-center py-8">
+                        <RefreshCw className="h-8 w-8 mx-auto mb-4 animate-spin" />
+                        <p className="text-muted-foreground">Loading withdrawals...</p>
+                      </div>
+                    ) : !withdrawals || withdrawals.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Download className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No withdrawal requests yet</p>
+                        <Button 
+                          className="mt-4"
+                          onClick={() => setShowWithdrawalModal(true)}
+                          disabled={!user?.hedera_account_id || stats.walletBalance <= 0}
+                        >
+                          Create Withdrawal Request
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {withdrawals.map((withdrawal: any) => (
+                          <div
+                            key={withdrawal.id}
+                            className="flex items-center justify-between p-4 border rounded-lg"
+                          >
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-medium">
+                                  ₦{Number(withdrawal.amount_ngn).toLocaleString()}
+                                </p>
+                                <Badge
+                                  variant="secondary"
+                                  className={
+                                    withdrawal.status === 'completed'
+                                      ? 'bg-green-100 text-green-800'
+                                      : withdrawal.status === 'failed'
+                                      ? 'bg-red-100 text-red-800'
+                                      : withdrawal.status === 'cancelled'
+                                      ? 'bg-gray-100 text-gray-800'
+                                      : 'bg-yellow-100 text-yellow-800'
+                                  }
+                                >
+                                  {withdrawal.status}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                {withdrawal.withdrawal_method.replace('_', ' ')} • {new Date(withdrawal.created_at).toLocaleDateString()}
+                              </p>
+                              {withdrawal.failure_reason && (
+                                <p className="text-xs text-red-600 mt-1">
+                                  {withdrawal.failure_reason}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex gap-2">
+                              {withdrawal.status === 'pending' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => cancelWithdrawal(withdrawal.id)}
+                                >
+                                  Cancel
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -674,6 +765,18 @@ const WalletDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Withdrawal Modal */}
+      <WithdrawalModal
+        open={showWithdrawalModal}
+        onOpenChange={setShowWithdrawalModal}
+        balance={stats.walletBalance}
+        onSuccess={() => {
+          refetchTransactions();
+          // Refetch withdrawals list
+          window.location.reload(); // Temporary solution until we have proper refetch
+        }}
+      />
     </div>
   );
 };

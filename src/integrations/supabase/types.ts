@@ -1572,6 +1572,9 @@ export type Database = {
           amount_paid_ngn: number | null
           created_at: string | null
           created_by: string | null
+          distributed_at: string | null
+          distribution_id: string | null
+          distribution_status: string | null
           end_date: string
           hcs_transaction_id: string | null
           id: string
@@ -1602,6 +1605,9 @@ export type Database = {
           amount_paid_ngn?: number | null
           created_at?: string | null
           created_by?: string | null
+          distributed_at?: string | null
+          distribution_id?: string | null
+          distribution_status?: string | null
           end_date: string
           hcs_transaction_id?: string | null
           id?: string
@@ -1632,6 +1638,9 @@ export type Database = {
           amount_paid_ngn?: number | null
           created_at?: string | null
           created_by?: string | null
+          distributed_at?: string | null
+          distribution_id?: string | null
+          distribution_status?: string | null
           end_date?: string
           hcs_transaction_id?: string | null
           id?: string
@@ -1662,6 +1671,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_rentals_distribution_id_fkey"
+            columns: ["distribution_id"]
+            isOneToOne: false
+            referencedRelation: "dividend_distributions"
             referencedColumns: ["id"]
           },
           {
@@ -1958,7 +1974,9 @@ export type Database = {
         Row: {
           account_status: string | null
           annual_income: number | null
+          auto_convert_to_usdc: boolean | null
           created_at: string | null
+          daily_withdrawal_limit_ngn: number | null
           date_of_birth: string | null
           email: string
           email_verified_at: string | null
@@ -1969,6 +1987,7 @@ export type Database = {
           kyc_level: string | null
           kyc_status: string | null
           last_name: string
+          monthly_withdrawal_limit_ngn: number | null
           nationality: string | null
           occupation: string | null
           phone: string | null
@@ -1977,12 +1996,15 @@ export type Database = {
           referred_by: string | null
           state_of_residence: string | null
           updated_at: string | null
+          usdc_associated: boolean | null
           wallet_type: string | null
         }
         Insert: {
           account_status?: string | null
           annual_income?: number | null
+          auto_convert_to_usdc?: boolean | null
           created_at?: string | null
+          daily_withdrawal_limit_ngn?: number | null
           date_of_birth?: string | null
           email: string
           email_verified_at?: string | null
@@ -1993,6 +2015,7 @@ export type Database = {
           kyc_level?: string | null
           kyc_status?: string | null
           last_name: string
+          monthly_withdrawal_limit_ngn?: number | null
           nationality?: string | null
           occupation?: string | null
           phone?: string | null
@@ -2001,12 +2024,15 @@ export type Database = {
           referred_by?: string | null
           state_of_residence?: string | null
           updated_at?: string | null
+          usdc_associated?: boolean | null
           wallet_type?: string | null
         }
         Update: {
           account_status?: string | null
           annual_income?: number | null
+          auto_convert_to_usdc?: boolean | null
           created_at?: string | null
+          daily_withdrawal_limit_ngn?: number | null
           date_of_birth?: string | null
           email?: string
           email_verified_at?: string | null
@@ -2017,6 +2043,7 @@ export type Database = {
           kyc_level?: string | null
           kyc_status?: string | null
           last_name?: string
+          monthly_withdrawal_limit_ngn?: number | null
           nationality?: string | null
           occupation?: string | null
           phone?: string | null
@@ -2025,6 +2052,7 @@ export type Database = {
           referred_by?: string | null
           state_of_residence?: string | null
           updated_at?: string | null
+          usdc_associated?: boolean | null
           wallet_type?: string | null
         }
         Relationships: [
@@ -2094,6 +2122,7 @@ export type Database = {
           balance_hbar: number | null
           balance_ngn: number | null
           balance_usd: number | null
+          balance_usdc: number | null
           created_at: string | null
           hedera_account_id: string | null
           id: string
@@ -2103,6 +2132,7 @@ export type Database = {
           public_key: string | null
           security_level: string | null
           updated_at: string | null
+          usdc_token_association_tx: string | null
           user_id: string | null
           wallet_name: string | null
           wallet_type: string
@@ -2112,6 +2142,7 @@ export type Database = {
           balance_hbar?: number | null
           balance_ngn?: number | null
           balance_usd?: number | null
+          balance_usdc?: number | null
           created_at?: string | null
           hedera_account_id?: string | null
           id?: string
@@ -2121,6 +2152,7 @@ export type Database = {
           public_key?: string | null
           security_level?: string | null
           updated_at?: string | null
+          usdc_token_association_tx?: string | null
           user_id?: string | null
           wallet_name?: string | null
           wallet_type: string
@@ -2130,6 +2162,7 @@ export type Database = {
           balance_hbar?: number | null
           balance_ngn?: number | null
           balance_usd?: number | null
+          balance_usdc?: number | null
           created_at?: string | null
           hedera_account_id?: string | null
           id?: string
@@ -2139,6 +2172,7 @@ export type Database = {
           public_key?: string | null
           security_level?: string | null
           updated_at?: string | null
+          usdc_token_association_tx?: string | null
           user_id?: string | null
           wallet_name?: string | null
           wallet_type?: string
@@ -2149,6 +2183,97 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      withdrawal_requests: {
+        Row: {
+          amount_ngn: number
+          amount_usd: number | null
+          bank_account_name: string | null
+          bank_account_number: string | null
+          bank_code: string | null
+          bank_name: string | null
+          created_at: string | null
+          failure_reason: string | null
+          hedera_transaction_id: string | null
+          id: string
+          net_amount_ngn: number | null
+          processed_at: string | null
+          processed_by: string | null
+          processing_fee_ngn: number | null
+          recipient_hedera_account: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+          wallet_id: string
+          withdrawal_method: string
+        }
+        Insert: {
+          amount_ngn: number
+          amount_usd?: number | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_code?: string | null
+          bank_name?: string | null
+          created_at?: string | null
+          failure_reason?: string | null
+          hedera_transaction_id?: string | null
+          id?: string
+          net_amount_ngn?: number | null
+          processed_at?: string | null
+          processed_by?: string | null
+          processing_fee_ngn?: number | null
+          recipient_hedera_account?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+          wallet_id: string
+          withdrawal_method: string
+        }
+        Update: {
+          amount_ngn?: number
+          amount_usd?: number | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_code?: string | null
+          bank_name?: string | null
+          created_at?: string | null
+          failure_reason?: string | null
+          hedera_transaction_id?: string | null
+          id?: string
+          net_amount_ngn?: number | null
+          processed_at?: string | null
+          processed_by?: string | null
+          processing_fee_ngn?: number | null
+          recipient_hedera_account?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+          wallet_id?: string
+          withdrawal_method?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
             referencedColumns: ["id"]
           },
         ]
