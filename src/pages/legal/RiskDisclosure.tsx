@@ -1,327 +1,1005 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, AlertTriangle, TrendingDown, Building, Zap, Globe, Lock } from "lucide-react";
+import {
+  ArrowLeft,
+  AlertTriangle,
+  TrendingDown,
+  Building,
+  Zap,
+  Globe,
+  Lock,
+  ShieldAlert,
+} from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function RiskDisclosure() {
+  const [activeSection, setActiveSection] = useState("");
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = document.querySelectorAll("section[id]");
+      let current = "";
+
+      sections.forEach((section) => {
+        const sectionTop = section.getBoundingClientRect().top;
+        if (sectionTop <= 150) {
+          current = section.getAttribute("id") || "";
+        }
+      });
+
+      setActiveSection(current);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 100;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const sections = [
+    { id: "real-estate", title: "Real Estate Risks" },
+    { id: "technology", title: "Technology & Blockchain" },
+    { id: "regulatory", title: "Regulatory & Legal" },
+    { id: "nigerian", title: "Nigerian Market Risks" },
+    { id: "mitigation", title: "Risk Mitigation" },
+    { id: "acknowledgment", title: "Acknowledgment" },
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background to-red-50/20 dark:to-red-950/20">
       <div className="container mx-auto mobile-padding py-8">
         {/* Header */}
         <div className="mb-8">
           <Link to="/">
-            <Button variant="ghost" className="mb-4">
+            <Button
+              variant="outline"
+              className="mb-4 hover:bg-primary/10 transition-colors"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
           </Link>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-destructive/10 rounded-lg flex items-center justify-center">
-              <AlertTriangle className="h-6 w-6 text-destructive" />
+          <div className="flex items-start gap-4 mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <AlertTriangle className="h-8 w-8 text-white" />
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Risk Disclosure Statement</h1>
-              <p className="text-muted-foreground">Last updated: January 2025</p>
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+                Risk Disclosure Statement
+              </h1>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="px-3 py-1 bg-red-600/10 text-red-600 rounded-full font-medium">
+                  Last updated: January 2025
+                </span>
+                <span className="text-muted-foreground">15 min read</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Critical Warning */}
-          <Card className="border-destructive border-2 bg-destructive/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-destructive">
-                <AlertTriangle className="h-6 w-6" />
-                IMPORTANT RISK WARNING
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-foreground font-semibold">
-                REAL ESTATE TOKENIZATION INVOLVES SIGNIFICANT FINANCIAL RISKS
-              </p>
-              <div className="bg-background border border-destructive/20 rounded-lg p-4">
-                <ul className="space-y-2 text-foreground">
-                  <li>• <strong>You may lose some or all of your invested capital</strong></li>
-                  <li>• <strong>Tokens may have limited or no liquidity</strong></li>
-                  <li>• <strong>Property values can decrease significantly</strong></li>
-                  <li>• <strong>Dividend payments are not guaranteed</strong></li>
-                  <li>• <strong>Technology and regulatory risks apply</strong></li>
-                </ul>
-              </div>
-              <p className="text-muted-foreground">
-                Only invest money you can afford to lose. Seek independent financial advice 
-                if you are unsure about the suitability of this investment.
-              </p>
-            </CardContent>
-          </Card>
+        <div className="flex gap-8 max-w-7xl mx-auto">
+          {/* Table of Contents - Desktop */}
+          <aside className="hidden lg:block w-64 shrink-0">
+            <div className="sticky top-24 space-y-1">
+              <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground mb-4">
+                Contents
+              </h3>
+              {sections.map((section) => (
+                <button
+                  key={section.id}
+                  onClick={() => scrollToSection(section.id)}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                    activeSection === section.id
+                      ? "bg-primary text-primary-foreground font-medium"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {section.title}
+                </button>
+              ))}
+            </div>
+          </aside>
 
-          {/* Risk Categories */}
-          <div className="space-y-8">
-            <section>
-              <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
-                <Building className="h-6 w-6 text-primary" />
-                Real Estate Investment Risks
-              </h2>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card className="border-orange-200 bg-orange-50">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-orange-800 flex items-center gap-2">
-                      <TrendingDown className="h-5 w-5" />
-                      Market Risk
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Badge variant="destructive" className="mb-2">High Risk</Badge>
-                    <ul className="list-disc pl-6 space-y-2 text-orange-700 text-sm">
-                      <li>Property values may decline due to market conditions</li>
-                      <li>Economic downturns can severely impact real estate prices</li>
-                      <li>Interest rate changes affect property valuations</li>
-                      <li>Local market factors may negatively impact specific properties</li>
-                      <li>Supply and demand imbalances in the real estate market</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-amber-200 bg-amber-50">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-amber-800 flex items-center gap-2">
-                      <Building className="h-5 w-5" />
-                      Property-Specific Risk
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Badge variant="secondary" className="mb-2">Medium-High Risk</Badge>
-                    <ul className="list-disc pl-6 space-y-2 text-amber-700 text-sm">
-                      <li>Structural damage, natural disasters, or force majeure events</li>
-                      <li>Tenant vacancies resulting in reduced rental income</li>
-                      <li>Maintenance and repair costs exceeding expectations</li>
-                      <li>Zoning changes or regulatory restrictions</li>
-                      <li>Environmental liabilities or contamination issues</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-red-200 bg-red-50">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-red-800">Liquidity Risk</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Badge variant="destructive" className="mb-2">Very High Risk</Badge>
-                    <ul className="list-disc pl-6 space-y-2 text-red-700 text-sm">
-                      <li>Tokens may not be easily tradeable or sellable</li>
-                      <li>Limited secondary market for real estate tokens</li>
-                      <li>Long holding periods may be required</li>
-                      <li>Emergency liquidation may not be possible</li>
-                      <li>Price discovery mechanisms may be inefficient</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-yellow-200 bg-yellow-50">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-yellow-800">Income Risk</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Badge className="bg-yellow-200 text-yellow-800 mb-2">Medium Risk</Badge>
-                    <ul className="list-disc pl-6 space-y-2 text-yellow-700 text-sm">
-                      <li>Rental income may be irregular or cease entirely</li>
-                      <li>Dividend payments are not guaranteed</li>
-                      <li>Operating expenses may exceed rental income</li>
-                      <li>Property management issues affecting returns</li>
-                      <li>Currency fluctuation risks for international investors</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
-                <Zap className="h-6 w-6 text-primary" />
-                Technology and Blockchain Risks
-              </h2>
-              
-              <div className="space-y-6">
-                <Card className="border-purple-200 bg-purple-50">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-purple-800">Blockchain Technology Risks</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="list-disc pl-6 space-y-2 text-purple-700">
-                      <li><strong>Smart Contract Vulnerabilities:</strong> Bugs or exploits in smart contracts could result in loss of funds</li>
-                      <li><strong>Network Risks:</strong> Hedera network downtime, congestion, or technical failures</li>
-                      <li><strong>Key Management:</strong> Loss of private keys results in permanent loss of token access</li>
-                      <li><strong>Protocol Changes:</strong> Updates to the Hedera protocol may affect token functionality</li>
-                      <li><strong>Cybersecurity:</strong> Hacking attempts on wallets, exchanges, or platform infrastructure</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-indigo-200 bg-indigo-50">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-indigo-800">Platform and Operational Risks</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="list-disc pl-6 space-y-2 text-indigo-700">
-                      <li><strong>Platform Failure:</strong> Technical issues or business failure of PropChain</li>
-                      <li><strong>Custody Risk:</strong> Risks associated with token custody and wallet security</li>
-                      <li><strong>Operational Errors:</strong> Human errors in platform operations or property management</li>
-                      <li><strong>Third-Party Dependencies:</strong> Reliance on external service providers and integrations</li>
-                      <li><strong>Data Breaches:</strong> Unauthorized access to personal or financial information</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
-                <Globe className="h-6 w-6 text-primary" />
-                Regulatory and Legal Risks
-              </h2>
-              
-              <div className="space-y-6">
-                <Card className="border-green-200 bg-green-50">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-green-800">Regulatory Uncertainty</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="list-disc pl-6 space-y-2 text-green-700">
-                      <li><strong>Changing Regulations:</strong> New laws may restrict or prohibit tokenized real estate</li>
-                      <li><strong>Compliance Costs:</strong> Regulatory compliance may increase operational costs</li>
-                      <li><strong>Legal Classification:</strong> Uncertainty about legal status of real estate tokens</li>
-                      <li><strong>Cross-Border Issues:</strong> International regulatory conflicts and restrictions</li>
-                      <li><strong>Tax Implications:</strong> Unclear or changing tax treatment of token investments</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-blue-200 bg-blue-50">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-blue-800">Legal and Contractual Risks</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="list-disc pl-6 space-y-2 text-blue-700">
-                      <li><strong>Property Rights:</strong> Disputes over underlying property ownership or title</li>
-                      <li><strong>Legal Enforceability:</strong> Challenges in enforcing token holder rights</li>
-                      <li><strong>Jurisdiction Issues:</strong> Unclear legal jurisdiction for dispute resolution</li>
-                      <li><strong>Corporate Structure:</strong> Risks related to the legal structure of tokenized properties</li>
-                      <li><strong>Documentation Risk:</strong> Inadequate or unclear legal documentation</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold text-foreground mb-4">Nigerian Market Specific Risks</h2>
-              <Card>
-                <CardContent className="pt-6">
-                  <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                    <li><strong>Currency Risk:</strong> Nigerian Naira volatility affecting property values and returns</li>
-                    <li><strong>Political Risk:</strong> Changes in government policies affecting real estate or blockchain</li>
-                    <li><strong>Economic Instability:</strong> Inflation, recession, or economic crises impact</li>
-                    <li><strong>Infrastructure Risk:</strong> Power, internet, or other infrastructure limitations</li>
-                    <li><strong>Legal System:</strong> Challenges with property registration and legal enforcement</li>
-                    <li><strong>Market Development:</strong> Relatively nascent real estate tokenization market</li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold text-foreground mb-4">Risk Mitigation Measures</h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card className="border-primary/20 bg-primary/5">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-primary flex items-center gap-2">
-                      <Lock className="h-5 w-5" />
-                      PropChain's Risk Controls
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="list-disc pl-6 space-y-2 text-muted-foreground text-sm">
-                      <li>Due diligence on all properties before tokenization</li>
-                      <li>Professional property valuations and regular updates</li>
-                      <li>Insurance coverage for physical property risks</li>
-                      <li>Regular security audits and penetration testing</li>
-                      <li>Compliance with regulatory requirements</li>
-                      <li>Diversification across multiple properties and markets</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-primary/20 bg-primary/5">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-primary">Investor Recommendations</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="list-disc pl-6 space-y-2 text-muted-foreground text-sm">
-                      <li>Only invest amounts you can afford to lose entirely</li>
-                      <li>Diversify across multiple properties and asset classes</li>
-                      <li>Understand the technology and risks before investing</li>
-                      <li>Keep secure backups of wallet keys and credentials</li>
-                      <li>Monitor your investments regularly</li>
-                      <li>Seek professional financial advice when needed</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold text-foreground mb-4">Acknowledgment</h2>
-              <Card className="border-destructive/20 bg-destructive/5">
-                <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    <p className="text-foreground font-medium">
-                      By using PropChain's services, you acknowledge that:
+          {/* Main Content */}
+          <div className="flex-1 space-y-8 max-w-4xl">
+            {/* Critical Warning */}
+            <Card className="border-2 border-red-600 bg-gradient-to-br from-red-600/10 to-red-600/20 shadow-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3 text-red-700 dark:text-red-400 text-2xl">
+                  <ShieldAlert className="h-8 w-8" />
+                  IMPORTANT RISK WARNING
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-foreground font-bold text-lg">
+                  REAL ESTATE TOKENIZATION INVOLVES SIGNIFICANT FINANCIAL RISKS
+                </p>
+                <div className="bg-background border-2 border-red-600/30 rounded-xl p-6 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-6 w-6 text-red-600 shrink-0 mt-1" />
+                    <p className="text-foreground font-semibold text-lg">
+                      You may lose some or all of your invested capital
                     </p>
-                    <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                      <li>You have read and understood all risks outlined in this disclosure</li>
-                      <li>You understand that past performance does not guarantee future results</li>
-                      <li>You accept full responsibility for your investment decisions</li>
-                      <li>You have the financial capacity to bear potential losses</li>
-                      <li>You will not rely solely on PropChain for investment advice</li>
-                      <li>You understand the speculative nature of real estate tokenization</li>
-                    </ul>
-                    <div className="bg-background border border-destructive/20 rounded-lg p-4 mt-4">
-                      <p className="text-foreground font-semibold text-center">
-                        THIS INVESTMENT IS SUITABLE ONLY FOR SOPHISTICATED INVESTORS 
-                        WHO FULLY UNDERSTAND THE RISKS INVOLVED
-                      </p>
-                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            </section>
-          </div>
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-6 w-6 text-red-600 shrink-0 mt-1" />
+                    <p className="text-foreground font-semibold text-lg">
+                      Tokens may have limited or no liquidity
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-6 w-6 text-red-600 shrink-0 mt-1" />
+                    <p className="text-foreground font-semibold text-lg">
+                      Property values can decrease significantly
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-6 w-6 text-red-600 shrink-0 mt-1" />
+                    <p className="text-foreground font-semibold text-lg">
+                      Dividend payments are not guaranteed
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-6 w-6 text-red-600 shrink-0 mt-1" />
+                    <p className="text-foreground font-semibold text-lg">
+                      Technology and regulatory risks apply
+                    </p>
+                  </div>
+                </div>
+                <p className="text-muted-foreground text-center pt-4 border-t border-red-600/20">
+                  Only invest money you can afford to lose. Seek independent
+                  financial advice if you are unsure about the suitability of
+                  this investment.
+                </p>
+              </CardContent>
+            </Card>
 
-          {/* Contact Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-primary" />
-                Questions About Risks?
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                If you have questions about these risks or need clarification:
-              </p>
-              <div className="space-y-2 text-muted-foreground">
-                <p>Email: risk@propchain.ng</p>
-                <p>Investment Support: support@propchain.ng</p>
-                <p>Regulatory Queries: compliance@propchain.ng</p>
-              </div>
-              <p className="text-xs text-muted-foreground mt-4">
-                This risk disclosure statement does not constitute investment advice. 
-                Always consult with qualified financial advisors before making investment decisions.
-              </p>
-            </CardContent>
-          </Card>
+            {/* Risk Categories */}
+            <div className="space-y-12">
+              <section id="real-estate">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+                    <Building className="h-6 w-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Real Estate Investment Risks
+                  </h2>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card className="border border-orange-300 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950 dark:to-orange-900/50 hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-center justify-between mb-2">
+                        <CardTitle className="text-lg text-orange-900 dark:text-orange-100 flex items-center gap-2">
+                          <TrendingDown className="h-5 w-5" />
+                          Market Risk
+                        </CardTitle>
+                        <Badge variant="destructive" className="bg-red-600 text-white">
+                          High Risk
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ul className="space-y-2 text-orange-800 dark:text-orange-200 text-sm">
+                        <li className="flex items-start gap-2">
+                          <span className="text-orange-600 mt-1 text-lg">
+                            •
+                          </span>
+                          <span>
+                            Property values may decline due to market conditions
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-orange-600 mt-1 text-lg">
+                            •
+                          </span>
+                          <span>
+                            Economic downturns can severely impact real estate
+                            prices
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-orange-600 mt-1 text-lg">
+                            •
+                          </span>
+                          <span>
+                            Interest rate changes affect property valuations
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-orange-600 mt-1 text-lg">
+                            •
+                          </span>
+                          <span>
+                            Local market factors may negatively impact specific
+                            properties
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-orange-600 mt-1 text-lg">
+                            •
+                          </span>
+                          <span>
+                            Supply and demand imbalances in the real estate
+                            market
+                          </span>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border border-amber-300 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950 dark:to-amber-900/50 hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-center justify-between mb-2">
+                        <CardTitle className="text-lg text-amber-900 dark:text-amber-100 flex items-center gap-2">
+                          <Building className="h-5 w-5" />
+                          Property-Specific Risk
+                        </CardTitle>
+                        <Badge className="bg-amber-600 text-white">
+                          Medium-High
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ul className="space-y-2 text-amber-800 dark:text-amber-200 text-sm">
+                        <li className="flex items-start gap-2">
+                          <span className="text-amber-600 mt-1 text-lg">•</span>
+                          <span>
+                            Structural damage, natural disasters, or force
+                            majeure events
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-amber-600 mt-1 text-lg">•</span>
+                          <span>
+                            Tenant vacancies resulting in reduced rental income
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-amber-600 mt-1 text-lg">•</span>
+                          <span>
+                            Maintenance and repair costs exceeding expectations
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-amber-600 mt-1 text-lg">•</span>
+                          <span>Zoning changes or regulatory restrictions</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-amber-600 mt-1 text-lg">•</span>
+                          <span>
+                            Environmental liabilities or contamination issues
+                          </span>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border border-red-300 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950 dark:to-red-900/50 hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-center justify-between mb-2">
+                        <CardTitle className="text-lg text-red-900 dark:text-red-100">
+                          Liquidity Risk
+                        </CardTitle>
+                        <Badge variant="destructive" className="bg-red-700 text-white">
+                          Very High
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ul className="space-y-2 text-red-800 dark:text-red-200 text-sm">
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-600 mt-1 text-lg">•</span>
+                          <span>
+                            Tokens may not be easily tradeable or sellable
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-600 mt-1 text-lg">•</span>
+                          <span>
+                            Limited secondary market for real estate tokens
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-600 mt-1 text-lg">•</span>
+                          <span>Long holding periods may be required</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-600 mt-1 text-lg">•</span>
+                          <span>Emergency liquidation may not be possible</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-600 mt-1 text-lg">•</span>
+                          <span>
+                            Price discovery mechanisms may be inefficient
+                          </span>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border border-yellow-300 dark:border-yellow-800 bg-gradient-to-br from-yellow-50 to-yellow-100/50 dark:from-yellow-950 dark:to-yellow-900/50 hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-center justify-between mb-2">
+                        <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100">
+                          Income Risk
+                        </CardTitle>
+                        <Badge className="bg-yellow-600 text-white">
+                          Medium
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <ul className="space-y-2 text-yellow-800 dark:text-yellow-200 text-sm">
+                        <li className="flex items-start gap-2">
+                          <span className="text-yellow-600 mt-1 text-lg">
+                            •
+                          </span>
+                          <span>
+                            Rental income may be irregular or cease entirely
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-yellow-600 mt-1 text-lg">
+                            •
+                          </span>
+                          <span>Dividend payments are not guaranteed</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-yellow-600 mt-1 text-lg">
+                            •
+                          </span>
+                          <span>
+                            Operating expenses may exceed rental income
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-yellow-600 mt-1 text-lg">
+                            •
+                          </span>
+                          <span>
+                            Property management issues affecting returns
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-yellow-600 mt-1 text-lg">
+                            •
+                          </span>
+                          <span>
+                            Currency fluctuation risks for international
+                            investors
+                          </span>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </section>
+
+              <section id="technology">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <Zap className="h-6 w-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Technology and Blockchain Risks
+                  </h2>
+                </div>
+
+                <div className="space-y-6">
+                  <Card className="border border-purple-300 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950 dark:to-purple-900/50 hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-purple-900 dark:text-purple-100">
+                        Blockchain Technology Risks
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3 text-purple-800 dark:text-purple-200">
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-purple-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Smart Contract Vulnerabilities:
+                            </span>
+                            <span className="ml-1">
+                              Bugs or exploits in smart contracts could result
+                              in loss of funds
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-purple-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Network Risks:
+                            </span>
+                            <span className="ml-1">
+                              Hedera network downtime, congestion, or technical
+                              failures
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-purple-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Key Management:
+                            </span>
+                            <span className="ml-1">
+                              Loss of private keys results in permanent loss of
+                              token access
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-purple-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Protocol Changes:
+                            </span>
+                            <span className="ml-1">
+                              Updates to the Hedera protocol may affect token
+                              functionality
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-purple-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Cybersecurity:
+                            </span>
+                            <span className="ml-1">
+                              Hacking attempts on wallets, exchanges, or
+                              platform infrastructure
+                            </span>
+                          </div>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border border-indigo-300 dark:border-indigo-800 bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-950 dark:to-indigo-900/50 hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-indigo-900 dark:text-indigo-100">
+                        Platform and Operational Risks
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3 text-indigo-800 dark:text-indigo-200">
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-indigo-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Platform Failure:
+                            </span>
+                            <span className="ml-1">
+                              Technical issues or business failure of PropChain
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-indigo-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">Custody Risk:</span>
+                            <span className="ml-1">
+                              Risks associated with token custody and wallet
+                              security
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-indigo-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Operational Errors:
+                            </span>
+                            <span className="ml-1">
+                              Human errors in platform operations or property
+                              management
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-indigo-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Third-Party Dependencies:
+                            </span>
+                            <span className="ml-1">
+                              Reliance on external service providers and
+                              integrations
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-indigo-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Data Breaches:
+                            </span>
+                            <span className="ml-1">
+                              Unauthorized access to personal or financial
+                              information
+                            </span>
+                          </div>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </section>
+
+              <section id="regulatory">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                    <Globe className="h-6 w-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Regulatory and Legal Risks
+                  </h2>
+                </div>
+
+                <div className="space-y-6">
+                  <Card className="border border-green-300 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950 dark:to-green-900/50 hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-green-900 dark:text-green-100">
+                        Regulatory Uncertainty
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3 text-green-800 dark:text-green-200">
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Changing Regulations:
+                            </span>
+                            <span className="ml-1">
+                              New laws may restrict or prohibit tokenized real
+                              estate
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Compliance Costs:
+                            </span>
+                            <span className="ml-1">
+                              Regulatory compliance may increase operational
+                              costs
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Legal Classification:
+                            </span>
+                            <span className="ml-1">
+                              Uncertainty about legal status of real estate
+                              tokens
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Cross-Border Issues:
+                            </span>
+                            <span className="ml-1">
+                              International regulatory conflicts and
+                              restrictions
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Tax Implications:
+                            </span>
+                            <span className="ml-1">
+                              Unclear or changing tax treatment of token
+                              investments
+                            </span>
+                          </div>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border border-blue-300 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950 dark:to-blue-900/50 hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-blue-900 dark:text-blue-100">
+                        Legal and Contractual Risks
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3 text-blue-800 dark:text-blue-200">
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Property Rights:
+                            </span>
+                            <span className="ml-1">
+                              Disputes over underlying property ownership or
+                              title
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Legal Enforceability:
+                            </span>
+                            <span className="ml-1">
+                              Challenges in enforcing token holder rights
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Jurisdiction Issues:
+                            </span>
+                            <span className="ml-1">
+                              Unclear legal jurisdiction for dispute resolution
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Corporate Structure:
+                            </span>
+                            <span className="ml-1">
+                              Risks related to the legal structure of tokenized
+                              properties
+                            </span>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-semibold">
+                              Documentation Risk:
+                            </span>
+                            <span className="ml-1">
+                              Inadequate or unclear legal documentation
+                            </span>
+                          </div>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </section>
+
+              <section id="nigerian">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary font-bold">4</span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Nigerian Market Specific Risks
+                  </h2>
+                </div>
+                <Card className="border-l-4 border-l-amber-500">
+                  <CardContent className="pt-6">
+                    <ul className="space-y-3 text-muted-foreground">
+                      <li className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="font-semibold">Currency Risk:</span>
+                          <span className="ml-1">
+                            Nigerian Naira volatility affecting property values
+                            and returns
+                          </span>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="font-semibold">Political Risk:</span>
+                          <span className="ml-1">
+                            Changes in government policies affecting real estate
+                            or blockchain
+                          </span>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="font-semibold">
+                            Economic Instability:
+                          </span>
+                          <span className="ml-1">
+                            Inflation, recession, or economic crises impact
+                          </span>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="font-semibold">
+                            Infrastructure Risk:
+                          </span>
+                          <span className="ml-1">
+                            Power, internet, or other infrastructure limitations
+                          </span>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="font-semibold">Legal System:</span>
+                          <span className="ml-1">
+                            Challenges with property registration and legal
+                            enforcement
+                          </span>
+                        </div>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="font-semibold">
+                            Market Development:
+                          </span>
+                          <span className="ml-1">
+                            Relatively nascent real estate tokenization market
+                          </span>
+                        </div>
+                      </li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </section>
+
+              <section id="mitigation">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary font-bold">5</span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Risk Mitigation Measures
+                  </h2>
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card className="border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-primary flex items-center gap-2">
+                        <Lock className="h-5 w-5" />
+                        PropChain's Risk Controls
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 text-muted-foreground text-sm">
+                        <li className="flex items-start gap-2">
+                          <span className="text-green-600 mt-1">✓</span>
+                          <span>
+                            Due diligence on all properties before tokenization
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-green-600 mt-1">✓</span>
+                          <span>
+                            Professional property valuations and regular updates
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-green-600 mt-1">✓</span>
+                          <span>
+                            Insurance coverage for physical property risks
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-green-600 mt-1">✓</span>
+                          <span>
+                            Regular security audits and penetration testing
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-green-600 mt-1">✓</span>
+                          <span>Compliance with regulatory requirements</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-green-600 mt-1">✓</span>
+                          <span>
+                            Diversification across multiple properties and
+                            markets
+                          </span>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-primary">
+                        Investor Recommendations
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 text-muted-foreground text-sm">
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-600 mt-1">→</span>
+                          <span>
+                            Only invest amounts you can afford to lose entirely
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-600 mt-1">→</span>
+                          <span>
+                            Diversify across multiple properties and asset
+                            classes
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-600 mt-1">→</span>
+                          <span>
+                            Understand the technology and risks before investing
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-600 mt-1">→</span>
+                          <span>
+                            Keep secure backups of wallet keys and credentials
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-600 mt-1">→</span>
+                          <span>Monitor your investments regularly</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-600 mt-1">→</span>
+                          <span>
+                            Seek professional financial advice when needed
+                          </span>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </section>
+
+              <section id="acknowledgment">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary font-bold">6</span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Acknowledgment
+                  </h2>
+                </div>
+                <Card className="border-2 border-destructive/20 bg-gradient-to-br from-destructive/5 to-destructive/10 shadow-lg">
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <p className="text-foreground font-semibold text-lg">
+                        By using PropChain's services, you acknowledge that:
+                      </p>
+                      <ul className="space-y-3 text-muted-foreground">
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-1 text-lg">•</span>
+                          <span>
+                            You have read and understood all risks outlined in
+                            this disclosure
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-1 text-lg">•</span>
+                          <span>
+                            You understand that past performance does not
+                            guarantee future results
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-1 text-lg">•</span>
+                          <span>
+                            You accept full responsibility for your investment
+                            decisions
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-1 text-lg">•</span>
+                          <span>
+                            You have the financial capacity to bear potential
+                            losses
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-1 text-lg">•</span>
+                          <span>
+                            You will not rely solely on PropChain for investment
+                            advice
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-primary mt-1 text-lg">•</span>
+                          <span>
+                            You understand the speculative nature of real estate
+                            tokenization
+                          </span>
+                        </li>
+                      </ul>
+                      <div className="bg-background border-2 border-red-600/40 rounded-xl p-6 mt-6">
+                        <p className="text-foreground font-bold text-center text-xl">
+                          THIS INVESTMENT IS SUITABLE ONLY FOR SOPHISTICATED
+                          INVESTORS WHO FULLY UNDERSTAND THE RISKS INVOLVED
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            </div>
+
+            {/* Contact Information */}
+            <Card className="border border-red-600/20 bg-gradient-to-br from-red-600/5 to-red-600/10 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                  Questions About Risks?
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-foreground mb-4">
+                  If you have questions about these risks or need clarification:
+                </p>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">
+                      Risk Queries
+                    </p>
+                    <p className="text-muted-foreground">risk@propchain.ng</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">
+                      Investment Support
+                    </p>
+                    <p className="text-muted-foreground">
+                      support@propchain.ng
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">
+                      Regulatory Queries
+                    </p>
+                    <p className="text-muted-foreground">
+                      compliance@propchain.ng
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-6 pt-4 border-t">
+                  This risk disclosure statement does not constitute investment
+                  advice. Always consult with qualified financial advisors
+                  before making investment decisions.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

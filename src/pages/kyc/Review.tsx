@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { FileText, Camera, MapPin, Edit, ArrowLeft, Clock, CheckCircle } from "lucide-react";
+import { FileText, Camera, MapPin, Edit, ArrowLeft, Clock } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,7 +49,7 @@ export default function Review() {
       try {
         // Try to get existing draft
         const draftData = await kycDraftService.getDraft(user.id);
-        
+
         if (draftData) {
           setDraft(draftData);
           setReviewData({
@@ -58,13 +58,13 @@ export default function Review() {
             lastName: draftData.form_data.lastName || "",
             email: draftData.form_data.email || "",
             phone: draftData.form_data.phone || "",
-            dateOfBirth: draftData.form_data.dateOfBirth || "",
+            dateOfBirth: draftData.form_data.dateOfBirth,
             address: draftData.form_data.address || {
               street: "",
               city: "",
               state: "",
               postalCode: "",
-              country: "Nigeria"
+              country: "Nigeria",
             },
             documentNumber: draftData.form_data.documentNumber || "",
             documentImageUrl: draftData.document_image_url || "",
@@ -98,16 +98,19 @@ export default function Review() {
       // Add missing user data from AuthContext
       const submissionData = {
         userId: user.id,
-        firstName: user.first_name || "",  // From AuthContext
-        lastName: user.last_name || "",    // From AuthContext  
-        email: user.email || "",           // From AuthContext
-        phone: user.phone || "",          // From AuthContext
+        firstName: user.first_name || "", // From AuthContext
+        lastName: user.last_name || "", // From AuthContext
+        email: user.email || "", // From AuthContext
+        phone: user.phone || "", // From AuthContext
         nationality: user.nationality || "Nigeria", // From AuthContext
-        
+
         // KYC-specific data (from KYC flow)
         dateOfBirth: reviewData.dateOfBirth,
         address: reviewData.address,
-        documentType: reviewData.documentType as "national_id" | "passport" | "drivers_license",
+        documentType: reviewData.documentType as
+          | "national_id"
+          | "passport"
+          | "drivers_license",
         documentNumber: reviewData.documentNumber,
         documentImages: [reviewData.documentImageUrl],
         selfieImage: reviewData.selfieUrl,
@@ -123,7 +126,8 @@ export default function Review() {
 
         toast({
           title: "KYC Submitted Successfully! 🎉",
-          description: "Your KYC verification has been submitted. You'll receive an email notification once processed.",
+          description:
+            "Your KYC verification has been submitted. You'll receive an email notification once processed.",
         });
 
         // Navigate to status page
@@ -136,14 +140,18 @@ export default function Review() {
       } else {
         toast({
           title: "Submission Failed",
-          description: result.error || "Failed to submit KYC verification. Please try again.",
+          description:
+            result.error ||
+            "Failed to submit KYC verification. Please try again.",
           variant: "destructive",
         });
       }
     } catch (error: any) {
       toast({
         title: "Submission Error",
-        description: error.message || "An error occurred during submission. Please try again.",
+        description:
+          error.message ||
+          "An error occurred during submission. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -166,12 +174,16 @@ export default function Review() {
               </Link>
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">PC</span>
+                  <span className="text-primary-foreground font-bold text-sm">
+                    PC
+                  </span>
                 </div>
-                <span className="text-xl font-bold text-foreground">PropChain</span>
+                <span className="text-xl font-bold text-foreground">
+                  PropChain
+                </span>
               </div>
             </div>
-            
+
             {/* Progress */}
             <div className="flex items-center space-x-3">
               <span className="text-sm text-muted-foreground">Step 5 of 5</span>
@@ -206,13 +218,21 @@ export default function Review() {
                         </div>
                         <div>
                           <div className="flex items-center space-x-2 mb-1">
-                            <h3 className="font-semibold text-foreground">Government ID</h3>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                            <h3 className="font-semibold text-foreground">
+                              Government ID
+                            </h3>
+                            <Badge
+                              variant="outline"
+                              className="bg-green-50 text-green-700 border-green-200"
+                            >
                               Uploaded
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {reviewData.documentType.replace('_', ' ').toUpperCase()} - {reviewData.documentNumber}
+                            {reviewData.documentType
+                              .replace("_", " ")
+                              .toUpperCase()}{" "}
+                            - {reviewData.documentNumber}
                           </p>
                         </div>
                       </div>
@@ -236,12 +256,19 @@ export default function Review() {
                         </div>
                         <div>
                           <div className="flex items-center space-x-2 mb-1">
-                            <h3 className="font-semibold text-foreground">Selfie Photo</h3>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                            <h3 className="font-semibold text-foreground">
+                              Selfie Photo
+                            </h3>
+                            <Badge
+                              variant="outline"
+                              className="bg-green-50 text-green-700 border-green-200"
+                            >
                               Captured
                             </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground">Identity verification selfie</p>
+                          <p className="text-sm text-muted-foreground">
+                            Identity verification selfie
+                          </p>
                         </div>
                       </div>
                       <Link to="/kyc/selfie" state={reviewData}>
@@ -264,13 +291,20 @@ export default function Review() {
                         </div>
                         <div>
                           <div className="flex items-center space-x-2 mb-1">
-                            <h3 className="font-semibold text-foreground">Address Verification</h3>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                            <h3 className="font-semibold text-foreground">
+                              Address Verification
+                            </h3>
+                            <Badge
+                              variant="outline"
+                              className="bg-green-50 text-green-700 border-green-200"
+                            >
                               Completed
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {reviewData.address.street}, {reviewData.address.city}, {reviewData.address.state}
+                            {reviewData.address.street},{" "}
+                            {reviewData.address.city},{" "}
+                            {reviewData.address.state}
                           </p>
                         </div>
                       </div>
@@ -299,34 +333,43 @@ export default function Review() {
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center mt-0.5">
-                    <span className="text-xs text-primary-foreground font-bold">1</span>
+                    <span className="text-xs text-primary-foreground font-bold">
+                      1
+                    </span>
                   </div>
                   <div>
                     <p className="font-medium">Automatic Verification</p>
                     <p className="text-sm text-muted-foreground">
-                      Our AI system will verify your documents (usually takes 2-5 minutes)
+                      Our AI system will verify your documents (usually takes
+                      2-5 minutes)
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center mt-0.5">
-                    <span className="text-xs text-muted-foreground font-bold">2</span>
+                    <span className="text-xs text-muted-foreground font-bold">
+                      2
+                    </span>
                   </div>
                   <div>
                     <p className="font-medium">Manual Review (if needed)</p>
                     <p className="text-sm text-muted-foreground">
-                      If automatic verification is inconclusive, our team will review manually (1-3 business days)
+                      If automatic verification is inconclusive, our team will
+                      review manually (1-3 business days)
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center mt-0.5">
-                    <span className="text-xs text-muted-foreground font-bold">3</span>
+                    <span className="text-xs text-muted-foreground font-bold">
+                      3
+                    </span>
                   </div>
                   <div>
                     <p className="font-medium">Account Activation</p>
                     <p className="text-sm text-muted-foreground">
-                      Once approved, you'll receive an email and can access all features
+                      Once approved, you'll receive an email and can access all
+                      features
                     </p>
                   </div>
                 </div>
@@ -346,16 +389,27 @@ export default function Review() {
                     onChange={(e) => setAgreedToTerms(e.target.checked)}
                     className="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                   />
-                  <label htmlFor="terms-agreement" className="text-sm text-muted-foreground">
+                  <label
+                    htmlFor="terms-agreement"
+                    className="text-sm text-muted-foreground"
+                  >
                     I agree to the{" "}
-                  <Link to="/terms" className="text-primary hover:text-primary/80 underline">
-                    Terms of Service
-                  </Link>{" "}
-                  and{" "}
-                  <Link to="/privacy" className="text-primary hover:text-primary/80 underline">
-                    Privacy Policy
+                    <Link
+                      to="/terms"
+                      className="text-primary hover:text-primary/80 underline"
+                    >
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      to="/privacy"
+                      className="text-primary hover:text-primary/80 underline"
+                    >
+                      Privacy Policy
                     </Link>
-                    . I understand that my personal information will be encrypted and stored securely in compliance with Nigerian data protection regulations.
+                    . I understand that my personal information will be
+                    encrypted and stored securely in compliance with Nigerian
+                    data protection regulations.
                   </label>
                 </div>
               </div>
@@ -364,8 +418,8 @@ export default function Review() {
 
           {/* Action Buttons */}
           <div className="text-center">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="px-8"
               onClick={handleSubmit}
               disabled={isSubmitting || !agreedToTerms || !reviewData}
@@ -378,7 +432,7 @@ export default function Review() {
               ) : (
                 "Submit for Verification"
               )}
-              </Button>
+            </Button>
           </div>
         </div>
       </div>

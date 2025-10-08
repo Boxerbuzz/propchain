@@ -50,8 +50,7 @@ const Portfolio = () => {
     id: holding.id,
     tokenizationId: holding.tokenization_id,
     propertyTitle:
-      `Property ${holding.property_id?.slice(0, 8)}...` ||
-      "Property Investment",
+      `${holding.property_id?.slice(0, 8)}...` || "Property Investment",
     location: "Location TBD", // This would come from joining with properties table
     invested: holding.total_invested_ngn || 0,
     currentValue:
@@ -441,7 +440,7 @@ const Portfolio = () => {
                     >
                       <div>
                         <p className="font-medium text-sm">
-                          ${dividend.amount}
+                          ₦{dividend.amount}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {dividend.date}
