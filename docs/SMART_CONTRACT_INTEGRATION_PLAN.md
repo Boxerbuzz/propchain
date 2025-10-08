@@ -1,4 +1,5 @@
 # Hedera Smart Contract Integration Plan
+
 ## Hybrid Architecture for Real Estate Tokenization Platform
 
 ---
@@ -6,12 +7,14 @@
 ## 1. Architecture Overview
 
 ### Current System (HTS-Based)
+
 - **Hedera Token Service (HTS)** for property tokens
 - **Edge Functions** for all business logic
 - **Supabase Database** for state management
 - **Centralized control** via service role
 
 ### Target Hybrid System
+
 - **Keep HTS tokens** for property tokenization (no change)
 - **Add Smart Contracts** for financial logic:
   - Investment escrow & refunds
@@ -26,9 +29,11 @@
 ## 2. Smart Contract Components
 
 ### 2.1 Platform Escrow Manager Contract (Core)
+
 **Purpose:** Single platform-level contract managing all property investment escrows
 
 **Key Functions:**
+
 ```solidity
 // Register a new tokenization campaign
 function registerTokenization(
@@ -56,6 +61,7 @@ function releaseFunds(uint256 campaignId) external onlyOwner
 ```
 
 **Events:**
+
 - `CampaignRegistered(uint256 campaignId, string propertyId)`
 - `InvestmentDeposited(uint256 campaignId, address investor, uint256 amount)`
 - `CampaignFinalized(uint256 campaignId, bool successful, uint256 totalRaised)`
@@ -63,9 +69,11 @@ function releaseFunds(uint256 campaignId) external onlyOwner
 - `FundsReleased(uint256 campaignId, uint256 amount)`
 
 ### 2.2 Dividend Distribution Contract
+
 **Purpose:** Automated, transparent dividend distribution to token holders
 
 **Key Functions:**
+
 ```solidity
 // Create dividend distribution
 function createDistribution(
@@ -85,14 +93,17 @@ function batchProcessDividends(
 ```
 
 **Events:**
+
 - `DistributionCreated(uint256 distributionId, address tokenId, uint256 amount)`
 - `DividendClaimed(uint256 distributionId, address recipient, uint256 amount)`
 - `DividendProcessed(uint256 distributionId, uint256 successCount, uint256 failCount)`
 
 ### 2.3 Governance Contract
+
 **Purpose:** On-chain voting for property decisions
 
 **Key Functions:**
+
 ```solidity
 // Create proposal
 function createProposal(
@@ -113,14 +124,17 @@ function executeProposal(uint256 proposalId) external
 ```
 
 **Events:**
+
 - `ProposalCreated(uint256 proposalId, address tokenId, address proposer)`
 - `VoteCast(uint256 proposalId, address voter, bool support, uint256 votingPower)`
 - `ProposalExecuted(uint256 proposalId, bool passed)`
 
 ### 2.4 Multi-Sig Withdrawal Contract
+
 **Purpose:** Secure withdrawal mechanism with multi-signature approval
 
 **Key Functions:**
+
 ```solidity
 // Initiate withdrawal
 function initiateWithdrawal(
@@ -143,12 +157,14 @@ function executeWithdrawal(uint256 withdrawalId) external
 ### 3.1 Investment Flow (Hybrid)
 
 **Current Flow:**
-```
+
+```bash
 User → create-investment edge function → Reserve tokens → Paystack/Wallet payment → Confirm investment
 ```
 
 **New Hybrid Flow:**
-```
+
+```bash
 User → create-investment edge function → Smart Contract Escrow Deposit → Reserve tokens → Payment confirmation → Update DB
                                                 ↓
                                         (Funds held in contract)
@@ -170,7 +186,8 @@ User → create-investment edge function → Smart Contract Escrow Deposit → R
 
 ### 3.2 Edge Function → Smart Contract Interaction
 
-**Example: Investment Deposit**
+## Example: Investment Deposit**
+
 ```typescript
 // In create-investment edge function
 import { ContractExecuteTransaction, ContractFunctionParameters } from "@hashgraph/sdk";
@@ -202,7 +219,8 @@ await supabase
 
 ### 3.3 Smart Contract → Edge Function Events
 
-**Webhook Listener (New Edge Function)**
+## Webhook Listener (New Edge Function)**
+
 ```typescript
 // supabase/functions/smart-contract-webhook/index.ts
 serve(async (req) => {
@@ -252,7 +270,8 @@ serve(async (req) => {
 
 ### 4.1 New Tables
 
-**smart_contract_config**
+## smart_contract_config**
+
 ```sql
 CREATE TABLE smart_contract_config (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -268,7 +287,8 @@ CREATE TABLE smart_contract_config (
 );
 ```
 
-**smart_contract_transactions**
+## smart_contract_transactions**
+
 ```sql
 CREATE TABLE smart_contract_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -289,6 +309,7 @@ CREATE TABLE smart_contract_transactions (
 ### 4.2 Updates to Existing Tables
 
 **tokenizations table:**
+
 ```sql
 ALTER TABLE tokenizations ADD COLUMN escrow_campaign_id BIGINT;
 ALTER TABLE tokenizations ADD COLUMN escrow_contract_id TEXT;
@@ -296,6 +317,7 @@ ALTER TABLE tokenizations ADD COLUMN escrow_status TEXT DEFAULT 'pending'; -- pe
 ```
 
 **investments table:**
+
 ```sql
 ALTER TABLE investments ADD COLUMN escrow_contract_tx_id TEXT;
 ALTER TABLE investments ADD COLUMN escrow_deposit_amount NUMERIC;
@@ -303,6 +325,7 @@ ALTER TABLE investments ADD COLUMN escrow_status TEXT DEFAULT 'pending'; -- pend
 ```
 
 **dividend_distributions table:**
+
 ```sql
 ALTER TABLE dividend_distributions ADD COLUMN distribution_contract_id BIGINT;
 ALTER TABLE dividend_distributions ADD COLUMN contract_tx_id TEXT;
@@ -313,7 +336,9 @@ ALTER TABLE dividend_distributions ADD COLUMN contract_tx_id TEXT;
 ## 5. Implementation Phases
 
 ### Phase 1: Smart Contract Development & Testing (Week 1-2)
+
 **Tasks:**
+
 1. Write Solidity contracts:
    - Platform Escrow Manager
    - Dividend Distributor
@@ -324,24 +349,30 @@ ALTER TABLE dividend_distributions ADD COLUMN contract_tx_id TEXT;
 4. Create contract interaction utilities
 
 **Deliverables:**
+
 - Deployed contracts on testnet
 - Contract addresses & ABIs
 - Test coverage reports
 
 ### Phase 2: Database & Infrastructure Updates (Week 3)
+
 **Tasks:**
+
 1. Run database migration for new tables
 2. Update existing tables with contract-related columns
 3. Create smart contract config entries
 4. Set up contract monitoring
 
 **Deliverables:**
+
 - Updated database schema
 - Contract configuration in DB
 - Monitoring dashboard
 
 ### Phase 3: Edge Function Integration (Week 4-5)
+
 **Tasks:**
+
 1. Update `create-investment` to interact with escrow contract
 2. Update `check-investment-windows` to call `finalizeCampaign()`
 3. Create `smart-contract-webhook` edge function
@@ -349,24 +380,30 @@ ALTER TABLE dividend_distributions ADD COLUMN contract_tx_id TEXT;
 5. Add contract event listeners
 
 **Deliverables:**
+
 - Updated edge functions
 - Webhook endpoint for contract events
 - Integration tests
 
 ### Phase 4: Frontend Updates (Week 6)
+
 **Tasks:**
+
 1. Add escrow status indicators to investment flow
 2. Display contract transaction IDs
 3. Add "View on HashScan" links for transparency
 4. Update investment progress to show escrow state
 
 **Deliverables:**
+
 - Updated UI components
 - Transparency features
 - User documentation
 
 ### Phase 5: Testing & Security Audit (Week 7-8)
+
 **Tasks:**
+
 1. End-to-end testing on testnet
 2. Security audit of smart contracts
 3. Penetration testing
@@ -374,19 +411,23 @@ ALTER TABLE dividend_distributions ADD COLUMN contract_tx_id TEXT;
 5. Load testing
 
 **Deliverables:**
+
 - Test reports
 - Security audit report
 - Optimized contracts
 - Performance benchmarks
 
 ### Phase 6: Mainnet Deployment (Week 9)
+
 **Tasks:**
+
 1. Deploy contracts to Hedera Mainnet
 2. Update edge functions with mainnet contract IDs
 3. Migrate existing tokenizations to hybrid system
 4. Monitor initial transactions
 
 **Deliverables:**
+
 - Live smart contracts on mainnet
 - Migration complete
 - Monitoring active
@@ -396,6 +437,7 @@ ALTER TABLE dividend_distributions ADD COLUMN contract_tx_id TEXT;
 ## 6. Cost Analysis
 
 ### Contract Deployment Costs (Hedera Mainnet)
+
 - **Escrow Manager Contract:** ~50 HBAR (~$2.50)
 - **Dividend Distributor Contract:** ~40 HBAR (~$2.00)
 - **Governance Contract:** ~35 HBAR (~$1.75)
@@ -403,16 +445,20 @@ ALTER TABLE dividend_distributions ADD COLUMN contract_tx_id TEXT;
 - **Total Deployment:** ~155 HBAR (~$7.75)
 
 ### Transaction Costs (Per Operation)
+
 - **Escrow Deposit:** ~0.01 HBAR (~$0.0005)
 - **Campaign Finalization:** ~0.05 HBAR (~$0.0025)
 - **Dividend Distribution (batch 100):** ~0.10 HBAR (~$0.005)
 - **Governance Vote:** ~0.01 HBAR (~$0.0005)
 
 ### Monthly Operational Estimate
+
 Assuming 100 investments, 10 tokenizations, 5 distributions:
+
 - **Total:** ~5 HBAR/month (~$0.25/month)
 
 **Comparison:**
+
 - Current system: $0 (edge functions only)
 - Hybrid system: ~$0.25/month + initial $7.75 deployment
 - **Benefit:** Trustless, transparent, automated financial operations
@@ -422,6 +468,7 @@ Assuming 100 investments, 10 tokenizations, 5 distributions:
 ## 7. Security Considerations
 
 ### Smart Contract Security
+
 1. **Access Control:**
    - Only platform owner can register campaigns
    - Only contract can release funds
@@ -440,6 +487,7 @@ Assuming 100 investments, 10 tokenizations, 5 distributions:
    - Upgrade path for critical bugs
 
 ### Edge Function Security
+
 1. **Service Role Protection:**
    - Only service role can call contract admin functions
    - API key rotation policy
@@ -457,16 +505,19 @@ Assuming 100 investments, 10 tokenizations, 5 distributions:
 ## 8. Monitoring & Alerts
 
 ### Contract Event Monitoring
+
 - Listen for all contract events via Hedera Mirror Node
 - Store events in `smart_contract_transactions` table
 - Alert on failed transactions
 
 ### Performance Metrics
+
 - Track gas usage per function
 - Monitor transaction success rate
 - Measure average confirmation time
 
 ### Financial Metrics
+
 - Total value locked (TVL) in escrow
 - Distribution success rate
 - Refund processing time
@@ -489,12 +540,14 @@ If critical issues arise:
 ## 10. Success Metrics
 
 ### Technical Metrics
+
 - ✅ 99.9% contract uptime
 - ✅ <5 second transaction confirmation
 - ✅ 100% refund success rate
 - ✅ Zero security incidents
 
 ### Business Metrics
+
 - ✅ Increased investor trust (measured via surveys)
 - ✅ Reduced support tickets for refunds
 - ✅ Faster dividend distribution
@@ -525,14 +578,16 @@ If critical issues arise:
 
 ## Appendix B: Edge Function Updates
 
-### Functions Requiring Updates:
+### Functions Requiring Updates
+
 1. ✅ `create-investment` - Add escrow deposit
 2. ✅ `check-investment-windows` - Add campaign finalization
 3. ✅ `distribute-dividends` - Use dividend contract
 4. ✅ `process-withdrawal` - Use multi-sig contract
 5. 🆕 `smart-contract-webhook` - New event listener
 
-### Functions Remaining Unchanged:
+### Functions Remaining Unchanged
+
 - `create-hedera-account`
 - `create-hedera-token`
 - `kyc-webhook`
