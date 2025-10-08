@@ -7,7 +7,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -28,10 +27,10 @@ import {
   Home,
   Search,
   BarChart3,
-  Clock,
   CheckCircle,
   Heart,
   AlertTriangle,
+  ArrowRight,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -370,6 +369,7 @@ export default function Header() {
                 <Link to="/auth/login">
                   <Button variant="outline" size="sm" className="text-xs">
                     Login
+                    <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
                 <Link to="/auth/signup">
@@ -479,7 +479,7 @@ export default function Header() {
 
                 {/* Mobile Auth Buttons (only when not authenticated) */}
                 {!isAuthenticated && (
-                  <div className="border-t border-border pt-6 mt-6 space-y-4">
+                  <div className="border-t border-border pt-6 mt-6 space-y-4 flex flex-col gap-1">
                     <Link
                       to="/auth/login"
                       onClick={() => setMobileMenuOpen(false)}
@@ -496,24 +496,6 @@ export default function Header() {
                         Get Started
                       </Button>
                     </Link>
-                  </div>
-                )}
-
-                {/* Mobile Auth Buttons (only when not authenticated) */}
-                {!isAuthenticated && (
-                  <div className="border-t pt-4">
-                    <div className="flex gap-2">
-                      <Link to="/auth/login" className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full">
-                          Login
-                        </Button>
-                      </Link>
-                      <Link to="/auth/signup" className="flex-1">
-                        <Button size="sm" className="w-full">
-                          Get started
-                        </Button>
-                      </Link>
-                    </div>
                   </div>
                 )}
               </div>
