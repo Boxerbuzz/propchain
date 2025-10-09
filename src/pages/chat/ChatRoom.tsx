@@ -42,7 +42,14 @@ const ChatRoom = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [message, setMessage] = useState("");
-  const [roomInfo, setRoomInfo] = useState<any>(null);
+  const [roomInfo, setRoomInfo] = useState<{
+    name: string;
+    property_id: string;
+    tokenization_id: string;
+    tokenization_status?: string;
+    properties?: { title: string; location: any };
+    tokenizations?: { token_name: string; token_symbol: string; status: string };
+  } | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
   const [showProposalCreator, setShowProposalCreator] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -68,7 +75,7 @@ const ChatRoom = () => {
           `
           *,
           properties(title, location),
-          tokenizations(token_name, token_symbol)
+          tokenizations(token_name, token_symbol, status)
         `
         )
         .eq("id", roomId)
@@ -77,7 +84,10 @@ const ChatRoom = () => {
       if (error) {
         console.error("Error fetching room info:", error);
       } else {
-        setRoomInfo(data);
+        setRoomInfo({
+          ...data,
+          tokenization_status: data.tokenizations?.status
+        });
       }
 
       // Fetch participant count
@@ -251,9 +261,21 @@ const ChatRoom = () => {
                       onClick={() =>
                         setShowProposalCreator(!showProposalCreator)
                       }
+                      disabled={
+                        roomInfo?.tokenization_status !== 'minted' && 
+                        roomInfo?.tokenization_status !== 'distributed'
+                      }
                     >
                       <Plus className="mr-2 h-4 w-4" />
-                      <span>Create Proposal</span>
+                      <div className="flex flex-col">
+                        <span>Create Proposal</span>
+                        {roomInfo?.tokenization_status !== 'minted' && 
+                         roomInfo?.tokenization_status !== 'distributed' && (
+                          <span className="text-xs text-muted-foreground">
+                            Available after token distribution
+                          </span>
+                        )}
+                      </div>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() =>

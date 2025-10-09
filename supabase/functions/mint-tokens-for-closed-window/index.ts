@@ -212,6 +212,36 @@ serve(async (req) => {
             },
           });
 
+        // Get associated chat room for this tokenization
+        const { data: chatRoom } = await supabaseClient
+          .from('chat_rooms')
+          .select('id')
+          .eq('tokenization_id', tokenization.id)
+          .single();
+
+        // Send AI system message to chat
+        if (chatRoom) {
+          await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-chat-system-message`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              room_id: chatRoom.id,
+              message_text: `🎉 Tokens have been minted! ${tokenization.tokens_sold.toLocaleString()} tokens of ${tokenization.token_symbol} created successfully. Distribution to verified investors will begin shortly.`,
+              message_type: 'system',
+              metadata: {
+                event_type: 'tokens_minted',
+                tokenization_id: tokenization.id,
+                token_id: tokenization.token_id,
+                tokens_minted: tokenization.tokens_sold,
+                transaction_id: mintResult.data.transactionId
+              }
+            }),
+          });
+        }
+
         // Trigger token distribution
         console.log(`[MINT-TOKENS] 🔗 Triggering token distribution to KYC users`);
         const distributionResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/distribute-tokens-to-kyc-users`, {

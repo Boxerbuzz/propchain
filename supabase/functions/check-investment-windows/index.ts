@@ -179,6 +179,35 @@ serve(async (req) => {
             }
           });
 
+        // Get associated chat room for this tokenization
+        const { data: chatRoom } = await supabase
+          .from('chat_rooms')
+          .select('id')
+          .eq('tokenization_id', tokenization.id)
+          .single();
+
+        // Send AI system message to chat
+        if (chatRoom) {
+          await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-chat-system-message`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              room_id: chatRoom.id,
+              message_text: `🔴 Investment window closed. Minimum raise of ₦${tokenization.minimum_raise.toLocaleString()} not reached. Only ₦${tokenization.current_raise.toLocaleString()} was raised. All investments will be refunded to your wallet within 24-48 hours.`,
+              message_type: 'system',
+              metadata: {
+                event_type: 'window_failed',
+                tokenization_id: tokenization.id,
+                total_raised: tokenization.current_raise,
+                minimum_raise: tokenization.minimum_raise
+              }
+            }),
+          });
+        }
+
         results.push({
           tokenization_id: tokenization.id,
           success: true,

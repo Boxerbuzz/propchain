@@ -40,6 +40,30 @@ serve(async (req) => {
 
     console.log('Creating proposal:', { room_id, property_id, tokenization_id, title });
 
+    // Verify tokenization status - proposals only allowed after tokens are minted
+    const { data: tokenization, error: tokenError } = await supabase
+      .from('tokenizations')
+      .select('status')
+      .eq('id', tokenization_id)
+      .single();
+
+    if (tokenError || !tokenization) {
+      return new Response(
+        JSON.stringify({ error: 'Tokenization not found' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+      );
+    }
+
+    if (tokenization.status !== 'minted' && tokenization.status !== 'distributed') {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Proposals can only be created after tokens are minted and distributed',
+          currentStatus: tokenization.status
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+      );
+    }
+
     // Create the governance proposal
     const { data: proposal, error: proposalError } = await supabase
       .rpc('create_governance_proposal', {
