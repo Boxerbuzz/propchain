@@ -62,7 +62,9 @@ const InvestmentFlow = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [investmentAmount, setInvestmentAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "wallet">("paystack");
+  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "wallet">(
+    "paystack"
+  );
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [tokenization, setTokenization] = useState<Tokenization | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,17 +75,19 @@ const InvestmentFlow = () => {
     createAccount,
     isCreating: isCreatingAccount,
   } = useHederaAccount();
-  const { balance: walletBalance, isLoading: isLoadingBalance } = useWalletBalance();
+  const { balance: walletBalance, isLoading: isLoadingBalance } =
+    useWalletBalance();
 
   useEffect(() => {
     const fetchTokenization = async () => {
       if (!id) return;
-      
+
       setLoading(true);
       try {
         const { data, error } = await supabase
           .from("tokenizations")
-          .select(`
+          .select(
+            `
             *,
             properties!inner(
               id,
@@ -91,7 +95,8 @@ const InvestmentFlow = () => {
               location,
               estimated_value
             )
-          `)
+          `
+          )
           .eq("id", id)
           .single();
 
@@ -131,11 +136,15 @@ const InvestmentFlow = () => {
     if (step === 1) {
       const amount = parseFloat(investmentAmount);
       if (!amount || amount < tokenization.min_investment) {
-        toast.error(`Minimum investment is ₦${tokenization.min_investment.toLocaleString()}`);
+        toast.error(
+          `Minimum investment is ₦${tokenization.min_investment.toLocaleString()}`
+        );
         return;
       }
       if (tokenization.max_investment && amount > tokenization.max_investment) {
-        toast.error(`Maximum investment is ₦${tokenization.max_investment.toLocaleString()}`);
+        toast.error(
+          `Maximum investment is ₦${tokenization.max_investment.toLocaleString()}`
+        );
         return;
       }
       setStep(2);
@@ -192,7 +201,9 @@ const InvestmentFlow = () => {
       <div className="min-h-screen bg-background py-8">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="text-center py-8">
-            <h1 className="text-2xl font-bold mb-4">Investment Opportunity Not Found</h1>
+            <h1 className="text-2xl font-bold mb-4">
+              Investment Opportunity Not Found
+            </h1>
             <Button onClick={() => navigate("/browse-properties")}>
               Browse Properties
             </Button>
@@ -265,26 +276,34 @@ const InvestmentFlow = () => {
                 {step === 1 && (
                   <div className="space-y-4">
                     <div>
-                        <Label htmlFor="amount">Investment Amount (₦)</Label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
-                            ₦
-                          </span>
-                          <Input
-                            id="amount"
-                            type="text"
-                            placeholder="0"
-                            value={investmentAmount ? parseFloat(investmentAmount).toLocaleString() : ''}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/[^0-9.]/g, '');
-                              setInvestmentAmount(value);
-                            }}
-                            className="text-lg pl-8"
-                          />
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Minimum investment: ₦{tokenization.min_investment.toLocaleString()}
-                        </p>
+                      <Label htmlFor="amount">Investment Amount (₦)</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
+                          ₦
+                        </span>
+                        <Input
+                          id="amount"
+                          type="text"
+                          placeholder="0"
+                          value={
+                            investmentAmount
+                              ? parseFloat(investmentAmount).toLocaleString()
+                              : ""
+                          }
+                          onChange={(e) => {
+                            const value = e.target.value.replace(
+                              /[^0-9.]/g,
+                              ""
+                            );
+                            setInvestmentAmount(value);
+                          }}
+                          className="text-lg pl-8"
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Minimum investment: ₦
+                        {tokenization.min_investment.toLocaleString()}
+                      </p>
                     </div>
 
                     {investmentAmount && (
@@ -294,7 +313,10 @@ const InvestmentFlow = () => {
                           <div className="flex justify-between">
                             <span>Investment Amount:</span>
                             <span className="font-medium">
-                              ₦{parseFloat(investmentAmount || '0').toLocaleString()}
+                              ₦
+                              {parseFloat(
+                                investmentAmount || "0"
+                              ).toLocaleString()}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -369,11 +391,14 @@ const InvestmentFlow = () => {
                                 ) : walletBalance ? (
                                   <div>
                                     <p className="text-sm font-medium">
-                                      ₦{walletBalance.balanceNgn?.toLocaleString() || "0"}
+                                      ₦
+                                      {walletBalance.balanceNgn?.toLocaleString() ||
+                                        "0"}
                                     </p>
                                     {walletBalance.balanceHbar > 0 && (
                                       <p className="text-xs text-muted-foreground">
-                                        {walletBalance.balanceHbar.toFixed(4)} HBAR
+                                        {walletBalance.balanceHbar.toFixed(4)}{" "}
+                                        HBAR
                                       </p>
                                     )}
                                   </div>
@@ -413,12 +438,17 @@ const InvestmentFlow = () => {
                       <div className="space-y-3 text-sm">
                         <div className="flex justify-between">
                           <span>Property:</span>
-                          <span className="font-medium">{tokenization.properties?.title}</span>
+                          <span className="font-medium">
+                            {tokenization.properties?.title}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Investment Amount:</span>
                           <span className="font-medium">
-                            ₦{parseFloat(investmentAmount || '0').toLocaleString()}
+                            ₦
+                            {parseFloat(
+                              investmentAmount || "0"
+                            ).toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -430,13 +460,20 @@ const InvestmentFlow = () => {
                         <div className="flex justify-between">
                           <span>Payment Method:</span>
                           <span className="font-medium capitalize">
-                            {paymentMethod === "paystack" ? "Paystack" : "Wallet"}
+                            {paymentMethod === "paystack"
+                              ? "Paystack"
+                              : "Wallet"}
                           </span>
                         </div>
                         <Separator />
                         <div className="flex justify-between font-medium">
                           <span>Total Investment:</span>
-                          <span>₦{parseFloat(investmentAmount || '0').toLocaleString()}</span>
+                          <span>
+                            ₦
+                            {parseFloat(
+                              investmentAmount || "0"
+                            ).toLocaleString()}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -446,32 +483,40 @@ const InvestmentFlow = () => {
                         <Wallet className="h-4 w-4" />
                         <AlertTitle>Blockchain Wallet Required</AlertTitle>
                         <AlertDescription className="space-y-2">
-                          <p>You need a blockchain wallet to receive your tokens.</p>
-                          <Button 
-                            onClick={() => createAccount()} 
+                          <p>
+                            You need a blockchain wallet to receive your tokens.
+                          </p>
+                          <Button
+                            onClick={() => createAccount()}
                             disabled={isCreatingAccount}
                             size="sm"
                           >
                             <Wallet className="w-4 h-4 mr-2" />
-                            {isCreatingAccount ? "Creating..." : "Create Wallet"}
+                            {isCreatingAccount
+                              ? "Creating..."
+                              : "Create Wallet"}
                           </Button>
                         </AlertDescription>
                       </Alert>
                     )}
 
-                    {paymentMethod === "wallet" && walletBalance && 
-                     parseFloat(investmentAmount) > (walletBalance.balanceNgn || 0) && (
-                      <Alert variant="destructive">
-                        <Wallet className="h-4 w-4" />
-                        <AlertTitle>Insufficient Balance</AlertTitle>
-                        <AlertDescription>
-                          Your wallet balance is ₦
-                          {(walletBalance.balanceNgn || 0).toLocaleString()}, but you're
-                          trying to invest ₦{parseFloat(investmentAmount).toLocaleString()}. 
-                          Please top up your wallet or reduce your investment amount.
-                        </AlertDescription>
-                      </Alert>
-                    )}
+                    {paymentMethod === "wallet" &&
+                      walletBalance &&
+                      parseFloat(investmentAmount) >
+                        (walletBalance.balanceNgn || 0) && (
+                        <Alert variant="destructive">
+                          <Wallet className="h-4 w-4" />
+                          <AlertTitle>Insufficient Balance</AlertTitle>
+                          <AlertDescription>
+                            Your wallet balance is ₦
+                            {(walletBalance.balanceNgn || 0).toLocaleString()},
+                            but you're trying to invest ₦
+                            {parseFloat(investmentAmount).toLocaleString()}.
+                            Please top up your wallet or reduce your investment
+                            amount.
+                          </AlertDescription>
+                        </Alert>
+                      )}
 
                     <div className="flex items-start space-x-2">
                       <Checkbox
@@ -509,9 +554,9 @@ const InvestmentFlow = () => {
                     <Alert>
                       <Info className="h-4 w-4" />
                       <AlertDescription>
-                        Real estate investments carry inherent risks. Past performance
-                        does not guarantee future results. Please invest only what you can
-                        afford to lose.
+                        Real estate investments carry inherent risks. Past
+                        performance does not guarantee future results. Please
+                        invest only what you can afford to lose.
                       </AlertDescription>
                     </Alert>
 
@@ -538,17 +583,18 @@ const InvestmentFlow = () => {
                       Back
                     </Button>
                   )}
-                  <Button 
-                    onClick={handleInvest} 
+                  <Button
+                    onClick={handleInvest}
                     className="flex-1"
                     disabled={
                       isCreating ||
-                      (step === 3 && (
-                        !hasAccount ||
-                        !acceptTerms ||
-                        (paymentMethod === "wallet" && walletBalance && 
-                         parseFloat(investmentAmount) > (walletBalance.balanceNgn || 0))
-                      ))
+                      (step === 3 &&
+                        (!hasAccount ||
+                          !acceptTerms ||
+                          (paymentMethod === "wallet" &&
+                            walletBalance &&
+                            parseFloat(investmentAmount) >
+                              (walletBalance.balanceNgn || 0))))
                     }
                   >
                     {isCreating ? (
@@ -556,8 +602,10 @@ const InvestmentFlow = () => {
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Processing...
                       </>
+                    ) : step === 3 ? (
+                      "Confirm Investment"
                     ) : (
-                      step === 3 ? "Confirm Investment" : "Continue"
+                      "Continue"
                     )}
                   </Button>
                 </div>
@@ -576,16 +624,22 @@ const InvestmentFlow = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-medium">{tokenization.properties?.title}</h4>
+                  <h4 className="font-medium">
+                    {tokenization.properties?.title}
+                  </h4>
                   <p className="text-sm text-muted-foreground">
-                    {tokenization.properties?.location?.city}, {tokenization.properties?.location?.state}
+                    {tokenization.properties?.location?.city},{" "}
+                    {tokenization.properties?.location?.state}
                   </p>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Property Value:</span>
-                    <span className="font-medium">₦{tokenization.properties?.estimated_value.toLocaleString()}</span>
+                    <span className="font-medium">
+                      ₦
+                      {tokenization.properties?.estimated_value.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Expected Return:</span>
@@ -599,18 +653,27 @@ const InvestmentFlow = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Token Price:</span>
-                    <span className="font-medium">₦{tokenization.price_per_token.toLocaleString()}</span>
+                    <span className="font-medium">
+                      ₦{tokenization.price_per_token.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Available Tokens:</span>
                     <span className="font-medium">
-                      {(tokenization.total_supply - tokenization.tokens_sold).toLocaleString()}
+                      {(
+                        tokenization.total_supply - tokenization.tokens_sold
+                      ).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Funding Progress:</span>
                     <span className="font-medium">
-                      {Math.round((tokenization.current_raise / (tokenization.target_raise || 1)) * 100)}%
+                      {Math.round(
+                        (tokenization.current_raise /
+                          (tokenization.target_raise || 1)) *
+                          100
+                      )}
+                      %
                     </span>
                   </div>
                 </div>

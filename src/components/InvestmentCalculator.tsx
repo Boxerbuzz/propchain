@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { Calculator, TrendingUp, DollarSign, CoinsIcon } from "lucide-react";
+import { Calculator, TrendingUp, CoinsIcon } from "lucide-react";
 import MoneyInput from "@/components/ui/money-input";
 import { useNavigate } from "react-router-dom";
 
@@ -108,7 +108,9 @@ export default function InvestmentCalculator({
         <Button
           className="w-full btn-primary"
           size="lg"
-          onClick={() => navigate(`/browse/${property?.tokenizations?.[0]?.id}/invest`)}
+          onClick={() =>
+            navigate(`/browse/${property?.tokenizations?.[0]?.id}/invest`)
+          }
         >
           Invest Now
         </Button>
