@@ -36,6 +36,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProposalCreator } from "@/components/ProposalCreator";
 import { ProposalMessage } from "@/components/ProposalMessage";
+import { InspectionEventMessage } from "@/components/chat/InspectionEventMessage";
+import { RentalEventMessage } from "@/components/chat/RentalEventMessage";
+import { PurchaseEventMessage } from "@/components/chat/PurchaseEventMessage";
+import { MaintenanceProposalMessage } from "@/components/chat/MaintenanceProposalMessage";
 
 const ChatRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -366,6 +370,26 @@ const ChatRoom = () => {
                     <div key={msg.id}>
                       {msg.messageType === "proposal" ? (
                         <ProposalMessage
+                          metadata={msg.metadata}
+                          createdAt={msg.createdAt}
+                        />
+                      ) : msg.messageType === "maintenance_proposal" ? (
+                        <MaintenanceProposalMessage
+                          metadata={msg.metadata}
+                          createdAt={msg.createdAt}
+                        />
+                      ) : msg.messageType === "inspection_event" ? (
+                        <InspectionEventMessage
+                          metadata={msg.metadata}
+                          createdAt={msg.createdAt}
+                        />
+                      ) : msg.messageType === "rental_event" ? (
+                        <RentalEventMessage
+                          metadata={msg.metadata}
+                          createdAt={msg.createdAt}
+                        />
+                      ) : msg.messageType === "purchase_event" ? (
+                        <PurchaseEventMessage
                           metadata={msg.metadata}
                           createdAt={msg.createdAt}
                         />

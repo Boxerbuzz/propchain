@@ -294,6 +294,89 @@ serve(async (req) => {
       hcs_transaction_id: hcsTransactionId,
     });
 
+    // Get tokenization_id for chat room lookup
+    const { data: propertyTokenization } = await supabase
+      .from("tokenizations")
+      .select("id")
+      .eq("property_id", property_id)
+      .single();
+
+    // Post event notification to chat room
+    if (propertyTokenization?.id) {
+      const { data: chatRoom } = await supabase
+        .from("chat_rooms")
+        .select("id")
+        .eq("property_id", property_id)
+        .eq("tokenization_id", propertyTokenization.id)
+        .eq("room_type", "investment")
+        .single();
+
+      if (chatRoom) {
+        console.log(`[RECORD-EVENT] Posting to chat room ${chatRoom.id}`);
+        
+        let messageType = 'event';
+        let chatMetadata: any = {
+          event_id: eventId,
+          event_type,
+          property_id,
+          hcs_transaction_id: hcsTransactionId,
+          ...event_data
+        };
+
+        // For maintenance events, create a governance proposal first
+        if (event_type === 'maintenance') {
+          console.log(`[RECORD-EVENT] Creating maintenance proposal`);
+          
+          const { data: proposalResponse, error: proposalError } = await supabase.functions.invoke(
+            'create-maintenance-proposal',
+            {
+              body: {
+                property_id,
+                tokenization_id: propertyTokenization.id,
+                maintenance_event_id: specificEventId,
+                event_data
+              },
+              headers: {
+                Authorization: authHeader
+              }
+            }
+          );
+
+          if (!proposalError && proposalResponse?.proposal_id) {
+            messageType = 'maintenance_proposal';
+            chatMetadata.proposal_id = proposalResponse.proposal_id;
+            chatMetadata.tokenization_id = propertyTokenization.id;
+            chatMetadata.voting_end = new Date(Date.now() + (proposalResponse.voting_period_days || 7) * 24 * 60 * 60 * 1000).toISOString();
+            chatMetadata.approval_threshold = proposalResponse.approval_threshold || 60;
+            chatMetadata.status = proposalResponse.auto_approved ? 'approved' : 'active';
+            
+            console.log(`[RECORD-EVENT] Created proposal ${proposalResponse.proposal_id}`);
+          } else {
+            console.error("[RECORD-EVENT] Failed to create proposal:", proposalError);
+          }
+        } else {
+          // For non-maintenance events, set specific message types
+          messageType = `${event_type}_event`;
+        }
+
+        // Send chat notification
+        const { error: chatError } = await supabase.functions.invoke('send-chat-system-message', {
+          body: {
+            room_id: chatRoom.id,
+            message_text: eventSummary,
+            message_type: messageType,
+            metadata: chatMetadata
+          }
+        });
+
+        if (chatError) {
+          console.error("[RECORD-EVENT] Failed to send chat message:", chatError);
+        } else {
+          console.log(`[RECORD-EVENT] Posted ${messageType} message to chat`);
+        }
+      }
+    }
+
     console.log(`[RECORD-EVENT] Successfully recorded ${event_type} event`);
 
     return new Response(

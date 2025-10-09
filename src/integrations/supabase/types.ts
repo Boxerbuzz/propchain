@@ -1409,6 +1409,7 @@ export type Database = {
           payment_status: string | null
           property_event_id: string | null
           property_id: string | null
+          proposal_id: string | null
           updated_at: string | null
           warranty_expiry_date: string | null
           warranty_info: string | null
@@ -1443,6 +1444,7 @@ export type Database = {
           payment_status?: string | null
           property_event_id?: string | null
           property_id?: string | null
+          proposal_id?: string | null
           updated_at?: string | null
           warranty_expiry_date?: string | null
           warranty_info?: string | null
@@ -1477,6 +1479,7 @@ export type Database = {
           payment_status?: string | null
           property_event_id?: string | null
           property_id?: string | null
+          proposal_id?: string | null
           updated_at?: string | null
           warranty_expiry_date?: string | null
           warranty_info?: string | null
@@ -1502,6 +1505,13 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_maintenance_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "governance_proposals"
             referencedColumns: ["id"]
           },
         ]
