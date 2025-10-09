@@ -109,24 +109,6 @@ export default function Header() {
     return false;
   };
 
-  const ConnectWalletButton = () => (
-    <Button
-      variant={isWalletConnected ? "secondary" : "default"}
-      size="sm"
-      className={`flex items-center gap-2 font-medium transition-all duration-200 ${
-        isWalletConnected
-          ? "bg-success/10 border-success/20 text-success hover:bg-success/20"
-          : "bg-primary hover:bg-primary-hover"
-      }`}
-      onClick={() => !isWalletConnected && setIsWalletConnected(true)}
-    >
-      <Wallet className="h-4 w-4" />
-      <span className="hidden sm:inline">
-        {isWalletConnected ? "₦125,000" : "Connect Wallet"}
-      </span>
-    </Button>
-  );
-
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50 font-spartan">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -171,13 +153,6 @@ export default function Header() {
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-3">
-          {/* Wallet Connect - Desktop (only when authenticated) */}
-          {isAuthenticated && (
-            <div className="hidden md:block">
-              <ConnectWalletButton />
-            </div>
-          )}
-
           {/* Notifications (only when authenticated) */}
           {isAuthenticated && (
             <Popover>
@@ -406,13 +381,6 @@ export default function Header() {
                     </span>
                   </div>
                 </div>
-
-                {/* Mobile Wallet Connect (only when authenticated) */}
-                {isAuthenticated && (
-                  <div className="mb-6">
-                    <ConnectWalletButton />
-                  </div>
-                )}
 
                 {/* Mobile Navigation */}
                 <nav className="flex-1 space-y-2">

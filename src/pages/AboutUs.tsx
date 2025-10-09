@@ -1,7 +1,21 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, Target, Eye, Heart, Users, TrendingUp, Shield, Award, Sparkles, Globe, Zap, CheckCircle2, ArrowRight } from "lucide-react";
+import {
+  Building2,
+  Target,
+  Eye,
+  Heart,
+  Users,
+  TrendingUp,
+  Shield,
+  Award,
+  Sparkles,
+  Globe,
+  Zap,
+  CheckCircle2,
+  ArrowRight,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 
@@ -10,58 +24,67 @@ export default function AboutUs() {
     { label: "Properties Listed", value: "50+", icon: Building2 },
     { label: "Active Investors", value: "10,000+", icon: Users },
     { label: "Total Investment", value: "₦2B+", icon: TrendingUp },
-    { label: "Average Returns", value: "12-18%", icon: Award }
+    { label: "Average Returns", value: "12-18%", icon: Award },
   ];
 
   const values = [
     {
       icon: Shield,
       title: "Trust & Transparency",
-      description: "We operate with full transparency, providing complete property details, legal documentation, and real-time investment tracking."
+      description:
+        "We operate with full transparency, providing complete property details, legal documentation, and real-time investment tracking.",
     },
     {
       icon: Users,
       title: "Accessibility",
-      description: "Making real estate investment accessible to everyone, regardless of their financial capacity, starting from just ₦10,000."
+      description:
+        "Making real estate investment accessible to everyone, regardless of their financial capacity, starting from just ₦10,000.",
     },
     {
       icon: TrendingUp,
       title: "Innovation",
-      description: "Leveraging Hedera distributed ledger technology to provide secure, transparent, and efficient property tokenization."
+      description:
+        "Leveraging Hedera distributed ledger technology to provide secure, transparent, and efficient property tokenization.",
     },
     {
       icon: Heart,
       title: "Community First",
-      description: "Building a community of investors who can grow their wealth together through democratic governance and shared success."
-    }
+      description:
+        "Building a community of investors who can grow their wealth together through democratic governance and shared success.",
+    },
   ];
 
   const milestones = [
     {
       year: "2023",
       title: "Company Founded",
-      description: "PropChain was established with a mission to democratize real estate investment in Nigeria."
+      description:
+        "PropChain was established with a mission to democratize real estate investment in Nigeria.",
     },
     {
       year: "2023",
       title: "SEC Registration",
-      description: "Obtained regulatory approval from the Securities and Exchange Commission, Nigeria as a digital sub-broker."
+      description:
+        "Obtained regulatory approval from the Securities and Exchange Commission, Nigeria as a digital sub-broker.",
     },
     {
       year: "2024",
       title: "First Property Tokenized",
-      description: "Successfully tokenized our first property, marking a milestone in Nigerian real estate innovation."
+      description:
+        "Successfully tokenized our first property, marking a milestone in Nigerian real estate innovation.",
     },
     {
       year: "2024",
       title: "10,000+ Investors",
-      description: "Reached 10,000 active investors, demonstrating strong market confidence and adoption."
+      description:
+        "Reached 10,000 active investors, demonstrating strong market confidence and adoption.",
     },
     {
       year: "2025",
       title: "₦2B+ Total Investment",
-      description: "Surpassed ₦2 billion in total investments across our property portfolio."
-    }
+      description:
+        "Surpassed ₦2 billion in total investments across our property portfolio.",
+    },
   ];
 
   return (
@@ -74,7 +97,10 @@ export default function AboutUs() {
         <div className="container mx-auto px-4 relative">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <Badge className="mb-6 text-sm px-5 py-2 bg-primary/10 hover:bg-primary/20 border-primary/20" variant="outline">
+              <Badge
+                className="mb-6 text-sm px-5 py-2 bg-primary/10 hover:bg-primary/20 border-primary/20"
+                variant="outline"
+              >
                 <Sparkles className="w-3.5 h-3.5 mr-2 inline" />
                 About PropChain
               </Badge>
@@ -85,16 +111,27 @@ export default function AboutUs() {
                 </span>
               </h1>
               <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-4xl mx-auto leading-relaxed font-light">
-                Making property ownership accessible to every Nigerian through fractional ownership and cutting-edge distributed ledger technology
+                Making property ownership accessible to every Nigerian through
+                fractional ownership and cutting-edge distributed ledger
+                technology
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Button size="lg" asChild className="h-12 px-8 text-base transition-all">
+                <Button
+                  size="lg"
+                  asChild
+                  className="h-12 px-8 text-base transition-all"
+                >
                   <Link to="/auth/signup">
                     Join PropChain
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild className="h-12 px-8 text-base">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  asChild
+                  className="h-12 px-8 text-base"
+                >
                   <Link to="/browse">Explore Properties</Link>
                 </Button>
               </div>
@@ -109,14 +146,21 @@ export default function AboutUs() {
         <div className="container mx-auto px-4 relative">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {stats.map((stat, index) => (
-              <Card key={index} className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all group">
+              <Card
+                key={index}
+                className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all group"
+              >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <CardContent className="p-8 relative">
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                     <stat.icon className="w-7 h-7 text-primary" />
                   </div>
-                  <div className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">{stat.value}</div>
-                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</div>
+                  <div className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                    {stat.label}
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -129,9 +173,12 @@ export default function AboutUs() {
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-20">
-              <h2 className="text-4xl md:text-5xl font-bold mb-5">Our Purpose</h2>
+              <h2 className="text-4xl md:text-5xl font-bold mb-5">
+                Our Purpose
+              </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light">
-                Driven by a vision to transform real estate investment in Nigeria
+                Driven by a vision to transform real estate investment in
+                Nigeria
               </p>
             </div>
             <div className="grid md:grid-cols-2 gap-8">
@@ -144,20 +191,28 @@ export default function AboutUs() {
                   </div>
                   <h3 className="text-3xl font-bold mb-6">Our Mission</h3>
                   <p className="text-lg text-muted-foreground mb-5 leading-relaxed">
-                    To democratize access to real estate investment in Nigeria by breaking down traditional barriers through fractional ownership and innovative technology.
+                    To democratize access to real estate investment in Nigeria
+                    by breaking down traditional barriers through fractional
+                    ownership and innovative technology.
                   </p>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-muted-foreground">Accessible investment starting from ₦10,000</p>
+                      <p className="text-muted-foreground">
+                        Accessible investment starting from ₦10,000
+                      </p>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-muted-foreground">Transparent, blockchain-backed transactions</p>
+                      <p className="text-muted-foreground">
+                        Transparent, blockchain-backed transactions
+                      </p>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-muted-foreground">Fully regulated and compliant platform</p>
+                      <p className="text-muted-foreground">
+                        Fully regulated and compliant platform
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -172,20 +227,28 @@ export default function AboutUs() {
                   </div>
                   <h3 className="text-3xl font-bold mb-6">Our Vision</h3>
                   <p className="text-lg text-muted-foreground mb-5 leading-relaxed">
-                    To become Africa's leading fractional real estate investment platform, empowering millions to build generational wealth through property ownership.
+                    To become Africa's leading fractional real estate investment
+                    platform, empowering millions to build generational wealth
+                    through property ownership.
                   </p>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-muted-foreground">Expand across African markets</p>
+                      <p className="text-muted-foreground">
+                        Expand across African markets
+                      </p>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-muted-foreground">Empower millions of investors</p>
+                      <p className="text-muted-foreground">
+                        Empower millions of investors
+                      </p>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-muted-foreground">Set the standard for real estate innovation</p>
+                      <p className="text-muted-foreground">
+                        Set the standard for real estate innovation
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -201,24 +264,36 @@ export default function AboutUs() {
         <div className="container mx-auto px-4 relative">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-20">
-              <Badge className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20" variant="outline">
+              <Badge
+                className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+                variant="outline"
+              >
                 Core Values
               </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold mb-5">What We Stand For</h2>
+              <h2 className="text-4xl md:text-5xl font-bold mb-5">
+                What We Stand For
+              </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light">
                 The principles that guide everything we do at PropChain
               </p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {values.map((value, index) => (
-                <Card key={index} className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group">
+                <Card
+                  key={index}
+                  className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group"
+                >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <CardContent className="p-8 relative">
                     <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                       <value.icon className="w-7 h-7 text-primary" />
                     </div>
-                    <h3 className="text-xl font-bold mb-4 text-center">{value.title}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed text-center">{value.description}</p>
+                    <h3 className="text-xl font-bold mb-4 text-center">
+                      {value.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed text-center">
+                      {value.description}
+                    </p>
                   </CardContent>
                 </Card>
               ))}
@@ -232,13 +307,19 @@ export default function AboutUs() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-20">
-              <Badge className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20" variant="outline">
+              <Badge
+                className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+                variant="outline"
+              >
                 <Zap className="w-3.5 h-3.5 mr-2 inline" />
                 Our Journey
               </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold mb-5">Milestones That Matter</h2>
+              <h2 className="text-4xl md:text-5xl font-bold mb-5">
+                Milestones That Matter
+              </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light">
-                Key moments in our mission to transform Nigerian real estate investment
+                Key moments in our mission to transform Nigerian real estate
+                investment
               </p>
             </div>
             <div className="relative">
@@ -246,28 +327,46 @@ export default function AboutUs() {
               <div className="space-y-12">
                 {milestones.map((milestone, index) => (
                   <div key={index} className="relative">
-                    <div className={`flex items-center gap-8 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
-                      <div className="flex-1 md:text-right md:pr-12 hidden md:block" style={{ display: index % 2 === 0 ? 'block' : 'none' }}>
+                    <div
+                      className={`flex items-center gap-8 ${
+                        index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+                      }`}
+                    >
+                      <div
+                        className="flex-1 md:text-right md:pr-12 hidden md:block"
+                        style={{ display: index % 2 === 0 ? "block" : "none" }}
+                      >
                         <Card className="inline-block border-0 transition-all duration-300 group overflow-hidden bg-gradient-to-br from-card to-card/50">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <CardContent className="p-8 relative">
                             <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
                               {milestone.year}
                             </Badge>
-                            <h3 className="text-2xl font-bold mb-3">{milestone.title}</h3>
-                            <p className="text-muted-foreground leading-relaxed">{milestone.description}</p>
+                            <h3 className="text-2xl font-bold mb-3">
+                              {milestone.title}
+                            </h3>
+                            <p className="text-muted-foreground leading-relaxed">
+                              {milestone.description}
+                            </p>
                           </CardContent>
                         </Card>
                       </div>
-                      <div className="flex-1 md:text-left md:pl-12 block md:hidden" style={{ display: index % 2 === 0 ? 'block' : 'none' }}>
+                      <div
+                        className="flex-1 md:text-left md:pl-12 block md:hidden"
+                        style={{ display: index % 2 === 0 ? "block" : "none" }}
+                      >
                         <Card className="border-0 transition-all duration-300 group overflow-hidden ml-12 bg-gradient-to-br from-card to-card/50">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <CardContent className="p-8 relative">
                             <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
                               {milestone.year}
                             </Badge>
-                            <h3 className="text-2xl font-bold mb-3">{milestone.title}</h3>
-                            <p className="text-muted-foreground leading-relaxed">{milestone.description}</p>
+                            <h3 className="text-2xl font-bold mb-3">
+                              {milestone.title}
+                            </h3>
+                            <p className="text-muted-foreground leading-relaxed">
+                              {milestone.description}
+                            </p>
                           </CardContent>
                         </Card>
                       </div>
@@ -276,27 +375,41 @@ export default function AboutUs() {
                           <div className="w-2 h-2 rounded-full bg-primary-foreground" />
                         </div>
                       </div>
-                      <div className="flex-1 md:text-left md:pl-12 hidden md:block" style={{ display: index % 2 !== 0 ? 'block' : 'none' }}>
+                      <div
+                        className="flex-1 md:text-left md:pl-12 hidden md:block"
+                        style={{ display: index % 2 !== 0 ? "block" : "none" }}
+                      >
                         <Card className="inline-block border-0 transition-all duration-300 group overflow-hidden bg-gradient-to-br from-card to-card/50">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <CardContent className="p-8 relative">
                             <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
                               {milestone.year}
                             </Badge>
-                            <h3 className="text-2xl font-bold mb-3">{milestone.title}</h3>
-                            <p className="text-muted-foreground leading-relaxed">{milestone.description}</p>
+                            <h3 className="text-2xl font-bold mb-3">
+                              {milestone.title}
+                            </h3>
+                            <p className="text-muted-foreground leading-relaxed">
+                              {milestone.description}
+                            </p>
                           </CardContent>
                         </Card>
                       </div>
-                      <div className="flex-1 md:text-left md:pl-12 block md:hidden" style={{ display: index % 2 !== 0 ? 'block' : 'none' }}>
+                      <div
+                        className="flex-1 md:text-left md:pl-12 block md:hidden"
+                        style={{ display: index % 2 !== 0 ? "block" : "none" }}
+                      >
                         <Card className="border-0 transition-all duration-300 group overflow-hidden ml-12 bg-gradient-to-br from-card to-card/50">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <CardContent className="p-8 relative">
                             <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
                               {milestone.year}
                             </Badge>
-                            <h3 className="text-2xl font-bold mb-3">{milestone.title}</h3>
-                            <p className="text-muted-foreground leading-relaxed">{milestone.description}</p>
+                            <h3 className="text-2xl font-bold mb-3">
+                              {milestone.title}
+                            </h3>
+                            <p className="text-muted-foreground leading-relaxed">
+                              {milestone.description}
+                            </p>
                           </CardContent>
                         </Card>
                       </div>
@@ -323,32 +436,51 @@ export default function AboutUs() {
                   <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mx-auto mb-8">
                     <Shield className="w-10 h-10 text-primary-foreground" />
                   </div>
-                  <Badge className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 text-sm px-5 py-2" variant="outline">
+                  <Badge
+                    className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 text-sm px-5 py-2"
+                    variant="outline"
+                  >
                     Regulatory Compliance
                   </Badge>
-                  <h2 className="text-3xl md:text-5xl font-bold mb-6">Regulated & Compliant</h2>
+                  <h2 className="text-3xl md:text-5xl font-bold mb-6">
+                    Regulated & Compliant
+                  </h2>
                   <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
-                    PropChain is registered and regulated by the Securities and Exchange Commission, Nigeria as a digital sub-broker. We operate in full compliance with Nigerian securities and property laws.
+                    PropChain is registered and regulated by the Securities and
+                    Exchange Commission, Nigeria as a digital sub-broker. We
+                    operate in full compliance with Nigerian securities and
+                    property laws.
                   </p>
                   <div className="grid md:grid-cols-3 gap-6 mb-10 max-w-4xl mx-auto">
                     <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
                       <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-3" />
                       <p className="font-semibold mb-2">SEC Registered</p>
-                      <p className="text-sm text-muted-foreground">Digital sub-broker license</p>
+                      <p className="text-sm text-muted-foreground">
+                        Digital sub-broker license
+                      </p>
                     </div>
                     <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
                       <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-3" />
                       <p className="font-semibold mb-2">Partner Network</p>
-                      <p className="text-sm text-muted-foreground">Licensed broker-dealers</p>
+                      <p className="text-sm text-muted-foreground">
+                        Licensed broker-dealers
+                      </p>
                     </div>
                     <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
                       <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-3" />
                       <p className="font-semibold mb-2">Due Diligence</p>
-                      <p className="text-sm text-muted-foreground">Verified properties</p>
+                      <p className="text-sm text-muted-foreground">
+                        Verified properties
+                      </p>
                     </div>
                   </div>
                   <p className="text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                    Our partnership with Lambeth Capital Limited, a registered broker-dealer with the Securities and Exchange Commission, Nigeria, ensures that all investments are processed through proper regulatory channels. We work with licensed property developers and conduct thorough due diligence on all listed properties.
+                    Our partnership with Lambeth Capital Limited, a registered
+                    broker-dealer with the Securities and Exchange Commission,
+                    Nigeria, ensures that all investments are processed through
+                    proper regulatory channels. We work with licensed property
+                    developers and conduct thorough due diligence on all listed
+                    properties.
                   </p>
                 </div>
               </CardContent>
@@ -375,16 +507,26 @@ export default function AboutUs() {
                   </span>
                 </h2>
                 <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed font-light">
-                  Be part of Nigeria's real estate revolution. Start your investment journey with PropChain today.
+                  Be part of Nigeria's real estate revolution. Start your
+                  investment journey with PropChain today.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button size="lg" asChild className="h-14 px-10 text-lg transition-all">
+                  <Button
+                    size="lg"
+                    asChild
+                    className="h-14 px-10 text-lg transition-all"
+                  >
                     <Link to="/auth/signup">
                       Start Investing
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" asChild className="h-14 px-10 text-lg">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    asChild
+                    className="h-14 px-10 text-lg"
+                  >
                     <Link to="/browse">Browse Properties</Link>
                   </Button>
                 </div>

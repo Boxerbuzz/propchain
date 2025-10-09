@@ -10,6 +10,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import {
   ArrowRight,
   Building,
@@ -29,8 +30,13 @@ import { Link } from "react-router-dom";
 import { useProperties } from "@/hooks/useProperties";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useRef } from "react";
 
 export default function Landing() {
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 5000, stopOnInteraction: true })
+  );
+
   // Fetch real featured properties data
   const { data: tokenizations = [], isLoading: propertiesLoading } =
     useProperties();
@@ -232,6 +238,54 @@ export default function Landing() {
       content: "The governance feature is brilliant. I actually have a say in property management decisions. It's not just investing, it's real ownership.",
       investment: "₦1.2M invested",
       returns: "15% annual return"
+    },
+    {
+      name: "Funmilayo Adeyemi",
+      role: "Teacher",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Funmilayo",
+      content: "As a teacher, I never thought I could own property in Victoria Island. PropChain broke down those barriers. My ₦10,000 monthly investment is building my future.",
+      investment: "₦120K invested",
+      returns: "₦1,400 monthly"
+    },
+    {
+      name: "Oluwatobi Fashola",
+      role: "Marketing Manager",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Oluwatobi",
+      content: "The Hedera blockchain integration gives me confidence. Every transaction is transparent and verifiable. Plus, the SEC compliance means my investment is legally protected.",
+      investment: "₦3.8M invested",
+      returns: "14% annual return"
+    },
+    {
+      name: "Amina Bello",
+      role: "Financial Analyst",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Amina",
+      content: "I've analyzed many real estate platforms, and PropChain stands out. The tokenization model is solid, dividends are punctual, and the ROI beats my bank savings by far.",
+      investment: "₦5.2M invested",
+      returns: "₦62,400 monthly"
+    },
+    {
+      name: "Chukwuemeka Nwosu",
+      role: "Entrepreneur",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Chukwuemeka",
+      content: "PropChain is perfect for diversification. Instead of putting all my money in one property, I spread it across 8 different locations. Risk management at its finest!",
+      investment: "₦6.5M invested",
+      returns: "18% annual return"
+    },
+    {
+      name: "Blessing Okoro",
+      role: "Nurse",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Blessing",
+      content: "I love how easy it is to use. From KYC to receiving my first dividend took less than 2 weeks. The customer support team is also very responsive and helpful.",
+      investment: "₦450K invested",
+      returns: "₦5,200 monthly"
+    },
+    {
+      name: "Ibrahim Yusuf",
+      role: "Civil Servant",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ibrahim",
+      content: "Finally, a platform that lets ordinary Nigerians benefit from real estate appreciation. My small investments are growing steadily, and I can see my property values increase in real-time.",
+      investment: "₦280K invested",
+      returns: "11% annual return"
     },
   ];
 
@@ -486,27 +540,30 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <Carousel
               opts={{
                 align: "start",
                 loop: true,
               }}
+              plugins={[autoplayPlugin.current]}
               className="w-full"
+              onMouseEnter={() => autoplayPlugin.current.stop()}
+              onMouseLeave={() => autoplayPlugin.current.play()}
             >
-              <CarouselContent>
+              <CarouselContent className="-ml-2 md:-ml-4">
                 {testimonials.map((testimonial, index) => (
-                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                    <div className="p-1 h-full">
-                      <div className="bg-background border border-border rounded-xl p-8 hover:border-primary/30 transition-all h-full flex flex-col">
+                  <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                    <div className="h-full">
+                      <div className="bg-card border border-border rounded-2xl p-8 hover:border-primary/30 hover:shadow-lg transition-all h-full flex flex-col">
                         <div className="flex items-center gap-4 mb-6">
                           <img
                             src={testimonial.image}
                             alt={testimonial.name}
-                            className="w-14 h-14 rounded-full bg-muted"
+                            className="w-16 h-16 rounded-full bg-muted ring-2 ring-primary/10"
                           />
                           <div>
-                            <h4 className="font-semibold text-foreground">
+                            <h4 className="font-semibold text-foreground text-lg">
                               {testimonial.name}
                             </h4>
                             <p className="text-sm text-muted-foreground">
@@ -514,20 +571,20 @@ export default function Landing() {
                             </p>
                           </div>
                         </div>
-                        <p className="text-muted-foreground mb-6 leading-relaxed italic flex-1">
+                        <p className="text-muted-foreground mb-6 leading-relaxed flex-1">
                           "{testimonial.content}"
                         </p>
                         <div className="flex items-center gap-4 pt-4 border-t border-border">
-                          <div>
-                            <p className="text-xs text-muted-foreground">Invested</p>
-                            <p className="font-semibold text-foreground text-sm">
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground mb-1">Total Invested</p>
+                            <p className="font-bold text-foreground">
                               {testimonial.investment}
                             </p>
                           </div>
-                          <div className="h-8 w-px bg-border"></div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">Returns</p>
-                            <p className="font-semibold text-primary text-sm">
+                          <div className="h-10 w-px bg-border"></div>
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground mb-1">Returns</p>
+                            <p className="font-bold text-primary">
                               {testimonial.returns}
                             </p>
                           </div>
@@ -537,8 +594,8 @@ export default function Landing() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="hidden md:flex" />
-              <CarouselNext className="hidden md:flex" />
+              <CarouselPrevious className="hidden md:flex -left-12" />
+              <CarouselNext className="hidden md:flex -right-12" />
             </Carousel>
           </div>
         </div>
