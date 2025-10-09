@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardCheck, Home, DollarSign, Wrench } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { ClipboardCheck, Home, DollarSign, Wrench, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useUserProperties } from "@/hooks/usePropertyManagement";
 import { InspectionForm } from "./event-forms/InspectionForm";
 import { RentalForm } from "./event-forms/RentalForm";
@@ -13,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export const PropertyEventSimulator = () => {
   const [selectedProperty, setSelectedProperty] = useState<string>("");
+  const [open, setOpen] = useState(false);
   const { data: properties = [], isLoading } = useUserProperties();
 
   const selectedProp = properties.find((p) => p.id === selectedProperty);
@@ -33,26 +37,65 @@ export const PropertyEventSimulator = () => {
               {isLoading ? (
                 <Skeleton className="h-10 w-full" />
               ) : (
-                <Select value={selectedProperty} onValueChange={setSelectedProperty}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a property to record events" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {properties.map((property) => (
-                      <SelectItem key={property.id} value={property.id}>
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={open}
+                      className="w-full justify-between"
+                    >
+                      {selectedProperty ? (
                         <div className="flex items-center gap-2">
                           <Home className="w-4 h-4" />
-                          <span>{property.title}</span>
-                          {property.hcs_topic_id && (
+                          <span>{selectedProp?.title}</span>
+                          {selectedProp?.hcs_topic_id && (
                             <Badge variant="outline" className="ml-2 text-xs">
                               HCS Enabled
                             </Badge>
                           )}
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      ) : (
+                        "Choose a property to record events"
+                      )}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search properties..." />
+                      <CommandList>
+                        <CommandEmpty>No property found.</CommandEmpty>
+                        <CommandGroup>
+                          {properties.map((property) => (
+                            <CommandItem
+                              key={property.id}
+                              value={property.title}
+                              onSelect={() => {
+                                setSelectedProperty(property.id);
+                                setOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedProperty === property.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <Home className="w-4 h-4 mr-2" />
+                              <span>{property.title}</span>
+                              {property.hcs_topic_id && (
+                                <Badge variant="outline" className="ml-2 text-xs">
+                                  HCS Enabled
+                                </Badge>
+                              )}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               )}
             </div>
 
