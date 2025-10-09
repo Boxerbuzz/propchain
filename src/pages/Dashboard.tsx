@@ -368,7 +368,7 @@ export default function Dashboard() {
                                 {activity.title}
                               </p>
                               <div className="flex items-center space-x-2">
-                                {activity.amount && (
+                                {activity.amount && activity.currency === 'NGN' && (
                                   <span className="text-sm font-semibold text-foreground">
                                     {formatNumber(activity.amount)}
                                   </span>
