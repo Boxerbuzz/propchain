@@ -35,6 +35,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import MoneyInput from "@/components/ui/money-input";
+import TokenizationTermsAcceptance from "@/components/TokenizationTermsAcceptance";
 import {
   ArrowLeft,
   Building,
@@ -280,6 +281,7 @@ const TokenizeProperty = () => {
         management_fee_percentage,
         platform_fee_percentage,
         auto_refund,
+        tokenization_type,
         ...rest
       } = data;
 
@@ -290,10 +292,11 @@ const TokenizeProperty = () => {
       ).toISOString();
 
       const selectedTypeInfo = tokenizationTypes.find(
-        (t) => t.id === data.tokenization_type
+        (t) => t.id === tokenization_type
       );
       const payload = {
         property_id: property.id,
+        tokenization_type: tokenization_type,
         token_name: `${String(rest.token_name).trim()} (${
           selectedTypeInfo?.badge
         })`,
@@ -330,6 +333,14 @@ const TokenizeProperty = () => {
       toast.error(`Failed to create tokenization: ${details}${hint}${code}`);
     },
   });
+
+  const handleTermsAccept = () => {
+    form.handleSubmit(onSubmit)();
+  };
+
+  const handleTermsDecline = () => {
+    setStep(2);
+  };
 
   const handleTypeSelection = (type: TokenizationType) => {
     setSelectedType(type);
@@ -796,7 +807,18 @@ const TokenizeProperty = () => {
                   </div>
                 )}
 
-                {step === 2 && (
+            {step === 3 && selectedType && (
+              <TokenizationTermsAcceptance
+                tokenizationType={selectedType}
+                tokenName={form.watch("token_name")}
+                totalSupply={form.watch("total_supply")}
+                onAccept={handleTermsAccept}
+                onDecline={handleTermsDecline}
+                isSubmitting={createTokenizationMutation.isPending}
+              />
+            )}
+
+            {step === 2 && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-2xl font-bold">Investment Details</h2>

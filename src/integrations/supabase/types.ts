@@ -618,6 +618,8 @@ export type Database = {
           refund_processed_at: string | null
           reservation_expires_at: string | null
           reservation_status: string | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           tokenization_id: string | null
           tokens_allocated: number | null
           tokens_requested: number
@@ -640,6 +642,8 @@ export type Database = {
           refund_processed_at?: string | null
           reservation_expires_at?: string | null
           reservation_status?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           tokenization_id?: string | null
           tokens_allocated?: number | null
           tokens_requested: number
@@ -662,6 +666,8 @@ export type Database = {
           refund_processed_at?: string | null
           reservation_expires_at?: string | null
           reservation_status?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           tokenization_id?: string | null
           tokens_allocated?: number | null
           tokens_requested?: number
@@ -1888,9 +1894,12 @@ export type Database = {
           dividend_frequency: string | null
           expected_roi_annual: number | null
           id: string
+          interest_rate: number | null
           investment_window_end: string
           investment_window_start: string
           investor_count: number | null
+          loan_term_months: number | null
+          ltv_ratio: number | null
           management_fee_percentage: number | null
           max_investment: number | null
           max_tokens_per_purchase: number | null
@@ -1902,13 +1911,18 @@ export type Database = {
           platform_fee_percentage: number | null
           price_per_token: number
           property_id: string | null
+          revenue_share_percentage: number | null
           status: string | null
           target_raise: number | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           token_id: string | null
           token_name: string | null
           token_symbol: string | null
+          tokenization_type: string
           tokens_sold: number | null
           total_supply: number
+          type_specific_terms: Json | null
           updated_at: string | null
         }
         Insert: {
@@ -1921,9 +1935,12 @@ export type Database = {
           dividend_frequency?: string | null
           expected_roi_annual?: number | null
           id?: string
+          interest_rate?: number | null
           investment_window_end: string
           investment_window_start: string
           investor_count?: number | null
+          loan_term_months?: number | null
+          ltv_ratio?: number | null
           management_fee_percentage?: number | null
           max_investment?: number | null
           max_tokens_per_purchase?: number | null
@@ -1935,13 +1952,18 @@ export type Database = {
           platform_fee_percentage?: number | null
           price_per_token: number
           property_id?: string | null
+          revenue_share_percentage?: number | null
           status?: string | null
           target_raise?: number | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           token_id?: string | null
           token_name?: string | null
           token_symbol?: string | null
+          tokenization_type?: string
           tokens_sold?: number | null
           total_supply: number
+          type_specific_terms?: Json | null
           updated_at?: string | null
         }
         Update: {
@@ -1954,9 +1976,12 @@ export type Database = {
           dividend_frequency?: string | null
           expected_roi_annual?: number | null
           id?: string
+          interest_rate?: number | null
           investment_window_end?: string
           investment_window_start?: string
           investor_count?: number | null
+          loan_term_months?: number | null
+          ltv_ratio?: number | null
           management_fee_percentage?: number | null
           max_investment?: number | null
           max_tokens_per_purchase?: number | null
@@ -1968,13 +1993,18 @@ export type Database = {
           platform_fee_percentage?: number | null
           price_per_token?: number
           property_id?: string | null
+          revenue_share_percentage?: number | null
           status?: string | null
           target_raise?: number | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           token_id?: string | null
           token_name?: string | null
           token_symbol?: string | null
+          tokenization_type?: string
           tokens_sold?: number | null
           total_supply?: number
+          type_specific_terms?: Json | null
           updated_at?: string | null
         }
         Relationships: [

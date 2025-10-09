@@ -30,15 +30,19 @@ import { useInvestmentFlow } from "@/hooks/useInvestmentFlow";
 import { useHederaAccount } from "@/hooks/useHederaAccount";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { supabase } from "@/integrations/supabase/client";
+import InvestmentTermsDisclosure from "@/components/InvestmentTermsDisclosure";
 
 interface Tokenization {
   id: string;
   token_name?: string;
   token_symbol?: string;
+  tokenization_type: "equity" | "debt" | "revenue";
   price_per_token: number;
   min_investment: number;
   max_investment?: number;
   expected_roi_annual?: number;
+  interest_rate?: number;
+  revenue_share_percentage?: number;
   investment_window_start: string;
   investment_window_end: string;
   current_raise: number;
@@ -92,7 +96,7 @@ const InvestmentFlow = () => {
           .single();
 
         if (error) throw error;
-        setTokenization(data);
+        setTokenization(data as any);
       } catch (error) {
         console.error("Error fetching tokenization:", error);
         toast.error("Failed to load investment opportunity");
@@ -389,6 +393,19 @@ const InvestmentFlow = () => {
 
                 {step === 3 && (
                   <div className="space-y-6">
+                    {tokenization && (
+                      <InvestmentTermsDisclosure
+                        tokenizationType={tokenization.tokenization_type}
+                        tokenName={tokenization.token_name || ""}
+                        tokenSymbol={tokenization.token_symbol}
+                        amount={parseFloat(investmentAmount)}
+                        tokens={tokens}
+                        expectedRoi={tokenization.expected_roi_annual}
+                        interestRate={tokenization.interest_rate}
+                        revenueShare={tokenization.revenue_share_percentage}
+                      />
+                    )}
+
                     <div className="bg-muted/50 p-6 rounded-lg">
                       <h4 className="font-medium mb-4">
                         Investment Confirmation

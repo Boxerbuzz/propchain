@@ -34,6 +34,11 @@ serve(async (req) => {
         *,
         tokenizations!inner(
           *,
+          tokenization_type,
+          interest_rate,
+          ltv_ratio,
+          loan_term_months,
+          revenue_share_percentage,
           properties!inner(
             *,
             property_images(image_url, is_primary)
@@ -198,13 +203,43 @@ function generateAgreementPDF(data: any): Uint8Array {
   const property = tokenization.properties;
   const investor = investment.investor;
   
-  // Simple PDF content (in production, use @react-pdf/renderer for proper PDF generation)
+  const tokenizationType = tokenization.tokenization_type || 'equity';
+  const typeLabel = tokenizationType === 'equity' ? 'OWNERSHIP' 
+    : tokenizationType === 'debt' ? 'LENDING' 
+    : 'REVENUE SHARING';
+  
+  let typeSpecificTerms = '';
+  if (tokenizationType === 'equity') {
+    typeSpecificTerms = `
+EQUITY OWNERSHIP TERMS:
+- Ownership Share: ${((investment.tokens_requested / tokenization.total_supply) * 100).toFixed(4)}%
+- Voting Rights: Proportional to token holdings
+- Profit Distribution: Proportional to ownership percentage
+- Capital Appreciation: Shared proportionally on property sale`;
+  } else if (tokenizationType === 'debt') {
+    typeSpecificTerms = `
+DEBT LENDING TERMS:
+- Interest Rate: ${tokenization.interest_rate || 'N/A'}% per annum
+- Loan Term: ${tokenization.loan_term_months || 'N/A'} months
+- LTV Ratio: ${tokenization.ltv_ratio || 'N/A'}%
+- Repayment Priority: Senior debt with property collateral
+- No ownership or voting rights`;
+  } else {
+    typeSpecificTerms = `
+REVENUE SHARING TERMS:
+- Revenue Share: ${tokenization.revenue_share_percentage || 'N/A'}%
+- Distribution Frequency: ${tokenization.dividend_frequency || 'Quarterly'}
+- Based on gross rental income
+- No ownership or voting rights`;
+  }
+  
   const content = `
-INVESTMENT AGREEMENT
+${typeLabel} INVESTMENT AGREEMENT
 ${documentNumber}
 
 Bamboo Systems Technology Limited
 Real Estate Tokenization Platform
+Investment Type: ${typeLabel}
 Generated: ${new Date().toLocaleString()}
 
 INVESTOR INFORMATION:
@@ -222,8 +257,9 @@ Amount Invested: ₦${investment.amount_ngn.toLocaleString()}
 Tokens Allocated: ${investment.tokens_requested}
 Token Symbol: ${tokenization.token_symbol}
 Price per Token: ₦${tokenization.price_per_token.toLocaleString()}
-Ownership Percentage: ${((investment.tokens_requested / tokenization.total_supply) * 100).toFixed(4)}%
 Expected Annual ROI: ${tokenization.expected_roi_annual}%
+
+${typeSpecificTerms}
 
 This agreement is governed by the laws of the Federal Republic of Nigeria.
   `.trim();
@@ -237,12 +273,18 @@ function generateReceiptPDF(data: any): Uint8Array {
   const property = tokenization.properties;
   const investor = investment.investor;
   
+  const tokenizationType = tokenization.tokenization_type || 'equity';
+  const typeLabel = tokenizationType === 'equity' ? 'Ownership' 
+    : tokenizationType === 'debt' ? 'Lending' 
+    : 'Revenue Sharing';
+  
   const content = `
 INVESTMENT RECEIPT
 ${documentNumber}
 
 Bamboo Systems Technology Limited
 Receipt Date: ${new Date().toLocaleString()}
+Investment Type: ${typeLabel}
 
 PAYMENT DETAILS:
 Receipt Number: ${documentNumber}
@@ -258,6 +300,7 @@ ${investor.email}
 
 INVESTMENT DETAILS:
 Property: ${property.title}
+Investment Type: ${typeLabel}
 Tokens Allocated: ${investment.tokens_requested} ${tokenization.token_symbol}
 Token ID: ${tokenization.token_id || 'Pending'}
 
