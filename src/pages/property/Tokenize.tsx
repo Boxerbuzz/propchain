@@ -161,6 +161,16 @@ const createTokenizationSchema = (propertyValue: number) =>
     )
     .refine(
       (data) => {
+        // Minimum raise must be less than target raise
+        return data.minimum_raise < data.target_raise;
+      },
+      {
+        message: "Minimum raise must be less than target raise",
+        path: ["minimum_raise"],
+      }
+    )
+    .refine(
+      (data) => {
         // Type-specific validation for target raise
         if (data.tokenization_type === "equity") {
           return data.target_raise <= propertyValue;
@@ -200,6 +210,19 @@ const createTokenizationSchema = (propertyValue: number) =>
       {
         message: "Total token value (supply × price) exceeds the allowed limit for this tokenization type",
         path: ["total_supply"],
+      }
+    )
+    .refine(
+      (data) => {
+        // Validate that max_investment >= min_investment
+        if (data.max_investment) {
+          return data.max_investment >= data.min_investment;
+        }
+        return true;
+      },
+      {
+        message: "Maximum investment must be greater than or equal to minimum investment",
+        path: ["max_investment"],
       }
     );
 

@@ -31,16 +31,20 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import ModernInvestmentInput from "./ModernInvestmentInput";
+import InvestmentTermsDisclosure from "./InvestmentTermsDisclosure";
 
 interface InvestmentModalProps {
   tokenization: {
     id: string;
     token_name?: string;
     token_symbol?: string;
+    tokenization_type?: "equity" | "debt" | "revenue";
     price_per_token: number;
     min_investment: number;
     max_investment?: number;
     expected_roi_annual?: number;
+    interest_rate?: number;
+    revenue_share_percentage?: number;
     properties?: {
       id: string;
       title: string;
@@ -235,6 +239,18 @@ const InvestmentFormContent = ({
       </CardContent>
     </Card>
 
+    {tokenization.tokenization_type && (
+      <InvestmentTermsDisclosure
+        tokenizationType={tokenization.tokenization_type}
+        tokenName={tokenization.token_name || ""}
+        amount={currentAmount}
+        tokens={currentTokenCount}
+        expectedRoi={tokenization.expected_roi_annual}
+        interestRate={tokenization.interest_rate}
+        revenueShare={tokenization.revenue_share_percentage}
+      />
+    )}
+
     <div className="flex items-start space-x-2">
       <Checkbox
         id="acceptTerms"
@@ -243,10 +259,23 @@ const InvestmentFormContent = ({
       />
       <div className="grid gap-1.5 leading-none">
         <Label htmlFor="acceptTerms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          I accept the terms and conditions
+          I have read and accept the {tokenization.tokenization_type || "investment"} terms
         </Label>
         <p className="text-xs text-muted-foreground">
-          By investing, you agree to our <a href="/legal/terms-of-service" className="underline hover:text-foreground">Terms of Service</a> and <a href="/legal/risk-disclosure" className="underline hover:text-foreground">Risk Disclosure</a>.
+          By investing, you agree to our{" "}
+          <a href="/legal/terms-of-service" className="underline hover:text-foreground">Terms of Service</a>,{" "}
+          <a href="/legal/risk-disclosure" className="underline hover:text-foreground">Risk Disclosure</a>
+          {tokenization.tokenization_type && (
+            <>
+              {" "}and the{" "}
+              <a
+                href={`/legal/${tokenization.tokenization_type}-tokenization-terms`}
+                className="underline hover:text-foreground"
+              >
+                {tokenization.tokenization_type.charAt(0).toUpperCase() + tokenization.tokenization_type.slice(1)} Tokenization Terms
+              </a>
+            </>
+          )}.
         </p>
       </div>
     </div>

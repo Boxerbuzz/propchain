@@ -126,11 +126,13 @@ export default function InvestmentCalculator({
           token_name:
             property?.tokenizations?.[0]?.token_name || property?.title || "",
           token_symbol: property?.tokenizations?.[0]?.token_symbol || "",
+          tokenization_type: property?.tokenizations?.[0]?.tokenization_type,
           price_per_token: tokenPrice,
           min_investment: minimumInvestment,
           max_investment: property?.tokenizations?.[0]?.max_investment,
           expected_roi_annual: expectedReturn,
-
+          interest_rate: property?.tokenizations?.[0]?.interest_rate,
+          revenue_share_percentage: property?.tokenizations?.[0]?.revenue_share_percentage,
           properties: {
             id: property?.id || "",
             title: property?.title || "",
