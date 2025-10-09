@@ -57,12 +57,19 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           {/* Company Info */}
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-2 mb-6">
-              <Building className="h-8 w-8 text-primary" />
-              <span className="font-bold text-xl text-foreground">
+            <Link
+              to="/"
+              className="flex items-center gap-3 mb-6 w-fit hover:scale-105 transition-transform duration-200 group"
+            >
+              <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-hover rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
+                <span className="text-primary-foreground font-bold text-lg">
+                  PC
+                </span>
+              </div>
+              <span className="text-xl font-bold text-foreground tracking-tight">
                 PropChain
               </span>
-            </div>
+            </Link>
 
             <p className="text-muted-foreground mb-6 leading-relaxed">
               Invest in premium Nigerian real estate through blockchain
@@ -94,9 +101,12 @@ export default function Footer() {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-muted-foreground hover:text-primary transition-colors duration-200"
+                    className="text-muted-foreground hover:text-primary transition-all duration-200 inline-flex items-center gap-1 group relative"
                   >
-                    {link.name}
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">
+                      {link.name}
+                    </span>
+                    <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
                   </Link>
                 </li>
               ))}
@@ -111,9 +121,12 @@ export default function Footer() {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-muted-foreground hover:text-primary transition-colors duration-200"
+                    className="text-muted-foreground hover:text-primary transition-all duration-200 inline-flex items-center gap-1 group relative"
                   >
-                    {link.name}
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">
+                      {link.name}
+                    </span>
+                    <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
                   </Link>
                 </li>
               ))}
@@ -130,9 +143,12 @@ export default function Footer() {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-muted-foreground hover:text-primary transition-colors duration-200"
+                    className="text-muted-foreground hover:text-primary transition-all duration-200 inline-flex items-center gap-1 group relative"
                   >
-                    {link.name}
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">
+                      {link.name}
+                    </span>
+                    <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
                   </Link>
                 </li>
               ))}
@@ -140,9 +156,10 @@ export default function Footer() {
             <div className="mt-6">
               <Link
                 to="/support"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors duration-200 text-sm font-medium"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 hover:shadow-md hover:scale-105 transition-all duration-200 text-sm font-medium group"
               >
-                Support Center
+                <span>Support Center</span>
+                <Building className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
               </Link>
             </div>
           </div>
