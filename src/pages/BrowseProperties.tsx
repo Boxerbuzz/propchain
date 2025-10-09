@@ -41,6 +41,7 @@ export default function BrowseProperties() {
     imageUrl:
       tokenization.primary_image ||
       "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop",
+    tokenizationType: tokenization.tokenization_type as 'equity' | 'debt' | 'revenue' | undefined,
     status:
       tokenization.status === "active"
         ? ("active" as const)

@@ -189,8 +189,21 @@ const PortfolioDetail = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium flex items-center justify-between">
                 Your Investment
+                {tokenization?.tokenization_type && (
+                  <Badge className={
+                    tokenization.tokenization_type === 'equity' 
+                      ? "bg-primary/10 text-primary border border-primary/20"
+                      : tokenization.tokenization_type === 'debt'
+                      ? "bg-secondary/10 text-secondary border border-secondary/20"
+                      : "bg-accent/10 text-accent border border-accent/20"
+                  }>
+                    {tokenization.tokenization_type === 'equity' ? 'Ownership' 
+                      : tokenization.tokenization_type === 'debt' ? 'Lending' 
+                      : 'Revenue'}
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>

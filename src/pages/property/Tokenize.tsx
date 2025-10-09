@@ -280,6 +280,7 @@ const TokenizeProperty = () => {
         management_fee_percentage,
         platform_fee_percentage,
         auto_refund,
+        tokenization_type,
         ...rest
       } = data;
 
@@ -290,10 +291,11 @@ const TokenizeProperty = () => {
       ).toISOString();
 
       const selectedTypeInfo = tokenizationTypes.find(
-        (t) => t.id === data.tokenization_type
+        (t) => t.id === tokenization_type
       );
       const payload = {
         property_id: property.id,
+        tokenization_type: tokenization_type,
         token_name: `${String(rest.token_name).trim()} (${
           selectedTypeInfo?.badge
         })`,

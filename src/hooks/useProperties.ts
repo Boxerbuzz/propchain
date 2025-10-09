@@ -10,6 +10,7 @@ interface PropertyWithTokenization {
   property_type?: string;
   primary_image?: string;
   image_count?: number;
+  tokenization_type?: 'equity' | 'debt' | 'revenue';
   // Tokenization fields
   status?: string;
   target_raise?: number;

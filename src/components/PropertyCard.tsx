@@ -17,6 +17,7 @@ interface PropertyCardProps {
   investmentDeadline: string;
   imageUrl: string;
   status: "active" | "funded" | "upcoming";
+  tokenizationType?: "equity" | "debt" | "revenue";
 }
 
 export default function PropertyCard({
@@ -31,9 +32,23 @@ export default function PropertyCard({
   investmentDeadline,
   imageUrl,
   status,
+  tokenizationType,
 }: PropertyCardProps) {
   const navigate = useNavigate();
   const progressPercentage = (tokensSold / totalTokens) * 100;
+
+  const getTokenizationTypeBadge = () => {
+    if (!tokenizationType) return null;
+    
+    const typeConfig = {
+      equity: { label: "Ownership", className: "bg-primary/10 text-primary border border-primary/20" },
+      debt: { label: "Lending", className: "bg-secondary/10 text-secondary border border-secondary/20" },
+      revenue: { label: "Revenue", className: "bg-accent/10 text-accent border border-accent/20" },
+    };
+    
+    const config = typeConfig[tokenizationType];
+    return <Badge className={config.className}>{config.label}</Badge>;
+  };
 
   const getStatusBadge = () => {
     switch (status) {
@@ -62,6 +77,7 @@ export default function PropertyCard({
           className="w-full h-48 object-cover rounded-lg"
         />
         <div className="absolute top-3 right-3 flex flex-col gap-2">
+          {getTokenizationTypeBadge()}
           {getStatusBadge()}
         </div>
         <div className="absolute top-3 left-3">
