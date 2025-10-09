@@ -189,7 +189,7 @@ const ChatRoom = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-b from-background to-muted/20">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-gradient-to-b from-background to-muted/20 overflow-hidden">
       {/* Chat Header */}
       <div className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4 max-w-5xl">
@@ -294,7 +294,7 @@ const ChatRoom = () => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden min-h-0">
         <div className="container mx-auto px-4 h-full max-w-5xl">
           <div className="h-full overflow-y-auto py-6 space-y-4">
             {isLoading ? (
@@ -478,7 +478,7 @@ const ChatRoom = () => {
       </div>
 
       {/* Message Input */}
-      <div className="border-t bg-card/80 backdrop-blur-sm">
+      <div className="border-t bg-card/80 backdrop-blur-sm sticky bottom-0 z-10">
         <div className="container mx-auto px-4 py-4 max-w-5xl">
           <div className="flex items-end gap-2">
             <div className="flex gap-1">
