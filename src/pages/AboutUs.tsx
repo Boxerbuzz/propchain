@@ -88,7 +88,7 @@ export default function AboutUs() {
                 Making property ownership accessible to every Nigerian through fractional ownership and cutting-edge distributed ledger technology
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Button size="lg" asChild className="h-12 px-8 text-base shadow-lg hover:shadow-xl transition-all">
+                <Button size="lg" asChild className="h-12 px-8 text-base transition-all">
                   <Link to="/auth/signup">
                     Join PropChain
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -135,11 +135,11 @@ export default function AboutUs() {
               </p>
             </div>
             <div className="grid md:grid-cols-2 gap-8">
-              <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 group relative overflow-hidden bg-gradient-to-br from-card to-card/50">
+              <Card className="border-0 transition-all duration-500 group relative overflow-hidden bg-gradient-to-br from-card to-card/50">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-32 translate-x-32 group-hover:scale-150 transition-transform duration-700" />
                 <CardContent className="p-12 relative">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                     <Target className="w-8 h-8 text-primary-foreground" />
                   </div>
                   <h3 className="text-3xl font-bold mb-6">Our Mission</h3>
@@ -163,11 +163,11 @@ export default function AboutUs() {
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 group relative overflow-hidden bg-gradient-to-br from-card to-card/50">
+              <Card className="border-0 transition-all duration-500 group relative overflow-hidden bg-gradient-to-br from-card to-card/50">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute top-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-32 -translate-x-32 group-hover:scale-150 transition-transform duration-700" />
                 <CardContent className="p-12 relative">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                     <Eye className="w-8 h-8 text-primary-foreground" />
                   </div>
                   <h3 className="text-3xl font-bold mb-6">Our Vision</h3>
@@ -211,7 +211,7 @@ export default function AboutUs() {
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {values.map((value, index) => (
-                <Card key={index} className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group hover:shadow-xl">
+                <Card key={index} className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <CardContent className="p-8 relative">
                     <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
@@ -248,7 +248,7 @@ export default function AboutUs() {
                   <div key={index} className="relative">
                     <div className={`flex items-center gap-8 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
                       <div className="flex-1 md:text-right md:pr-12 hidden md:block" style={{ display: index % 2 === 0 ? 'block' : 'none' }}>
-                        <Card className="inline-block border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden bg-gradient-to-br from-card to-card/50">
+                        <Card className="inline-block border-0 transition-all duration-300 group overflow-hidden bg-gradient-to-br from-card to-card/50">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <CardContent className="p-8 relative">
                             <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
@@ -260,7 +260,7 @@ export default function AboutUs() {
                         </Card>
                       </div>
                       <div className="flex-1 md:text-left md:pl-12 block md:hidden" style={{ display: index % 2 === 0 ? 'block' : 'none' }}>
-                        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden ml-12 bg-gradient-to-br from-card to-card/50">
+                        <Card className="border-0 transition-all duration-300 group overflow-hidden ml-12 bg-gradient-to-br from-card to-card/50">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <CardContent className="p-8 relative">
                             <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
@@ -272,12 +272,12 @@ export default function AboutUs() {
                         </Card>
                       </div>
                       <div className="absolute left-4 md:left-1/2 top-1/2 transform -translate-y-1/2 md:-translate-x-1/2">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg border-4 border-background">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center border-4 border-background">
                           <div className="w-2 h-2 rounded-full bg-primary-foreground" />
                         </div>
                       </div>
                       <div className="flex-1 md:text-left md:pl-12 hidden md:block" style={{ display: index % 2 !== 0 ? 'block' : 'none' }}>
-                        <Card className="inline-block border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden bg-gradient-to-br from-card to-card/50">
+                        <Card className="inline-block border-0 transition-all duration-300 group overflow-hidden bg-gradient-to-br from-card to-card/50">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <CardContent className="p-8 relative">
                             <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
@@ -289,7 +289,7 @@ export default function AboutUs() {
                         </Card>
                       </div>
                       <div className="flex-1 md:text-left md:pl-12 block md:hidden" style={{ display: index % 2 !== 0 ? 'block' : 'none' }}>
-                        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden ml-12 bg-gradient-to-br from-card to-card/50">
+                        <Card className="border-0 transition-all duration-300 group overflow-hidden ml-12 bg-gradient-to-br from-card to-card/50">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <CardContent className="p-8 relative">
                             <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
@@ -314,13 +314,13 @@ export default function AboutUs() {
         <div className="absolute inset-0 bg-gradient-to-b from-muted/40 to-background" />
         <div className="container mx-auto px-4 relative">
           <div className="max-w-6xl mx-auto">
-            <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 relative overflow-hidden bg-gradient-to-br from-card via-card to-card/50">
+            <Card className="border-0 transition-all duration-500 relative overflow-hidden bg-gradient-to-br from-card via-card to-card/50">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary)/0.1),transparent_70%)]" />
               <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-48 translate-x-48" />
               <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl translate-y-48 -translate-x-48" />
               <CardContent className="p-12 md:p-20 relative">
                 <div className="text-center">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mx-auto mb-8 shadow-xl">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mx-auto mb-8">
                     <Shield className="w-10 h-10 text-primary-foreground" />
                   </div>
                   <Badge className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 text-sm px-5 py-2" variant="outline">
@@ -361,11 +361,11 @@ export default function AboutUs() {
       <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <Card className="border-0 shadow-2xl relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-background">
+            <Card className="border-0 relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-background">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,hsl(var(--primary)/0.15),transparent_60%)]" />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,hsl(var(--primary)/0.15),transparent_60%)]" />
               <CardContent className="p-12 md:p-20 text-center relative">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mx-auto mb-8 shadow-xl">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mx-auto mb-8">
                   <Globe className="w-10 h-10 text-primary-foreground" />
                 </div>
                 <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
@@ -378,7 +378,7 @@ export default function AboutUs() {
                   Be part of Nigeria's real estate revolution. Start your investment journey with PropChain today.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button size="lg" asChild className="h-14 px-10 text-lg shadow-xl hover:shadow-2xl transition-all">
+                  <Button size="lg" asChild className="h-14 px-10 text-lg transition-all">
                     <Link to="/auth/signup">
                       Start Investing
                       <ArrowRight className="w-5 h-5 ml-2" />
