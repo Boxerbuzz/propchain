@@ -4,6 +4,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import PropertyCard from "@/components/PropertyCard";
 import Footer from "@/components/Footer";
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import {
   ArrowRight,
   Building,
   Users,
@@ -146,9 +153,9 @@ export default function Landing() {
     },
     {
       icon: FileText,
-      title: "Blockchain Verified",
+      title: "Hedera Verified",
       description:
-        "Every property token is backed by real assets on Hedera Hashgraph. Full transparency with immutable ownership records.",
+        "Every property token is backed by real assets and secured on Hedera's distributed ledger. Full transparency with immutable ownership records.",
       stat: "100% Transparent"
     },
     {
@@ -246,7 +253,7 @@ export default function Landing() {
             </h1>
 
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-              Invest in fractions of premium Nigerian properties through blockchain tokens. 
+              Invest in fractions of premium Nigerian properties through tokenized ownership on Hedera. 
               Earn monthly rental income, participate in governance, and trade your ownership anytime.
             </p>
 
@@ -277,7 +284,7 @@ export default function Landing() {
               </div>
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 text-primary" />
-                <span>Blockchain Secured</span>
+                <span>Hedera Secured</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" />
@@ -415,28 +422,26 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-background border border-border rounded-xl p-8 hover:border-primary/50 transition-all"
+                className="bg-background border border-border rounded-2xl p-6 hover:shadow-lg hover:border-primary/30 transition-all group"
               >
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <feature.icon className="h-7 w-7 text-primary" />
+                <div className="mb-6">
+                  <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <feature.icon className="h-8 w-8 text-primary" />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-xl font-semibold text-foreground">
-                        {feature.title}
-                      </h3>
-                      <Badge variant="secondary" className="text-xs">
-                        {feature.stat}
-                      </Badge>
-                    </div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-bold text-foreground">
+                      {feature.title}
+                    </h3>
+                    <Badge variant="secondary" className="text-xs font-semibold">
+                      {feature.stat}
+                    </Badge>
                   </div>
                 </div>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-muted-foreground text-sm leading-relaxed">
                   {feature.description}
                 </p>
               </div>
@@ -457,47 +462,60 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="bg-background border border-border rounded-xl p-8 hover:border-primary/30 transition-all"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-14 h-14 rounded-full bg-muted"
-                  />
-                  <div>
-                    <h4 className="font-semibold text-foreground">
-                      {testimonial.name}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      {testimonial.role}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-muted-foreground mb-6 leading-relaxed italic">
-                  "{testimonial.content}"
-                </p>
-                <div className="flex items-center gap-4 pt-4 border-t border-border">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Invested</p>
-                    <p className="font-semibold text-foreground text-sm">
-                      {testimonial.investment}
-                    </p>
-                  </div>
-                  <div className="h-8 w-px bg-border"></div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Returns</p>
-                    <p className="font-semibold text-primary text-sm">
-                      {testimonial.returns}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="max-w-5xl mx-auto">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {testimonials.map((testimonial, index) => (
+                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1 h-full">
+                      <div className="bg-background border border-border rounded-xl p-8 hover:border-primary/30 transition-all h-full flex flex-col">
+                        <div className="flex items-center gap-4 mb-6">
+                          <img
+                            src={testimonial.image}
+                            alt={testimonial.name}
+                            className="w-14 h-14 rounded-full bg-muted"
+                          />
+                          <div>
+                            <h4 className="font-semibold text-foreground">
+                              {testimonial.name}
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              {testimonial.role}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-muted-foreground mb-6 leading-relaxed italic flex-1">
+                          "{testimonial.content}"
+                        </p>
+                        <div className="flex items-center gap-4 pt-4 border-t border-border">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Invested</p>
+                            <p className="font-semibold text-foreground text-sm">
+                              {testimonial.investment}
+                            </p>
+                          </div>
+                          <div className="h-8 w-px bg-border"></div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Returns</p>
+                            <p className="font-semibold text-primary text-sm">
+                              {testimonial.returns}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex" />
+              <CarouselNext className="hidden md:flex" />
+            </Carousel>
           </div>
         </div>
       </section>
@@ -510,7 +528,7 @@ export default function Landing() {
               Start Building Your Real Estate Portfolio Today
             </h2>
             <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
-              Join thousands of Nigerians investing in premium properties through blockchain technology
+              Join thousands of Nigerians investing in premium properties through tokenized real estate
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
               <Link to="/auth/signup">
