@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MessageCircle, Search, Plus, Clock, ArrowRight } from "lucide-react";
+import { MessageCircle, Search, Plus, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUserChatRooms } from "@/hooks/useUserChatRooms";
 import { useAuth } from "@/hooks/useAuth";
@@ -173,7 +173,7 @@ const Chat = () => {
             filteredRooms.map((room) => (
               <Card
                 key={room.id}
-                className={`group cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.01] ${
+                className={`group cursor-pointer transition-all duration-200 ${
                   room.isActive
                     ? "border-2 border-primary/20 bg-primary/5"
                     : "hover:border-primary/30"

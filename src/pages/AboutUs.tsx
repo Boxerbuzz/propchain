@@ -148,17 +148,17 @@ export default function AboutUs() {
             {stats.map((stat, index) => (
               <Card
                 key={index}
-                className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all group"
+                className="relative overflow-hidden border-1 border-primary/20 bg-card/50 backdrop-blur-sm hover:bg-card transition-all group"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <CardContent className="p-8 relative">
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                     <stat.icon className="w-7 h-7 text-primary" />
                   </div>
-                  <div className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  <div className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent text-center">
                     {stat.value}
                   </div>
-                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider text-center">
                     {stat.label}
                   </div>
                 </CardContent>
@@ -182,7 +182,7 @@ export default function AboutUs() {
               </p>
             </div>
             <div className="grid md:grid-cols-2 gap-8">
-              <Card className="border-0 transition-all duration-500 group relative overflow-hidden bg-gradient-to-br from-card to-card/50">
+              <Card className="border-1 border-primary/20 transition-all duration-500 group relative overflow-hidden bg-gradient-to-br from-card to-card/50">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-32 translate-x-32 group-hover:scale-150 transition-transform duration-700" />
                 <CardContent className="p-12 relative">
@@ -332,30 +332,8 @@ export default function AboutUs() {
                         index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
                       }`}
                     >
-                      <div
-                        className="flex-1 md:text-right md:pr-12 hidden md:block"
-                        style={{ display: index % 2 === 0 ? "block" : "none" }}
-                      >
+                      <div className={`flex-1 ml-12 md:ml-0 ${index % 2 === 0 ? "md:text-right md:pr-12" : "md:text-left md:pl-12"}`}>
                         <Card className="inline-block border-0 transition-all duration-300 group overflow-hidden bg-gradient-to-br from-card to-card/50">
-                          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <CardContent className="p-8 relative">
-                            <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
-                              {milestone.year}
-                            </Badge>
-                            <h3 className="text-2xl font-bold mb-3">
-                              {milestone.title}
-                            </h3>
-                            <p className="text-muted-foreground leading-relaxed">
-                              {milestone.description}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </div>
-                      <div
-                        className="flex-1 md:text-left md:pl-12 block md:hidden"
-                        style={{ display: index % 2 === 0 ? "block" : "none" }}
-                      >
-                        <Card className="border-0 transition-all duration-300 group overflow-hidden ml-12 bg-gradient-to-br from-card to-card/50">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <CardContent className="p-8 relative">
                             <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
@@ -375,44 +353,7 @@ export default function AboutUs() {
                           <div className="w-2 h-2 rounded-full bg-primary-foreground" />
                         </div>
                       </div>
-                      <div
-                        className="flex-1 md:text-left md:pl-12 hidden md:block"
-                        style={{ display: index % 2 !== 0 ? "block" : "none" }}
-                      >
-                        <Card className="inline-block border-0 transition-all duration-300 group overflow-hidden bg-gradient-to-br from-card to-card/50">
-                          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <CardContent className="p-8 relative">
-                            <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
-                              {milestone.year}
-                            </Badge>
-                            <h3 className="text-2xl font-bold mb-3">
-                              {milestone.title}
-                            </h3>
-                            <p className="text-muted-foreground leading-relaxed">
-                              {milestone.description}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </div>
-                      <div
-                        className="flex-1 md:text-left md:pl-12 block md:hidden"
-                        style={{ display: index % 2 !== 0 ? "block" : "none" }}
-                      >
-                        <Card className="border-0 transition-all duration-300 group overflow-hidden ml-12 bg-gradient-to-br from-card to-card/50">
-                          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <CardContent className="p-8 relative">
-                            <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
-                              {milestone.year}
-                            </Badge>
-                            <h3 className="text-2xl font-bold mb-3">
-                              {milestone.title}
-                            </h3>
-                            <p className="text-muted-foreground leading-relaxed">
-                              {milestone.description}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </div>
+                      <div className="flex-1 hidden md:block" />
                     </div>
                   </div>
                 ))}
