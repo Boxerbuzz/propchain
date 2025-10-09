@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Card,
   CardContent,
@@ -13,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 import { usePortfolioDetail } from "@/hooks/usePortfolioDetail";
 import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
@@ -20,7 +23,6 @@ import {
   ArrowLeft,
   MapPin,
   MessageSquare,
-  Send,
   Download,
   Share,
   AlertCircle,
@@ -29,15 +31,40 @@ import {
   Users,
   DollarSign,
   BarChart3,
+  CheckCircle,
 } from "lucide-react";
+import InvestmentDocumentCard from "@/components/InvestmentDocumentCard";
+import DocumentPreviewModal from "@/components/DocumentPreviewModal";
 
 const PortfolioDetail = () => {
   const { tokenizationId } = useParams<{ tokenizationId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [message, setMessage] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState("");
 
   const { data, isLoading, error } = usePortfolioDetail(tokenizationId || "");
+
+  // Fetch investment documents
+  const { data: investmentDocuments } = useQuery({
+    queryKey: ['investment-documents', tokenizationId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('investment_documents' as any)
+        .select('*')
+        .eq('tokenization_id', tokenizationId)
+        .order('generated_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!tokenizationId,
+  });
+
+  const handlePreview = (url: string, title: string) => {
+    setPreviewUrl(url);
+    setPreviewTitle(title);
+  };
 
   if (isLoading) {
     return (
@@ -78,6 +105,7 @@ const PortfolioDetail = () => {
     activityLogs,
     proposals,
     documents,
+    chatRoom,
   } = data;
 
   // Calculate investment metrics
@@ -124,6 +152,16 @@ const PortfolioDetail = () => {
             Back to Portfolio
           </Button>
           <div className="flex gap-3">
+            {chatRoom && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => navigate(`/chat/${chatRoom.id}`)}
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Open Chat
+              </Button>
+            )}
             <Button variant="outline" size="sm">
               <Share className="h-4 w-4 mr-2" />
               Share
@@ -231,18 +269,10 @@ const PortfolioDetail = () => {
 
         {/* Detailed Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Overview</span>
-            </TabsTrigger>
-            <TabsTrigger value="financials" className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
-              <span className="hidden sm:inline">Financials</span>
-            </TabsTrigger>
-            <TabsTrigger value="discussion" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Discussion</span>
             </TabsTrigger>
             <TabsTrigger value="governance" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -252,10 +282,31 @@ const PortfolioDetail = () => {
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Documents</span>
             </TabsTrigger>
+            <TabsTrigger value="activity" className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              <span className="hidden sm:inline">Activity</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            {/* Investment Documents Section */}
+            {investmentDocuments && investmentDocuments.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Investment Documents</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {investmentDocuments.map((doc) => (
+                    <InvestmentDocumentCard
+                      key={doc.id}
+                      document={doc}
+                      onPreview={(url) => handlePreview(url, doc.document_type === 'agreement' ? 'Investment Agreement' : 'Investment Receipt')}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="grid lg:grid-cols-2 gap-6">
+              {/* Property Performance & Financial Metrics */}
               <Card>
                 <CardHeader>
                   <CardTitle>Property Performance</CardTitle>
@@ -266,7 +317,7 @@ const PortfolioDetail = () => {
                       <p className="text-sm text-muted-foreground">
                         Property Value
                       </p>
-                      <p className="font-semibold">
+                      <p className="font-semibold text-lg">
                         ₦{propertyValue.toLocaleString()}
                       </p>
                     </div>
@@ -274,7 +325,7 @@ const PortfolioDetail = () => {
                       <p className="text-sm text-muted-foreground">
                         Monthly Rent
                       </p>
-                      <p className="font-semibold">
+                      <p className="font-semibold text-lg">
                         ₦{monthlyRent.toLocaleString()}
                       </p>
                     </div>
@@ -282,7 +333,7 @@ const PortfolioDetail = () => {
                       <p className="text-sm text-muted-foreground">
                         Rental Yield
                       </p>
-                      <p className="font-semibold">{rentalYield}%</p>
+                      <p className="font-semibold text-lg text-green-600">{rentalYield}%</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">
@@ -291,56 +342,34 @@ const PortfolioDetail = () => {
                       <p className="font-semibold">{property.property_type}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Updates</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {activityLogs.length > 0 ? (
-                    <div className="space-y-4">
-                      {activityLogs.slice(0, 3).map((log: any) => (
-                        <div
-                          key={log.id}
-                          className="border-l-2 border-primary pl-4"
-                        >
-                          <h4 className="font-medium">
-                            {log.activity_type.replace(/_/g, " ").toUpperCase()}
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            {log.description}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {format(new Date(log.created_at), "PPP")}
-                          </p>
-                        </div>
-                      ))}
+                  <Separator />
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-muted-foreground">Tokens Sold</span>
+                      <span className="font-semibold">
+                        {tokenization.tokens_sold.toLocaleString()} / {tokenization.total_supply.toLocaleString()}
+                      </span>
                     </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No recent updates
-                    </p>
-                  )}
+                    <Progress
+                      value={(tokenization.tokens_sold / tokenization.total_supply) * 100}
+                      className="h-2"
+                    />
+                  </div>
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
 
-          <TabsContent value="financials" className="space-y-6">
-            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Dividend History */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Dividend History</CardTitle>
+                  <CardTitle>Recent Dividends</CardTitle>
                   <CardDescription>
-                    Your dividend payments over time
+                    Your dividend payment history
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {dividendPayments.length > 0 ? (
                     <div className="space-y-3">
-                      {dividendPayments.map((dividend: any) => (
+                      {dividendPayments.slice(0, 5).map((dividend: any) => (
                         <div
                           key={dividend.id}
                           className="flex justify-between items-center py-2 border-b last:border-0"
@@ -366,76 +395,14 @@ const PortfolioDetail = () => {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No dividend payments yet
-                    </p>
+                    <div className="text-center py-8 text-muted-foreground">
+                      <DollarSign className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>No dividends received yet</p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Financial Metrics</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Annual Yield
-                      </p>
-                      <p className="font-semibold">
-                        {tokenization.expected_roi_annual}%
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Total Supply
-                      </p>
-                      <p className="font-semibold">
-                        {tokenization.total_supply.toLocaleString()} tokens
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Tokens Sold
-                      </p>
-                      <p className="font-semibold">
-                        {tokenization.tokens_sold.toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Total Raised
-                      </p>
-                      <p className="font-semibold">
-                        ₦{(tokenization.current_raise || 0).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
-          </TabsContent>
-
-          <TabsContent value="discussion" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
-                  Community Discussion
-                </CardTitle>
-                <CardDescription>Connect with other investors</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Chat feature is coming soon. You'll be able to discuss with
-                    other investors here.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="governance" className="space-y-6">
@@ -484,42 +451,34 @@ const PortfolioDetail = () => {
                             </Badge>
                           </div>
 
-                          <div className="space-y-2">
+                          <div className="space-y-2 mb-4">
                             <div className="flex justify-between text-sm">
-                              <span>
-                                For:{" "}
-                                {(proposal.votes_for || 0).toLocaleString()}{" "}
-                                tokens
-                              </span>
-                              <span>
-                                Against:{" "}
-                                {(proposal.votes_against || 0).toLocaleString()}{" "}
-                                tokens
-                              </span>
+                              <span>For: {proposal.votes_for || 0}</span>
+                              <span>Against: {proposal.votes_against || 0}</span>
                             </div>
                             <Progress value={forPercentage} className="h-2" />
                           </div>
 
-                          <div className="flex justify-between items-center mt-3">
-                            <span className="text-sm text-muted-foreground">
-                              Ends:{" "}
-                              {format(new Date(proposal.voting_end), "PPP")}
-                            </span>
-                            {proposal.status === "active" && (
-                              <div className="flex gap-2">
-                                <Button size="sm" variant="outline">
-                                  Vote Against
-                                </Button>
-                                <Button size="sm">Vote For</Button>
-                              </div>
-                            )}
-                          </div>
+                          {proposal.status === "active" && (
+                            <div className="flex gap-2">
+                              <Button size="sm" className="flex-1">
+                                Vote For
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="flex-1"
+                              >
+                                Vote Against
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground text-center py-8">
                     No active proposals
                   </p>
                 )}
@@ -528,11 +487,33 @@ const PortfolioDetail = () => {
           </TabsContent>
 
           <TabsContent value="documents" className="space-y-6">
+            {/* Investment Documents */}
+            {investmentDocuments && investmentDocuments.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Investment Documents</CardTitle>
+                  <CardDescription>Your investment agreements and receipts</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {investmentDocuments.map((doc) => (
+                      <InvestmentDocumentCard
+                        key={doc.id}
+                        document={doc}
+                        onPreview={(url) => handlePreview(url, doc.document_type === 'agreement' ? 'Investment Agreement' : 'Investment Receipt')}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Property Documents */}
             <Card>
               <CardHeader>
                 <CardTitle>Property Documents</CardTitle>
                 <CardDescription>
-                  Access important property documents and reports
+                  Legal and compliance documents
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -541,40 +522,62 @@ const PortfolioDetail = () => {
                     {documents.map((doc: any) => (
                       <div
                         key={doc.id}
-                        className="flex items-center justify-between p-3 border rounded-lg"
+                        className="flex justify-between items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-8 h-8 bg-muted rounded-full">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                          </div>
+                          <FileText className="h-5 w-5 text-muted-foreground" />
                           <div>
                             <p className="font-medium">{doc.document_name}</p>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">
-                                {doc.document_type.toUpperCase()}
-                              </span>
-                              <Badge variant="outline" className="text-xs">
-                                {doc.verification_status}
-                              </Badge>
-                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {doc.document_type} •{" "}
+                              {format(new Date(doc.uploaded_at), "PPP")}
+                            </p>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm" asChild>
-                          <a
-                            title="Download Document"
-                            href={doc.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Download className="h-4 w-4" />
-                          </a>
+                        <Button variant="ghost" size="sm">
+                          <Download className="h-4 w-4" />
                         </Button>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No documents available
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No property documents available
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="activity" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>Property updates and events</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {activityLogs.length > 0 ? (
+                  <div className="space-y-4">
+                    {activityLogs.map((log: any) => (
+                      <div
+                        key={log.id}
+                        className="border-l-2 border-primary pl-4 py-2"
+                      >
+                        <h4 className="font-medium">
+                          {log.activity_type.replace(/_/g, " ").toUpperCase()}
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          {log.description}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {format(new Date(log.created_at), "PPP")}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No recent activity
                   </p>
                 )}
               </CardContent>
@@ -582,6 +585,14 @@ const PortfolioDetail = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Document Preview Modal */}
+      <DocumentPreviewModal
+        open={!!previewUrl}
+        onOpenChange={(open) => !open && setPreviewUrl(null)}
+        documentUrl={previewUrl || ""}
+        documentTitle={previewTitle}
+      />
     </div>
   );
 };

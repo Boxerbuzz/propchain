@@ -533,6 +533,73 @@ export type Database = {
           },
         ]
       }
+      investment_documents: {
+        Row: {
+          created_at: string
+          document_number: string
+          document_type: string
+          document_url: string
+          generated_at: string
+          id: string
+          investment_id: string
+          metadata: Json | null
+          property_id: string
+          tokenization_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_number: string
+          document_type: string
+          document_url: string
+          generated_at?: string
+          id?: string
+          investment_id: string
+          metadata?: Json | null
+          property_id: string
+          tokenization_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_number?: string
+          document_type?: string
+          document_url?: string
+          generated_at?: string
+          id?: string
+          investment_id?: string
+          metadata?: Json | null
+          property_id?: string
+          tokenization_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_documents_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_documents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_documents_tokenization_id_fkey"
+            columns: ["tokenization_id"]
+            isOneToOne: false
+            referencedRelation: "tokenizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investments: {
         Row: {
           amount_ngn: number
