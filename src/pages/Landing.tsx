@@ -11,6 +11,12 @@ import {
   Shield,
   Zap,
   Globe,
+  CheckCircle,
+  Wallet,
+  FileText,
+  BarChart3,
+  Lock,
+  Clock,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useProperties } from "@/hooks/useProperties";
@@ -125,58 +131,130 @@ export default function Landing() {
 
   const features = [
     {
-      icon: Shield,
-      title: "Secure & Regulated",
+      icon: Wallet,
+      title: "Fractional Ownership",
       description:
-        "Built on Hedera Hashgraph with full regulatory compliance and investor protection.",
+        "Start investing with as little as ₦10,000. Own a fraction of high-value properties that were previously out of reach.",
+      stat: "From ₦10k"
     },
     {
-      icon: Zap,
-      title: "Instant Trading",
+      icon: TrendingUp,
+      title: "Passive Rental Income",
       description:
-        "Buy and sell property tokens instantly with transparent pricing and low fees.",
+        "Earn monthly rental income proportional to your ownership. Dividends are automatically distributed to your wallet.",
+      stat: "Monthly Returns"
     },
     {
-      icon: Globe,
-      title: "Global Access",
+      icon: FileText,
+      title: "Blockchain Verified",
       description:
-        "Invest in premium Nigerian real estate from anywhere in the world.",
+        "Every property token is backed by real assets on Hedera Hashgraph. Full transparency with immutable ownership records.",
+      stat: "100% Transparent"
+    },
+    {
+      icon: BarChart3,
+      title: "Property Appreciation",
+      description:
+        "Benefit from property value increases over time. Your tokens appreciate as the property value grows.",
+      stat: "Capital Gains"
+    },
+    {
+      icon: Users,
+      title: "Governance Rights",
+      description:
+        "Vote on major property decisions like renovations, tenant selection, and sale timing. Your investment, your voice.",
+      stat: "Vote & Decide"
+    },
+    {
+      icon: Lock,
+      title: "SEC Compliant",
+      description:
+        "Fully regulated under Nigerian securities law. All properties undergo legal verification and compliance checks.",
+      stat: "Legally Protected"
+    },
+  ];
+
+  const howItWorksSteps = [
+    {
+      step: "01",
+      icon: CheckCircle,
+      title: "Create Account & Verify",
+      description: "Sign up in minutes and complete KYC verification. We ensure a secure and compliant investment environment.",
+    },
+    {
+      step: "02",
+      icon: Building,
+      title: "Browse Properties",
+      description: "Explore tokenized properties with detailed information, location, returns, and investment terms.",
+    },
+    {
+      step: "03",
+      icon: Wallet,
+      title: "Invest & Own Tokens",
+      description: "Choose your investment amount and receive property tokens instantly in your wallet.",
+    },
+    {
+      step: "04",
+      icon: TrendingUp,
+      title: "Earn & Grow",
+      description: "Receive monthly rental income and benefit from property appreciation. Sell tokens anytime on our marketplace.",
+    },
+  ];
+
+  const testimonials = [
+    {
+      name: "Adebayo Johnson",
+      role: "Software Engineer",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Adebayo",
+      content: "PropChain made it possible for me to invest in Lagos real estate while living abroad. The returns are consistent and the platform is incredibly transparent.",
+      investment: "₦2.5M invested",
+      returns: "12% annual return"
+    },
+    {
+      name: "Chioma Okafor",
+      role: "Business Owner",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Chioma",
+      content: "I started with just ₦50,000 to test the platform. Now I own tokens in 5 different properties. The monthly dividends are a great passive income stream.",
+      investment: "₦800K invested",
+      returns: "₦9,600 monthly"
+    },
+    {
+      name: "Emmanuel Obi",
+      role: "Healthcare Professional",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emmanuel",
+      content: "The governance feature is brilliant. I actually have a say in property management decisions. It's not just investing, it's real ownership.",
+      investment: "₦1.2M invested",
+      returns: "15% annual return"
     },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-24 md:py-32">
-        {/* Animated Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5 animate-gradient"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(var(--accent)/0.08),transparent_50%)]"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-5xl mx-auto text-center">
-            <Badge className="status-verified mb-8 animate-fade-in hover-scale">
+      <section className="py-20 md:py-28">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <Badge className="status-verified mb-6">
               🚀 Now Live on Hedera Mainnet
             </Badge>
 
-            <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight animate-fade-in">
-              Invest in Real Estate
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent block mt-2">
-                Through Blockchain Tokens
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
+              Own Real Estate with{" "}
+              <span className="text-primary">
+                As Little As ₦10,000
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in">
-              PropChain makes premium real estate accessible to everyone. Own
-              fractions of high-value properties, earn rental income, and trade
-              your ownership tokens on our secure platform.
+            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+              Invest in fractions of premium Nigerian properties through blockchain tokens. 
+              Earn monthly rental income, participate in governance, and trade your ownership anytime.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Link to="/browse">
-                <Button size="lg" className="btn-primary text-lg px-10 py-6 group">
-                  Start Investing
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <Button size="lg" className="btn-primary text-lg px-8 py-4">
+                  Browse Properties
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
 
@@ -184,26 +262,26 @@ export default function Landing() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="text-lg px-10 py-6 hover:bg-primary/5 transition-all"
+                  className="text-lg px-8 py-4"
                 >
-                  Create Account
+                  Create Free Account
                 </Button>
               </Link>
             </div>
 
             {/* Trust Indicators */}
-            <div className="mt-16 flex flex-wrap justify-center items-center gap-8 text-sm text-muted-foreground animate-fade-in">
+            <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-primary" />
                 <span>SEC Compliant</span>
               </div>
               <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-primary" />
-                <span>Instant Settlements</span>
+                <Lock className="h-4 w-4 text-primary" />
+                <span>Blockchain Secured</span>
               </div>
               <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-primary" />
-                <span>Global Access</span>
+                <Clock className="h-4 w-4 text-primary" />
+                <span>Instant Ownership</span>
               </div>
             </div>
           </div>
@@ -211,28 +289,22 @@ export default function Landing() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-b from-background-muted to-background relative">
+      <section className="py-16 bg-background-muted">
         <div className="container mx-auto mobile-padding">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {platformStats.map((stat, index) => (
-              <div 
-                key={index} 
-                className="text-center group hover-scale transition-all duration-300"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="relative">
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all">
-                    <stat.icon className="h-7 w-7 text-primary" />
-                  </div>
+              <div key={index} className="text-center">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <stat.icon className="h-6 w-6 text-primary" />
                 </div>
                 {statsLoading ? (
-                  <Skeleton className="h-10 w-20 mx-auto mb-2" />
+                  <Skeleton className="h-8 w-16 mx-auto mb-2" />
                 ) : (
-                  <h3 className="text-2xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-foreground to-foreground/70 mb-2">
+                  <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
                     {stat.value}
                   </h3>
                 )}
-                <p className="text-muted-foreground mobile-text font-medium">
+                <p className="text-muted-foreground mobile-text">
                   {stat.label}
                 </p>
               </div>
@@ -293,18 +365,53 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-gradient-to-b from-background to-background-muted relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
+      {/* How It Works */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <Badge className="mb-4" variant="outline">Why PropChain</Badge>
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Built for Modern Investors
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              How It Works
             </h2>
-            <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
-              Experience the future of real estate investment
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Start investing in real estate in four simple steps
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8 max-w-7xl mx-auto">
+            {howItWorksSteps.map((step, index) => (
+              <div key={index} className="relative">
+                {index < howItWorksSteps.length - 1 && (
+                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-0.5 bg-border"></div>
+                )}
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-24 h-24 bg-primary/10 rounded-full mb-6 relative">
+                    <step.icon className="h-10 w-10 text-primary" />
+                    <span className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+                      {step.step}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-3">
+                    {step.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-background-muted">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Why Invest Through PropChain?
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Everything you need to build a diversified real estate portfolio
             </p>
           </div>
 
@@ -312,19 +419,82 @@ export default function Landing() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="group relative bg-card border border-border rounded-2xl p-8 text-center hover:border-primary/50 transition-all duration-300 hover-scale hover:shadow-xl hover:shadow-primary/5"
+                className="bg-background border border-border rounded-xl p-8 hover:border-primary/50 transition-all"
               >
-                {/* Gradient overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                
-                <div className="relative z-10">
-                  <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-lg group-hover:shadow-primary/30 transition-all">
-                    <feature.icon className="h-10 w-10 text-primary" />
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <feature.icon className="h-7 w-7 text-primary" />
                   </div>
-                  <h3 className="text-2xl font-semibold text-foreground mb-4">
-                    {feature.title}
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xl font-semibold text-foreground">
+                        {feature.title}
+                      </h3>
+                      <Badge variant="secondary" className="text-xs">
+                        {feature.stat}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-muted-foreground leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              What Our Investors Say
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Join thousands of satisfied investors building wealth through tokenized real estate
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <div
+                key={index}
+                className="bg-background border border-border rounded-xl p-8 hover:border-primary/30 transition-all"
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <img
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    className="w-14 h-14 rounded-full bg-muted"
+                  />
+                  <div>
+                    <h4 className="font-semibold text-foreground">
+                      {testimonial.name}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {testimonial.role}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-muted-foreground mb-6 leading-relaxed italic">
+                  "{testimonial.content}"
+                </p>
+                <div className="flex items-center gap-4 pt-4 border-t border-border">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Invested</p>
+                    <p className="font-semibold text-foreground text-sm">
+                      {testimonial.investment}
+                    </p>
+                  </div>
+                  <div className="h-8 w-px bg-border"></div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Returns</p>
+                    <p className="font-semibold text-primary text-sm">
+                      {testimonial.returns}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -333,43 +503,34 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-2 border-primary/30 rounded-3xl p-12 md:p-16 text-center shadow-2xl shadow-primary/10 max-w-4xl mx-auto">
-            <div className="mb-8">
-              <Building className="h-16 w-16 text-primary mx-auto mb-4 opacity-80" />
-            </div>
-            
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Ready to Start Investing?
+      <section className="py-20 bg-background-muted">
+        <div className="container mx-auto px-4">
+          <div className="bg-primary/5 border border-primary/20 rounded-2xl p-12 text-center max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Start Building Your Real Estate Portfolio Today
             </h2>
-            <p className="text-muted-foreground text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-              Join thousands of investors who are already building wealth
-              through tokenized real estate. Get started in minutes.
+            <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
+              Join thousands of Nigerians investing in premium properties through blockchain technology
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
               <Link to="/auth/signup">
-                <Button size="lg" className="btn-primary text-lg px-10 py-6 shadow-lg shadow-primary/30 group">
-                  Get Started Today
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <Button size="lg" className="btn-primary text-lg px-8 py-4">
+                  Create Free Account
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/browse">
                 <Button
                   variant="outline"
                   size="lg"
-                  className="text-lg px-10 py-6 hover:bg-primary/5"
+                  className="text-lg px-8 py-4"
                 >
-                  Browse Properties
+                  View Properties
                 </Button>
               </Link>
             </div>
-            
             <p className="text-sm text-muted-foreground">
-              ✓ No minimum investment • ✓ Start with as low as ₦10,000 • ✓ Withdraw anytime
+              ✓ No hidden fees • ✓ SEC compliant • ✓ Instant ownership transfer
             </p>
           </div>
         </div>
