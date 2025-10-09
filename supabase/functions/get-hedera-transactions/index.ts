@@ -98,18 +98,37 @@ serve(async (req) => {
         type = amount > 0 ? 'token_deposit' : 'token_withdrawal';
       }
 
+      const isIncoming = amount >= 0;
+      const isFailed = tx.result !== 'SUCCESS';
+      const absoluteAmount = Math.abs(amount);
+      
+      // Create description based on transaction type and direction
+      let description = '';
+      if (tokenTransfer) {
+        // Token transaction
+        description = `${isIncoming ? 'Received' : 'Sent'} ${absoluteAmount} ${currency}`;
+      } else {
+        // HBAR transaction
+        description = `${isIncoming ? 'Received' : 'Sent'} ${absoluteAmount} HBAR`;
+      }
+      
+      if (isFailed) {
+        description += ' (Failed)';
+      }
+
       return {
         id: tx.transaction_id,
         hash: tx.transaction_id,
         type,
-        amount: Math.abs(amount),
+        amount: absoluteAmount,
         currency,
-        status: tx.result === 'SUCCESS' ? 'completed' : 'failed',
+        status: isFailed ? 'failed' : 'completed',
         timestamp: new Date(parseFloat(tx.consensus_timestamp) * 1000).toISOString(),
         date: new Date(parseFloat(tx.consensus_timestamp) * 1000).toISOString().split('T')[0],
         fee: tx.transaction_fee / 100000000, // Convert from tinybars to HBAR
         method: 'Hedera Network',
-        direction: amount >= 0 ? 'incoming' : 'outgoing',
+        direction: isIncoming ? 'incoming' : 'outgoing',
+        description,
         explorerUrl: `https://hashscan.io/testnet/transaction/${tx.transaction_id}`
       };
     });
