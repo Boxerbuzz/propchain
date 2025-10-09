@@ -47,6 +47,95 @@ serve(async (req) => {
 
     console.log(`[CREATE-INVESTMENT] Creating investment for ${payment_method} payment`);
 
+    // Step 0: Server-side validation - Fetch tokenization details
+    const { data: tokenization, error: tokenizationError } = await supabase
+      .from('tokenizations')
+      .select('*')
+      .eq('id', tokenization_id)
+      .single();
+
+    if (tokenizationError || !tokenization) {
+      console.error('[CREATE-INVESTMENT] Tokenization not found:', tokenizationError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Tokenization not found'
+        }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate investment amount
+    if (amount_ngn < tokenization.min_investment) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Investment amount must be at least ₦${tokenization.min_investment.toLocaleString()}`
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (tokenization.max_investment && amount_ngn > tokenization.max_investment) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Investment amount cannot exceed ₦${tokenization.max_investment.toLocaleString()}`
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate tokenization is active
+    if (tokenization.status !== 'active') {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Investment window is not active'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate investment window
+    const now = new Date();
+    const windowStart = new Date(tokenization.investment_window_start);
+    const windowEnd = new Date(tokenization.investment_window_end);
+    
+    if (now < windowStart || now > windowEnd) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Investment window has closed'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate available tokens
+    const availableTokens = tokenization.total_supply - tokenization.tokens_sold;
+    if (tokens_requested > availableTokens) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Only ${availableTokens.toLocaleString()} tokens available`
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate target raise not exceeded
+    const newTotalRaise = tokenization.current_raise + amount_ngn;
+    if (newTotalRaise > tokenization.target_raise) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Target raise would be exceeded. Please reduce investment amount.'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Step 1: Create investment with reservation using database function
     const { data: reservationResult, error: reservationError } = await supabase.rpc(
       'create_investment_with_reservation',
