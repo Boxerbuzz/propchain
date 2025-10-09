@@ -47,31 +47,41 @@ const Portfolio = () => {
   };
 
   // Transform investments data for display
-  const displayInvestments = tokenHoldings.map((holding: any) => ({
-    id: holding.id,
-    tokenizationId: holding.tokenization_id,
-    propertyTitle:
-      `${holding.property_id?.slice(0, 8)}...` || "Property Investment",
-    location: "Location TBD", // This would come from joining with properties table
-    invested: holding.total_invested_ngn || 0,
-    currentValue:
-      (holding.total_invested_ngn || 0) + (holding.unrealized_returns_ngn || 0),
-    return:
-      (holding.unrealized_returns_ngn || 0) +
-      (holding.realized_returns_ngn || 0),
-    returnPercentage:
-      holding.total_invested_ngn > 0
-        ? (((holding.unrealized_returns_ngn || 0) +
-            (holding.realized_returns_ngn || 0)) /
-            holding.total_invested_ngn) *
-          100
-        : 0,
-    tokens: holding.balance || 0,
-    totalTokens: 100000, // This would come from tokenizations table
-    status: holding.balance > 0 ? "active" : "inactive",
-    expectedReturn: "8.5%", // This would come from tokenizations table
-    imageUrl: "/placeholder.svg",
-  }));
+  const displayInvestments = tokenHoldings.map((holding: any) => {
+    const property = holding.tokenizations?.properties;
+    const tokenization = holding.tokenizations;
+    const primaryImage = property?.property_images?.find((img: any) => img.is_primary) 
+      || property?.property_images?.[0];
+    
+    return {
+      id: holding.id,
+      tokenizationId: holding.tokenization_id,
+      propertyTitle: property?.title || "Property Investment",
+      location: property?.location ? 
+        `${property.location.city || ''}${property.location.state ? ', ' + property.location.state : ''}` :
+        "Location not specified",
+      invested: holding.total_invested_ngn || 0,
+      currentValue:
+        (holding.total_invested_ngn || 0) + (holding.unrealized_returns_ngn || 0),
+      return:
+        (holding.unrealized_returns_ngn || 0) +
+        (holding.realized_returns_ngn || 0),
+      returnPercentage:
+        holding.total_invested_ngn > 0
+          ? (((holding.unrealized_returns_ngn || 0) +
+              (holding.realized_returns_ngn || 0)) /
+              holding.total_invested_ngn) *
+            100
+          : 0,
+      tokens: holding.balance || 0,
+      totalTokens: tokenization?.total_supply || 0,
+      status: holding.balance > 0 ? "active" : "inactive",
+      expectedReturn: tokenization?.expected_roi_annual ? 
+        `${tokenization.expected_roi_annual}%` : 
+        "N/A",
+      imageUrl: primaryImage?.image_url || "/placeholder.svg",
+    };
+  });
 
   const filteredInvestments = displayInvestments.filter((inv: any) => {
     if (filter === "all") return true;

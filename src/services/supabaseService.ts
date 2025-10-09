@@ -519,7 +519,10 @@ export const supabaseService = {
           *,
           tokenizations!inner(
             *,
-            properties!inner(*)
+            properties!inner(
+              *,
+              property_images(*)
+            )
           )
         `
         )
