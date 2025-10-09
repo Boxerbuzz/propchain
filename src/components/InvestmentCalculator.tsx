@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Calculator, TrendingUp, DollarSign, CoinsIcon } from "lucide-react";
-import InvestmentModal from "@/components/InvestmentModal";
 import MoneyInput from "@/components/ui/money-input";
+import { useNavigate } from "react-router-dom";
 
 interface InvestmentCalculatorProps {
   propertyValue: number;
@@ -20,7 +20,7 @@ export default function InvestmentCalculator({
   property,
 }: InvestmentCalculatorProps & { property?: any }) {
   const [investmentAmount, setInvestmentAmount] = useState(minimumInvestment);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const tokensReceived = Math.floor(investmentAmount / tokenPrice);
   const ownershipPercentage = (investmentAmount / propertyValue) * 100;
@@ -108,37 +108,15 @@ export default function InvestmentCalculator({
         <Button
           className="w-full btn-primary"
           size="lg"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => navigate(`/browse/${property?.tokenizations?.[0]?.id}/invest`)}
         >
-          Invest ₦{investmentAmount.toLocaleString()}
+          Invest Now
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
           * Returns are projected and not guaranteed
         </p>
       </div>
-
-      <InvestmentModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        tokenization={{
-          id: property?.tokenizations?.[0]?.id || "",
-          token_name:
-            property?.tokenizations?.[0]?.token_name || property?.title || "",
-          token_symbol: property?.tokenizations?.[0]?.token_symbol || "",
-          tokenization_type: property?.tokenizations?.[0]?.tokenization_type,
-          price_per_token: tokenPrice,
-          min_investment: minimumInvestment,
-          max_investment: property?.tokenizations?.[0]?.max_investment,
-          expected_roi_annual: expectedReturn,
-          interest_rate: property?.tokenizations?.[0]?.interest_rate,
-          revenue_share_percentage: property?.tokenizations?.[0]?.revenue_share_percentage,
-          properties: {
-            id: property?.id || "",
-            title: property?.title || "",
-          },
-        }}
-      />
     </div>
   );
 }

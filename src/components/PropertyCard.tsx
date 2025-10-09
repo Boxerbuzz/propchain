@@ -135,14 +135,23 @@ export default function PropertyCard({
           Investment deadline: {investmentDeadline}
         </div>
 
-        {/* CTA Button */}
-        <Button
-          className="w-full btn-primary"
-          disabled={status === "funded"}
-          onClick={() => navigate(`/browse/${id}`)}
-        >
-          {status === "funded" ? "Fully Funded" : "View Details"}
-        </Button>
+        {/* CTA Buttons */}
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => navigate(`/browse/${id}`)}
+          >
+            View Details
+          </Button>
+          <Button
+            className="flex-1 btn-primary"
+            disabled={status === "funded"}
+            onClick={() => navigate(`/browse/${id}/invest`)}
+          >
+            {status === "funded" ? "Fully Funded" : "Invest Now"}
+          </Button>
+        </div>
       </div>
     </div>
   );
