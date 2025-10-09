@@ -443,15 +443,17 @@ export default function Dashboard() {
                     Browse Properties
                   </Button>
                 </Link>
-                <Link to="/wallet/setup" className="block">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-sm"
-                  >
-                    <Wallet className="w-4 h-4 mr-2" />
-                    Set Up Wallet
-                  </Button>
-                </Link>
+                {!user?.hedera_account_id && (
+                  <Link to="/wallet/setup" className="block">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-sm"
+                    >
+                      <Wallet className="w-4 h-4 mr-2" />
+                      Set Up Wallet
+                    </Button>
+                  </Link>
+                )}
                 <Link to="/portfolio" className="block">
                   <Button
                     variant="outline"
@@ -461,15 +463,17 @@ export default function Dashboard() {
                     View Portfolio
                   </Button>
                 </Link>
-                <Link to="/kyc/start" className="block">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-sm"
-                  >
-                    <Target className="w-4 h-4 mr-2" />
-                    Complete KYC
-                  </Button>
-                </Link>
+                {kycStatus?.status !== 'approved' && (
+                  <Link to="/kyc/start" className="block">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-sm"
+                    >
+                      <Target className="w-4 h-4 mr-2" />
+                      Complete KYC
+                    </Button>
+                  </Link>
+                )}
                 <Link to="/property/management" className="block">
                   <Button
                     variant="outline"
