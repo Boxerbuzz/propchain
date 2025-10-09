@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { Calculator, TrendingUp, DollarSign, CoinsIcon } from "lucide-react";
+import { Calculator, TrendingUp, CoinsIcon } from "lucide-react";
 import InvestmentModal from "@/components/InvestmentModal";
 import MoneyInput from "@/components/ui/money-input";
 
