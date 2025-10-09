@@ -17,21 +17,19 @@ import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { usePortfolioDetail } from "@/hooks/usePortfolioDetail";
-import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
 import {
   ArrowLeft,
   MapPin,
-  MessageSquare,
   Download,
-  Share,
   AlertCircle,
   Vote,
   FileText,
   Users,
   DollarSign,
   BarChart3,
-  CheckCircle,
+  Share2,
+  MessageSquareText,
 } from "lucide-react";
 import InvestmentDocumentCard from "@/components/InvestmentDocumentCard";
 import DocumentPreviewModal from "@/components/DocumentPreviewModal";
@@ -39,7 +37,6 @@ import DocumentPreviewModal from "@/components/DocumentPreviewModal";
 const PortfolioDetail = () => {
   const { tokenizationId } = useParams<{ tokenizationId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewTitle, setPreviewTitle] = useState("");
 
@@ -47,14 +44,14 @@ const PortfolioDetail = () => {
 
   // Fetch investment documents
   const { data: investmentDocuments } = useQuery({
-    queryKey: ['investment-documents', tokenizationId],
+    queryKey: ["investment-documents", tokenizationId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('investment_documents' as any)
-        .select('*')
-        .eq('tokenization_id', tokenizationId)
-        .order('generated_at', { ascending: false });
-      
+        .from("investment_documents" as any)
+        .select("*")
+        .eq("tokenization_id", tokenizationId)
+        .order("generated_at", { ascending: false });
+
       if (error) throw error;
       return data as any[];
     },
@@ -158,17 +155,14 @@ const PortfolioDetail = () => {
                 size="sm"
                 onClick={() => navigate(`/chat/${chatRoom.id}`)}
               >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Open Chat
+                <MessageSquareText className="h-4 w-4" />
               </Button>
             )}
             <Button variant="outline" size="sm">
-              <Share className="h-4 w-4 mr-2" />
-              Share
+              <Share2 className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export
+              <Download className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -192,16 +186,20 @@ const PortfolioDetail = () => {
               <CardTitle className="text-sm font-medium flex items-center justify-between">
                 Your Investment
                 {tokenization?.tokenization_type && (
-                  <Badge className={
-                    tokenization.tokenization_type === 'equity' 
-                      ? "bg-primary/10 text-primary border border-primary/20"
-                      : tokenization.tokenization_type === 'debt'
-                      ? "bg-secondary/10 text-secondary border border-secondary/20"
-                      : "bg-accent/10 text-accent border border-accent/20"
-                  }>
-                    {tokenization.tokenization_type === 'equity' ? 'Ownership' 
-                      : tokenization.tokenization_type === 'debt' ? 'Lending' 
-                      : 'Revenue'}
+                  <Badge
+                    className={
+                      tokenization.tokenization_type === "equity"
+                        ? "bg-primary/10 text-primary border border-primary/20"
+                        : tokenization.tokenization_type === "debt"
+                        ? "bg-secondary/10 text-secondary border border-secondary/20"
+                        : "bg-accent/10 text-accent border border-accent/20"
+                    }
+                  >
+                    {tokenization.tokenization_type === "equity"
+                      ? "Ownership"
+                      : tokenization.tokenization_type === "debt"
+                      ? "Lending"
+                      : "Revenue"}
                   </Badge>
                 )}
               </CardTitle>
@@ -311,7 +309,14 @@ const PortfolioDetail = () => {
                     <InvestmentDocumentCard
                       key={doc.id}
                       document={doc}
-                      onPreview={(url) => handlePreview(url, doc.document_type === 'agreement' ? 'Investment Agreement' : 'Investment Receipt')}
+                      onPreview={(url) =>
+                        handlePreview(
+                          url,
+                          doc.document_type === "agreement"
+                            ? "Investment Agreement"
+                            : "Investment Receipt"
+                        )
+                      }
                     />
                   ))}
                 </div>
@@ -346,7 +351,9 @@ const PortfolioDetail = () => {
                       <p className="text-sm text-muted-foreground">
                         Rental Yield
                       </p>
-                      <p className="font-semibold text-lg text-green-600">{rentalYield}%</p>
+                      <p className="font-semibold text-lg text-green-600">
+                        {rentalYield}%
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">
@@ -358,13 +365,19 @@ const PortfolioDetail = () => {
                   <Separator />
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-muted-foreground">Tokens Sold</span>
+                      <span className="text-sm text-muted-foreground">
+                        Tokens Sold
+                      </span>
                       <span className="font-semibold">
-                        {tokenization.tokens_sold.toLocaleString()} / {tokenization.total_supply.toLocaleString()}
+                        {tokenization.tokens_sold.toLocaleString()} /{" "}
+                        {tokenization.total_supply.toLocaleString()}
                       </span>
                     </div>
                     <Progress
-                      value={(tokenization.tokens_sold / tokenization.total_supply) * 100}
+                      value={
+                        (tokenization.tokens_sold / tokenization.total_supply) *
+                        100
+                      }
                       className="h-2"
                     />
                   </div>
@@ -467,7 +480,9 @@ const PortfolioDetail = () => {
                           <div className="space-y-2 mb-4">
                             <div className="flex justify-between text-sm">
                               <span>For: {proposal.votes_for || 0}</span>
-                              <span>Against: {proposal.votes_against || 0}</span>
+                              <span>
+                                Against: {proposal.votes_against || 0}
+                              </span>
                             </div>
                             <Progress value={forPercentage} className="h-2" />
                           </div>
@@ -505,7 +520,9 @@ const PortfolioDetail = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Investment Documents</CardTitle>
-                  <CardDescription>Your investment agreements and receipts</CardDescription>
+                  <CardDescription>
+                    Your investment agreements and receipts
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4 md:grid-cols-2">
@@ -513,7 +530,14 @@ const PortfolioDetail = () => {
                       <InvestmentDocumentCard
                         key={doc.id}
                         document={doc}
-                        onPreview={(url) => handlePreview(url, doc.document_type === 'agreement' ? 'Investment Agreement' : 'Investment Receipt')}
+                        onPreview={(url) =>
+                          handlePreview(
+                            url,
+                            doc.document_type === "agreement"
+                              ? "Investment Agreement"
+                              : "Investment Receipt"
+                          )
+                        }
                       />
                     ))}
                   </div>
