@@ -43,6 +43,9 @@ import TermsOfService from "./pages/legal/TermsOfService";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import RiskDisclosure from "./pages/legal/RiskDisclosure";
 import Regulatory from "./pages/legal/Regulatory";
+import EquityTokenizationTerms from "./pages/legal/EquityTokenizationTerms";
+import DebtTokenizationTerms from "./pages/legal/DebtTokenizationTerms";
+import RevenueTokenizationTerms from "./pages/legal/RevenueTokenizationTerms";
 import SupportCenter from "./pages/support/SupportCenter";
 import HowItWorks from "./pages/HowItWorks";
 import AboutUs from "./pages/AboutUs";
@@ -151,6 +154,9 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/risk-disclosure" element={<RiskDisclosure />} />
             <Route path="/regulatory" element={<Regulatory />} />
+            <Route path="/legal/equity-tokenization-terms" element={<EquityTokenizationTerms />} />
+            <Route path="/legal/debt-tokenization-terms" element={<DebtTokenizationTerms />} />
+            <Route path="/legal/revenue-tokenization-terms" element={<RevenueTokenizationTerms />} />
             <Route path="/support" element={<SupportCenter />} />
 
             {/* Catch-all route */}
