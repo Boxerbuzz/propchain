@@ -147,31 +147,36 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative bg-background py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <Badge className="status-verified mb-6">
-              Now Live on Hedera Mainnet
+      <section className="relative overflow-hidden py-24 md:py-32">
+        {/* Animated Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5 animate-gradient"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(var(--accent)/0.08),transparent_50%)]"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-5xl mx-auto text-center">
+            <Badge className="status-verified mb-8 animate-fade-in hover-scale">
+              🚀 Now Live on Hedera Mainnet
             </Badge>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
+            <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight animate-fade-in">
               Invest in Real Estate
-              <span className="text-primary block">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent block mt-2">
                 Through Blockchain Tokens
               </span>
             </h1>
 
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in">
               PropChain makes premium real estate accessible to everyone. Own
               fractions of high-value properties, earn rental income, and trade
               your ownership tokens on our secure platform.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in">
               <Link to="/browse">
-                <Button size="lg" className="btn-primary text-lg px-8 py-4">
+                <Button size="lg" className="btn-primary text-lg px-10 py-6 group">
                   Start Investing
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
 
@@ -179,33 +184,55 @@ export default function Landing() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="text-lg px-8 py-4"
+                  className="text-lg px-10 py-6 hover:bg-primary/5 transition-all"
                 >
                   Create Account
                 </Button>
               </Link>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="mt-16 flex flex-wrap justify-center items-center gap-8 text-sm text-muted-foreground animate-fade-in">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-primary" />
+                <span>SEC Compliant</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-primary" />
+                <span>Instant Settlements</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-primary" />
+                <span>Global Access</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-background-muted">
+      <section className="py-20 bg-gradient-to-b from-background-muted to-background relative">
         <div className="container mx-auto mobile-padding">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {platformStats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <stat.icon className="h-6 w-6 text-primary" />
+              <div 
+                key={index} 
+                className="text-center group hover-scale transition-all duration-300"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all">
+                    <stat.icon className="h-7 w-7 text-primary" />
+                  </div>
                 </div>
                 {statsLoading ? (
-                  <Skeleton className="h-8 w-16 mx-auto mb-2" />
+                  <Skeleton className="h-10 w-20 mx-auto mb-2" />
                 ) : (
-                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">
+                  <h3 className="text-2xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-foreground to-foreground/70 mb-2">
                     {stat.value}
                   </h3>
                 )}
-                <p className="text-muted-foreground mobile-text">
+                <p className="text-muted-foreground mobile-text font-medium">
                   {stat.label}
                 </p>
               </div>
@@ -267,30 +294,38 @@ export default function Landing() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-background-muted">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Why Choose PropChain?
+      <section className="py-24 bg-gradient-to-b from-background to-background-muted relative overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <Badge className="mb-4" variant="outline">Why PropChain</Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+              Built for Modern Investors
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Built for the future of real estate investment
+            <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
+              Experience the future of real estate investment
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-background border border-border rounded-xl p-8 text-center"
+                className="group relative bg-card border border-border rounded-2xl p-8 text-center hover:border-primary/50 transition-all duration-300 hover-scale hover:shadow-xl hover:shadow-primary/5"
               >
-                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-6">
-                  <feature.icon className="h-8 w-8 text-primary" />
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                <div className="relative z-10">
+                  <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-lg group-hover:shadow-primary/30 transition-all">
+                    <feature.icon className="h-10 w-10 text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-foreground mb-4">
+                    {feature.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-4">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -298,32 +333,44 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="bg-primary/5 border border-primary/20 rounded-2xl p-12 text-center">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-2 border-primary/30 rounded-3xl p-12 md:p-16 text-center shadow-2xl shadow-primary/10 max-w-4xl mx-auto">
+            <div className="mb-8">
+              <Building className="h-16 w-16 text-primary mx-auto mb-4 opacity-80" />
+            </div>
+            
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Ready to Start Investing?
             </h2>
-            <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
               Join thousands of investors who are already building wealth
-              through tokenized real estate
+              through tokenized real estate. Get started in minutes.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link to="/auth/signup">
-                <Button size="lg" className="btn-primary text-lg px-8 py-4">
+                <Button size="lg" className="btn-primary text-lg px-10 py-6 shadow-lg shadow-primary/30 group">
                   Get Started Today
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
               <Link to="/browse">
                 <Button
                   variant="outline"
                   size="lg"
-                  className="text-lg px-8 py-4"
+                  className="text-lg px-10 py-6 hover:bg-primary/5"
                 >
                   Browse Properties
                 </Button>
               </Link>
             </div>
+            
+            <p className="text-sm text-muted-foreground">
+              ✓ No minimum investment • ✓ Start with as low as ₦10,000 • ✓ Withdraw anytime
+            </p>
           </div>
         </div>
       </section>
