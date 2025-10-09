@@ -1,8 +1,5 @@
 import {
   Building,
-  Mail,
-  Phone,
-  MapPin,
   Twitter,
   Linkedin,
   Facebook,

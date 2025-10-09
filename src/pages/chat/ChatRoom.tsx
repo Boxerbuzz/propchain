@@ -269,12 +269,6 @@ const ChatRoom = () => {
                       <Plus className="mr-2 h-4 w-4" />
                       <div className="flex flex-col">
                         <span>Create Proposal</span>
-                        {roomInfo?.tokenization_status !== 'minted' && 
-                         roomInfo?.tokenization_status !== 'distributed' && (
-                          <span className="text-xs text-muted-foreground">
-                            Available after token distribution
-                          </span>
-                        )}
                       </div>
                     </DropdownMenuItem>
                     <DropdownMenuItem
