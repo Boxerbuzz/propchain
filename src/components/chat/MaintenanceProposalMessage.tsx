@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Wrench, AlertTriangle, DollarSign, Calendar, ThumbsUp, ThumbsDown, Minus, Timer } from "lucide-react";
 import { EventAccordion } from "./EventAccordion";
 import { Badge } from "@/components/ui/badge";
@@ -18,12 +18,70 @@ export const MaintenanceProposalMessage = ({ metadata, createdAt }: MaintenanceP
   const { user } = useAuth();
   const [isVoting, setIsVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
+  const [liveVotes, setLiveVotes] = useState({
+    votes_for: metadata.votes_for || 0,
+    votes_against: metadata.votes_against || 0,
+    votes_abstain: metadata.votes_abstain || 0,
+    total_votes_cast: metadata.total_votes_cast || 0,
+    status: metadata.status || 'active'
+  });
 
   const proposalId = metadata.proposal_id;
-  const totalVotes = (metadata.votes_for || 0) + (metadata.votes_against || 0) + (metadata.votes_abstain || 0);
-  const forPercentage = totalVotes > 0 ? ((metadata.votes_for || 0) / totalVotes) * 100 : 0;
-  const againstPercentage = totalVotes > 0 ? ((metadata.votes_against || 0) / totalVotes) * 100 : 0;
-  const abstainPercentage = totalVotes > 0 ? ((metadata.votes_abstain || 0) / totalVotes) * 100 : 0;
+  const totalVotes = liveVotes.total_votes_cast;
+  const forPercentage = totalVotes > 0 ? (liveVotes.votes_for / totalVotes) * 100 : 0;
+  const againstPercentage = totalVotes > 0 ? (liveVotes.votes_against / totalVotes) * 100 : 0;
+  const abstainPercentage = totalVotes > 0 ? (liveVotes.votes_abstain / totalVotes) * 100 : 0;
+
+  useEffect(() => {
+    if (!proposalId) return;
+
+    const fetchProposalData = async () => {
+      const { data, error } = await supabase
+        .from('governance_proposals')
+        .select('votes_for, votes_against, votes_abstain, total_votes_cast, status')
+        .eq('id', proposalId)
+        .single();
+
+      if (data && !error) {
+        setLiveVotes({
+          votes_for: data.votes_for || 0,
+          votes_against: data.votes_against || 0,
+          votes_abstain: data.votes_abstain || 0,
+          total_votes_cast: data.total_votes_cast || 0,
+          status: data.status || 'active'
+        });
+      }
+    };
+
+    fetchProposalData();
+
+    const channel = supabase
+      .channel(`proposal-${proposalId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'governance_proposals',
+          filter: `id=eq.${proposalId}`
+        },
+        (payload) => {
+          const newData = payload.new as any;
+          setLiveVotes({
+            votes_for: newData.votes_for || 0,
+            votes_against: newData.votes_against || 0,
+            votes_abstain: newData.votes_abstain || 0,
+            total_votes_cast: newData.total_votes_cast || 0,
+            status: newData.status || 'active'
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [proposalId]);
 
   const getSeverityBadge = (severity: string) => {
     const variants: Record<string, any> = {
@@ -180,7 +238,7 @@ export const MaintenanceProposalMessage = ({ metadata, createdAt }: MaintenanceP
             </div>
           </div>
 
-          {!hasVoted && metadata.status === 'active' && (
+          {!hasVoted && liveVotes.status === 'active' && (
             <div className="grid grid-cols-3 gap-2">
               <Button
                 size="sm"
