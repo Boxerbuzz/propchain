@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Shield, Lock, FileCheck, Building2, Database, Eye, CheckCircle2, AlertCircle, Users, Scale } from "lucide-react";
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 
 export default function Security() {
   const securityFeatures = [
@@ -336,12 +337,14 @@ export default function Security() {
                 <Link to="/support">Contact Support</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link to="/how-it-works">Learn How It Works</Link>
+                <Link to="/browse">Browse Properties</Link>
               </Button>
             </div>
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }

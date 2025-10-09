@@ -89,8 +89,6 @@ export default function Header() {
   const navigation = [
     { name: "Home", href: "/", icon: Home },
     { name: "Browse", href: "/browse", icon: Search },
-    { name: "How It Works", href: "/how-it-works", icon: CheckCircle },
-    { name: "About", href: "/about", icon: Building },
     { name: "Portfolio", href: "/portfolio", icon: TrendingUp },
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Chat", href: "/chat", icon: MessageCircle },

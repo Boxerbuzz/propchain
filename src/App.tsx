@@ -53,7 +53,8 @@ import RouteGuard from "./components/auth/RouteGuard";
 import { Toaster as HotToaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import NotFound from "./pages/NotFound";
-import { SpeedInsights } from "@vercel/speed-insights/react"
+import { SpeedInsights } from "@vercel/speed-insights/react";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,7 @@ const App = () => (
         <HotToaster />
         <SpeedInsights />
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             {/* Public routes (with main layout) */}
             <Route path="/" element={<MainLayout />}>

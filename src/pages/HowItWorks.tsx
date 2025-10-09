@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UserCheck, Search, Wallet, Building2, Coins, TrendingUp, Users, FileCheck, Shield, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 
 export default function HowItWorks() {
   const steps = [
@@ -208,6 +209,8 @@ export default function HowItWorks() {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }
