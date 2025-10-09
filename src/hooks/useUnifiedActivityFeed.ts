@@ -47,7 +47,7 @@ export const useUnifiedActivityFeed = (limit = 20) => {
                transaction.type === 'token_deposit' ? 'Token Deposit' :
                transaction.type === 'token_withdrawal' ? 'Token Withdrawal' :
                'Transaction',
-        description: transaction.description || `${transaction.direction === 'incoming' ? 'Received' : 'Sent'} ${transaction.amount} ${transaction.currency}`,
+        description: transaction.description || '',
         amount: transaction.amount,
         currency: transaction.currency,
         status: transaction.status,

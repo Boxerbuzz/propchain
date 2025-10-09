@@ -309,6 +309,36 @@ serve(async (req) => {
           updated_at: new Date().toISOString()
         })
         .eq('id', tokenization_id);
+
+      // Get associated chat room for this tokenization
+      const { data: chatRoom } = await supabase
+        .from('chat_rooms')
+        .select('id')
+        .eq('tokenization_id', tokenization_id)
+        .single();
+
+      // Send AI system message to chat
+      if (chatRoom) {
+        await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-chat-system-message`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            room_id: chatRoom.id,
+            message_text: `✅ Token distribution complete! ${results.distributed} investor${results.distributed > 1 ? 's' : ''} received their ${tokenization.token_symbol} tokens. You can now create governance proposals and participate in property decisions.`,
+            message_type: 'system',
+            metadata: {
+              event_type: 'tokens_distributed',
+              tokenization_id: tokenization_id,
+              token_id: tokenization.token_id,
+              investors_count: results.distributed,
+              token_symbol: tokenization.token_symbol
+            }
+          }),
+        });
+      }
     }
 
     console.log(`[DISTRIBUTE-TOKENS] Distribution complete. Distributed: ${results.distributed}, Skipped: ${results.skipped}, Failed: ${results.failed}`);

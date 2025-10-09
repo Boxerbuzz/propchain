@@ -66,7 +66,7 @@ export const useDashboard = () => {
     portfolioValue: portfolioData?.portfolioStats?.currentValue || 0,
     totalInvested: portfolioData?.portfolioStats?.totalInvested || 0,
     totalReturns: portfolioData?.portfolioStats?.totalReturn || 0,
-    propertiesCount: portfolioData?.investments?.length || 0,
+    propertiesCount: portfolioData?.portfolioStats?.totalProperties || 0,
     monthlyReturns: 0,
     walletBalance: wallets.reduce((sum, wallet) => sum + (wallet.balance_ngn || 0), 0),
     returnPercentage: portfolioData?.portfolioStats?.totalInvested > 0 
