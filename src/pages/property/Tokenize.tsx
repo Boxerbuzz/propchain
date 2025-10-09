@@ -798,7 +798,18 @@ const TokenizeProperty = () => {
                   </div>
                 )}
 
-                {step === 2 && (
+            {step === 3 && selectedType && (
+              <TokenizationTermsAcceptance
+                tokenizationType={selectedType}
+                tokenName={form.watch("token_name")}
+                totalSupply={form.watch("total_supply")}
+                onAccept={handleTermsAccept}
+                onDecline={handleTermsDecline}
+                isSubmitting={createTokenizationMutation.isPending}
+              />
+            )}
+
+            {step === 2 && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-2xl font-bold">Investment Details</h2>

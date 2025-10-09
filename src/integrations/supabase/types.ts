@@ -618,6 +618,8 @@ export type Database = {
           refund_processed_at: string | null
           reservation_expires_at: string | null
           reservation_status: string | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           tokenization_id: string | null
           tokens_allocated: number | null
           tokens_requested: number
@@ -640,6 +642,8 @@ export type Database = {
           refund_processed_at?: string | null
           reservation_expires_at?: string | null
           reservation_status?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           tokenization_id?: string | null
           tokens_allocated?: number | null
           tokens_requested: number
@@ -662,6 +666,8 @@ export type Database = {
           refund_processed_at?: string | null
           reservation_expires_at?: string | null
           reservation_status?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           tokenization_id?: string | null
           tokens_allocated?: number | null
           tokens_requested?: number
@@ -1908,6 +1914,8 @@ export type Database = {
           revenue_share_percentage: number | null
           status: string | null
           target_raise: number | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           token_id: string | null
           token_name: string | null
           token_symbol: string | null
@@ -1947,6 +1955,8 @@ export type Database = {
           revenue_share_percentage?: number | null
           status?: string | null
           target_raise?: number | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           token_id?: string | null
           token_name?: string | null
           token_symbol?: string | null
@@ -1986,6 +1996,8 @@ export type Database = {
           revenue_share_percentage?: number | null
           status?: string | null
           target_raise?: number | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           token_id?: string | null
           token_name?: string | null
           token_symbol?: string | null
