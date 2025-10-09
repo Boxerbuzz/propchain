@@ -450,6 +450,30 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Partners & Sponsors Section */}
+      <section className="py-16 bg-background-muted">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-3">Trusted Partners</h2>
+            <p className="text-muted-foreground">Powered by industry-leading technology and financial partners</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center max-w-4xl mx-auto">
+            <div className="flex items-center justify-center h-20 w-full bg-card rounded-lg p-6 border border-border hover:border-primary/30 transition-colors">
+              <span className="text-xl font-bold text-muted-foreground">Hedera</span>
+            </div>
+            <div className="flex items-center justify-center h-20 w-full bg-card rounded-lg p-6 border border-border hover:border-primary/30 transition-colors">
+              <span className="text-xl font-bold text-muted-foreground">Paystack</span>
+            </div>
+            <div className="flex items-center justify-center h-20 w-full bg-card rounded-lg p-6 border border-border hover:border-primary/30 transition-colors">
+              <span className="text-xl font-bold text-muted-foreground">SEC Nigeria</span>
+            </div>
+            <div className="flex items-center justify-center h-20 w-full bg-card rounded-lg p-6 border border-border hover:border-primary/30 transition-colors">
+              <span className="text-xl font-bold text-muted-foreground">IPFS</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">

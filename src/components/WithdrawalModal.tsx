@@ -7,7 +7,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wallet, Building2, Coins, ArrowRight, Info } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 interface WithdrawalModalProps {
   open: boolean;
@@ -96,17 +97,27 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Withdraw Funds</DialogTitle>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-2xl">Withdraw Funds</DialogTitle>
+          <p className="text-sm text-muted-foreground">Transfer your available balance to your preferred account</p>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Available Balance */}
-          <div className="bg-muted/50 p-4 rounded-lg">
-            <p className="text-sm text-muted-foreground">Available Balance</p>
-            <p className="text-2xl font-bold">₦{balance.toLocaleString()}</p>
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Available Balance Card */}
+          <Card className="p-6 bg-primary/5 border-primary/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Wallet className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Available Balance</p>
+                  <p className="text-3xl font-bold text-primary">₦{balance.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          </Card>
 
           {/* Amount */}
           <div className="space-y-2">
@@ -124,114 +135,186 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
           </div>
 
           {/* Withdrawal Method */}
-          <div className="space-y-2">
-            <Label>Withdrawal Method</Label>
-            <RadioGroup value={method} onValueChange={(value: any) => setMethod(value)}>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="bank_transfer" id="bank" />
-                <Label htmlFor="bank" className="font-normal cursor-pointer">
-                  Bank Transfer (₦100 fee)
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="hedera" id="hedera" />
-                <Label htmlFor="hedera" className="font-normal cursor-pointer">
-                  Hedera Account (Free)
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="usdc" id="usdc" />
-                <Label htmlFor="usdc" className="font-normal cursor-pointer">
-                  USDC Transfer (Free)
-                </Label>
-              </div>
+          <div className="space-y-3">
+            <Label className="text-base">Select Withdrawal Method</Label>
+            <RadioGroup value={method} onValueChange={(value: any) => setMethod(value)} className="gap-3">
+              <Card className={`cursor-pointer transition-all ${method === 'bank_transfer' ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
+                <label htmlFor="bank" className="flex items-center p-4 cursor-pointer">
+                  <RadioGroupItem value="bank_transfer" id="bank" className="mr-3" />
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Building2 className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold">Bank Transfer</p>
+                      <p className="text-sm text-muted-foreground">₦100 processing fee</p>
+                    </div>
+                  </div>
+                </label>
+              </Card>
+
+              <Card className={`cursor-pointer transition-all ${method === 'hedera' ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
+                <label htmlFor="hedera" className="flex items-center p-4 cursor-pointer">
+                  <RadioGroupItem value="hedera" id="hedera" className="mr-3" />
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Wallet className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold">Hedera Account</p>
+                      <p className="text-sm text-muted-foreground">Instant & Free</p>
+                    </div>
+                  </div>
+                </label>
+              </Card>
+
+              <Card className={`cursor-pointer transition-all ${method === 'usdc' ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
+                <label htmlFor="usdc" className="flex items-center p-4 cursor-pointer">
+                  <RadioGroupItem value="usdc" id="usdc" className="mr-3" />
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Coins className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold">USDC Transfer</p>
+                      <p className="text-sm text-muted-foreground">Stablecoin withdrawal - Free</p>
+                    </div>
+                  </div>
+                </label>
+              </Card>
             </RadioGroup>
           </div>
 
           {/* Bank Transfer Fields */}
           {method === "bank_transfer" && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="accountNumber">Account Number</Label>
-                <Input
-                  id="accountNumber"
-                  placeholder="1234567890"
-                  value={accountNumber}
-                  onChange={(e) => setAccountNumber(e.target.value)}
-                  required
-                />
+            <Card className="p-6 space-y-4 bg-muted/30">
+              <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                <Building2 className="h-4 w-4" />
+                <span>Bank Account Details</span>
               </div>
+              
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="accountNumber">Account Number</Label>
+                  <Input
+                    id="accountNumber"
+                    placeholder="1234567890"
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value)}
+                    required
+                    className="h-11"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="accountName">Account Name</Label>
-                <Input
-                  id="accountName"
-                  placeholder="John Doe"
-                  value={accountName}
-                  onChange={(e) => setAccountName(e.target.value)}
-                  required
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="accountName">Account Name</Label>
+                  <Input
+                    id="accountName"
+                    placeholder="John Doe"
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
+                    required
+                    className="h-11"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="bankName">Bank Name</Label>
-                <Select value={bankName} onValueChange={setBankName} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select bank" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gtbank">GTBank</SelectItem>
-                    <SelectItem value="access">Access Bank</SelectItem>
-                    <SelectItem value="zenith">Zenith Bank</SelectItem>
-                    <SelectItem value="firstbank">First Bank</SelectItem>
-                    <SelectItem value="uba">UBA</SelectItem>
-                    <SelectItem value="fidelity">Fidelity Bank</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="bankName">Bank Name</Label>
+                  <Select value={bankName} onValueChange={setBankName} required>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select your bank" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="gtbank">GTBank</SelectItem>
+                      <SelectItem value="access">Access Bank</SelectItem>
+                      <SelectItem value="zenith">Zenith Bank</SelectItem>
+                      <SelectItem value="firstbank">First Bank</SelectItem>
+                      <SelectItem value="uba">UBA</SelectItem>
+                      <SelectItem value="fidelity">Fidelity Bank</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </>
+            </Card>
           )}
 
           {/* Hedera/USDC Fields */}
           {(method === "hedera" || method === "usdc") && (
-            <div className="space-y-2">
-              <Label htmlFor="hederaAccount">Hedera Account ID</Label>
-              <Input
-                id="hederaAccount"
-                placeholder="0.0.123456"
-                value={hederaAccount}
-                onChange={(e) => setHederaAccount(e.target.value)}
-                required
-              />
-            </div>
+            <Card className="p-6 space-y-4 bg-muted/30">
+              <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                <Wallet className="h-4 w-4" />
+                <span>Hedera Account Details</span>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="hederaAccount">Hedera Account ID</Label>
+                <Input
+                  id="hederaAccount"
+                  placeholder="0.0.123456"
+                  value={hederaAccount}
+                  onChange={(e) => setHederaAccount(e.target.value)}
+                  required
+                  className="h-11 font-mono"
+                />
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Info className="h-3 w-3" />
+                  Enter your Hedera account ID in the format 0.0.XXXXXX
+                </p>
+              </div>
+            </Card>
           )}
 
           {/* Fee Summary */}
           {amount && (
-            <div className="bg-muted/50 p-4 rounded-lg space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span>Withdrawal Amount:</span>
-                <span className="font-medium">₦{Number(amount).toLocaleString()}</span>
+            <Card className="p-6 bg-primary/5 border-primary/20">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Withdrawal Amount</span>
+                  <span className="font-semibold text-lg">₦{Number(amount).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Processing Fee</span>
+                  <span className="font-medium text-muted-foreground">-₦{processingFee.toLocaleString()}</span>
+                </div>
+                <div className="h-px bg-border"></div>
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold">You Will Receive</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-primary">₦{netAmount.toLocaleString()}</span>
+                    <ArrowRight className="h-5 w-5 text-primary" />
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>Processing Fee:</span>
-                <span>₦{processingFee.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between font-bold text-base pt-2 border-t">
-                <span>You Will Receive:</span>
-                <span>₦{netAmount.toLocaleString()}</span>
-              </div>
-            </div>
+            </Card>
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+          <div className="flex gap-3 pt-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="flex-1 h-12" 
+              onClick={() => onOpenChange(false)}
+              disabled={loading}
+            >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Submit Request
+            <Button 
+              type="submit" 
+              className="flex-1 h-12 font-semibold" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Submit Request
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
             </Button>
           </div>
         </form>

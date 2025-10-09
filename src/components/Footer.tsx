@@ -155,12 +155,15 @@ export default function Footer() {
           </div>
         </div>
         
-        {/* Additional Info */}
+        {/* Regulatory Disclaimer */}
         <div className="mt-8 pt-6 border-t border-border">
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground leading-relaxed max-w-4xl mx-auto">
-              PropChain is a registered financial technology company. All investments carry risk, including potential loss of capital. 
-              Past performance does not guarantee future results. Please read our risk disclosure and terms of service carefully before investing.
+          <div className="bg-muted/30 rounded-lg p-6 space-y-3">
+            <h4 className="font-semibold text-sm">Regulatory Disclosure</h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              PropChain Technologies Limited ("PropChain") is registered and regulated by the Securities and Exchange Commission, Nigeria as a digital investment platform. PropChain does not provide investment advice and individual investors should make their own decisions or seek independent financial advice. The value of investments can go up as well as down and you may receive back less than your original investment. Tokenized real estate securities are facilitated by PropChain using Hedera distributed ledger technology. PropChain does not make any personal recommendations to buy, sell, or otherwise deal in investments. Investors make their own investment decisions. The services and securities provided by PropChain may not be suitable for all customers and, if you have any doubts, you should seek advice from an independent financial advisor.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              All property tokenizations are subject to regulatory approval and compliance with applicable securities laws. Investment opportunities are available only to verified users who have completed KYC requirements.
             </p>
           </div>
         </div>
