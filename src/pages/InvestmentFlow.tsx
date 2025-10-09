@@ -96,7 +96,7 @@ const InvestmentFlow = () => {
           .single();
 
         if (error) throw error;
-        setTokenization(data);
+        setTokenization(data as any);
       } catch (error) {
         console.error("Error fetching tokenization:", error);
         toast.error("Failed to load investment opportunity");

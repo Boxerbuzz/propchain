@@ -35,6 +35,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import MoneyInput from "@/components/ui/money-input";
+import TokenizationTermsAcceptance from "@/components/TokenizationTermsAcceptance";
 import {
   ArrowLeft,
   Building,
@@ -332,6 +333,14 @@ const TokenizeProperty = () => {
       toast.error(`Failed to create tokenization: ${details}${hint}${code}`);
     },
   });
+
+  const handleTermsAccept = () => {
+    form.handleSubmit(onSubmit)();
+  };
+
+  const handleTermsDecline = () => {
+    setStep(2);
+  };
 
   const handleTypeSelection = (type: TokenizationType) => {
     setSelectedType(type);
