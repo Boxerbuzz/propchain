@@ -32,7 +32,7 @@ const Portfolio = () => {
 
   // Fetch real portfolio data
   const { data: portfolioData, isLoading, error } = usePortfolio();
-  const { portfolioStats, investments, tokenHoldings } = portfolioData || {
+  const { portfolioStats, investments, tokenHoldings, dividendPayments } = portfolioData || {
     portfolioStats: {
       totalInvested: 0,
       currentValue: 0,
@@ -43,6 +43,7 @@ const Portfolio = () => {
     },
     investments: [],
     tokenHoldings: [],
+    dividendPayments: [],
   };
 
   // Transform investments data for display
@@ -69,10 +70,6 @@ const Portfolio = () => {
     totalTokens: 100000, // This would come from tokenizations table
     status: holding.balance > 0 ? "active" : "inactive",
     expectedReturn: "8.5%", // This would come from tokenizations table
-    nextDividend: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0], // Mock next month
-    dividendAmount: ((holding.total_invested_ngn || 0) * 0.08) / 12, // Mock monthly dividend
     imageUrl: "/placeholder.svg",
   }));
 
@@ -81,11 +78,12 @@ const Portfolio = () => {
     return inv.status === filter;
   });
 
-  const upcomingDividends = displayInvestments
-    .map((inv: any) => ({
-      property: inv.propertyTitle,
-      amount: inv.dividendAmount,
-      date: inv.nextDividend,
+  const upcomingDividends = (dividendPayments || [])
+    .filter((payment: any) => payment.payment_status === 'pending')
+    .map((payment: any) => ({
+      property: payment.tokenization_id || "Property",
+      amount: payment.amount_ngn || 0,
+      date: payment.distribution?.distribution_date || new Date().toISOString().split('T')[0],
     }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 3);

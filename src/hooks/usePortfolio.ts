@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabaseService } from "@/services/supabaseService";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Investment, TokenHolding, DividendPayment } from "../types";
 
@@ -36,9 +37,17 @@ export const usePortfolio = () => {
         };
       }
 
-      const [investments, tokenHoldings] = await Promise.all([
+      const [investments, tokenHoldings, dividendPayments] = await Promise.all([
         supabaseService.investments.listByUser(user.id),
         supabaseService.investments.getTokenHoldings(user.id),
+        supabase
+          .from('dividend_payments')
+          .select(`
+            *,
+            distribution:dividend_distributions(*)
+          `)
+          .eq('recipient_id', user.id)
+          .order('created_at', { ascending: false })
       ]);
       
       const totalInvested = tokenHoldings.reduce((sum: number, h: any) => sum + (h.total_invested_ngn || 0), 0);
@@ -62,7 +71,7 @@ export const usePortfolio = () => {
         portfolioStats,
         investments: investments as unknown as Investment[],
         tokenHoldings: tokenHoldings as unknown as TokenHolding[],
-        dividendPayments: [] as DividendPayment[]
+        dividendPayments: (dividendPayments.data || []) as unknown as DividendPayment[]
       };
     },
     enabled: !!user?.id && isAuthenticated,
