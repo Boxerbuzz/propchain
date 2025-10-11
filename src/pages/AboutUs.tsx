@@ -19,8 +19,21 @@ import {
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { cn } from "@/lib/utils";
+import { useRef } from "react";
 
 export default function AboutUs() {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    cardRef.current.style.setProperty('--mouse-x', `${x}px`);
+    cardRef.current.style.setProperty('--mouse-y', `${y}px`);
+  };
+
   const stats = [
     { label: "Properties Listed", value: "50+", icon: Building2 },
     { label: "Active Investors", value: "10,000+", icon: Users },
@@ -375,11 +388,29 @@ export default function AboutUs() {
         <div className="absolute inset-0 bg-gradient-to-b from-muted/40 to-background" />
         <div className="container mx-auto px-4 relative">
           <div className="max-w-6xl mx-auto">
-            <Card className="border-0 transition-all duration-500 relative overflow-hidden bg-gradient-to-br from-card via-card to-card/50">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary)/0.1),transparent_70%)]" />
-              <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-48 translate-x-48" />
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl translate-y-48 -translate-x-48" />
-              <CardContent className="p-12 md:p-20 relative">
+            {/* Glowing wrapper */}
+            <div 
+              ref={cardRef}
+              onMouseMove={handleMouseMove}
+              className="relative p-[2px] rounded-[20px] overflow-hidden group"
+              style={{
+                background: 'transparent',
+              }}
+            >
+              {/* Glow effect - uses ::before-like approach via a positioned div */}
+              <div 
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                style={{
+                  background: 'radial-gradient(circle 250px at var(--mouse-x, 50%) var(--mouse-y, 50%), hsl(var(--primary) / 0.4), transparent 80%)',
+                }}
+              />
+              
+              {/* Actual card content */}
+              <Card className="relative z-10 border-0 overflow-hidden bg-gradient-to-br from-card via-card to-card/50 rounded-[18px]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary)/0.1),transparent_70%)]" />
+                <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-48 translate-x-48" />
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl translate-y-48 -translate-x-48" />
+                <CardContent className="p-12 md:p-20 relative">
                 <div className="text-center">
                   <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mx-auto mb-8">
                     <Shield className="w-10 h-10 text-primary-foreground" />
@@ -432,7 +463,8 @@ export default function AboutUs() {
                   </p>
                 </div>
               </CardContent>
-            </Card>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
