@@ -10,6 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Wallet,
   CreditCard,
   ArrowUpDown,
@@ -23,6 +29,9 @@ import {
   Settings,
   RefreshCw,
   Hash,
+  Pencil,
+  Trash,
+  MoreVertical,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
@@ -365,10 +374,22 @@ const WalletDashboard = () => {
           <div className="lg:col-span-2">
             <Tabs defaultValue="transactions" className="space-y-6">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="transactions">Transactions</TabsTrigger>
-                <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
-                <TabsTrigger value="methods">Payment Methods</TabsTrigger>
-                <TabsTrigger value="wallets">Wallets</TabsTrigger>
+                <TabsTrigger value="transactions" className="gap-2">
+                  <History className="h-4 w-4" />
+                  <span className="hidden sm:inline">Transactions</span>
+                </TabsTrigger>
+                <TabsTrigger value="withdrawals" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  <span className="hidden sm:inline">Withdrawals</span>
+                </TabsTrigger>
+                <TabsTrigger value="methods" className="gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  <span className="hidden sm:inline">Payment Methods</span>
+                </TabsTrigger>
+                <TabsTrigger value="wallets" className="gap-2">
+                  <Wallet className="h-4 w-4" />
+                  <span className="hidden sm:inline">Wallets</span>
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="transactions" className="space-y-6">
@@ -625,7 +646,9 @@ const WalletDashboard = () => {
                           className="flex items-center justify-between p-4 border rounded-lg"
                         >
                           <div className="flex items-center gap-3">
-                            <CreditCard className="h-5 w-5 text-muted-foreground" />
+                            <div className="flex items-center justify-center w-[48px] h-[48px] rounded-full bg-muted">
+                              <CreditCard className="h-5 w-5 text-muted-foreground" />
+                            </div>
                             <div>
                               <p className="font-medium">{method.name}</p>
                               <div className="flex items-center gap-2">
@@ -648,14 +671,23 @@ const WalletDashboard = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                              Edit
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              Remove
-                            </Button>
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>
+                                <Pencil className="h-4 w-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-red-600 focus:text-red-600">
+                                <Trash className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       ))}
                     </div>
