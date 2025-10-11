@@ -29,6 +29,7 @@ import Dashboard from "./pages/Dashboard";
 import UnifiedWalletSetup from "./pages/wallet/UnifiedSetup";
 import WalletDashboard from "./pages/wallet/Dashboard";
 import WithdrawPage from "./pages/wallet/Withdraw";
+import WalletSettings from "./pages/wallet/Settings";
 import PropertyManagement from "./pages/property/Management";
 import EventSimulator from "./pages/property/EventSimulator";
 import PropertyView from "./pages/property/PropertyView";
@@ -109,6 +110,7 @@ const App = () => (
                 <Route path="/wallet/setup" element={<UnifiedWalletSetup />} />
                 <Route path="/wallet/dashboard" element={<WalletDashboard />} />
                 <Route path="/wallet/withdraw" element={<WithdrawPage />} />
+                <Route path="/wallet/settings" element={<WalletSettings />} />
                 <Route
                   path="/property/management"
                   element={<PropertyManagement />}
