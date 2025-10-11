@@ -10,6 +10,14 @@ interface WalletBalance {
   balanceNgn: number;
   lastSyncAt: string;
   tokens?: Record<string, number>;
+  usdcAssociated?: boolean;
+  usdcBalance?: number;
+  associatedTokens?: Array<{
+    tokenId: string;
+    tokenName: string;
+    tokenSymbol: string;
+    balance: number;
+  }>;
 }
 
 export const useWalletBalance = () => {
@@ -55,11 +63,28 @@ export const useWalletBalance = () => {
     },
   });
 
+  const associateUsdc = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('associate-usdc-token');
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wallet-balance', user?.hedera_account_id] });
+      toast.success('USDC associated successfully!');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to associate USDC');
+    },
+  });
+
   return {
     balance,
     isLoading,
     syncBalance: syncBalance.mutate,
     isSyncing: syncBalance.isPending,
+    associateUsdc: associateUsdc.mutate,
+    isAssociatingUsdc: associateUsdc.isPending,
     refetch,
   };
 };
