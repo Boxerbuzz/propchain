@@ -133,16 +133,26 @@ export default function HowItWorks() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden border-b">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <Badge className="mb-4" variant="secondary">
+      <section className="relative py-32 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(var(--primary)/0.08),transparent_50%)]" />
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-6xl mx-auto text-center">
+            <Badge
+              className="mb-6 text-sm px-5 py-1 bg-primary/10 hover:bg-primary/20 border-primary/20"
+              variant="outline"
+            >
+              <Sparkles className="w-3.5 h-3.5 mr-2 inline" />
               Investment Process
             </Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              How PropChain Works
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 leading-[1.1]">
+              How{" "}
+              <span className="block bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent mt-2">
+                PropChain Works
+              </span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light">
               From registration to earning returns, here's your complete guide
               to investing in Nigerian real estate through PropChain
             </p>
@@ -158,9 +168,10 @@ export default function HowItWorks() {
               {steps.map((step, index) => (
                 <Card
                   key={index}
-                  className="overflow-hidden group hover:shadow-lg transition-shadow"
+                  className="relative overflow-hidden border border-primary/20 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group"
                 >
-                  <CardContent className="p-0">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <CardContent className="p-0 relative">
                     <div className="grid md:grid-cols-2 items-stretch min-h-[500px]">
                       <div
                         className={`p-8 md:p-12 bg-gradient-to-br ${
@@ -207,7 +218,7 @@ export default function HowItWorks() {
                         <div className="relative w-full max-w-md">
                           {index === 0 && (
                             <>
-                              <Card className="relative z-30 bg-card border-2 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                              <Card className="relative z-30 bg-card/80 backdrop-blur-sm border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                                 <CardContent className="p-6">
                                   <div className="flex items-center gap-3 mb-4">
                                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -237,7 +248,7 @@ export default function HowItWorks() {
                                   </div>
                                 </CardContent>
                               </Card>
-                              <Card className="absolute top-8 -right-4 z-20 bg-card border shadow-lg w-[90%] rotate-3 hover:rotate-1 transition-all duration-300">
+                              <Card className="absolute top-8 -right-4 z-20 bg-card/70 backdrop-blur-sm border-0 shadow-md w-[90%] rotate-3 hover:rotate-1 transition-all duration-300">
                                 <CardContent className="p-6">
                                   <div className="flex items-center gap-3 mb-3">
                                     <MapPin className="w-5 h-5 text-primary animate-pulse" />
@@ -257,7 +268,7 @@ export default function HowItWorks() {
                                   </div>
                                 </CardContent>
                               </Card>
-                              <Card className="absolute top-16 -right-8 z-10 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border border-green-200 dark:border-green-800 shadow-md w-[85%] rotate-6 hover:rotate-3 transition-all duration-300">
+                              <Card className="absolute top-16 -right-8 z-10 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-0 shadow-sm w-[85%] rotate-6 hover:rotate-3 transition-all duration-300">
                                 <CardContent className="p-6">
                                   <div className="flex items-center gap-2">
                                     <CheckCircle className="w-5 h-5 text-green-600 animate-pulse" />
@@ -271,7 +282,7 @@ export default function HowItWorks() {
                           )}
                           {index === 1 && (
                             <>
-                              <Card className="relative z-30 bg-card border-2 shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group/property">
+                              <Card className="relative z-30 bg-card/80 backdrop-blur-sm border-0 shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group/property">
                                 <div className="h-40 bg-gradient-to-br from-primary/20 to-primary/5 relative overflow-hidden">
                                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent)] group-hover/property:scale-110 transition-transform duration-500"></div>
                                   <div className="absolute top-3 right-3">
@@ -315,7 +326,7 @@ export default function HowItWorks() {
                                   </p>
                                 </CardContent>
                               </Card>
-                              <Card className="absolute top-6 -right-6 z-20 bg-card border shadow-lg w-[85%] rotate-2 overflow-hidden opacity-80 hover:opacity-100 hover:rotate-1 transition-all duration-300">
+                              <Card className="absolute top-6 -right-6 z-20 bg-card/70 backdrop-blur-sm border-0 shadow-md w-[85%] rotate-2 overflow-hidden opacity-80 hover:opacity-100 hover:rotate-1 transition-all duration-300">
                                 <div className="h-32 bg-gradient-to-br from-blue-500/20 to-blue-500/5 relative">
                                   <div className="absolute top-2 right-2">
                                     <Badge
@@ -350,11 +361,44 @@ export default function HowItWorks() {
                           )}
                           {index === 2 && (
                             <>
-                              <Card className="relative z-30 bg-gradient-to-br from-card to-primary/5 border-2 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                              <Card className="relative z-30 bg-gradient-to-br from-card/80 to-primary/5 backdrop-blur-sm border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                                 <CardContent className="p-6">
                                   <div className="text-center mb-6">
-                                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-3 hover:bg-primary/20 transition-colors">
-                                      <Wallet className="w-7 h-7 text-primary" />
+                                    <div className="relative inline-flex items-center justify-center w-32 h-32 mb-3">
+                                      {/* Orbiting currencies */}
+                                      <div className="absolute inset-0 animate-spin" style={{ animationDuration: "10s" }}>
+                                        <img
+                                          src="/ngn.svg"
+                                          alt="NGN"
+                                          className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white p-1 shadow-md"
+                                        />
+                                      </div>
+                                      <div className="absolute inset-0 animate-spin" style={{ animationDuration: "12s" }}>
+                                        <img
+                                          src="/usdc.svg"
+                                          alt="USDC"
+                                          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white p-1 shadow-md"
+                                        />
+                                      </div>
+                                      <div className="absolute inset-0 animate-spin" style={{ animationDuration: "14s" }}>
+                                        <img
+                                          src="/hedera.svg"
+                                          alt="HBAR"
+                                          className="absolute top-1/2 right-0 -translate-y-1/2 w-8 h-8 rounded-full bg-white p-1 shadow-md"
+                                        />
+                                      </div>
+                                      <div className="absolute inset-0 animate-spin" style={{ animationDuration: "16s" }}>
+                                        <img
+                                          src="/usd.svg"
+                                          alt="USD"
+                                          className="absolute top-1/2 left-0 -translate-y-1/2 w-8 h-8 rounded-full bg-white p-1 shadow-md"
+                                        />
+                                      </div>
+                                      
+                                      {/* Center wallet icon */}
+                                      <div className="relative z-10 w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
+                                        <Wallet className="w-7 h-7 text-primary" />
+                                      </div>
                                     </div>
                                     <p className="text-sm text-muted-foreground mb-1">
                                       Available Balance
@@ -383,7 +427,7 @@ export default function HowItWorks() {
                                   </Button>
                                 </CardContent>
                               </Card>
-                              <Card className="absolute top-8 -right-4 z-20 bg-card border shadow-lg w-[90%] -rotate-3 hover:-rotate-1 transition-all duration-300">
+                              <Card className="absolute top-8 -right-4 z-20 bg-card/70 backdrop-blur-sm border-0 shadow-md w-[90%] -rotate-3 hover:-rotate-1 transition-all duration-300">
                                 <CardContent className="p-5">
                                   <div className="flex items-center justify-between group/payment cursor-pointer">
                                     <div className="flex items-center gap-3">
@@ -419,7 +463,7 @@ export default function HowItWorks() {
                           )}
                           {index === 3 && (
                             <>
-                              <Card className="relative z-30 bg-card border-2 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                              <Card className="relative z-30 bg-card/80 backdrop-blur-sm border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                                 <CardContent className="p-6">
                                   <div className="flex items-center gap-3 mb-4">
                                     <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center">
@@ -467,7 +511,7 @@ export default function HowItWorks() {
                                   </div>
                                 </CardContent>
                               </Card>
-                              <Card className="absolute top-8 -right-4 z-20 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 shadow-lg w-[90%] rotate-2 hover:rotate-1 transition-all duration-300">
+                              <Card className="absolute top-8 -right-4 z-20 bg-gradient-to-br from-primary/10 to-primary/5 backdrop-blur-sm border-0 shadow-md w-[90%] rotate-2 hover:rotate-1 transition-all duration-300">
                                 <CardContent className="p-5">
                                   <div className="space-y-3">
                                     <div className="flex justify-between items-center">
@@ -497,7 +541,7 @@ export default function HowItWorks() {
                           )}
                           {index === 4 && (
                             <>
-                              <Card className="relative z-30 bg-card border-2 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+                              <Card className="relative z-30 bg-card/80 backdrop-blur-sm border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
                                 <CardContent className="p-6 relative">
                                   <div className="flex items-center justify-between mb-4">
@@ -540,7 +584,7 @@ export default function HowItWorks() {
                                   </div>
                                 </CardContent>
                               </Card>
-                              <Card className="absolute top-8 -right-4 z-20 bg-card border shadow-lg w-[90%] -rotate-2 hover:-rotate-1 transition-all duration-300">
+                              <Card className="absolute top-8 -right-4 z-20 bg-card/70 backdrop-blur-sm border-0 shadow-md w-[90%] -rotate-2 hover:-rotate-1 transition-all duration-300">
                                 <CardContent className="p-5">
                                   <div className="flex items-center gap-3 mb-3">
                                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -575,7 +619,7 @@ export default function HowItWorks() {
                           )}
                           {index === 5 && (
                             <>
-                              <Card className="relative z-30 bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+                              <Card className="relative z-30 bg-gradient-to-br from-primary/10 to-primary/5 backdrop-blur-sm border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
                                 <div className="absolute top-0 left-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl"></div>
                                 <CardContent className="p-6 relative">
                                   <div className="flex items-center gap-2 mb-3">
@@ -605,7 +649,7 @@ export default function HowItWorks() {
                                   </div>
                                 </CardContent>
                               </Card>
-                              <Card className="absolute top-6 -right-4 z-20 bg-card border shadow-lg w-[90%] rotate-2 hover:rotate-1 transition-all duration-300">
+                              <Card className="absolute top-6 -right-4 z-20 bg-card/70 backdrop-blur-sm border-0 shadow-md w-[90%] rotate-2 hover:rotate-1 transition-all duration-300">
                                 <CardContent className="p-5">
                                   <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-2">
@@ -627,7 +671,7 @@ export default function HowItWorks() {
                                   </div>
                                 </CardContent>
                               </Card>
-                              <Card className="absolute top-12 -right-8 z-10 bg-card border shadow-md w-[85%] rotate-4 opacity-80 hover:opacity-100 hover:rotate-3 transition-all duration-300">
+                              <Card className="absolute top-12 -right-8 z-10 bg-card/60 backdrop-blur-sm border-0 shadow-sm w-[85%] rotate-4 opacity-80 hover:opacity-100 hover:rotate-3 transition-all duration-300">
                                 <CardContent className="p-5">
                                   <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-2">
@@ -663,14 +707,21 @@ export default function HowItWorks() {
       </section>
 
       {/* Advantages Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-muted/40 via-muted/20 to-background" />
+        <div className="container mx-auto px-4 relative">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <div className="text-center mb-20">
+              <Badge
+                className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+                variant="outline"
+              >
+                Why PropChain
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-bold mb-5">
                 Why Choose PropChain?
               </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light">
                 We combine traditional real estate investment with modern
                 technology and regulatory compliance
               </p>
@@ -679,16 +730,17 @@ export default function HowItWorks() {
               {advantages.map((advantage, index) => (
                 <Card
                   key={index}
-                  className="text-center hover:shadow-lg transition-shadow"
+                  className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group text-center"
                 >
-                  <CardContent className="p-8">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
-                      <advantage.icon className="w-8 h-8 text-primary" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <CardContent className="p-8 relative">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                      <advantage.icon className="w-7 h-7 text-primary" />
                     </div>
-                    <h3 className="text-xl font-bold mb-3">
+                    <h3 className="text-xl font-bold mb-4">
                       {advantage.title}
                     </h3>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                       {advantage.description}
                     </p>
                   </CardContent>
@@ -700,24 +752,45 @@ export default function HowItWorks() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
+      <section className="py-24">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Ready to Start Investing?
-            </h2>
-            <p className="text-xl text-muted-foreground mb-8">
-              Join thousands of Nigerians building wealth through fractional
-              real estate ownership
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild>
-                <Link to="/auth/signup">Get Started Now</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/browse">Browse Properties</Link>
-              </Button>
-            </div>
+          <div className="max-w-6xl mx-auto">
+            <Card className="border-0 relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-background">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,hsl(var(--primary)/0.15),transparent_60%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,hsl(var(--primary)/0.15),transparent_60%)]" />
+              <CardContent className="p-12 md:p-20 text-center relative">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                  Ready to{" "}
+                  <span className="block bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent mt-2">
+                    Start Investing?
+                  </span>
+                </h2>
+                <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed font-light">
+                  Join thousands of Nigerians building wealth through fractional
+                  real estate ownership
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button
+                    size="lg"
+                    asChild
+                    className="h-14 px-10 text-lg transition-all"
+                  >
+                    <Link to="/auth/signup">
+                      Get Started Now
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Link>
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    asChild
+                    className="h-14 px-10 text-lg"
+                  >
+                    <Link to="/browse">Browse Properties</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
