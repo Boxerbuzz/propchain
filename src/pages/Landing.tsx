@@ -656,8 +656,10 @@ export default function Landing() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="hidden md:flex -left-12" />
-              <CarouselNext className="hidden md:flex -right-12" />
+              <div className="flex justify-center gap-2 mt-8">
+                <CarouselPrevious className="relative left-0 translate-x-0 translate-y-0" />
+                <CarouselNext className="relative right-0 translate-x-0 translate-y-0" />
+              </div>
             </Carousel>
           </div>
         </div>
