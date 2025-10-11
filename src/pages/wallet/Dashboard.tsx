@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   Card,
   CardContent,
@@ -32,6 +33,8 @@ import {
   Pencil,
   Trash,
   MoreVertical,
+  ArrowLeftRight,
+  Upload,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
@@ -54,6 +57,7 @@ const WalletDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showBalance, setShowBalance] = useState(true);
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
   const [filteredTransactions, setFilteredTransactions] = useState<
     Transaction[]
   >([]);
@@ -114,6 +118,72 @@ const WalletDashboard = () => {
     totalWithdrawn: transactionSummary.totalWithdrawn,
     walletAddress: user?.hedera_account_id || "No wallet connected",
     lastSyncAt: hederaBalance?.lastSyncAt,
+  };
+
+  // Currency cards configuration
+  const currencyCards = [
+    {
+      id: "ngn",
+      name: "Nigerian Naira",
+      symbol: "NGN",
+      icon: "/ngn.svg",
+      balance: walletData.balance,
+      displayBalance: `₦${walletData.balance.toLocaleString()}`,
+      gradient: "from-green-500 to-emerald-600",
+      iconBg: "bg-green-100 dark:bg-green-900/30",
+    },
+    {
+      id: "hbar",
+      name: "Hedera",
+      symbol: "HBAR",
+      icon: "/hedera.svg",
+      balance: walletData.balanceHbar,
+      displayBalance: `${walletData.balanceHbar.toFixed(4)} HBAR`,
+      gradient: "from-purple-500 to-indigo-600",
+      iconBg: "bg-purple-100 dark:bg-purple-900/30",
+      secondaryInfo: `$${walletData.balanceUsd.toFixed(2)}`,
+    },
+    {
+      id: "usdc",
+      name: "USD Coin",
+      symbol: "USDC",
+      icon: "/usdc.svg",
+      balance: hederaBalance?.usdcBalance || 0,
+      displayBalance: `${(hederaBalance?.usdcBalance || 0).toFixed(2)} USDC`,
+      gradient: "from-blue-500 to-cyan-600",
+      iconBg: "bg-blue-100 dark:bg-blue-900/30",
+      secondaryInfo: `≈ $${(hederaBalance?.usdcBalance || 0).toFixed(2)}`,
+    },
+  ];
+
+  const handleNextCard = () => {
+    setActiveCardIndex((prev) => (prev + 1) % currencyCards.length);
+  };
+
+  const handlePrevCard = () => {
+    setActiveCardIndex(
+      (prev) => (prev - 1 + currencyCards.length) % currencyCards.length
+    );
+  };
+
+  const handleDragEnd = (
+    event: any,
+    info: { offset: { x: number }; velocity: { x: number } }
+  ) => {
+    const swipeThreshold = 50;
+    const swipeVelocityThreshold = 500;
+
+    if (
+      info.offset.x > swipeThreshold ||
+      info.velocity.x > swipeVelocityThreshold
+    ) {
+      handlePrevCard();
+    } else if (
+      info.offset.x < -swipeThreshold ||
+      info.velocity.x < -swipeVelocityThreshold
+    ) {
+      handleNextCard();
+    }
   };
 
   // Filter transactions based on criteria
@@ -299,74 +369,181 @@ const WalletDashboard = () => {
 
         {/* Wallet Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-          <Card className="md:col-span-2">
-            <CardHeader className="pb-0">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-lg">Total Balance</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowBalance(!showBalance)}
-                >
-                  {showBalance ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold mb-2">
-                {showBalance
-                  ? `₦${walletData.balance.toLocaleString()}`
-                  : "••••••"}
-              </div>
-              {walletData.balanceHbar > 0 && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  {walletData.balanceHbar.toFixed(4)} HBAR • $
-                  {walletData.balanceUsd.toFixed(2)} • ₦
-                  {(hederaBalance?.balanceNgn || 0).toLocaleString()}
-                </p>
-              )}
-              {walletData.lastSyncAt && (
-                <p className="text-xs text-muted-foreground mt-2 hidden">
-                  Last synced:{" "}
-                  {new Date(walletData.lastSyncAt).toLocaleString()}
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          {/* Animated Currency Card Stack */}
+          <div className="md:col-span-2 relative">
+            <div className="relative h-[180px] perspective-1000">
+              {currencyCards.map((card, index) => {
+                const offset = index - activeCardIndex;
+                const isActive = index === activeCardIndex;
+                const isVisible = Math.abs(offset) <= 1;
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Deposited
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ₦{walletData.totalDeposited.toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground">Lifetime deposits</p>
-            </CardContent>
-          </Card>
+                return (
+                  <motion.div
+                    key={card.id}
+                    initial={false}
+                    animate={{
+                      x: offset * 28,
+                      y: offset * -12,
+                      scale: isActive ? 1 : 0.95 - Math.abs(offset) * 0.05,
+                      opacity: isActive ? 1 : 0.7,
+                      zIndex: 10 - Math.abs(offset),
+                      rotateY: offset * -6,
+                    }}
+                    drag={isActive ? "x" : false}
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.5}
+                    onDragEnd={isActive ? handleDragEnd : undefined}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                    }}
+                    className="absolute top-0 left-0 w-full cursor-grab active:cursor-grabbing"
+                    style={{
+                      pointerEvents: isActive ? "auto" : "none",
+                      display: isVisible ? "block" : "none",
+                    }}
+                  >
+                    <Card
+                      className={`h-[180px] overflow-hidden bg-gradient-to-br ${card.gradient} text-white border-0 shadow-lg hover:shadow-xl transition-shadow`}
+                    >
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-12 h-12 rounded-full ${card.iconBg} flex items-center justify-center`}
+                            >
+                              <img
+                                src={card.icon}
+                                alt={card.symbol}
+                                className="w-7 h-7 object-contain"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none";
+                                  e.currentTarget.parentElement!.innerHTML = `<span class="text-xl font-bold">${card.symbol[0]}</span>`;
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <CardTitle className="text-sm font-medium text-white/90">
+                                {card.name}
+                              </CardTitle>
+                              <p className="text-xs text-white/70">
+                                {card.symbol}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowBalance(!showBalance);
+                            }}
+                            className="text-white hover:bg-white/20"
+                          >
+                            {showBalance ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="text-3xl font-bold mb-1">
+                          {showBalance ? card.displayBalance : "••••••"}
+                        </div>
+                        {card.secondaryInfo && (
+                          <p className="text-sm text-white/80">
+                            {showBalance ? card.secondaryInfo : "••••"}
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Withdrawn
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ₦{walletData.totalWithdrawn.toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Lifetime withdrawals
-              </p>
-            </CardContent>
-          </Card>
+            {/* Navigation Indicators */}
+            <div className="flex justify-center gap-2 mt-0 hidden">
+              {currencyCards.map((card, index) => (
+                <button
+                  type="button"
+                  key={card.id}
+                  onClick={() => setActiveCardIndex(index)}
+                  aria-label={`Show ${card.name} card`}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    index === activeCardIndex
+                      ? "bg-primary w-8"
+                      : "bg-muted-foreground/30 w-2"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <motion.div whileHover="hover" className="cursor-pointer">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex flex-col items-start gap-2">
+                  <motion.div
+                    variants={{
+                      hover: {
+                        y: -8,
+                        transition: { duration: 0.3 },
+                      },
+                    }}
+                    className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-full w-10 h-10 flex items-center justify-center border border-green-200 dark:border-green-700"
+                  >
+                    <ArrowUpDown className="h-4 w-4 text-green-600 rotate-180" />
+                  </motion.div>
+                  <CardTitle className="text-sm font-medium">
+                    Total Deposited
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  ₦{walletData.totalDeposited.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Lifetime deposits
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div whileHover="hover" className="cursor-pointer">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex flex-col items-start gap-2">
+                  <motion.div
+                    variants={{
+                      hover: {
+                        y: 8,
+                        transition: { duration: 0.3 },
+                      },
+                    }}
+                    className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-full w-10 h-10 flex items-center justify-center border border-red-200 dark:border-red-700"
+                  >
+                    <ArrowUpDown className="h-4 w-4 text-red-600" />
+                  </motion.div>
+                  <CardTitle className="text-sm font-medium">
+                    Total Withdrawn
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  ₦{walletData.totalWithdrawn.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Lifetime withdrawals
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
@@ -482,7 +659,7 @@ const WalletDashboard = () => {
                                   ? "+"
                                   : "-"}
                                 {transaction.currency === "HBAR"
-                                  ? `${transaction.amount.toFixed(4)} HBAR`
+                                  ? `${transaction.amount.toFixed(4)} ℏ`
                                   : transaction.currency === "NGN"
                                   ? `₦${transaction.amount.toLocaleString()}`
                                   : `${transaction.amount} ${transaction.currency}`}
@@ -786,6 +963,57 @@ const WalletDashboard = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-around gap-4">
+                  <button
+                    className="flex flex-col items-center gap-2"
+                    onClick={() => {
+                      toast({
+                        title: "Swap",
+                        description: "Swap functionality coming soon",
+                      });
+                    }}
+                  >
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-700 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
+                      <ArrowLeftRight className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span className="text-xs font-medium">Swap</span>
+                  </button>
+
+                  <button
+                    className="flex flex-col items-center gap-2"
+                    onClick={() => navigate("/wallet/withdraw")}
+                    disabled={!user?.hedera_account_id || stats.walletBalance <= 0}
+                  >
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-700 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
+                      <Download className="h-6 w-6 text-red-600 dark:text-red-400" />
+                    </div>
+                    <span className="text-xs font-medium">Withdraw</span>
+                  </button>
+
+                  <button
+                    className="flex flex-col items-center gap-2"
+                    onClick={() => {
+                      toast({
+                        title: "Fund Wallet",
+                        description: "Funding functionality coming soon",
+                      });
+                    }}
+                  >
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
+                      <Upload className="h-6 w-6 text-green-600 dark:text-green-400" />
+                    </div>
+                    <span className="text-xs font-medium">Fund</span>
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Wallet Address */}
             <Card>
               <CardHeader>
