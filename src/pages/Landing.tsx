@@ -17,8 +17,6 @@ import {
   Users,
   TrendingUp,
   Shield,
-  Zap,
-  Globe,
   CheckCircle,
   Wallet,
   FileText,
@@ -148,42 +146,42 @@ export default function Landing() {
       title: "Fractional Ownership",
       description:
         "Start investing with as little as ₦10,000. Own a fraction of high-value properties that were previously out of reach.",
-      stat: "From ₦10k"
+      stat: "From ₦10k",
     },
     {
       icon: TrendingUp,
       title: "Passive Rental Income",
       description:
         "Earn monthly rental income proportional to your ownership. Dividends are automatically distributed to your wallet.",
-      stat: "Monthly Returns"
+      stat: "Monthly Returns",
     },
     {
       icon: FileText,
       title: "Hedera Verified",
       description:
         "Every property token is backed by real assets and secured on Hedera's distributed ledger. Full transparency with immutable ownership records.",
-      stat: "100% Transparent"
+      stat: "100% Transparent",
     },
     {
       icon: BarChart3,
       title: "Property Appreciation",
       description:
         "Benefit from property value increases over time. Your tokens appreciate as the property value grows.",
-      stat: "Capital Gains"
+      stat: "Capital Gains",
     },
     {
       icon: Users,
       title: "Governance Rights",
       description:
         "Vote on major property decisions like renovations, tenant selection, and sale timing. Your investment, your voice.",
-      stat: "Vote & Decide"
+      stat: "Vote & Decide",
     },
     {
       icon: Lock,
       title: "SEC Compliant",
       description:
         "Fully regulated under Nigerian securities law. All properties undergo legal verification and compliance checks.",
-      stat: "Legally Protected"
+      stat: "Legally Protected",
     },
   ];
 
@@ -192,25 +190,29 @@ export default function Landing() {
       step: "01",
       icon: CheckCircle,
       title: "Create Account & Verify",
-      description: "Sign up in minutes and complete KYC verification. We ensure a secure and compliant investment environment.",
+      description:
+        "Sign up in minutes and complete KYC verification. We ensure a secure and compliant investment environment.",
     },
     {
       step: "02",
       icon: Building,
       title: "Browse Properties",
-      description: "Explore tokenized properties with detailed information, location, returns, and investment terms.",
+      description:
+        "Explore tokenized properties with detailed information, location, returns, and investment terms.",
     },
     {
       step: "03",
       icon: Wallet,
       title: "Invest & Own Tokens",
-      description: "Choose your investment amount and receive property tokens instantly in your wallet.",
+      description:
+        "Choose your investment amount and receive property tokens instantly in your wallet.",
     },
     {
       step: "04",
       icon: TrendingUp,
       title: "Earn & Grow",
-      description: "Receive monthly rental income and benefit from property appreciation. Sell tokens anytime on our marketplace.",
+      description:
+        "Receive monthly rental income and benefit from property appreciation. Sell tokens anytime on our marketplace.",
     },
   ];
 
@@ -219,73 +221,82 @@ export default function Landing() {
       name: "Adebayo Johnson",
       role: "Software Engineer",
       image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Adebayo",
-      content: "PropChain made it possible for me to invest in Lagos real estate while living abroad. The returns are consistent and the platform is incredibly transparent.",
+      content:
+        "PropChain made it possible for me to invest in Lagos real estate while living abroad. The returns are consistent and the platform is incredibly transparent.",
       investment: "₦2.5M invested",
-      returns: "12% annual return"
+      returns: "12% annual return",
     },
     {
       name: "Chioma Okafor",
       role: "Business Owner",
       image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Chioma",
-      content: "I started with just ₦50,000 to test the platform. Now I own tokens in 5 different properties. The monthly dividends are a great passive income stream.",
+      content:
+        "I started with just ₦50,000 to test the platform. Now I own tokens in 5 different properties. The monthly dividends are a great passive income stream.",
       investment: "₦800K invested",
-      returns: "₦9,600 monthly"
+      returns: "₦9,600 monthly",
     },
     {
       name: "Emmanuel Obi",
       role: "Healthcare Professional",
       image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emmanuel",
-      content: "The governance feature is brilliant. I actually have a say in property management decisions. It's not just investing, it's real ownership.",
+      content:
+        "The governance feature is brilliant. I actually have a say in property management decisions. It's not just investing, it's real ownership.",
       investment: "₦1.2M invested",
-      returns: "15% annual return"
+      returns: "15% annual return",
     },
     {
       name: "Funmilayo Adeyemi",
       role: "Teacher",
       image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Funmilayo",
-      content: "As a teacher, I never thought I could own property in Victoria Island. PropChain broke down those barriers. My ₦10,000 monthly investment is building my future.",
+      content:
+        "As a teacher, I never thought I could own property in Victoria Island. PropChain broke down those barriers. My ₦10,000 monthly investment is building my future.",
       investment: "₦120K invested",
-      returns: "₦1,400 monthly"
+      returns: "₦1,400 monthly",
     },
     {
       name: "Oluwatobi Fashola",
       role: "Marketing Manager",
       image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Oluwatobi",
-      content: "The Hedera blockchain integration gives me confidence. Every transaction is transparent and verifiable. Plus, the SEC compliance means my investment is legally protected.",
+      content:
+        "The Hedera blockchain integration gives me confidence. Every transaction is transparent and verifiable. Plus, the SEC compliance means my investment is legally protected.",
       investment: "₦3.8M invested",
-      returns: "14% annual return"
+      returns: "14% annual return",
     },
     {
       name: "Amina Bello",
       role: "Financial Analyst",
       image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Amina",
-      content: "I've analyzed many real estate platforms, and PropChain stands out. The tokenization model is solid, dividends are punctual, and the ROI beats my bank savings by far.",
+      content:
+        "I've analyzed many real estate platforms, and PropChain stands out. The tokenization model is solid, dividends are punctual, and the ROI beats my bank savings by far.",
       investment: "₦5.2M invested",
-      returns: "₦62,400 monthly"
+      returns: "₦62,400 monthly",
     },
     {
       name: "Chukwuemeka Nwosu",
       role: "Entrepreneur",
       image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Chukwuemeka",
-      content: "PropChain is perfect for diversification. Instead of putting all my money in one property, I spread it across 8 different locations. Risk management at its finest!",
+      content:
+        "PropChain is perfect for diversification. Instead of putting all my money in one property, I spread it across 8 different locations. Risk management at its finest!",
       investment: "₦6.5M invested",
-      returns: "18% annual return"
+      returns: "18% annual return",
     },
     {
       name: "Blessing Okoro",
       role: "Nurse",
       image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Blessing",
-      content: "I love how easy it is to use. From KYC to receiving my first dividend took less than 2 weeks. The customer support team is also very responsive and helpful.",
+      content:
+        "I love how easy it is to use. From KYC to receiving my first dividend took less than 2 weeks. The customer support team is also very responsive and helpful.",
       investment: "₦450K invested",
-      returns: "₦5,200 monthly"
+      returns: "₦5,200 monthly",
     },
     {
       name: "Ibrahim Yusuf",
       role: "Civil Servant",
       image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ibrahim",
-      content: "Finally, a platform that lets ordinary Nigerians benefit from real estate appreciation. My small investments are growing steadily, and I can see my property values increase in real-time.",
+      content:
+        "Finally, a platform that lets ordinary Nigerians benefit from real estate appreciation. My small investments are growing steadily, and I can see my property values increase in real-time.",
       investment: "₦280K invested",
-      returns: "11% annual return"
+      returns: "11% annual return",
     },
   ];
 
@@ -301,14 +312,13 @@ export default function Landing() {
 
             <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
               Own Real Estate with{" "}
-              <span className="text-primary">
-                As Little As ₦10,000
-              </span>
+              <span className="text-primary">As Little As ₦10,000</span>
             </h1>
 
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-              Invest in fractions of premium Nigerian properties through tokenized ownership on Hedera. 
-              Earn monthly rental income, participate in governance, and trade your ownership anytime.
+              Invest in fractions of premium Nigerian properties through
+              tokenized ownership on Hedera. Earn monthly rental income,
+              participate in governance, and trade your ownership anytime.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
@@ -482,20 +492,18 @@ export default function Landing() {
                 key={index}
                 className="bg-background border border-border rounded-2xl p-6 hover:shadow-lg hover:border-primary/30 transition-all group"
               >
-                <div className="mb-6">
-                  <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                <div className="mb-6 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                     <feature.icon className="h-8 w-8 text-primary" />
                   </div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-bold text-foreground">
-                      {feature.title}
-                    </h3>
-                    <Badge variant="secondary" className="text-xs font-semibold">
-                      {feature.stat}
-                    </Badge>
-                  </div>
+                  <h3 className="text-lg font-bold text-foreground">
+                    {feature.title}
+                  </h3>
+                  <Badge variant="secondary" className="text-xs font-semibold">
+                    {feature.stat}
+                  </Badge>
                 </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <p className="text-muted-foreground text-sm leading-relaxed text-center">
                   {feature.description}
                 </p>
               </div>
@@ -508,21 +516,33 @@ export default function Landing() {
       <section className="py-16 bg-background-muted">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-3">Trusted Partners</h2>
-            <p className="text-muted-foreground">Powered by industry-leading technology and financial partners</p>
+            <h2 className="text-3xl font-bold text-foreground mb-3">
+              Trusted Partners
+            </h2>
+            <p className="text-muted-foreground">
+              Powered by industry-leading technology and financial partners
+            </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center max-w-4xl mx-auto">
             <div className="flex items-center justify-center h-20 w-full bg-card rounded-lg p-6 border border-border hover:border-primary/30 transition-colors">
-              <span className="text-xl font-bold text-muted-foreground">Hedera</span>
+              <span className="text-xl font-bold text-muted-foreground">
+                Hedera
+              </span>
             </div>
             <div className="flex items-center justify-center h-20 w-full bg-card rounded-lg p-6 border border-border hover:border-primary/30 transition-colors">
-              <span className="text-xl font-bold text-muted-foreground">Paystack</span>
+              <span className="text-xl font-bold text-muted-foreground">
+                Paystack
+              </span>
             </div>
             <div className="flex items-center justify-center h-20 w-full bg-card rounded-lg p-6 border border-border hover:border-primary/30 transition-colors">
-              <span className="text-xl font-bold text-muted-foreground">SEC Nigeria</span>
+              <span className="text-xl font-bold text-muted-foreground">
+                SEC Nigeria
+              </span>
             </div>
             <div className="flex items-center justify-center h-20 w-full bg-card rounded-lg p-6 border border-border hover:border-primary/30 transition-colors">
-              <span className="text-xl font-bold text-muted-foreground">IPFS</span>
+              <span className="text-xl font-bold text-muted-foreground">
+                IPFS
+              </span>
             </div>
           </div>
         </div>
@@ -536,7 +556,8 @@ export default function Landing() {
               What Our Investors Say
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Join thousands of satisfied investors building wealth through tokenized real estate
+              Join thousands of satisfied investors building wealth through
+              tokenized real estate
             </p>
           </div>
 
@@ -553,7 +574,10 @@ export default function Landing() {
             >
               <CarouselContent className="-ml-2 md:-ml-4">
                 {testimonials.map((testimonial, index) => (
-                  <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <CarouselItem
+                    key={index}
+                    className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3"
+                  >
                     <div className="h-full">
                       <div className="bg-card border border-border rounded-2xl p-8 hover:border-primary/30 hover:shadow-lg transition-all h-full flex flex-col">
                         <div className="flex items-center gap-4 mb-6">
@@ -576,14 +600,18 @@ export default function Landing() {
                         </p>
                         <div className="flex items-center gap-4 pt-4 border-t border-border">
                           <div className="flex-1">
-                            <p className="text-xs text-muted-foreground mb-1">Total Invested</p>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Total Invested
+                            </p>
                             <p className="font-bold text-foreground">
                               {testimonial.investment}
                             </p>
                           </div>
                           <div className="h-10 w-px bg-border"></div>
                           <div className="flex-1">
-                            <p className="text-xs text-muted-foreground mb-1">Returns</p>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Returns
+                            </p>
                             <p className="font-bold text-primary">
                               {testimonial.returns}
                             </p>
@@ -609,7 +637,8 @@ export default function Landing() {
               Start Building Your Real Estate Portfolio Today
             </h2>
             <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
-              Join thousands of Nigerians investing in premium properties through tokenized real estate
+              Join thousands of Nigerians investing in premium properties
+              through tokenized real estate
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
               <Link to="/auth/signup">
