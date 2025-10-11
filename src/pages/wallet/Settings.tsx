@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 import { 
   Shield, 
   Key, 
@@ -15,10 +16,15 @@ import {
   EyeOff, 
   Download,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Coins,
+  CheckCircle,
+  XCircle
 } from "lucide-react";
+import { useWalletBalance } from "@/hooks/useWalletBalance";
 
 const WalletSettings = () => {
+  const { balance, isLoading, associateUsdc, isAssociatingUsdc } = useWalletBalance();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -182,6 +188,108 @@ const WalletSettings = () => {
                   <Smartphone className="h-4 w-4 mr-2" />
                   Manage 2FA
                 </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Token Association Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Coins className="h-5 w-5" />
+              Token Association
+            </CardTitle>
+            <CardDescription>
+              Manage your associated tokens for trading and transfers
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* USDC Association Status */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-base font-medium">USDC Token</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Token ID: 0.0.429274 (Hedera Testnet)
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {isLoading ? (
+                    <span className="text-sm text-muted-foreground">Loading...</span>
+                  ) : balance?.usdcAssociated ? (
+                    <>
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span className="text-sm font-medium text-green-500">Associated</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-5 w-5 text-destructive" />
+                      <span className="text-sm font-medium text-destructive">Not Associated</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {balance?.usdcAssociated && balance?.usdcBalance !== undefined && (
+                <div className="rounded-lg bg-muted p-3">
+                  <p className="text-sm text-muted-foreground">Current Balance</p>
+                  <p className="text-2xl font-bold">{balance.usdcBalance.toFixed(2)} USDC</p>
+                </div>
+              )}
+
+              {!balance?.usdcAssociated && (
+                <div className="space-y-3">
+                  <Alert>
+                    <AlertDescription>
+                      You need to associate USDC with your wallet before you can receive or trade USDC tokens.
+                    </AlertDescription>
+                  </Alert>
+                  <Button 
+                    onClick={() => associateUsdc()} 
+                    disabled={isAssociatingUsdc}
+                    className="w-full"
+                  >
+                    {isAssociatingUsdc ? "Associating..." : "Associate USDC Token"}
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Associated Property Tokens */}
+            <div className="space-y-4">
+              <div>
+                <Label className="text-base font-medium">Property Tokens</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Tokens are automatically associated when you invest in properties
+                </p>
+              </div>
+              
+              {balance?.associatedTokens && balance.associatedTokens.length > 0 ? (
+                <div className="space-y-2">
+                  {balance.associatedTokens.map((token) => (
+                    <div key={token.tokenId} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div className="space-y-1">
+                        <p className="font-medium">{token.tokenName}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {token.tokenSymbol} • {token.tokenId}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">{token.balance.toLocaleString()}</p>
+                        <p className="text-sm text-muted-foreground">tokens</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Alert>
+                  <AlertDescription>
+                    You don't have any property tokens yet. Invest in tokenized properties to receive tokens.
+                  </AlertDescription>
+                </Alert>
               )}
             </div>
           </CardContent>

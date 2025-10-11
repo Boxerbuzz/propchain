@@ -37,17 +37,17 @@ import {
   TransactionFilters,
   type FilterOptions,
 } from "@/components/TransactionFilters";
-import WithdrawalModal from "@/components/WithdrawalModal";
 import { useWithdrawals } from "@/hooks/useWithdrawals";
+import { useNavigate } from "react-router-dom";
 
 const WalletDashboard = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [showBalance, setShowBalance] = useState(true);
   const [filteredTransactions, setFilteredTransactions] = useState<
     Transaction[]
   >([]);
-  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
 
   const { connectedWallets, disconnectExternalWallet } = useWalletConnect();
 
@@ -271,7 +271,7 @@ const WalletDashboard = () => {
             <Button
               variant="default"
               size="sm"
-              onClick={() => setShowWithdrawalModal(true)}
+              onClick={() => navigate("/wallet/withdraw")}
               disabled={!user?.hedera_account_id || stats.walletBalance <= 0}
             >
               <Download className="h-4 w-4" />
@@ -279,6 +279,12 @@ const WalletDashboard = () => {
             </Button>
             <Button variant="outline" size="sm">
               <Settings className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate("/wallet/settings")}
+            >
+              <Settings className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Settings</span>
             </Button>
           </div>
@@ -530,7 +536,7 @@ const WalletDashboard = () => {
                         <p>No withdrawal requests yet</p>
                         <Button
                           className="mt-4"
-                          onClick={() => setShowWithdrawalModal(true)}
+                          onClick={() => navigate("/wallet/withdraw")}
                           disabled={
                             !user?.hedera_account_id || stats.walletBalance <= 0
                           }
@@ -776,18 +782,6 @@ const WalletDashboard = () => {
           </div>
         </div>
       </div>
-
-      {/* Withdrawal Modal */}
-      <WithdrawalModal
-        open={showWithdrawalModal}
-        onOpenChange={setShowWithdrawalModal}
-        balance={stats.walletBalance}
-        onSuccess={() => {
-          refetchTransactions();
-          // Refetch withdrawals list
-          window.location.reload(); // Temporary solution until we have proper refetch
-        }}
-      />
     </div>
   );
 };
