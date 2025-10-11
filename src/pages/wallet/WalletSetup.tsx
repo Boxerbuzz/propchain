@@ -21,7 +21,7 @@ import { useHederaAccount } from "@/hooks/useHederaAccount";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
 import { HEDERA_WALLETS } from "@/lib/walletConnect";
 
-export default function UnifiedWalletSetup() {
+export default function WalletSetup() {
   const navigate = useNavigate();
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const { createAccount, isCreating, hasAccount } = useHederaAccount();

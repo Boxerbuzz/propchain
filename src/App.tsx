@@ -26,7 +26,7 @@ import Address from "./pages/kyc/Address";
 import Review from "./pages/kyc/Review";
 import KYCStatus from "./pages/kyc/Status";
 import Dashboard from "./pages/Dashboard";
-import UnifiedWalletSetup from "./pages/wallet/UnifiedSetup";
+import WalletSetup from "./pages/wallet/WalletSetup";
 import WalletDashboard from "./pages/wallet/Dashboard";
 import WithdrawPage from "./pages/wallet/Withdraw";
 import WalletSettings from "./pages/wallet/Settings";
@@ -107,7 +107,7 @@ const App = () => (
                   element={<PortfolioDetail />}
                 />
                 <Route path="/favorites" element={<Favorites />} />
-                <Route path="/wallet/setup" element={<UnifiedWalletSetup />} />
+                <Route path="/wallet/setup" element={<WalletSetup />} />
                 <Route path="/wallet/dashboard" element={<WalletDashboard />} />
                 <Route path="/wallet/withdraw" element={<WithdrawPage />} />
                 <Route path="/wallet/settings" element={<WalletSettings />} />
