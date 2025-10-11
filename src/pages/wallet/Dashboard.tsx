@@ -277,14 +277,12 @@ const WalletDashboard = () => {
               <Download className="h-4 w-4" />
               <span className="hidden sm:inline">Withdraw</span>
             </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4" />
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => navigate("/wallet/settings")}
             >
-              <Settings className="h-4 w-4 mr-2" />
+              <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Settings</span>
             </Button>
           </div>
