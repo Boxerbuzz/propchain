@@ -100,6 +100,39 @@ serve(async (req) => {
         updated_at: new Date().toISOString(),
       });
 
+    // Auto-associate USDC token with the new account
+    console.log('Auto-associating USDC token for new account:', accountResult.data.accountId);
+    try {
+      const usdcResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/associate-usdc-token`, {
+        method: 'POST',
+        headers: {
+          'Authorization': req.headers.get('Authorization') || '',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const usdcResult = await usdcResponse.json();
+
+      if (usdcResult.success) {
+        console.log('USDC associated successfully');
+        
+        // Update wallet to mark USDC as associated
+        await supabaseClient
+          .from('wallets')
+          .update({
+            usdc_associated: true,
+            usdc_associated_at: new Date().toISOString(),
+          })
+          .eq('user_id', userId)
+          .eq('hedera_account_id', accountResult.data.accountId);
+      } else {
+        console.error('USDC association failed (non-critical):', usdcResult.error);
+      }
+    } catch (usdcError) {
+      console.error('USDC association error (non-critical):', usdcError);
+      // Continue even if USDC association fails
+    }
+
     // Create notification
     await supabaseClient
       .from('notifications')

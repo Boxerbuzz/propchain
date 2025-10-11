@@ -2239,6 +2239,8 @@ export type Database = {
           public_key: string | null
           security_level: string | null
           updated_at: string | null
+          usdc_associated: boolean | null
+          usdc_associated_at: string | null
           usdc_token_association_tx: string | null
           user_id: string | null
           wallet_name: string | null
@@ -2259,6 +2261,8 @@ export type Database = {
           public_key?: string | null
           security_level?: string | null
           updated_at?: string | null
+          usdc_associated?: boolean | null
+          usdc_associated_at?: string | null
           usdc_token_association_tx?: string | null
           user_id?: string | null
           wallet_name?: string | null
@@ -2279,6 +2283,8 @@ export type Database = {
           public_key?: string | null
           security_level?: string | null
           updated_at?: string | null
+          usdc_associated?: boolean | null
+          usdc_associated_at?: string | null
           usdc_token_association_tx?: string | null
           user_id?: string | null
           wallet_name?: string | null
@@ -2298,6 +2304,7 @@ export type Database = {
         Row: {
           amount_ngn: number
           amount_usd: number | null
+          auto_processed: boolean | null
           bank_account_name: string | null
           bank_account_number: string | null
           bank_code: string | null
@@ -2320,6 +2327,7 @@ export type Database = {
         Insert: {
           amount_ngn: number
           amount_usd?: number | null
+          auto_processed?: boolean | null
           bank_account_name?: string | null
           bank_account_number?: string | null
           bank_code?: string | null
@@ -2342,6 +2350,7 @@ export type Database = {
         Update: {
           amount_ngn?: number
           amount_usd?: number | null
+          auto_processed?: boolean | null
           bank_account_name?: string | null
           bank_account_number?: string | null
           bank_code?: string | null
