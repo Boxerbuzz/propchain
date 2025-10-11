@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
+import { cn } from "@/lib/utils";
 
 export default function AboutUs() {
   const stats = [
@@ -148,7 +149,7 @@ export default function AboutUs() {
             {stats.map((stat, index) => (
               <Card
                 key={index}
-                className="relative overflow-hidden border-1 border-primary/20 bg-card/50 backdrop-blur-sm hover:bg-card transition-all group"
+                className="relative overflow-hidden border border-gray/10 bg-card/50 backdrop-blur-sm hover:bg-card transition-all group"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <CardContent className="p-8 relative">
@@ -182,7 +183,7 @@ export default function AboutUs() {
               </p>
             </div>
             <div className="grid md:grid-cols-2 gap-8">
-              <Card className="border-1 border-primary/20 transition-all duration-500 group relative overflow-hidden bg-gradient-to-br from-card to-card/50">
+              <Card className="border border-primary/20 transition-all duration-500 group relative overflow-hidden bg-gradient-to-br from-card to-card/50">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-32 translate-x-32 group-hover:scale-150 transition-transform duration-700" />
                 <CardContent className="p-12 relative">
@@ -218,7 +219,7 @@ export default function AboutUs() {
                 </CardContent>
               </Card>
 
-              <Card className="border-0 transition-all duration-500 group relative overflow-hidden bg-gradient-to-br from-card to-card/50">
+              <Card className="border border-primary/20 transition-all duration-500 group relative overflow-hidden bg-gradient-to-br from-card to-card/50">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute top-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-32 -translate-x-32 group-hover:scale-150 transition-transform duration-700" />
                 <CardContent className="p-12 relative">
@@ -281,7 +282,7 @@ export default function AboutUs() {
               {values.map((value, index) => (
                 <Card
                   key={index}
-                  className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group"
+                  className="relative overflow-hidden border border-gray/10 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <CardContent className="p-8 relative">
@@ -339,9 +340,9 @@ export default function AboutUs() {
                             : "md:text-left md:pl-12"
                         }`}
                       >
-                        <Card className="inline-block border-0 transition-all duration-300 group overflow-hidden bg-gradient-to-br from-card to-card/50">
-                          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                          <CardContent className="p-8 relative">
+                        <Card className="inline-block border transition-all duration-300 overflow-hidden bg-gradient-to-br from-card to-card/50">
+                          <CardContent className="p-8 relative group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             <Badge className="mb-4 bg-primary text-primary-foreground font-bold text-lg px-4 py-1.5">
                               {milestone.year}
                             </Badge>

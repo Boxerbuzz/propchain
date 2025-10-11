@@ -368,7 +368,7 @@ export default function Landing() {
             {platformStats.map((stat, index) => (
               <Card
                 key={index}
-                className="relative overflow-hidden border-1 border-primary/20 bg-card/50 backdrop-blur-sm hover:bg-card transition-all group"
+                className="relative overflow-hidden border border-primary/20 bg-card/50 backdrop-blur-sm hover:bg-card transition-all group"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <CardContent className="p-8 relative">
@@ -505,7 +505,7 @@ export default function Landing() {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group"
+                className="relative overflow-hidden border border-zinc/10 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <CardContent className="p-8 relative">
@@ -610,7 +610,7 @@ export default function Landing() {
                     className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3"
                   >
                     <div className="h-full">
-                      <Card className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 h-full flex flex-col group">
+                      <Card className="relative overflow-hidden border bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 h-full flex flex-col group">
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         <CardContent className="p-8 relative flex flex-col h-full">
                           <div className="flex items-center gap-4 mb-6">

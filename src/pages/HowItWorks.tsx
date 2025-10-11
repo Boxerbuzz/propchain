@@ -366,35 +366,51 @@ export default function HowItWorks() {
                                   <div className="text-center mb-6">
                                     <div className="relative inline-flex items-center justify-center w-32 h-32 mb-3">
                                       {/* Orbiting currencies */}
-                                      <div className="absolute inset-0 animate-spin" style={{ animationDuration: "10s" }}>
+                                      {/* eslint-disable-next-line react/forbid-dom-props */}
+                                      <div
+                                        className="absolute inset-0 animate-spin"
+                                        style={{ animationDuration: "10s" }}
+                                      >
                                         <img
                                           src="/ngn.svg"
                                           alt="NGN"
                                           className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white p-1 shadow-md"
                                         />
                                       </div>
-                                      <div className="absolute inset-0 animate-spin" style={{ animationDuration: "12s" }}>
+                                      {/* eslint-disable-next-line react/forbid-dom-props */}
+                                      <div
+                                        className="absolute inset-0 animate-spin"
+                                        style={{ animationDuration: "12s" }}
+                                      >
                                         <img
                                           src="/usdc.svg"
                                           alt="USDC"
                                           className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white p-1 shadow-md"
                                         />
                                       </div>
-                                      <div className="absolute inset-0 animate-spin" style={{ animationDuration: "14s" }}>
+                                      {/* eslint-disable-next-line react/forbid-dom-props */}
+                                      <div
+                                        className="absolute inset-0 animate-spin"
+                                        style={{ animationDuration: "14s" }}
+                                      >
                                         <img
                                           src="/hedera.svg"
                                           alt="HBAR"
                                           className="absolute top-1/2 right-0 -translate-y-1/2 w-8 h-8 rounded-full bg-white p-1 shadow-md"
                                         />
                                       </div>
-                                      <div className="absolute inset-0 animate-spin" style={{ animationDuration: "16s" }}>
+                                      {/* eslint-disable-next-line react/forbid-dom-props */}
+                                      <div
+                                        className="absolute inset-0 animate-spin"
+                                        style={{ animationDuration: "16s" }}
+                                      >
                                         <img
                                           src="/usd.svg"
                                           alt="USD"
                                           className="absolute top-1/2 left-0 -translate-y-1/2 w-8 h-8 rounded-full bg-white p-1 shadow-md"
                                         />
                                       </div>
-                                      
+
                                       {/* Center wallet icon */}
                                       <div className="relative z-10 w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
                                         <Wallet className="w-7 h-7 text-primary" />
@@ -730,7 +746,7 @@ export default function HowItWorks() {
               {advantages.map((advantage, index) => (
                 <Card
                   key={index}
-                  className="relative overflow-hidden border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group text-center"
+                  className="relative overflow-hidden border border-zinc/10 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group text-center"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <CardContent className="p-8 relative">
