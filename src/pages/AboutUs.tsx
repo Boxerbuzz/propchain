@@ -332,7 +332,13 @@ export default function AboutUs() {
                         index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
                       }`}
                     >
-                      <div className={`flex-1 ml-12 md:ml-0 ${index % 2 === 0 ? "md:text-right md:pr-12" : "md:text-left md:pl-12"}`}>
+                      <div
+                        className={`flex-1 ml-12 md:ml-0 ${
+                          index % 2 === 0
+                            ? "md:text-right md:pr-12"
+                            : "md:text-left md:pl-12"
+                        }`}
+                      >
                         <Card className="inline-block border-0 transition-all duration-300 group overflow-hidden bg-gradient-to-br from-card to-card/50">
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <CardContent className="p-8 relative">

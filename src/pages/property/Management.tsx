@@ -434,20 +434,20 @@ const PropertyManagement = () => {
               size="sm"
               onClick={() => navigate("/property/events")}
             >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Record Events</span>
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Record Events</span>
             </Button>
             <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Filter</span>
+              <Filter className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Filter</span>
             </Button>
             <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Export</span>
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Export</span>
             </Button>
             <Button size="sm" onClick={() => navigate("/properties/register")}>
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Add Property</span>
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Add Property</span>
             </Button>
           </div>
         </div>
@@ -654,10 +654,6 @@ const PropertyManagement = () => {
                                         Ready for Tokenization
                                       </Badge>
                                     ) : null}
-
-                                    <span className="text-sm text-muted-foreground">
-                                      0 investors
-                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -844,7 +840,7 @@ const PropertyManagement = () => {
                                                     "warning"
                                                   ? "text-orange-600 focus:text-orange-600 hover:bg-gray-100"
                                                   : "hover:bg-gray-100",
-                                                  "focus:bg-primary/50 focus:text-white"
+                                                "focus:bg-primary/50 focus:text-white"
                                               )}
                                             >
                                               <Icon className="h-4 w-4 mr-2" />

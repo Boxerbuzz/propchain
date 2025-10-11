@@ -260,7 +260,7 @@ const WalletDashboard = () => {
               }
             >
               <RefreshCw
-                className={`h-4 w-4 mr-2 ${
+                className={`h-4 w-4 ${
                   isSyncing || transactionsLoading ? "animate-spin" : ""
                 }`}
               />
@@ -274,11 +274,11 @@ const WalletDashboard = () => {
               onClick={() => setShowWithdrawalModal(true)}
               disabled={!user?.hedera_account_id || stats.walletBalance <= 0}
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-4 w-4" />
               <span className="hidden sm:inline">Withdraw</span>
             </Button>
             <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
+              <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Settings</span>
             </Button>
           </div>
@@ -287,7 +287,7 @@ const WalletDashboard = () => {
         {/* Wallet Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card className="md:col-span-2">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-0">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-lg">Total Balance</CardTitle>
                 <Button
@@ -317,7 +317,7 @@ const WalletDashboard = () => {
                 </p>
               )}
               {walletData.lastSyncAt && (
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-muted-foreground mt-2 hidden">
                   Last synced:{" "}
                   {new Date(walletData.lastSyncAt).toLocaleString()}
                 </p>

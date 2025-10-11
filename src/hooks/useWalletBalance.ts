@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -16,14 +16,21 @@ export const useWalletBalance = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: balance, isLoading, refetch } = useQuery({
-    queryKey: ['wallet-balance', user?.hedera_account_id],
+  const {
+    data: balance,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["wallet-balance", user?.hedera_account_id],
     queryFn: async (): Promise<WalletBalance | null> => {
       if (!user?.hedera_account_id) return null;
-      
-      const { data, error } = await supabase.functions.invoke('sync-wallet-balance', {
-        body: { hederaAccountId: user.hedera_account_id }
-      });
+
+      const { data, error } = await supabase.functions.invoke(
+        "sync-wallet-balance",
+        {
+          body: { hederaAccountId: user.hedera_account_id },
+        }
+      );
 
       if (error) throw error;
       return data;
@@ -36,22 +43,28 @@ export const useWalletBalance = () => {
   const syncBalance = useMutation({
     mutationFn: async () => {
       if (!user?.hedera_account_id) {
-        throw new Error('No Hedera account found');
+        throw new Error("No Hedera account found");
       }
 
-      const { data, error } = await supabase.functions.invoke('sync-wallet-balance', {
-        body: { hederaAccountId: user.hedera_account_id }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "sync-wallet-balance",
+        {
+          body: { hederaAccountId: user.hedera_account_id },
+        }
+      );
 
       if (error) throw error;
       return data;
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['wallet-balance', user?.hedera_account_id], data);
-      toast.success('Wallet balance synced successfully!');
+      queryClient.setQueryData(
+        ["wallet-balance", user?.hedera_account_id],
+        data
+      );
+      toast.success("Wallet balance synced successfully!");
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to sync wallet balance');
+      toast.error(error.message || "Failed to sync wallet balance");
     },
   });
 
