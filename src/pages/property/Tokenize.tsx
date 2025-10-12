@@ -170,42 +170,48 @@ const createTokenizationSchema = (propertyValue: number) =>
         path: ["minimum_raise"],
       }
     )
-    .refine(
-      (data) => {
-        if (data.tokenization_type === "equity") {
-          return data.target_raise <= propertyValue;
-        } else if (data.tokenization_type === "debt") {
-          const maxDebtRaise = propertyValue * 0.8;
-          return data.target_raise <= maxDebtRaise;
-        }
-        return true;
-      },
-      {
-        message:
-          "Target raise exceeds the allowed limit for this tokenization type",
-        path: ["target_raise"],
+    .superRefine((data, ctx) => {
+      const type = data.tokenization_type;
+      const totalTokenValue = data.total_supply * data.price_per_token;
+
+      // Compute per-type limits
+      let maxTargetRaise = Infinity;
+      let maxTotalTokenValue = Infinity;
+      let ruleText = "";
+
+      if (type === "equity") {
+        maxTargetRaise = propertyValue;
+        maxTotalTokenValue = propertyValue;
+        ruleText = "cannot exceed property value";
+      } else if (type === "debt") {
+        maxTargetRaise = propertyValue * 0.8;
+        maxTotalTokenValue = propertyValue * 0.8;
+        ruleText = "max 80% Loan-to-Value (LTV)";
+      } else if (type === "revenue") {
+        // For revenue, we allow token value up to 2× property value as proxy for future cashflows
+        maxTargetRaise = Infinity; // no hard cap on target raise here
+        maxTotalTokenValue = propertyValue * 2;
+        ruleText = "max 2× property value (cashflow proxy)";
       }
-    )
-    .refine(
-      (data) => {
-        const maxPossibleRaise = data.total_supply * data.price_per_token;
-        
-        if (data.tokenization_type === "equity") {
-          return maxPossibleRaise <= propertyValue;
-        } else if (data.tokenization_type === "debt") {
-          const maxDebtValue = propertyValue * 0.8;
-          return maxPossibleRaise <= maxDebtValue;
-        } else if (data.tokenization_type === "revenue") {
-          const maxRevenueValue = propertyValue * 2;
-          return maxPossibleRaise <= maxRevenueValue;
-        }
-        return true;
-      },
-      {
-        message: "Total token value (supply × price) exceeds the allowed limit for this tokenization type",
-        path: ["total_supply"],
+
+      // Target raise vs per-type limit (when finite)
+      if (isFinite(maxTargetRaise) && data.target_raise > maxTargetRaise) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Target raise ₦${data.target_raise.toLocaleString()} exceeds max ₦${Math.floor(maxTargetRaise).toLocaleString()} for ${type} (${ruleText}).`,
+          path: ["target_raise"],
+        });
       }
-    )
+
+      // Total token value vs per-type limit
+      if (totalTokenValue > maxTotalTokenValue) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Total token value (supply × price) ₦${Math.floor(totalTokenValue).toLocaleString()} exceeds max ₦${Math.floor(maxTotalTokenValue).toLocaleString()} for ${type} (${ruleText}).`,
+          path: ["total_supply"],
+        });
+      }
+    })
     .refine(
       (data) => {
         if (data.max_investment) {
@@ -280,6 +286,21 @@ const TokenizeProperty = () => {
   const targetRaise = form.watch("target_raise");
   const maxPossibleRaise =
     totalSupply && pricePerToken ? totalSupply * pricePerToken : 0;
+
+  const propertyEstValue = property?.estimated_value || 0;
+  const typeMaxTotalValue =
+    selectedType === "equity"
+      ? propertyEstValue
+      : selectedType === "debt"
+      ? propertyEstValue * 0.8
+      : propertyEstValue * 2;
+  const typeRuleText =
+    selectedType === "equity"
+      ? "cannot exceed property value"
+      : selectedType === "debt"
+      ? "max 80% Loan-to-Value (LTV)"
+      : "max 2× property value (cashflow proxy)";
+
 
   const createTokenizationMutation = useMutation({
     mutationFn: async (data: TokenizationForm) => {
@@ -394,7 +415,7 @@ const TokenizeProperty = () => {
       );
     }
 
-    setStep(1);
+    // Do NOT auto-advance; wait for user to click Continue
   };
 
   const nextStep = async (e?: React.MouseEvent) => {
@@ -403,6 +424,16 @@ const TokenizeProperty = () => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
+    }
+
+    // Step 0: require a selection before proceeding
+    if (step === 0) {
+      if (!selectedType) {
+        toast.error("Please select a tokenization type to continue");
+        return;
+      }
+      setStep(1);
+      return;
     }
 
     // Step 1 validation
@@ -444,7 +475,6 @@ const TokenizeProperty = () => {
       return;
     }
   };
-
   const prevStep = () => {
     if (step === 1) {
       setStep(0);
@@ -528,26 +558,39 @@ const TokenizeProperty = () => {
 
                 <div className="grid md:grid-cols-3 gap-4">
                   {tokenizationTypes.map((type) => (
-                    <Card
-                      key={type.id}
-                      className={`cursor-pointer transition-all hover:shadow-lg ${
-                        selectedType === type.id ? "ring-2 ring-primary" : ""
-                      }`}
-                      onClick={() => handleTypeSelection(type.id)}
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex flex-col items-center text-center space-y-4">
-                          <type.icon className="h-12 w-12 text-primary" />
-                          <div>
-                            <h3 className="font-semibold">{type.title}</h3>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {type.description}
-                            </p>
-                          </div>
-                          <Badge variant="secondary">{type.badge}</Badge>
+                    <HoverCard key={type.id} openDelay={150} closeDelay={100}>
+                      <HoverCardTrigger asChild>
+                        <Card
+                          className={`cursor-pointer transition-all hover:shadow-lg ${
+                            selectedType === type.id ? "ring-2 ring-primary" : ""
+                          }`}
+                          onClick={() => handleTypeSelection(type.id)}
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex flex-col items-center text-center space-y-4">
+                              <type.icon className="h-12 w-12 text-primary" />
+                              <div>
+                                <h3 className="font-semibold">{type.title}</h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  {type.description}
+                                </p>
+                              </div>
+                              <Badge variant="secondary">{type.badge}</Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </HoverCardTrigger>
+                      <HoverCardContent align="center" className="w-80">
+                        <div className="space-y-2 text-sm">
+                          <p><span className="font-medium">Structure:</span> {type.details.structure}</p>
+                          <p><span className="font-medium">Returns:</span> {type.details.returns}</p>
+                          <p><span className="font-medium">Risk:</span> {type.details.risk}</p>
+                          <p><span className="font-medium">Rights:</span> {type.details.rights}</p>
+                          <p><span className="font-medium">Example:</span> {type.details.example}</p>
+                          <p className="text-primary font-medium">Limit: {type.details.maxRaise}</p>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </HoverCardContent>
+                    </HoverCard>
                   ))}
                 </div>
               </div>
@@ -602,9 +645,16 @@ const TokenizeProperty = () => {
                             <FormLabel>Total Supply</FormLabel>
                             <FormControl>
                               <Input
-                                type="number"
-                                {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                type="text"
+                                inputMode="numeric"
+                                value={form.watch("total_supply") ? form.watch("total_supply").toLocaleString() : ""}
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/,/g, "");
+                                  const num = parseFloat(raw);
+                                  field.onChange(isNaN(num) ? 0 : num);
+                                }}
+                                onFocus={(e) => e.target.select()}
+                                placeholder="e.g., 10,000"
                               />
                             </FormControl>
                             <FormMessage />
@@ -619,10 +669,12 @@ const TokenizeProperty = () => {
                           <FormItem>
                             <FormLabel>Price per Token (₦)</FormLabel>
                             <FormControl>
-                              <Input
-                                type="number"
-                                {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                              <MoneyInput
+                                value={field.value}
+                                onChange={(v) => field.onChange(v)}
+                                placeholder="e.g., 1,000"
+                                currency="₦"
+                                min={0.01}
                               />
                             </FormControl>
                             <FormMessage />
@@ -632,11 +684,14 @@ const TokenizeProperty = () => {
                     </div>
 
                     {maxPossibleRaise > 0 && (
-                      <div className="p-4 bg-muted rounded-lg">
-                        <p className="text-sm font-medium">
-                          Maximum Possible Raise: ₦{maxPossibleRaise.toLocaleString()}
-                        </p>
-                      </div>
+                        <div className="p-4 bg-muted rounded-lg space-y-1">
+                          <p className="text-sm font-medium">
+                            Maximum Possible Raise: ₦{maxPossibleRaise.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Per-type cap (supply × price): ₦{Math.floor(typeMaxTotalValue).toLocaleString()} — {typeRuleText}
+                          </p>
+                        </div>
                     )}
                   </CardContent>
                 </Card>
