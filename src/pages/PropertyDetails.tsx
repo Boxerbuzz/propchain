@@ -7,7 +7,6 @@ import FavoriteButton from "@/components/FavoriteButton";
 import {
   MapPin,
   Building,
-  Users,
   Calendar,
   TrendingUp,
   FileText,
@@ -15,6 +14,7 @@ import {
   Play,
   ArrowLeft,
   Share,
+  Coins,
 } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -315,7 +315,7 @@ export default function PropertyDetails() {
 
                 <div className="bg-background-muted border border-border rounded-lg p-3 md:p-4">
                   <div className="flex items-center mb-2">
-                    <Users className="h-4 w-4 text-muted-foreground mr-1" />
+                    <Coins className="h-4 w-4 text-muted-foreground mr-1" />
                     <span className="text-xs md:text-sm text-muted-foreground">
                       Tokens Sold
                     </span>
@@ -399,7 +399,7 @@ export default function PropertyDetails() {
                   {ownerProfile && (
                     <div>
                       <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">
-                        Property Owner
+                        Project Manager
                       </h3>
                       <div className="bg-background-muted border border-border rounded-lg p-4">
                         <div className="flex items-start justify-start gap-4">
@@ -433,34 +433,6 @@ export default function PropertyDetails() {
                             </Badge>
                           )}
                         </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Property Manager Section */}
-                  {managerProfile && (
-                    <div>
-                      <h3 className="text-lg md:text-xl font-semibold text-foreground mb-4">
-                        Property Manager
-                      </h3>
-                      <div className="bg-background-muted border border-border rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-medium text-foreground">
-                            {managerProfile.first_name}{" "}
-                            {managerProfile.last_name}
-                          </h4>
-                          {managerProfile.kyc_status === "verified" && (
-                            <Badge
-                              variant="secondary"
-                              className="status-verified"
-                            >
-                              Verified
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Professional property management services
-                        </p>
                       </div>
                     </div>
                   )}
@@ -667,7 +639,7 @@ export default function PropertyDetails() {
                 {[1, 2].map((_, index) => (
                   <div
                     key={index}
-                    className="flex space-x-3 mobile-flex items-center border border-border rounded-lg p-4 cursor-pointer"
+                    className="flex space-x-3 items-center border border-border rounded-lg p-4 cursor-pointer hover:border-primary/30 transition-colors"
                   >
                     <img
                       src={`https://zjtqptljuggbymcoovey.supabase.co/storage/v1/object/public/property-images/placeholder.svg`}
