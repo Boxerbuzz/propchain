@@ -10,6 +10,13 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Form,
   FormControl,
@@ -378,7 +385,7 @@ const TokenizeProperty = () => {
   };
 
   const handleTermsDecline = () => {
-    setStep(2);
+    setStep(3);
   };
 
   const handleTypeSelection = (type: TokenizationType) => {
@@ -387,32 +394,26 @@ const TokenizeProperty = () => {
 
     // Set type-specific default values
     if (type === "equity") {
-      form.setValue(
-        "target_raise",
-        property ? Math.floor(property.estimated_value * 0.8) : 0
-      );
-      form.setValue(
-        "minimum_raise",
-        property ? Math.floor(property.estimated_value * 0.3) : 0
-      );
+      form.setValue("target_raise", property ? Math.floor(property.estimated_value * 0.8) : 0);
+      form.setValue("minimum_raise", property ? Math.floor(property.estimated_value * 0.3) : 0);
+      form.setValue("expected_roi_annual", 12);
+      form.setValue("dividend_frequency", "quarterly");
+      form.setValue("management_fee_percentage", 2.5);
+      form.setValue("platform_fee_percentage", 1.0);
     } else if (type === "debt") {
-      form.setValue(
-        "target_raise",
-        property ? Math.floor(property.estimated_value * 0.7) : 0
-      );
-      form.setValue(
-        "minimum_raise",
-        property ? Math.floor(property.estimated_value * 0.5) : 0
-      );
+      form.setValue("target_raise", property ? Math.floor(property.estimated_value * 0.7) : 0);
+      form.setValue("minimum_raise", property ? Math.floor(property.estimated_value * 0.5) : 0);
+      form.setValue("expected_roi_annual", 7);
+      form.setValue("dividend_frequency", "monthly");
+      form.setValue("management_fee_percentage", 1.5);
+      form.setValue("platform_fee_percentage", 1.0);
     } else if (type === "revenue") {
-      form.setValue(
-        "target_raise",
-        property ? Math.floor(property.estimated_value * 0.5) : 0
-      );
-      form.setValue(
-        "minimum_raise",
-        property ? Math.floor(property.estimated_value * 0.25) : 0
-      );
+      form.setValue("target_raise", property ? Math.floor(property.estimated_value * 0.5) : 0);
+      form.setValue("minimum_raise", property ? Math.floor(property.estimated_value * 0.25) : 0);
+      form.setValue("expected_roi_annual", 10);
+      form.setValue("dividend_frequency", "monthly");
+      form.setValue("management_fee_percentage", 3.0);
+      form.setValue("platform_fee_percentage", 1.0);
     }
 
     // Do NOT auto-advance; wait for user to click Continue
@@ -436,7 +437,7 @@ const TokenizeProperty = () => {
       return;
     }
 
-    // Step 1 validation
+    // Step 1 validation - Basic Token Info
     if (step === 1) {
       const isValid = await form.trigger([
         "token_name",
@@ -451,8 +452,23 @@ const TokenizeProperty = () => {
       return;
     }
 
-    // Step 2 validation - Use of Funds
+    // Step 2 validation - Investment Details
     if (step === 2) {
+      const isValid = await form.trigger([
+        "target_raise",
+        "minimum_raise",
+        "min_investment",
+        "investment_window_days",
+      ]);
+
+      if (isValid) {
+        setStep(3);
+      }
+      return;
+    }
+
+    // Step 3 validation - Use of Funds
+    if (step === 3) {
       const totalPercentage = useOfFunds.reduce((sum, a) => sum + a.percentage, 0);
       const totalAmount = useOfFunds.reduce((sum, a) => sum + a.amount_ngn, 0);
 
@@ -471,10 +487,11 @@ const TokenizeProperty = () => {
         return;
       }
 
-      setStep(3);
+      setStep(4);
       return;
     }
   };
+  
   const prevStep = () => {
     if (step === 1) {
       setStep(0);
@@ -486,7 +503,7 @@ const TokenizeProperty = () => {
   const onSubmit = (data: TokenizationForm) => {
     console.log("🚨 onSubmit called with step:", step);
     
-    if (step !== 3) {
+    if (step !== 4) {
       console.log("🚨 BLOCKED - not on final step. Current step:", step);
       toast.error(`Cannot submit on step ${step}. Please complete all steps first.`);
       return;
@@ -538,9 +555,9 @@ const TokenizeProperty = () => {
       <div className="max-w-4xl mx-auto">
         {/* Step indicator */}
         <div className="mb-8">
-          <Progress value={(step / 3) * 100} className="h-2" />
+          <Progress value={(step / 4) * 100} className="h-2" />
           <div className="mt-2 text-sm text-muted-foreground">
-            Step {step + 1} of 4
+            Step {step + 1} of 5
           </div>
         </div>
 
@@ -698,8 +715,397 @@ const TokenizeProperty = () => {
               </div>
             )}
 
-            {/* Step 2: Use of Funds */}
+            {/* Step 2: Investment Details */}
             {step === 2 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold mb-2">Investment Details</h2>
+                  <p className="text-muted-foreground">
+                    Configure investment parameters and returns
+                  </p>
+                </div>
+
+                <Card>
+                  <CardContent className="pt-6 space-y-6">
+                    {/* Financial Targets */}
+                    <div className="space-y-4">
+                      <h3 className="font-semibold">Financial Targets</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="target_raise"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Target Raise (₦)</FormLabel>
+                              <FormControl>
+                                <MoneyInput
+                                  value={field.value}
+                                  onChange={(v) => field.onChange(v)}
+                                  placeholder="e.g., 5,000,000"
+                                  currency="₦"
+                                  min={1}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="minimum_raise"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Minimum Raise (₦)</FormLabel>
+                              <FormControl>
+                                <MoneyInput
+                                  value={field.value}
+                                  onChange={(v) => field.onChange(v)}
+                                  placeholder="e.g., 1,500,000"
+                                  currency="₦"
+                                  min={1}
+                                />
+                              </FormControl>
+                              <FormDescription>Offering fails if not met</FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Investment Limits */}
+                    <div className="space-y-4">
+                      <h3 className="font-semibold">Investment Limits</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="min_investment"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Minimum Investment (₦)</FormLabel>
+                              <FormControl>
+                                <MoneyInput
+                                  value={field.value}
+                                  onChange={(v) => field.onChange(v)}
+                                  placeholder="e.g., 10,000"
+                                  currency="₦"
+                                  min={1}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="max_investment"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Maximum Investment (₦)</FormLabel>
+                              <FormControl>
+                                <MoneyInput
+                                  value={field.value || 0}
+                                  onChange={(v) => field.onChange(v)}
+                                  placeholder="e.g., 1,000,000"
+                                  currency="₦"
+                                  min={1}
+                                />
+                              </FormControl>
+                              <FormDescription>Optional cap per investor</FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Investment Window */}
+                    <div className="space-y-4">
+                      <h3 className="font-semibold">Investment Window</h3>
+                      <FormField
+                        control={form.control}
+                        name="investment_window_days"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Duration (Days)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                value={field.value ? field.value.toLocaleString() : ""}
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/,/g, "");
+                                  const num = parseInt(raw);
+                                  field.onChange(isNaN(num) ? 0 : num);
+                                }}
+                                onFocus={(e) => e.target.select()}
+                                placeholder="e.g., 30"
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Number of days the investment window will remain open
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <Separator />
+
+                    {/* Returns & Distribution */}
+                    <div className="space-y-4">
+                      <h3 className="font-semibold">Returns & Distribution</h3>
+                      
+                      {selectedType === "debt" && (
+                        <Alert>
+                          <Info className="h-4 w-4" />
+                          <AlertDescription>
+                            For debt tokenization, expected ROI represents the fixed interest rate.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      {selectedType === "revenue" && (
+                        <Alert>
+                          <Info className="h-4 w-4" />
+                          <AlertDescription>
+                            Revenue sharing tokens distribute a percentage of gross rental income.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="expected_roi_annual"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Expected Annual ROI (%)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  value={field.value || ""}
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value);
+                                    field.onChange(isNaN(val) ? 0 : val);
+                                  }}
+                                  onFocus={(e) => e.target.select()}
+                                  placeholder="e.g., 8.5"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="dividend_frequency"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Dividend Frequency</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select frequency" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="monthly">Monthly</SelectItem>
+                                  <SelectItem value="quarterly">Quarterly</SelectItem>
+                                  <SelectItem value="annually">Annually</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Fees & Controls */}
+                    <div className="space-y-4">
+                      <h3 className="font-semibold">Fees & Controls</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="management_fee_percentage"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Management Fee (%)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  value={field.value || ""}
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value);
+                                    field.onChange(isNaN(val) ? 0 : val);
+                                  }}
+                                  onFocus={(e) => e.target.select()}
+                                  placeholder="e.g., 2.5"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="platform_fee_percentage"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Platform Fee (%)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  value={field.value || ""}
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value);
+                                    field.onChange(isNaN(val) ? 0 : val);
+                                  }}
+                                  onFocus={(e) => e.target.select()}
+                                  placeholder="e.g., 1.0"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="auto_refund"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base">Auto-Refund</FormLabel>
+                              <FormDescription>
+                                Automatically refund investors if minimum raise is not met
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <Separator />
+
+                    {/* Token Purchase Limits (Optional) */}
+                    <Collapsible>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="w-full justify-between">
+                          <span className="font-semibold">Advanced: Token Purchase Limits</span>
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-4 pt-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="min_tokens_per_purchase"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Min Tokens per Purchase</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={field.value ? field.value.toLocaleString() : ""}
+                                    onChange={(e) => {
+                                      const raw = e.target.value.replace(/,/g, "");
+                                      const num = parseInt(raw);
+                                      field.onChange(isNaN(num) ? 0 : num);
+                                    }}
+                                    onFocus={(e) => e.target.select()}
+                                    placeholder="e.g., 1"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="max_tokens_per_purchase"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Max Tokens per Purchase</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={field.value ? field.value.toLocaleString() : ""}
+                                    onChange={(e) => {
+                                      const raw = e.target.value.replace(/,/g, "");
+                                      const num = parseInt(raw);
+                                      field.onChange(isNaN(num) ? 0 : num);
+                                    }}
+                                    onFocus={(e) => e.target.select()}
+                                    placeholder="e.g., 1,000"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Helpful Calculations */}
+                    {targetRaise > 0 && pricePerToken > 0 && form.watch("min_investment") > 0 && (
+                      <div className="p-4 bg-muted rounded-lg space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Min raise requires:</span>
+                          <span className="font-medium">
+                            {Math.ceil(form.watch("minimum_raise") / pricePerToken).toLocaleString()} tokens
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Target raise requires:</span>
+                          <span className="font-medium">
+                            {Math.ceil(targetRaise / pricePerToken).toLocaleString()} tokens
+                          </span>
+                        </div>
+                        {form.watch("max_investment") && (
+                          <div className="flex justify-between text-sm">
+                            <span>Estimated investor range:</span>
+                            <span className="font-medium">
+                              {Math.ceil(form.watch("minimum_raise") / form.watch("max_investment")!)} -{" "}
+                              {Math.floor(targetRaise / form.watch("min_investment"))} investors
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Step 3: Use of Funds */}
+            {step === 3 && (
               <div className="space-y-6">
                 <div className="text-center mb-6">
                   <h2 className="text-2xl font-bold mb-2">Use of Funds</h2>
@@ -721,8 +1127,8 @@ const TokenizeProperty = () => {
               </div>
             )}
 
-            {/* Step 3: Terms & Submit */}
-            {step === 3 && (
+            {/* Step 4: Terms & Submit */}
+            {step === 4 && (
               <TokenizationTermsAcceptance
                 tokenizationType={selectedType}
                 tokenName={form.watch("token_name")}
@@ -736,7 +1142,7 @@ const TokenizeProperty = () => {
             )}
 
             {/* Navigation Buttons */}
-            {step < 3 && (
+            {step < 4 && (
               <div className="flex justify-between">
                 {step > 0 && (
                   <Button type="button" variant="outline" onClick={prevStep}>
