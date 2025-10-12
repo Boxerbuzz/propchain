@@ -10,6 +10,7 @@ import {
   Globe,
   CheckCircle2,
   AlertCircle,
+  Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -61,38 +62,47 @@ export default function Regulatory() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-blue-50/20 dark:to-blue-950/20">
-      <div className="container mx-auto mobile-padding py-8">
-        {/* Header */}
-        <div className="mb-8">
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="container mx-auto mobile-padding relative">
           <Link to="/">
             <Button
               variant="outline"
-              className="mb-4 hover:bg-primary/10 transition-colors"
+              className="mb-6 hover:bg-primary/10 transition-colors border-primary/20"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
           </Link>
-          <div className="flex items-start gap-4 mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
-              <Scale className="h-8 w-8 text-white" />
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center mx-auto mb-6">
+              <Scale className="w-10 h-10 text-white" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                Regulatory Information
-              </h1>
-              <div className="flex items-center gap-3 text-sm">
-                <span className="px-3 py-1 bg-blue-600/10 text-blue-600 rounded-full font-medium">
-                  Compliance and Legal Framework
-                </span>
-                <span className="text-muted-foreground">14 min read</span>
-              </div>
+            <Badge className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 text-sm px-5 py-2" variant="outline">
+              <Sparkles className="w-3 h-3 mr-2" />
+              Compliance and Legal Framework
+            </Badge>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Regulatory Information
+            </h1>
+            <div className="flex items-center justify-center gap-4 text-sm">
+              <Badge variant="secondary" className="px-4 py-1.5">
+                Last updated: January 2025
+              </Badge>
+              <span className="text-muted-foreground">14 min read</span>
             </div>
           </div>
         </div>
+      </section>
 
-        <div className="flex gap-8 max-w-7xl mx-auto">
+      {/* Main Content */}
+      <section className="py-12 relative">
+        <div className="container mx-auto mobile-padding">
+          <div className="flex gap-8 max-w-7xl mx-auto">
           {/* Table of Contents - Desktop */}
           <aside className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-24 space-y-1">
@@ -164,7 +174,7 @@ export default function Regulatory() {
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
                     <Building2 className="h-6 w-6 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Nigerian Regulatory Framework
                   </h2>
                 </div>
@@ -358,7 +368,7 @@ export default function Regulatory() {
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg">
                     <Globe className="h-6 w-6 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     International Standards and Best Practices
                   </h2>
                 </div>
@@ -428,10 +438,10 @@ export default function Regulatory() {
 
               <section id="structure">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">3</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">3</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Investment Structure and Legal Framework
                   </h2>
                 </div>
@@ -601,10 +611,10 @@ export default function Regulatory() {
 
               <section id="investors">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">4</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">4</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Investor Classifications and Limits
                   </h2>
                 </div>
@@ -689,14 +699,14 @@ export default function Regulatory() {
 
               <section id="monitoring">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">5</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">5</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Regulatory Monitoring and Reporting
                   </h2>
                 </div>
-                <Card className="border-l-4 border-l-primary">
+                <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden border-l-4 border-l-primary">
                   <CardContent className="pt-6 space-y-6">
                     <div>
                       <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -762,14 +772,14 @@ export default function Regulatory() {
 
               <section id="dispute">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">6</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">6</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Dispute Resolution Framework
                   </h2>
                 </div>
-                <Card className="border-l-4 border-l-primary">
+                <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden border-l-4 border-l-primary">
                   <CardContent className="pt-6 space-y-6">
                     <div>
                       <h4 className="font-semibold text-foreground mb-3">
@@ -875,7 +885,7 @@ export default function Regulatory() {
                   <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
                     <span className="text-amber-600 font-bold">7</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Tax Implications and Guidance
                   </h2>
                 </div>
@@ -926,14 +936,17 @@ export default function Regulatory() {
             </div>
 
             {/* Contact Information */}
-            <Card className="border-2 border-blue-600/20 bg-gradient-to-br from-blue-600/5 to-blue-600/10 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Scale className="h-6 w-6 text-blue-600" />
+            <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent" />
+              <CardHeader className="relative">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center">
+                    <Scale className="h-5 w-5 text-white" />
+                  </div>
                   Regulatory Compliance Contact
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative">
                 <p className="text-foreground mb-4">
                   For regulatory inquiries, compliance matters, or legal
                   questions:
@@ -981,8 +994,9 @@ export default function Regulatory() {
               </CardContent>
             </Card>
           </div>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

@@ -15,10 +15,11 @@ import {
   Zap,
   CheckCircle2,
   ArrowRight,
+  ShieldCheck,
+  Diamond,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
-import { cn } from "@/lib/utils";
 import { useRef } from "react";
 
 export default function AboutUs() {
@@ -29,9 +30,9 @@ export default function AboutUs() {
     const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
-    cardRef.current.style.setProperty('--mouse-x', `${x}px`);
-    cardRef.current.style.setProperty('--mouse-y', `${y}px`);
+
+    cardRef.current.style.setProperty("--mouse-x", `${x}px`);
+    cardRef.current.style.setProperty("--mouse-y", `${y}px`);
   };
 
   const stats = [
@@ -112,7 +113,7 @@ export default function AboutUs() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <Badge
-                className="mb-6 text-sm px-5 py-2 bg-primary/10 hover:bg-primary/20 border-primary/20"
+                className="mb-6 text-sm bg-primary/10 hover:bg-primary/20 border-primary/20"
                 variant="outline"
               >
                 <Sparkles className="w-3.5 h-3.5 mr-2 inline" />
@@ -282,6 +283,7 @@ export default function AboutUs() {
                 className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
                 variant="outline"
               >
+                <Diamond className="w-3 h-3 mr-2" />
                 Core Values
               </Badge>
               <h2 className="text-4xl md:text-5xl font-bold mb-5">
@@ -389,80 +391,82 @@ export default function AboutUs() {
         <div className="container mx-auto px-4 relative">
           <div className="max-w-6xl mx-auto">
             {/* Glowing wrapper */}
-            <div 
+            <div
               ref={cardRef}
               onMouseMove={handleMouseMove}
               className="relative p-[2px] rounded-[20px] overflow-hidden group"
               style={{
-                background: 'transparent',
+                background: "transparent",
               }}
             >
               {/* Glow effect - uses ::before-like approach via a positioned div */}
-              <div 
+              <div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 style={{
-                  background: 'radial-gradient(circle 250px at var(--mouse-x, 50%) var(--mouse-y, 50%), hsl(var(--primary) / 0.4), transparent 80%)',
+                  background:
+                    "radial-gradient(circle 250px at var(--mouse-x, 50%) var(--mouse-y, 50%), hsl(var(--primary) / 1), transparent 80%)",
                 }}
               />
-              
+
               {/* Actual card content */}
               <Card className="relative z-10 border-0 overflow-hidden bg-gradient-to-br from-card via-card to-card/50 rounded-[18px]">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary)/0.1),transparent_70%)]" />
                 <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-48 translate-x-48" />
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl translate-y-48 -translate-x-48" />
                 <CardContent className="p-12 md:p-20 relative">
-                <div className="text-center">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mx-auto mb-8">
-                    <Shield className="w-10 h-10 text-primary-foreground" />
+                  <div className="text-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mx-auto mb-8">
+                      <Shield className="w-10 h-10 text-primary-foreground" />
+                    </div>
+                    <Badge
+                      className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 text-sm"
+                      variant="outline"
+                    >
+                      <ShieldCheck className="w-3 h-3 mr-2" />
+                      Regulatory Compliance
+                    </Badge>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-6">
+                      Regulated & Compliant
+                    </h2>
+                    <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
+                      PropChain is registered and regulated by the Securities
+                      and Exchange Commission, Nigeria as a digital sub-broker.
+                      We operate in full compliance with Nigerian securities and
+                      property laws.
+                    </p>
+                    <div className="grid md:grid-cols-3 gap-6 mb-10 max-w-4xl mx-auto">
+                      <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
+                        <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-3" />
+                        <p className="font-semibold mb-2">SEC Registered</p>
+                        <p className="text-sm text-muted-foreground">
+                          Digital sub-broker license
+                        </p>
+                      </div>
+                      <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
+                        <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-3" />
+                        <p className="font-semibold mb-2">Partner Network</p>
+                        <p className="text-sm text-muted-foreground">
+                          Licensed broker-dealers
+                        </p>
+                      </div>
+                      <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
+                        <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-3" />
+                        <p className="font-semibold mb-2">Due Diligence</p>
+                        <p className="text-sm text-muted-foreground">
+                          Verified properties
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                      Our partnership with Lambeth Capital Limited, a registered
+                      broker-dealer with the Securities and Exchange Commission,
+                      Nigeria, ensures that all investments are processed
+                      through proper regulatory channels. We work with licensed
+                      property developers and conduct thorough due diligence on
+                      all listed properties.
+                    </p>
                   </div>
-                  <Badge
-                    className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 text-sm px-5 py-2"
-                    variant="outline"
-                  >
-                    Regulatory Compliance
-                  </Badge>
-                  <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                    Regulated & Compliant
-                  </h2>
-                  <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
-                    PropChain is registered and regulated by the Securities and
-                    Exchange Commission, Nigeria as a digital sub-broker. We
-                    operate in full compliance with Nigerian securities and
-                    property laws.
-                  </p>
-                  <div className="grid md:grid-cols-3 gap-6 mb-10 max-w-4xl mx-auto">
-                    <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
-                      <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-3" />
-                      <p className="font-semibold mb-2">SEC Registered</p>
-                      <p className="text-sm text-muted-foreground">
-                        Digital sub-broker license
-                      </p>
-                    </div>
-                    <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
-                      <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-3" />
-                      <p className="font-semibold mb-2">Partner Network</p>
-                      <p className="text-sm text-muted-foreground">
-                        Licensed broker-dealers
-                      </p>
-                    </div>
-                    <div className="p-6 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
-                      <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-3" />
-                      <p className="font-semibold mb-2">Due Diligence</p>
-                      <p className="text-sm text-muted-foreground">
-                        Verified properties
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                    Our partnership with Lambeth Capital Limited, a registered
-                    broker-dealer with the Securities and Exchange Commission,
-                    Nigeria, ensures that all investments are processed through
-                    proper regulatory channels. We work with licensed property
-                    developers and conduct thorough due diligence on all listed
-                    properties.
-                  </p>
-                </div>
-              </CardContent>
+                </CardContent>
               </Card>
             </div>
           </div>

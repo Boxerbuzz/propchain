@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   FileText,
@@ -7,6 +8,7 @@ import {
   Shield,
   CheckCircle2,
   Info,
+  Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -61,92 +63,104 @@ export default function TermsOfService() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <div className="container mx-auto mobile-padding py-8">
-        {/* Header */}
-        <div className="mb-8">
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="container mx-auto mobile-padding relative">
           <Link to="/">
             <Button
               variant="outline"
-              className="mb-4 hover:bg-primary/10 transition-colors"
+              className="mb-6 hover:bg-primary/10 transition-colors border-primary/20"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
           </Link>
-          <div className="flex items-start gap-4 mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center shadow-lg">
-              <FileText className="h-8 w-8 text-white" />
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mx-auto mb-6">
+              <FileText className="w-10 h-10 text-primary-foreground" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                Terms of Service
-              </h1>
-              <div className="flex items-center gap-3 text-sm">
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full font-medium">
-                  Last updated: January 2025
-                </span>
-                <span className="text-muted-foreground">10 min read</span>
-              </div>
+            <Badge className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 text-sm px-5 py-2" variant="outline">
+              <Sparkles className="w-3 h-3 mr-2" />
+              Legal Documentation
+            </Badge>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Terms of Service
+            </h1>
+            <div className="flex items-center justify-center gap-4 text-sm">
+              <Badge variant="secondary" className="px-4 py-1.5">
+                Last updated: January 2025
+              </Badge>
+              <span className="text-muted-foreground">10 min read</span>
             </div>
           </div>
         </div>
+      </section>
 
-        <div className="flex gap-8 max-w-7xl mx-auto">
-          {/* Table of Contents - Desktop */}
-          <aside className="hidden lg:block w-64 shrink-0">
-            <div className="sticky top-24 space-y-1">
-              <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground mb-4">
-                Contents
-              </h3>
-              {sections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => scrollToSection(section.id)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-                    activeSection === section.id
-                      ? "bg-primary text-primary-foreground font-medium"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  {section.title}
-                </button>
-              ))}
-            </div>
-          </aside>
+      {/* Main Content */}
+      <section className="py-12 relative">
+        <div className="container mx-auto mobile-padding">
+          <div className="flex gap-8 max-w-7xl mx-auto">
+            {/* Table of Contents - Desktop */}
+            <aside className="hidden lg:block w-64 shrink-0">
+              <div className="sticky top-24 space-y-1">
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground mb-4">
+                  Contents
+                </h3>
+                {sections.map((section) => (
+                  <button
+                    key={section.id}
+                    onClick={() => scrollToSection(section.id)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                      activeSection === section.id
+                        ? "bg-primary text-primary-foreground font-medium"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {section.title}
+                  </button>
+                ))}
+              </div>
+            </aside>
 
-          {/* Main Content */}
-          <div className="flex-1 space-y-8 max-w-4xl">
-            {/* Agreement Notice */}
-            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-primary text-xl">
-                  <AlertTriangle className="h-6 w-6" />
-                  Important Notice
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-foreground leading-relaxed">
-                  By accessing and using PropChain's services, you acknowledge
-                  that you have read, understood, and agree to be bound by these
-                  Terms of Service. If you do not agree to these terms, please
-                  do not use our platform.
-                </p>
-              </CardContent>
-            </Card>
+            {/* Main Content */}
+            <div className="flex-1 space-y-8 max-w-4xl">
+              {/* Agreement Notice */}
+              <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
+                <CardHeader className="relative">
+                  <CardTitle className="flex items-center gap-3 text-primary text-xl">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+                      <AlertTriangle className="h-5 w-5 text-primary-foreground" />
+                    </div>
+                    Important Notice
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="relative">
+                  <p className="text-foreground leading-relaxed">
+                    By accessing and using PropChain's services, you acknowledge
+                    that you have read, understood, and agree to be bound by these
+                    Terms of Service. If you do not agree to these terms, please
+                    do not use our platform.
+                  </p>
+                </CardContent>
+              </Card>
 
             {/* Terms Sections */}
             <div className="space-y-12">
               <section id="overview">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">1</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">1</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Platform Overview
                   </h2>
                 </div>
-                <Card className="border-l-4 border-l-primary">
+                <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden border-l-4 border-l-primary">
                   <CardContent className="pt-6">
                     <p className="text-muted-foreground mb-4 leading-relaxed">
                       PropChain is a blockchain-based real estate investment
@@ -166,14 +180,14 @@ export default function TermsOfService() {
 
               <section id="eligibility">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">2</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">2</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Eligibility and Account Registration
                   </h2>
                 </div>
-                <Card className="border-l-4 border-l-primary">
+                <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden border-l-4 border-l-primary">
                   <CardContent className="pt-6 space-y-6">
                     <div>
                       <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -236,15 +250,15 @@ export default function TermsOfService() {
 
               <section id="services">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">3</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">3</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Investment Services
                   </h2>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950 dark:to-blue-900/50 border-blue-200">
+                  <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden bg-gradient-to-br from-blue-500/5 to-transparent">
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
                         <Info className="h-5 w-5 text-blue-600" />
@@ -285,7 +299,7 @@ export default function TermsOfService() {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950 dark:to-purple-900/50 border-purple-200">
+                  <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden bg-gradient-to-br from-purple-500/5 to-transparent">
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
                         <Info className="h-5 w-5 text-purple-600" />
@@ -327,14 +341,14 @@ export default function TermsOfService() {
 
               <section id="responsibilities">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">4</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">4</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     User Responsibilities
                   </h2>
                 </div>
-                <Card className="border-l-4 border-l-destructive">
+                <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden border-l-4 border-l-destructive">
                   <CardContent className="pt-6 space-y-6">
                     <div>
                       <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -396,14 +410,14 @@ export default function TermsOfService() {
 
               <section id="risk">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-                    <span className="text-destructive font-bold">5</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-destructive to-destructive/80 flex items-center justify-center shadow-md">
+                    <span className="text-white font-bold">5</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Risk Disclosure
                   </h2>
                 </div>
-                <Card className="border-2 border-destructive/20 bg-gradient-to-br from-destructive/5 to-destructive/10">
+                <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden bg-gradient-to-br from-destructive/10 to-transparent">
                   <CardContent className="pt-6 space-y-4">
                     <p className="text-foreground font-semibold">
                       Real estate investments carry significant risks including:
@@ -459,14 +473,14 @@ export default function TermsOfService() {
 
               <section id="ip">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">6</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">6</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Intellectual Property
                   </h2>
                 </div>
-                <Card className="border-l-4 border-l-primary">
+                <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden border-l-4 border-l-primary">
                   <CardContent className="pt-6 space-y-4">
                     <p className="text-muted-foreground leading-relaxed">
                       PropChain and its content, including but not limited to
@@ -485,14 +499,14 @@ export default function TermsOfService() {
 
               <section id="liability">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">7</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">7</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Limitation of Liability
                   </h2>
                 </div>
-                <Card className="border-l-4 border-l-amber-500">
+                <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden border-l-4 border-l-amber-500">
                   <CardContent className="pt-6 space-y-4">
                     <p className="text-muted-foreground leading-relaxed">
                       PropChain provides the platform "as is" without warranties
@@ -517,14 +531,14 @@ export default function TermsOfService() {
 
               <section id="dispute">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">8</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">8</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Dispute Resolution
                   </h2>
                 </div>
-                <Card className="border-l-4 border-l-primary">
+                <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden border-l-4 border-l-primary">
                   <CardContent className="pt-6 space-y-4">
                     <p className="text-muted-foreground leading-relaxed">
                       Any disputes arising from the use of PropChain services
@@ -543,14 +557,14 @@ export default function TermsOfService() {
 
               <section id="termination">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">9</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">9</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Termination
                   </h2>
                 </div>
-                <Card className="border-l-4 border-l-primary">
+                <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden border-l-4 border-l-primary">
                   <CardContent className="pt-6 space-y-4">
                     <p className="text-muted-foreground leading-relaxed">
                       PropChain reserves the right to suspend or terminate
@@ -569,14 +583,14 @@ export default function TermsOfService() {
 
               <section id="updates">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">10</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-md">
+                    <span className="text-primary-foreground font-bold">10</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Updates and Changes
                   </h2>
                 </div>
-                <Card className="border-l-4 border-l-primary">
+                <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden border-l-4 border-l-primary">
                   <CardContent className="pt-6 space-y-4">
                     <p className="text-muted-foreground leading-relaxed">
                       PropChain may update these Terms of Service from time to
@@ -593,14 +607,17 @@ export default function TermsOfService() {
             </div>
 
             {/* Contact Information */}
-            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Shield className="h-6 w-6 text-primary" />
+            <Card className="border-0 shadow-md bg-card/80 backdrop-blur-sm overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent" />
+              <CardHeader className="relative">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+                    <Shield className="h-5 w-5 text-primary-foreground" />
+                  </div>
                   Contact Information
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative">
                 <p className="text-foreground mb-4">
                   For questions about these Terms of Service, please contact us:
                 </p>
@@ -623,8 +640,9 @@ export default function TermsOfService() {
               </CardContent>
             </Card>
           </div>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

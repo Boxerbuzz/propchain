@@ -10,6 +10,7 @@ import {
   Globe,
   Lock,
   ShieldAlert,
+  Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -60,38 +61,47 @@ export default function RiskDisclosure() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-red-50/20 dark:to-red-950/20">
-      <div className="container mx-auto mobile-padding py-8">
-        {/* Header */}
-        <div className="mb-8">
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="container mx-auto mobile-padding relative">
           <Link to="/">
             <Button
               variant="outline"
-              className="mb-4 hover:bg-primary/10 transition-colors"
+              className="mb-6 hover:bg-primary/10 transition-colors border-primary/20"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
           </Link>
-          <div className="flex items-start gap-4 mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
-              <AlertTriangle className="h-8 w-8 text-white" />
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="w-10 h-10 text-white" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                Risk Disclosure Statement
-              </h1>
-              <div className="flex items-center gap-3 text-sm">
-                <span className="px-3 py-1 bg-red-600/10 text-red-600 rounded-full font-medium">
-                  Last updated: January 2025
-                </span>
-                <span className="text-muted-foreground">15 min read</span>
-              </div>
+            <Badge className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 text-sm px-5 py-2" variant="outline">
+              <Sparkles className="w-3 h-3 mr-2" />
+              Risk Disclosure
+            </Badge>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Risk Disclosure Statement
+            </h1>
+            <div className="flex items-center justify-center gap-4 text-sm">
+              <Badge variant="secondary" className="px-4 py-1.5">
+                Last updated: January 2025
+              </Badge>
+              <span className="text-muted-foreground">15 min read</span>
             </div>
           </div>
         </div>
+      </section>
 
-        <div className="flex gap-8 max-w-7xl mx-auto">
+      {/* Main Content */}
+      <section className="py-12 relative">
+        <div className="container mx-auto mobile-padding">
+          <div className="flex gap-8 max-w-7xl mx-auto">
           {/* Table of Contents - Desktop */}
           <aside className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-24 space-y-1">
@@ -117,7 +127,7 @@ export default function RiskDisclosure() {
           {/* Main Content */}
           <div className="flex-1 space-y-8 max-w-4xl">
             {/* Critical Warning */}
-            <Card className="border-2 border-red-600 bg-gradient-to-br from-red-600/10 to-red-600/20 shadow-2xl">
+            <Card className="border bg-card/80 backdrop-blur-sm overflow-hidden bg-gradient-to-br from-red-600/15 to-transparent border-2 border-red-600/30">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-red-700 dark:text-red-400 text-2xl">
                   <ShieldAlert className="h-8 w-8" />
@@ -172,16 +182,16 @@ export default function RiskDisclosure() {
             <div className="space-y-12">
               <section id="real-estate">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
                     <Building className="h-6 w-6 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Real Estate Investment Risks
                   </h2>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="border border-orange-300 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950 dark:to-orange-900/50 hover:shadow-lg transition-shadow">
+                  <Card className="border border-orange-300 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950 dark:to-orange-900/50">
                     <CardHeader>
                       <div className="flex items-center justify-between mb-2">
                         <CardTitle className="text-lg text-orange-900 dark:text-orange-100 flex items-center gap-2">
@@ -242,7 +252,7 @@ export default function RiskDisclosure() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-amber-300 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950 dark:to-amber-900/50 hover:shadow-lg transition-shadow">
+                  <Card className="border border-amber-300 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950 dark:to-amber-900/50">
                     <CardHeader>
                       <div className="flex items-center justify-between mb-2">
                         <CardTitle className="text-lg text-amber-900 dark:text-amber-100 flex items-center gap-2">
@@ -289,7 +299,7 @@ export default function RiskDisclosure() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-red-300 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950 dark:to-red-900/50 hover:shadow-lg transition-shadow">
+                  <Card className="border border-red-300 dark:border-red-800 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950 dark:to-red-900/50">
                     <CardHeader>
                       <div className="flex items-center justify-between mb-2">
                         <CardTitle className="text-lg text-red-900 dark:text-red-100">
@@ -332,7 +342,7 @@ export default function RiskDisclosure() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-yellow-300 dark:border-yellow-800 bg-gradient-to-br from-yellow-50 to-yellow-100/50 dark:from-yellow-950 dark:to-yellow-900/50 hover:shadow-lg transition-shadow">
+                  <Card className="border border-yellow-300 dark:border-yellow-800 bg-gradient-to-br from-yellow-50 to-yellow-100/50 dark:from-yellow-950 dark:to-yellow-900/50">
                     <CardHeader>
                       <div className="flex items-center justify-between mb-2">
                         <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100">
@@ -392,16 +402,16 @@ export default function RiskDisclosure() {
 
               <section id="technology">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
                     <Zap className="h-6 w-6 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Technology and Blockchain Risks
                   </h2>
                 </div>
 
                 <div className="space-y-6">
-                  <Card className="border border-purple-300 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950 dark:to-purple-900/50 hover:shadow-lg transition-shadow">
+                  <Card className="border border-purple-300 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950 dark:to-purple-900/50">
                     <CardHeader>
                       <CardTitle className="text-lg text-purple-900 dark:text-purple-100">
                         Blockchain Technology Risks
@@ -473,7 +483,7 @@ export default function RiskDisclosure() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-indigo-300 dark:border-indigo-800 bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-950 dark:to-indigo-900/50 hover:shadow-lg transition-shadow">
+                  <Card className="border border-indigo-300 dark:border-indigo-800 bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-950 dark:to-indigo-900/50">
                     <CardHeader>
                       <CardTitle className="text-lg text-indigo-900 dark:text-indigo-100">
                         Platform and Operational Risks
@@ -546,16 +556,16 @@ export default function RiskDisclosure() {
 
               <section id="regulatory">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
                     <Globe className="h-6 w-6 text-white" />
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Regulatory and Legal Risks
                   </h2>
                 </div>
 
                 <div className="space-y-6">
-                  <Card className="border border-green-300 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950 dark:to-green-900/50 hover:shadow-lg transition-shadow">
+                  <Card className="border border-green-300 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950 dark:to-green-900/50">
                     <CardHeader>
                       <CardTitle className="text-lg text-green-900 dark:text-green-100">
                         Regulatory Uncertainty
@@ -627,7 +637,7 @@ export default function RiskDisclosure() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-blue-300 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950 dark:to-blue-900/50 hover:shadow-lg transition-shadow">
+                  <Card className="border border-blue-300 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950 dark:to-blue-900/50">
                     <CardHeader>
                       <CardTitle className="text-lg text-blue-900 dark:text-blue-100">
                         Legal and Contractual Risks
@@ -700,14 +710,14 @@ export default function RiskDisclosure() {
 
               <section id="nigerian">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">4</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+                    <span className="text-primary-foreground font-bold">4</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Nigerian Market Specific Risks
                   </h2>
                 </div>
-                <Card className="border-l-4 border-l-amber-500">
+                <Card className="border bg-card/80 backdrop-blur-sm overflow-hidden border-l-4 border-l-amber-500">
                   <CardContent className="pt-6">
                     <ul className="space-y-3 text-muted-foreground">
                       <li className="flex items-start gap-3">
@@ -780,15 +790,15 @@ export default function RiskDisclosure() {
 
               <section id="mitigation">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">5</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+                    <span className="text-primary-foreground font-bold">5</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Risk Mitigation Measures
                   </h2>
                 </div>
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 hover:shadow-lg transition-shadow">
+                  <Card className="border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
                     <CardHeader>
                       <CardTitle className="text-lg text-primary flex items-center gap-2">
                         <Lock className="h-5 w-5" />
@@ -836,7 +846,7 @@ export default function RiskDisclosure() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 hover:shadow-lg transition-shadow">
+                  <Card className="border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
                     <CardHeader>
                       <CardTitle className="text-lg text-primary">
                         Investor Recommendations
@@ -887,14 +897,14 @@ export default function RiskDisclosure() {
 
               <section id="acknowledgment">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">6</span>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+                    <span className="text-primary-foreground font-bold">6</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-foreground">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                     Acknowledgment
                   </h2>
                 </div>
-                <Card className="border-2 border-destructive/20 bg-gradient-to-br from-destructive/5 to-destructive/10 shadow-lg">
+                <Card className="border bg-card/80 backdrop-blur-sm overflow-hidden bg-gradient-to-br from-destructive/10 to-transparent border-2 border-destructive/30">
                   <CardContent className="pt-6">
                     <div className="space-y-4">
                       <p className="text-foreground font-semibold text-lg">
@@ -957,14 +967,17 @@ export default function RiskDisclosure() {
             </div>
 
             {/* Contact Information */}
-            <Card className="border border-red-600/20 bg-gradient-to-br from-red-600/5 to-red-600/10 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <AlertTriangle className="h-6 w-6 text-red-600" />
+            <Card className="border bg-card/80 backdrop-blur-sm overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-transparent" />
+              <CardHeader className="relative">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-white" />
+                  </div>
                   Questions About Risks?
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative">
                 <p className="text-foreground mb-4">
                   If you have questions about these risks or need clarification:
                 </p>
@@ -1000,8 +1013,9 @@ export default function RiskDisclosure() {
               </CardContent>
             </Card>
           </div>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

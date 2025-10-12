@@ -605,10 +605,7 @@ const PropertyManagement = () => {
                     </Card>
                   ) : (
                     filteredProperties.map((property) => (
-                      <Card
-                        key={property.id}
-                        className="hover:shadow-md transition-shadow"
-                      >
+                      <Card key={property.id} className="border border-border">
                         <CardContent className="p-4 md:p-6">
                           <div className="flex flex-col md:flex-row gap-4">
                             <img

@@ -41,7 +41,11 @@ export default function BrowseProperties() {
     imageUrl:
       tokenization.primary_image ||
       "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop",
-    tokenizationType: tokenization.tokenization_type as 'equity' | 'debt' | 'revenue' | undefined,
+    tokenizationType: tokenization.tokenization_type as
+      | "equity"
+      | "debt"
+      | "revenue"
+      | undefined,
     status:
       tokenization.status === "active"
         ? ("active" as const)
@@ -148,11 +152,11 @@ export default function BrowseProperties() {
       </div>
 
       {/* Location Filter */}
-      <div>
+      <div className="border border-border pb-4 rounded-lg px-2 pt-2">
         <label className="text-sm font-medium text-foreground mb-3 block">
           Location
         </label>
-        <div className="space-y-2">
+        <div className="space-y-2 pl-2">
           {locations.map((location, index) => (
             <div key={index} className="flex items-center space-x-2">
               <input
@@ -160,7 +164,7 @@ export default function BrowseProperties() {
                 id={`location-${index}`}
                 name="location"
                 defaultChecked={index === 0}
-                className="w-4 h-4 text-primary"
+                className="w-4 h-4 text-primary cursor-pointer"
               />
               <label
                 htmlFor={`location-${index}`}
@@ -174,11 +178,11 @@ export default function BrowseProperties() {
       </div>
 
       {/* Return Range */}
-      <div>
+      <div className="border border-border pb-4 rounded-lg px-2 pt-2">
         <label className="text-sm font-medium text-foreground mb-3 block">
           Expected Returns
         </label>
-        <div className="space-y-2">
+        <div className="space-y-2 pl-2">
           {returnRanges.map((range, index) => (
             <div key={index} className="flex items-center space-x-2">
               <input
@@ -186,7 +190,7 @@ export default function BrowseProperties() {
                 id={`return-${index}`}
                 name="returns"
                 defaultChecked={index === 0}
-                className="w-4 h-4 text-primary"
+                className="w-4 h-4 text-primary cursor-pointer"
               />
               <label
                 htmlFor={`return-${index}`}

@@ -284,7 +284,7 @@ const Portfolio = () => {
                   filteredInvestments.map((investment: any) => (
                     <Card
                       key={investment.id}
-                      className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20 bg-gradient-to-br from-card to-card/50"
+                      className="group overflow-hidden transition-all duration-300 border-2 hover:border-primary/20 bg-gradient-to-br from-card to-card/50"
                     >
                       <CardContent className="p-0">
                         {/* Header Section with Image and Quick Stats */}
@@ -411,7 +411,7 @@ const Portfolio = () => {
 
                           {/* Action Button */}
                           <Button
-                            className="w-full group-hover:shadow-lg transition-all"
+                            className="w-full transition-all"
                             onClick={() =>
                               navigate(
                                 `/portfolio/${investment.tokenizationId}`
