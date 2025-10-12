@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import MoneyInput from '@/components/ui/money-input';
 
 export interface FundAllocation {
   id: string;
@@ -224,23 +225,31 @@ export function FundAllocationBuilder({ tokenizationType, targetRaise, value, on
 
                   <div className="col-span-3">
                     <Label>Amount (₦)</Label>
-                    <Input
-                      type="number"
+                    <MoneyInput
                       value={allocation.amount_ngn}
-                      onChange={(e) => updateAllocation(allocation.id, 'amount_ngn', parseFloat(e.target.value) || 0)}
+                      onChange={(value) => updateAllocation(allocation.id, 'amount_ngn', value)}
+                      placeholder="Enter amount"
+                      currency="₦"
                       min={0}
+                      max={targetRaise}
                     />
                   </div>
 
                   <div className="col-span-2">
                     <Label>Percentage</Label>
                     <Input
-                      type="number"
-                      value={allocation.percentage.toFixed(2)}
-                      onChange={(e) => updateAllocation(allocation.id, 'percentage', parseFloat(e.target.value) || 0)}
-                      min={0}
-                      max={100}
-                      step={0.01}
+                      type="text"
+                      value={allocation.percentage > 0 ? allocation.percentage.toFixed(2) : ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '') {
+                          updateAllocation(allocation.id, 'percentage', 0);
+                        } else {
+                          updateAllocation(allocation.id, 'percentage', parseFloat(val) || 0);
+                        }
+                      }}
+                      onFocus={(e) => e.target.select()}
+                      placeholder="0.00"
                     />
                   </div>
 

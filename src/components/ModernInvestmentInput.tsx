@@ -89,7 +89,9 @@ const StableInputField = ({
     onKeyDown(e);
   };
 
-  const handleFocus = () => {
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Select all text for easy replacement
+    e.target.select();
     // Unformat for easier editing
     setLocalValue((prev) => prev.replace(/,/g, ""));
   };

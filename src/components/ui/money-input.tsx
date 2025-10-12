@@ -45,11 +45,19 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
+    
+    // Allow completely empty input
+    if (inputValue === '' || inputValue === currency) {
+      setDisplayValue('');
+      onChange(0);
+      return;
+    }
+    
     const numericValue = parseNumber(inputValue);
     
-    // Apply min/max constraints
+    // Apply min/max constraints only if value exists
     let constrainedValue = numericValue;
-    if (min !== undefined && constrainedValue < min) {
+    if (min !== undefined && constrainedValue < min && constrainedValue !== 0) {
       constrainedValue = min;
     }
     if (max !== undefined && constrainedValue > max) {
@@ -75,6 +83,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
         value={displayValue}
         onChange={handleChange}
         onBlur={handleBlur}
+        onFocus={(e) => e.target.select()}
         placeholder={placeholder}
         disabled={disabled}
         className={cn("pl-8", className)}
