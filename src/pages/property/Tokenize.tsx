@@ -36,6 +36,8 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import MoneyInput from "@/components/ui/money-input";
 import TokenizationTermsAcceptance from "@/components/TokenizationTermsAcceptance";
+import { FundAllocationBuilder, FundAllocation } from "@/components/FundAllocationBuilder";
+import { UseOfFundsChart } from "@/components/UseOfFundsChart";
 import {
   ArrowLeft,
   Building,
@@ -161,7 +163,6 @@ const createTokenizationSchema = (propertyValue: number) =>
     )
     .refine(
       (data) => {
-        // Minimum raise must be less than target raise
         return data.minimum_raise < data.target_raise;
       },
       {
@@ -171,15 +172,12 @@ const createTokenizationSchema = (propertyValue: number) =>
     )
     .refine(
       (data) => {
-        // Type-specific validation for target raise
         if (data.tokenization_type === "equity") {
           return data.target_raise <= propertyValue;
         } else if (data.tokenization_type === "debt") {
-          // For debt, typically 70-80% LTV ratio
           const maxDebtRaise = propertyValue * 0.8;
           return data.target_raise <= maxDebtRaise;
         }
-        // For revenue sharing, we allow more flexibility based on projected cashflows
         return true;
       },
       {
@@ -190,18 +188,14 @@ const createTokenizationSchema = (propertyValue: number) =>
     )
     .refine(
       (data) => {
-        // Validate that total token value doesn't exceed tokenization type limits
         const maxPossibleRaise = data.total_supply * data.price_per_token;
         
         if (data.tokenization_type === "equity") {
-          // Equity can't exceed 100% of property value
           return maxPossibleRaise <= propertyValue;
         } else if (data.tokenization_type === "debt") {
-          // Debt can't exceed 80% LTV ratio
           const maxDebtValue = propertyValue * 0.8;
           return maxPossibleRaise <= maxDebtValue;
         } else if (data.tokenization_type === "revenue") {
-          // Revenue sharing - allow up to 2x property value for flexibility
           const maxRevenueValue = propertyValue * 2;
           return maxPossibleRaise <= maxRevenueValue;
         }
@@ -214,7 +208,6 @@ const createTokenizationSchema = (propertyValue: number) =>
     )
     .refine(
       (data) => {
-        // Validate that max_investment >= min_investment
         if (data.max_investment) {
           return data.max_investment >= data.min_investment;
         }
@@ -234,8 +227,9 @@ const TokenizeProperty = () => {
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
-  const [step, setStep] = useState(0); // Start with type selection
+  const [step, setStep] = useState(0);
   const [selectedType, setSelectedType] = useState<TokenizationType>("equity");
+  const [useOfFunds, setUseOfFunds] = useState<FundAllocation[]>([]);
 
   // Fetch property details
   const { data: property, isLoading: propertyLoading } = useQuery({
@@ -281,9 +275,9 @@ const TokenizeProperty = () => {
     },
   });
 
-  // Watch form values for real-time calculations
   const totalSupply = form.watch("total_supply");
   const pricePerToken = form.watch("price_per_token");
+  const targetRaise = form.watch("target_raise");
   const maxPossibleRaise =
     totalSupply && pricePerToken ? totalSupply * pricePerToken : 0;
 
@@ -340,6 +334,7 @@ const TokenizeProperty = () => {
         platform_fee_percentage: platform_fee_percentage || null,
         auto_refund: auto_refund ?? true,
         status: "draft",
+        use_of_funds: useOfFunds,
       };
 
       return supabaseService.tokenizations.create(payload);
@@ -405,26 +400,48 @@ const TokenizeProperty = () => {
   const nextStep = async (e?: React.MouseEvent) => {
     console.log("🔄 nextStep called, current step:", step);
     
-    // Prevent any form submission
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    
-    const isValid = await form.trigger([
-      "token_name",
-      "token_symbol",
-      "total_supply",
-      "price_per_token",
-    ]);
 
-    console.log("Form validation result:", isValid);
-    
-    if (isValid) {
-      console.log("✅ Setting step to 2");
-      setStep(2);
-    } else {
-      console.log("❌ Form validation failed, staying on step 1");
+    // Step 1 validation
+    if (step === 1) {
+      const isValid = await form.trigger([
+        "token_name",
+        "token_symbol",
+        "total_supply",
+        "price_per_token",
+      ]);
+
+      if (isValid) {
+        setStep(2);
+      }
+      return;
+    }
+
+    // Step 2 validation - Use of Funds
+    if (step === 2) {
+      const totalPercentage = useOfFunds.reduce((sum, a) => sum + a.percentage, 0);
+      const totalAmount = useOfFunds.reduce((sum, a) => sum + a.amount_ngn, 0);
+
+      if (useOfFunds.length === 0) {
+        toast.error("Please add at least one fund allocation category");
+        return;
+      }
+
+      if (Math.abs(totalPercentage - 100) >= 0.01) {
+        toast.error("Total allocation must equal 100%");
+        return;
+      }
+
+      if (Math.abs(totalAmount - targetRaise) >= 1) {
+        toast.error(`Total amount must equal ₦${targetRaise.toLocaleString()}`);
+        return;
+      }
+
+      setStep(3);
+      return;
     }
   };
 
@@ -432,22 +449,18 @@ const TokenizeProperty = () => {
     if (step === 1) {
       setStep(0);
     } else {
-      setStep(1);
+      setStep(step - 1);
     }
   };
 
   const onSubmit = (data: TokenizationForm) => {
     console.log("🚨 onSubmit called with step:", step);
-    console.log("🚨 Form data:", data);
     
-    // STRICT guard - only allow submission on the final step (step 2)
-    if (step !== 2) {
+    if (step !== 3) {
       console.log("🚨 BLOCKED - not on final step. Current step:", step);
       toast.error(`Cannot submit on step ${step}. Please complete all steps first.`);
       return;
     }
-    
-    console.log("✅ Step check passed, proceeding with submission...");
     
     if (!isAuthenticated || !user?.id) {
       toast.error("Please log in to continue.");
@@ -493,309 +506,107 @@ const TokenizeProperty = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
+        {/* Step indicator */}
         <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/property/management")}
-            className="mb-4 border-2 border-primary"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Management
-          </Button>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Tokenize Property</h1>
-              <p className="text-muted-foreground">
-                {step === 0
-                  ? "Choose your tokenization type"
-                  : `Step ${step} of 3 - Configure your tokenization`}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">Property Value</p>
-              <p className="text-2xl font-bold">
-                ₦{property.estimated_value.toLocaleString()}
-              </p>
-            </div>
+          <Progress value={(step / 3) * 100} className="h-2" />
+          <div className="mt-2 text-sm text-muted-foreground">
+            Step {step + 1} of 4
           </div>
-
-          <Progress
-            value={step === 0 ? 0 : (step / 3) * 100}
-            className="w-full mt-4"
-          />
         </div>
 
-        {/* Property Summary */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center">
-                <Building className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-md truncate">{property.title}</h3>
-                <p className="text-muted-foreground truncate text-sm">
-                  {(property.location as any)?.address}, {(property.location as any)?.city}
-                </p>
-                <div className="flex items-center gap-4 mt-2">
-                  <Badge variant="outline">{property.property_type}</Badge>
-                  <Badge
-                    variant={
-                      property.approval_status === "approved"
-                        ? "default"
-                        : "secondary"
-                    }
-                  >
-                    {property.approval_status}
-                  </Badge>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Step 0: Type Selection */}
+            {step === 0 && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold mb-2">Select Tokenization Type</h2>
+                  <p className="text-muted-foreground">
+                    Choose how investors will participate in your property
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4">
+                  {tokenizationTypes.map((type) => (
+                    <Card
+                      key={type.id}
+                      className={`cursor-pointer transition-all hover:shadow-lg ${
+                        selectedType === type.id ? "ring-2 ring-primary" : ""
+                      }`}
+                      onClick={() => handleTypeSelection(type.id)}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex flex-col items-center text-center space-y-4">
+                          <type.icon className="h-12 w-12 text-primary" />
+                          <div>
+                            <h3 className="font-semibold">{type.title}</h3>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {type.description}
+                            </p>
+                          </div>
+                          <Badge variant="secondary">{type.badge}</Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">Monthly Income</p>
-                <p className="font-semibold">
-                  ₦{property.rental_income_monthly?.toLocaleString() || "0"}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            )}
 
-        {/* Main Content */}
-        <Card>
-          <CardContent className="p-6">
-            <Form {...form}>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (step === 2) {
-                    form.handleSubmit(onSubmit)(e);
-                  }
-                }}
-                className="space-y-6"
-              >
-                {step === 0 && (
-                  <div className="space-y-6">
-                    <div className="text-center mb-6">
-                      <h2 className="text-2xl font-bold mb-2">
-                        Choose Tokenization Type
-                      </h2>
-                      <p className="text-muted-foreground">
-                        Select the type of tokenization that best fits your
-                        investment strategy
-                      </p>
-                    </div>
+            {/* Step 1: Basic Information */}
+            {step === 1 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold mb-2">Basic Token Information</h2>
+                  <p className="text-muted-foreground">
+                    Configure your token details
+                  </p>
+                </div>
 
-                    <div className="space-y-4">
-                      {tokenizationTypes.map((type) => {
-                        const Icon = type.icon;
-                        return (
-                          <HoverCard key={type.id}>
-                            <HoverCardTrigger asChild>
-                              <Card
-                                className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/50"
-                                onClick={() => handleTypeSelection(type.id)}
-                              >
-                                <CardContent className="p-6">
-                                  <div className="flex items-center gap-4">
-                                    <div className="p-4 bg-primary/10 rounded-full">
-                                      <Icon className="h-8 w-8 text-primary" />
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <h4 className="font-semibold text-lg">
-                                          {type.title}
-                                        </h4>
-                                        <Badge variant="secondary">
-                                          {type.badge}
-                                        </Badge>
-                                      </div>
-                                      <p className="text-muted-foreground">
-                                        {type.description}
-                                      </p>
-                                    </div>
-                                    <div className="flex items-center text-muted-foreground">
-                                      <Info className="h-5 w-5" />
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </HoverCardTrigger>
-                            <HoverCardContent className="w-96" side="left">
-                              <div className="space-y-4">
-                                <div className="flex items-center gap-2">
-                                  <Icon className="h-5 w-5 text-primary" />
-                                  <h4 className="font-semibold">
-                                    {type.title}
-                                  </h4>
-                                </div>
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="token_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Token Name</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="e.g., Luxury Villa Token" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                                <div className="space-y-3 text-sm">
-                                  <div>
-                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
-                                      <Building className="h-4 w-4" />
-                                      Structure:
-                                    </p>
-                                    <p className="text-xs">{type.details.structure}</p>
-                                  </div>
+                    <FormField
+                      control={form.control}
+                      name="token_symbol"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Token Symbol</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="e.g., LVILLA" maxLength={10} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                                  <div>
-                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
-                                      <TrendingUp className="h-4 w-4" />
-                                      Returns:
-                                    </p>
-                                    <p className="text-xs">{type.details.returns}</p>
-                                  </div>
-
-                                  <div>
-                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
-                                      <AlertTriangle className="h-4 w-4" />
-                                      Risk Level:
-                                    </p>
-                                    <p className="text-xs">{type.details.risk}</p>
-                                  </div>
-
-                                  <div>
-                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
-                                      <DollarSign className="h-4 w-4" />
-                                      Max Raise:
-                                    </p>
-                                    <p className="text-xs">{type.details.maxRaise}</p>
-                                  </div>
-
-                                  <Separator />
-
-                                  <div>
-                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
-                                      <Info className="h-4 w-4" />
-                                      Example:
-                                    </p>
-                                    <p className="text-xs">
-                                      {type.details.example}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </HoverCardContent>
-                          </HoverCard>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {step === 1 && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-2xl font-bold">
-                          Basic Token Information
-                        </h2>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-sm text-muted-foreground">
-                            Type:
-                          </span>
-                          <Badge variant="secondary">
-                            {
-                              tokenizationTypes.find(
-                                (t) => t.id === selectedType
-                              )?.badge
-                            }
-                          </Badge>
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setStep(0)}
-                      >
-                        Change Type
-                      </Button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="token_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Token Name</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="e.g., Luxury Apartment Token"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="token_symbol"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Token Symbol</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="e.g., LAT"
-                                maxLength={10}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              2-10 characters, letters only
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="total_supply"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Total Token Supply</FormLabel>
+                            <FormLabel>Total Supply</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
                                 {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
-                                placeholder="10000"
+                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
                               />
                             </FormControl>
-                            <FormDescription>
-                              Number of tokens to create
-                              {pricePerToken > 0 && (
-                                <span className="block text-xs mt-1">
-                                  Max raise: ₦
-                                  {(
-                                    field.value * pricePerToken
-                                  ).toLocaleString()}
-                                </span>
-                              )}
-                              {property && (
-                                <span className="block text-xs text-muted-foreground mt-1">
-                                  {selectedType === "equity" &&
-                                    `Equity limit: Max token value ≤ ₦${property.estimated_value?.toLocaleString()}`}
-                                  {selectedType === "debt" &&
-                                    `Debt limit: Max token value ≤ ₦${(
-                                      property.estimated_value * 0.8
-                                    ).toLocaleString()} (80% LTV)`}
-                                  {selectedType === "revenue" &&
-                                    `Revenue limit: Max token value ≤ ₦${(
-                                      property.estimated_value * 2
-                                    ).toLocaleString()} (flexible)`}
-                                </span>
-                              )}
-                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -806,341 +617,90 @@ const TokenizeProperty = () => {
                         name="price_per_token"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Price Per Token</FormLabel>
+                            <FormLabel>Price per Token (₦)</FormLabel>
                             <FormControl>
-                              <MoneyInput
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="100"
+                              <Input
+                                type="number"
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
                               />
                             </FormControl>
-                            <FormDescription>
-                              {totalSupply > 0 && (
-                                <span className="text-xs">
-                                  Max raise: ₦
-                                  {(totalSupply * field.value).toLocaleString()}
-                                </span>
-                              )}
-                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
-                  </div>
-                )}
 
-            {step === 3 && selectedType && (
+                    {maxPossibleRaise > 0 && (
+                      <div className="p-4 bg-muted rounded-lg">
+                        <p className="text-sm font-medium">
+                          Maximum Possible Raise: ₦{maxPossibleRaise.toLocaleString()}
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Step 2: Use of Funds */}
+            {step === 2 && (
+              <div className="space-y-6">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold mb-2">Use of Funds</h2>
+                  <p className="text-muted-foreground">
+                    Specify how the raised funds will be allocated
+                  </p>
+                </div>
+
+                <FundAllocationBuilder
+                  tokenizationType={selectedType}
+                  targetRaise={targetRaise || 0}
+                  value={useOfFunds}
+                  onChange={setUseOfFunds}
+                />
+
+                {useOfFunds.length > 0 && (
+                  <UseOfFundsChart data={useOfFunds} targetRaise={targetRaise || 0} />
+                )}
+              </div>
+            )}
+
+            {/* Step 3: Terms & Submit */}
+            {step === 3 && (
               <TokenizationTermsAcceptance
                 tokenizationType={selectedType}
                 tokenName={form.watch("token_name")}
                 totalSupply={form.watch("total_supply")}
+                useOfFunds={useOfFunds}
+                targetRaise={targetRaise || 0}
                 onAccept={handleTermsAccept}
                 onDecline={handleTermsDecline}
                 isSubmitting={createTokenizationMutation.isPending}
               />
             )}
 
-            {step === 2 && (
-                  <div className="space-y-6">
-                    <div>
-                      <h2 className="text-2xl font-bold">Investment Details</h2>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm text-muted-foreground">
-                          Type:
-                        </span>
-                        <Badge variant="secondary">
-                          {
-                            tokenizationTypes.find((t) => t.id === selectedType)
-                              ?.badge
-                          }
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="target_raise"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Target Raise</FormLabel>
-                            <FormControl>
-                              <MoneyInput
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="1000000"
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Goal amount to raise
-                              {maxPossibleRaise > 0 && (
-                                <span className="block text-xs mt-1">
-                                  Token limit: ₦
-                                  {maxPossibleRaise.toLocaleString()} (
-                                  {totalSupply?.toLocaleString()} tokens × ₦
-                                  {pricePerToken?.toLocaleString()})
-                                </span>
-                              )}
-                              <span className="block text-xs text-muted-foreground">
-                                {selectedType === "equity" &&
-                                  `Max (Equity): ₦${property?.estimated_value?.toLocaleString()}`}
-                                {selectedType === "debt" &&
-                                  `Max (Debt 80% LTV): ₦${(
-                                    (property?.estimated_value || 0) * 0.8
-                                  ).toLocaleString()}`}
-                                {selectedType === "revenue" &&
-                                  `Max (Revenue): Based on cashflow projections`}
-                              </span>
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="minimum_raise"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Minimum Raise</FormLabel>
-                            <FormControl>
-                              <MoneyInput
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="300000"
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Minimum amount needed to proceed
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="min_investment"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Minimum Investment</FormLabel>
-                            <FormControl>
-                              <MoneyInput
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="10000"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="max_investment"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Maximum Investment</FormLabel>
-                            <FormControl>
-                              <MoneyInput
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="1000000"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="investment_window_days"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Investment Window (Days)</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
-                                placeholder="30"
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              How long investors can invest
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="expected_roi_annual"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Expected Annual ROI (%)</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                step="0.1"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
-                                placeholder="8"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="dividend_frequency"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Dividend Frequency</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select frequency" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="quarterly">
-                                  Quarterly
-                                </SelectItem>
-                                <SelectItem value="annually">
-                                  Annually
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="management_fee_percentage"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Management Fee (%)</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                step="0.1"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
-                                placeholder="2.5"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="platform_fee_percentage"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Platform Fee (%)</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                step="0.1"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
-                                placeholder="1.0"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
+            {/* Navigation Buttons */}
+            {step < 3 && (
+              <div className="flex justify-between">
+                {step > 0 && (
+                  <Button type="button" variant="outline" onClick={prevStep}>
+                    <ChevronLeft className="h-4 w-4 mr-2" />
+                    Back
+                  </Button>
                 )}
-
-                {/* Footer Buttons */}
-                <div className="flex justify-between pt-6">
-                  {step === 0 ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => navigate("/property/management")}
-                    >
-                      Cancel
-                    </Button>
-                  ) : step === 1 ? (
-                    <>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={prevStep}
-                      >
-                        <ChevronLeft className="mr-2 h-4 w-4" />
-                        Back to Types
-                      </Button>
-                      <Button 
-                        type="button" 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          nextStep(e);
-                        }}
-                      >
-                        Next Step
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={prevStep}
-                      >
-                        <ChevronLeft className="mr-2 h-4 w-4" />
-                        Previous
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={createTokenizationMutation.isPending}
-                      >
-                        {createTokenizationMutation.isPending
-                          ? "Creating..."
-                          : "Create Tokenization"}
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                <Button
+                  type="button"
+                  onClick={nextStep}
+                  className={step === 0 ? "ml-auto" : ""}
+                >
+                  Continue
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+            )}
+          </form>
+        </Form>
       </div>
     </div>
   );

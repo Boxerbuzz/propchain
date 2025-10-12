@@ -5,13 +5,16 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Shield, ChevronDown, FileText, Building, Banknote, TrendingUp } from "lucide-react";
+import { Shield, ChevronDown, FileText, Building, Banknote, TrendingUp, Info } from "lucide-react";
 import { Link } from "react-router-dom";
+import { FundAllocation } from "./FundAllocationBuilder";
 
 interface TokenizationTermsAcceptanceProps {
   tokenizationType: "equity" | "debt" | "revenue";
   tokenName: string;
   totalSupply: number;
+  useOfFunds?: FundAllocation[];
+  targetRaise?: number;
   onAccept: () => void;
   onDecline: () => void;
   isSubmitting?: boolean;
@@ -21,6 +24,8 @@ const TokenizationTermsAcceptance = ({
   tokenizationType,
   tokenName,
   totalSupply,
+  useOfFunds = [],
+  targetRaise = 0,
   onAccept,
   onDecline,
   isSubmitting = false
@@ -34,6 +39,7 @@ const TokenizationTermsAcceptance = ({
     blockchain: false,
     obligations: false,
     terms: false,
+    useOfFunds: false,
   });
 
   const allChecked = Object.values(checkboxes).every(v => v);
@@ -167,6 +173,36 @@ const TokenizationTermsAcceptance = ({
 
   return (
     <div className="space-y-6">
+      {/* Use of Funds Summary */}
+      {useOfFunds.length > 0 && targetRaise > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Use of Funds Summary</CardTitle>
+            <CardDescription>
+              Review how the ₦{targetRaise.toLocaleString()} raised will be allocated
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {useOfFunds.map(fund => (
+                <div key={fund.id} className="flex justify-between items-start border-b pb-2">
+                  <div className="flex-1">
+                    <p className="font-medium">{fund.category}</p>
+                    {fund.description && (
+                      <p className="text-sm text-muted-foreground">{fund.description}</p>
+                    )}
+                  </div>
+                  <div className="text-right ml-4">
+                    <p className="font-semibold">₦{fund.amount_ngn.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">{fund.percentage.toFixed(1)}%</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
@@ -328,6 +364,19 @@ const TokenizationTermsAcceptance = ({
               I agree to maintain investor communication and reporting obligations
             </Label>
           </div>
+
+          {useOfFunds.length > 0 && (
+            <div className="flex items-start space-x-3">
+              <Checkbox 
+                id="useOfFunds" 
+                checked={checkboxes.useOfFunds}
+                onCheckedChange={() => toggleCheckbox("useOfFunds")}
+              />
+              <Label htmlFor="useOfFunds" className="text-sm font-normal cursor-pointer">
+                I acknowledge the proposed use of funds and understand that actual deployment may vary subject to property owner discretion and regulatory requirements. Any material changes will be communicated to token holders.
+              </Label>
+            </div>
+          )}
           
           <div className="flex items-start space-x-3">
             <Checkbox 

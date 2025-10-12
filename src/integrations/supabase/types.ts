@@ -1934,6 +1934,8 @@ export type Database = {
           total_supply: number
           type_specific_terms: Json | null
           updated_at: string | null
+          use_of_funds: Json | null
+          use_of_funds_breakdown: Json | null
         }
         Insert: {
           approved_at?: string | null
@@ -1975,6 +1977,8 @@ export type Database = {
           total_supply: number
           type_specific_terms?: Json | null
           updated_at?: string | null
+          use_of_funds?: Json | null
+          use_of_funds_breakdown?: Json | null
         }
         Update: {
           approved_at?: string | null
@@ -2016,6 +2020,8 @@ export type Database = {
           total_supply?: number
           type_specific_terms?: Json | null
           updated_at?: string | null
+          use_of_funds?: Json | null
+          use_of_funds_breakdown?: Json | null
         }
         Relationships: [
           {
