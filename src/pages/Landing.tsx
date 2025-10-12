@@ -31,8 +31,11 @@ import { useProperties } from "@/hooks/useProperties";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function Landing() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   const autoplayPlugin = useRef(
     Autoplay({ delay: 5000, stopOnInteraction: true })
   );
@@ -311,7 +314,10 @@ export default function Landing() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(var(--primary)/0.08),transparent_50%)]" />
         <div className="container mx-auto px-4 relative">
           <div className="max-w-6xl mx-auto text-center">
-            <Badge className="mb-6 text-sm px-5 py-2 bg-primary/10 hover:bg-primary/20 border-primary/20" variant="outline">
+            <Badge
+              className="mb-6 text-sm px-5 py-2 bg-primary/10 hover:bg-primary/20 border-primary/20"
+              variant="outline"
+            >
               <Sparkles className="w-3.5 h-3.5 mr-2 inline" />
               Now Live on Hedera Mainnet
             </Badge>
@@ -330,13 +336,22 @@ export default function Landing() {
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <Button size="lg" asChild className="h-12 px-8 text-base transition-all">
+              <Button
+                size="lg"
+                asChild
+                className="h-12 px-8 text-base transition-all"
+              >
                 <Link to="/auth/signup">
                   Create Free Account
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild className="h-12 px-8 text-base">
+              <Button
+                size="lg"
+                variant="outline"
+                asChild
+                className="h-12 px-8 text-base"
+              >
                 <Link to="/browse">Browse Properties</Link>
               </Button>
             </div>
@@ -448,7 +463,10 @@ export default function Landing() {
       <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-20">
-            <Badge className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20" variant="outline">
+            <Badge
+              className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+              variant="outline"
+            >
               Getting Started
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-5">
@@ -490,7 +508,10 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-b from-muted/40 via-muted/20 to-background" />
         <div className="container mx-auto px-4 relative">
           <div className="text-center mb-20">
-            <Badge className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20" variant="outline">
+            <Badge
+              className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+              variant="outline"
+            >
               Platform Benefits
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-5">
@@ -515,7 +536,10 @@ export default function Landing() {
                   <h3 className="text-xl font-bold mb-2 text-center">
                     {feature.title}
                   </h3>
-                  <Badge variant="secondary" className="text-xs font-semibold mb-4 mx-auto block w-fit">
+                  <Badge
+                    variant="secondary"
+                    className="text-xs font-semibold mb-4 mx-auto block w-fit"
+                  >
                     {feature.stat}
                   </Badge>
                   <p className="text-muted-foreground text-sm leading-relaxed text-center">
@@ -533,7 +557,10 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-b from-background to-muted/30" />
         <div className="container mx-auto px-4 relative">
           <div className="text-center mb-16">
-            <Badge className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20" variant="outline">
+            <Badge
+              className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+              variant="outline"
+            >
               Our Partners
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-5">
@@ -544,32 +571,40 @@ export default function Landing() {
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-center justify-items-center max-w-5xl mx-auto">
-            <Card className="flex items-center justify-center h-24 w-full bg-card/50 backdrop-blur-sm border-primary/20 hover:bg-card hover:border-primary/40 transition-all duration-300 group">
-              <CardContent className="p-6">
-                <span className="text-xl font-bold text-muted-foreground group-hover:text-primary transition-colors">
-                  Hedera
-                </span>
+            <Card className="flex items-center justify-center h-32 w-full bg-card/50 backdrop-blur-sm border-primary/20 hover:bg-card hover:border-primary/40 transition-all duration-300 group">
+              <CardContent className="p-6 flex items-center justify-center">
+                <img
+                  src={isDark ? "/partners/dark/hedera.svg" : "/partners/light/hedera.svg"}
+                  alt="Hedera"
+                  className="h-16 w-auto object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300 opacity-70 group-hover:opacity-100"
+                />
               </CardContent>
             </Card>
-            <Card className="flex items-center justify-center h-24 w-full bg-card/50 backdrop-blur-sm border-primary/20 hover:bg-card hover:border-primary/40 transition-all duration-300 group">
-              <CardContent className="p-6">
-                <span className="text-xl font-bold text-muted-foreground group-hover:text-primary transition-colors">
-                  Paystack
-                </span>
+            <Card className="flex items-center justify-center h-32 w-full bg-card/50 backdrop-blur-sm border-primary/20 hover:bg-card hover:border-primary/40 transition-all duration-300 group">
+              <CardContent className="p-6 flex items-center justify-center">
+                <img
+                  src={isDark ? "/partners/dark/paystack.svg" : "/partners/light/paystack.svg"}
+                  alt="Paystack"
+                  className="h-12 w-auto object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300 opacity-70 group-hover:opacity-100"
+                />
               </CardContent>
             </Card>
-            <Card className="flex items-center justify-center h-24 w-full bg-card/50 backdrop-blur-sm border-primary/20 hover:bg-card hover:border-primary/40 transition-all duration-300 group">
-              <CardContent className="p-6">
-                <span className="text-xl font-bold text-muted-foreground group-hover:text-primary transition-colors">
-                  SEC Nigeria
-                </span>
+            <Card className="flex items-center justify-center h-32 w-full bg-card/50 backdrop-blur-sm border-primary/20 hover:bg-card hover:border-primary/40 transition-all duration-300 group">
+              <CardContent className="p-6 flex items-center justify-center">
+                <img
+                  src={isDark ? "/partners/dark/hashgraph.svg" : "/partners/light/hashgraph.svg"}
+                  alt="Hashgraph"
+                  className="h-16 w-auto object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300 opacity-70 group-hover:opacity-100"
+                />
               </CardContent>
             </Card>
-            <Card className="flex items-center justify-center h-24 w-full bg-card/50 backdrop-blur-sm border-primary/20 hover:bg-card hover:border-primary/40 transition-all duration-300 group">
-              <CardContent className="p-6">
-                <span className="text-xl font-bold text-muted-foreground group-hover:text-primary transition-colors">
-                  IPFS
-                </span>
+            <Card className="flex items-center justify-center h-32 w-full bg-card/50 backdrop-blur-sm border-primary/20 hover:bg-card hover:border-primary/40 transition-all duration-300 group">
+              <CardContent className="p-6 flex items-center justify-center">
+                <img
+                  src="/partners/ndpc.png"
+                  alt="NPDC"
+                  className="h-16 w-auto object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300 opacity-70 group-hover:opacity-100"
+                />
               </CardContent>
             </Card>
           </div>
@@ -580,7 +615,10 @@ export default function Landing() {
       <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-20">
-            <Badge className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20" variant="outline">
+            <Badge
+              className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+              variant="outline"
+            >
               Testimonials
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-5">
@@ -684,18 +722,28 @@ export default function Landing() {
                   through tokenized real estate
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                  <Button size="lg" asChild className="h-14 px-10 text-lg transition-all">
+                  <Button
+                    size="lg"
+                    asChild
+                    className="h-14 px-10 text-lg transition-all"
+                  >
                     <Link to="/auth/signup">
                       Create Free Account
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" asChild className="h-14 px-10 text-lg">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    asChild
+                    className="h-14 px-10 text-lg"
+                  >
                     <Link to="/browse">View Properties</Link>
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  ✓ No hidden fees • ✓ SEC compliant • ✓ Instant ownership transfer
+                  ✓ No hidden fees • ✓ SEC compliant • ✓ Instant ownership
+                  transfer
                 </p>
               </CardContent>
             </Card>

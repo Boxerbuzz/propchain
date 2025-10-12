@@ -191,7 +191,7 @@ export default function Footer() {
               completed KYC requirements.
             </p>
           </div>
-          <div className="text-sm text-muted-foreground text-center">
+          <div className="text-sm text-muted-foreground text-center mt-4">
             © {currentYear} PropChain. All rights reserved. | Built on Hedera
             Hashgraph
           </div>

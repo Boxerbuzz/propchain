@@ -35,6 +35,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Header() {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
@@ -153,6 +154,9 @@ export default function Header() {
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-3">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* Notifications (only when authenticated) */}
           {isAuthenticated && (
             <Popover>
