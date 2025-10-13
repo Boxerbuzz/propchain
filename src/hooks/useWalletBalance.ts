@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from "@supabase/supabase-js";
 
 interface WalletBalance {
   hederaAccountId: string;
@@ -91,27 +92,36 @@ export const useWalletBalance = () => {
   const associateUsdc = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('associate-usdc-token');
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallet-balance', user?.hedera_account_id] });
-      toast.success('USDC associated successfully!');
-    },
-    onError: (error: any) => {
-      // Extract user-friendly error message
-      let errorMessage = 'Failed to associate USDC';
       
-      if (error.message) {
-        try {
-          const parsedError = JSON.parse(error.message);
-          errorMessage = parsedError.error || errorMessage;
-        } catch {
-          errorMessage = error.message;
+      if (error) {
+        // Handle FunctionsHttpError (edge function returned non-2xx status)
+        if (error instanceof FunctionsHttpError) {
+          const errorData = await error.context.json().catch(() => ({}));
+          throw new Error(errorData.message || errorData.error || 'Failed to associate USDC');
         }
+        
+        // Handle network/relay errors
+        if (error instanceof FunctionsRelayError || error instanceof FunctionsFetchError) {
+          throw new Error('Network error. Please check your connection and try again.');
+        }
+        
+        // Generic error
+        throw error;
       }
       
-      toast.error(errorMessage);
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['wallet-balance', user?.hedera_account_id] });
+      
+      if (data?.already_associated) {
+        toast.success('USDC is already associated with your account');
+      } else {
+        toast.success('USDC associated successfully!');
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to associate USDC');
     },
   });
 

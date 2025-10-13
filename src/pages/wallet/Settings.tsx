@@ -20,11 +20,16 @@ import {
 } from "lucide-react";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { useNavigate } from "react-router-dom";
+import { useWalletConnect } from "@/hooks/useWalletConnect";
 
 const WalletSettings = () => {
   const { balance, isLoading, associateUsdc, isAssociatingUsdc } =
     useWalletBalance();
   const navigate = useNavigate();
+  const { getActiveWallet } = useWalletConnect();
+  
+  const activeWallet = getActiveWallet();
+  const isExternalWallet = activeWallet?.type === 'external';
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -110,15 +115,25 @@ const WalletSettings = () => {
                       receive or trade USDC tokens.
                     </AlertDescription>
                   </Alert>
-                  <Button
-                    onClick={() => associateUsdc()}
-                    disabled={isAssociatingUsdc}
-                    className="w-full"
-                  >
-                    {isAssociatingUsdc
-                      ? "Associating..."
-                      : "Associate USDC Token"}
-                  </Button>
+                  
+                  {isExternalWallet ? (
+                    <Alert>
+                      <AlertDescription>
+                        For external wallets (HashPack, Blade, etc.), you must associate USDC 
+                        directly from your wallet app. This cannot be done from our platform.
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <Button
+                      onClick={() => associateUsdc()}
+                      disabled={isAssociatingUsdc}
+                      className="w-full"
+                    >
+                      {isAssociatingUsdc
+                        ? "Associating..."
+                        : "Associate USDC Token"}
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
