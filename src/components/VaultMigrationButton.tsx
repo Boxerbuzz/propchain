@@ -38,7 +38,7 @@ export const VaultMigrationButton = () => {
       onClick={handleMigration}
       disabled={isMigrating}
       variant="outline"
-      className="gap-2"
+      className="gap-2 w-full"
     >
       {isMigrating ? (
         <>

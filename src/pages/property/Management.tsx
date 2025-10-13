@@ -47,6 +47,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { VaultMigrationButton } from "@/components/VaultMigrationButton";
 
 const PropertyManagement = () => {
   const { toast } = useToast();
@@ -951,6 +952,7 @@ const PropertyManagement = () => {
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Generate Report
                 </Button>
+                <VaultMigrationButton/>
               </CardContent>
             </Card>
 
