@@ -56,6 +56,8 @@ import {
   Info,
   ChevronLeft,
   ChevronRight,
+  DollarSign,
+  AlertTriangle,
 } from "lucide-react";
 
 // Tokenization types
@@ -700,31 +702,60 @@ const TokenizeProperty = () => {
                         </Card>
                       </HoverCardTrigger>
                       <HoverCardContent align="center" className="w-80">
-                        <div className="space-y-2 text-sm">
-                          <p>
-                            <span className="font-medium">Structure:</span>{" "}
-                            {type.details.structure}
-                          </p>
-                          <p>
-                            <span className="font-medium">Returns:</span>{" "}
-                            {type.details.returns}
-                          </p>
-                          <p>
-                            <span className="font-medium">Risk:</span>{" "}
-                            {type.details.risk}
-                          </p>
-                          <p>
-                            <span className="font-medium">Rights:</span>{" "}
-                            {type.details.rights}
-                          </p>
-                          <p>
-                            <span className="font-medium">Example:</span>{" "}
-                            {type.details.example}
-                          </p>
-                          <p className="text-primary font-medium">
-                            Limit: {type.details.maxRaise}
-                          </p>
-                        </div>
+                      <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <Icon className="h-5 w-5 text-primary" />
+                                  <h4 className="font-semibold">
+                                    {type.title}
+                                  </h4>
+                                </div>
+
+                                <div className="space-y-3 text-sm">
+                                  <div>
+                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
+                                      <Building className="h-4 w-4" />
+                                      Structure:
+                                    </p>
+                                    <p className="text-xs">{type.details.structure}</p>
+                                  </div>
+
+                                  <div>
+                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
+                                      <TrendingUp className="h-4 w-4" />
+                                      Returns:
+                                    </p>
+                                    <p className="text-xs">{type.details.returns}</p>
+                                  </div>
+
+                                  <div>
+                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
+                                      <AlertTriangle className="h-4 w-4" />
+                                      Risk Level:
+                                    </p>
+                                    <p className="text-xs">{type.details.risk}</p>
+                                  </div>
+
+                                  <div>
+                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
+                                      <DollarSign className="h-4 w-4" />
+                                      Max Raise:
+                                    </p>
+                                    <p className="text-xs">{type.details.maxRaise}</p>
+                                  </div>
+
+                                  <Separator />
+
+                                  <div>
+                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
+                                      <Info className="h-4 w-4" />
+                                      Example:
+                                    </p>
+                                    <p className="text-xs">
+                                      {type.details.example}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
                       </HoverCardContent>
                     </HoverCard>
                   ))}
