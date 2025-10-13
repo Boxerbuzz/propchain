@@ -319,8 +319,8 @@ const WalletDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-4 md:py-8">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <div className="min-h-screen bg-background py-4 md:py-8 overflow-x-hidden">
+      <div className="container mx-auto px-4 max-w-6xl overflow-x-hidden">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 md:mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Wallet</h1>
@@ -615,26 +615,26 @@ const WalletDashboard = () => {
                         filteredTransactions.slice(0, 50).map((transaction) => (
                           <div
                             key={transaction.id}
-                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg transition-colors group cursor-pointer gap-3"
+                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg transition-colors group cursor-pointer gap-3 overflow-hidden"
                             onClick={() => {
                               window.open(transaction.explorerUrl, "_blank");
                             }}
                           >
-                            <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                            <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1 overflow-hidden">
                               <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center border border-blue-200 dark:border-blue-700">
                                 {getTransactionIcon(transaction.type)}
                               </div>
 
-                              <div className="min-w-0 flex-1">
+                              <div className="min-w-0 flex-1 overflow-hidden">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <p className="font-medium capitalize text-sm sm:text-base">
+                                  <p className="font-medium capitalize text-sm sm:text-base truncate">
                                     {transaction.type.replace("_", " ")}
                                   </p>
                                   <Badge
                                     variant="secondary"
                                     className={`${getStatusColor(
                                       transaction.status
-                                    )} text-xs`}
+                                    )} text-xs flex-shrink-0`}
                                   >
                                     {transaction.status}
                                   </Badge>
@@ -644,7 +644,7 @@ const WalletDashboard = () => {
                                     transaction.method}
                                 </p>
                                 {transaction.reference && (
-                                  <p className="text-xs text-muted-foreground font-mono flex items-center gap-1 mt-1 hidden sm:flex">
+                                  <p className="text-xs text-muted-foreground font-mono items-center gap-1 mt-1 hidden sm:flex overflow-hidden">
                                     <Hash className="h-3 w-3 flex-shrink-0" />
                                     <span className="truncate">
                                       {transaction.reference.length >= 36
@@ -660,14 +660,14 @@ const WalletDashboard = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 sm:text-right flex-shrink-0">
-                              <div>
+                            <div className="flex sm:flex-col items-start sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 sm:text-right flex-shrink-0 w-full sm:w-auto">
+                              <div className="overflow-hidden">
                                 <p
-                                  className={`font-semibold text-sm sm:text-base whitespace-nowrap ${
+                                  className={`font-semibold text-sm sm:text-base ${
                                     transaction.direction === "incoming"
                                       ? "text-green-600"
                                       : "text-red-600"
-                                  }`}
+                                  } break-words`}
                                 >
                                   {transaction.direction === "incoming"
                                     ? "+"
@@ -680,7 +680,7 @@ const WalletDashboard = () => {
                                 </p>
                                 {transaction.currency === "HBAR" &&
                                   hederaBalance?.balanceNgn && (
-                                    <p className="text-xs text-muted-foreground whitespace-nowrap">
+                                    <p className="text-xs text-muted-foreground">
                                       ≈ ₦
                                       {(
                                         transaction.amount *
@@ -690,8 +690,8 @@ const WalletDashboard = () => {
                                     </p>
                                   )}
                               </div>
-                              <div className="text-right">
-                                <p className="text-xs text-muted-foreground whitespace-nowrap">
+                              <div className="text-left sm:text-right">
+                                <p className="text-xs text-muted-foreground">
                                   {(() => {
                                     const date = new Date(transaction.timestamp);
                                     return isNaN(date.getTime())
@@ -699,14 +699,13 @@ const WalletDashboard = () => {
                                       : date.toLocaleString("en-US", {
                                           month: "short",
                                           day: "numeric",
-                                          year: window.innerWidth >= 640 ? "numeric" : undefined,
                                           hour: "2-digit",
                                           minute: "2-digit",
                                         });
                                   })()}
                                 </p>
                                 {transaction.fee && (
-                                  <p className="text-xs text-muted-foreground whitespace-nowrap hidden sm:block">
+                                  <p className="text-xs text-muted-foreground hidden sm:block">
                                     Fee: {transaction.fee.toFixed(6)} HBAR
                                   </p>
                                 )}
@@ -917,18 +916,18 @@ const WalletDashboard = () => {
                         connectedWallets.map((wallet, index) => (
                           <div
                             key={index}
-                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg gap-3"
+                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg gap-3 overflow-hidden"
                           >
-                            <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                            <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1 overflow-hidden">
                               <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center border border-blue-200 dark:border-blue-700">
                                 <Wallet className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                               </div>
-                              <div className="min-w-0 flex-1">
+                              <div className="min-w-0 flex-1 overflow-hidden">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <p className="font-medium text-sm sm:text-base">{wallet.name}</p>
+                                  <p className="font-medium text-sm sm:text-base truncate">{wallet.name}</p>
                                   <Badge
                                     variant="secondary"
-                                    className={`text-xs ${
+                                    className={`text-xs flex-shrink-0 ${
                                       wallet.type === "custodial"
                                         ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                                         : "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
@@ -941,12 +940,7 @@ const WalletDashboard = () => {
                                 </div>
                                 <p className="text-xs sm:text-sm text-muted-foreground font-mono truncate">
                                   {wallet.address.length > 20
-                                    ? `${wallet.address.substring(
-                                        0,
-                                        window.innerWidth >= 640 ? 10 : 6
-                                      )}...${wallet.address.substring(
-                                        wallet.address.length - (window.innerWidth >= 640 ? 10 : 6)
-                                      )}`
+                                    ? `${wallet.address.substring(0, 6)}...${wallet.address.substring(wallet.address.length - 6)}`
                                     : wallet.address}
                                 </p>
                               </div>
