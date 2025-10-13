@@ -615,17 +615,17 @@ const WalletDashboard = () => {
                         filteredTransactions.slice(0, 50).map((transaction) => (
                           <div
                             key={transaction.id}
-                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg transition-colors group cursor-pointer gap-3"
+                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg transition-colors group cursor-pointer gap-3 overflow-hidden"
                             onClick={() => {
                               window.open(transaction.explorerUrl, "_blank");
                             }}
                           >
-                            <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                            <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1 overflow-hidden">
                               <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center border border-blue-200 dark:border-blue-700">
                                 {getTransactionIcon(transaction.type)}
                               </div>
 
-                              <div className="min-w-0 flex-1">
+                              <div className="min-w-0 flex-1 overflow-hidden">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <p className="font-medium capitalize text-sm sm:text-base">
                                     {transaction.type.replace("_", " ")}
@@ -644,7 +644,7 @@ const WalletDashboard = () => {
                                     transaction.method}
                                 </p>
                                 {transaction.reference && (
-                                  <p className="text-xs text-muted-foreground font-mono flex items-center gap-1 mt-1 hidden sm:flex">
+                                  <p className="text-xs text-muted-foreground font-mono flex items-center gap-1 mt-1 hidden sm:flex overflow-hidden">
                                     <Hash className="h-3 w-3 flex-shrink-0" />
                                     <span className="truncate">
                                       {transaction.reference.length >= 36
@@ -660,10 +660,10 @@ const WalletDashboard = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 sm:text-right flex-shrink-0">
-                              <div>
+                            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 sm:text-right flex-shrink-0 min-w-0">
+                              <div className="min-w-0">
                                 <p
-                                  className={`font-semibold text-sm sm:text-base whitespace-nowrap ${
+                                  className={`font-semibold text-sm sm:text-base truncate sm:whitespace-nowrap ${
                                     transaction.direction === "incoming"
                                       ? "text-green-600"
                                       : "text-red-600"
@@ -680,7 +680,7 @@ const WalletDashboard = () => {
                                 </p>
                                 {transaction.currency === "HBAR" &&
                                   hederaBalance?.balanceNgn && (
-                                    <p className="text-xs text-muted-foreground whitespace-nowrap">
+                                    <p className="text-xs text-muted-foreground truncate sm:whitespace-nowrap">
                                       ≈ ₦
                                       {(
                                         transaction.amount *
@@ -690,16 +690,21 @@ const WalletDashboard = () => {
                                     </p>
                                   )}
                               </div>
-                              <div className="text-right">
-                                <p className="text-xs text-muted-foreground whitespace-nowrap">
+                              <div className="text-right min-w-0">
+                                <p className="text-xs text-muted-foreground truncate sm:whitespace-nowrap">
                                   {(() => {
-                                    const date = new Date(transaction.timestamp);
+                                    const date = new Date(
+                                      transaction.timestamp
+                                    );
                                     return isNaN(date.getTime())
                                       ? "—"
                                       : date.toLocaleString("en-US", {
                                           month: "short",
                                           day: "numeric",
-                                          year: window.innerWidth >= 640 ? "numeric" : undefined,
+                                          year:
+                                            window.innerWidth >= 640
+                                              ? "numeric"
+                                              : undefined,
                                           hour: "2-digit",
                                           minute: "2-digit",
                                         });
@@ -925,7 +930,9 @@ const WalletDashboard = () => {
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <p className="font-medium text-sm sm:text-base">{wallet.name}</p>
+                                  <p className="font-medium text-sm sm:text-base">
+                                    {wallet.name}
+                                  </p>
                                   <Badge
                                     variant="secondary"
                                     className={`text-xs ${
@@ -945,7 +952,8 @@ const WalletDashboard = () => {
                                         0,
                                         window.innerWidth >= 640 ? 10 : 6
                                       )}...${wallet.address.substring(
-                                        wallet.address.length - (window.innerWidth >= 640 ? 10 : 6)
+                                        wallet.address.length -
+                                          (window.innerWidth >= 640 ? 10 : 6)
                                       )}`
                                     : wallet.address}
                                 </p>
@@ -965,7 +973,9 @@ const WalletDashboard = () => {
                                   onClick={() => disconnectExternalWallet()}
                                   className="text-xs sm:text-sm"
                                 >
-                                  <span className="hidden sm:inline">Disconnect</span>
+                                  <span className="hidden sm:inline">
+                                    Disconnect
+                                  </span>
                                   <span className="sm:hidden">DC</span>
                                 </Button>
                               )}
@@ -990,6 +1000,7 @@ const WalletDashboard = () => {
               <CardContent>
                 <div className="flex justify-around gap-4">
                   <button
+                    type="button"
                     className="flex flex-col items-center gap-2"
                     onClick={() => {
                       toast({
@@ -998,29 +1009,33 @@ const WalletDashboard = () => {
                       });
                     }}
                   >
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-700 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
-                      <ArrowLeftRight className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-700 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
+                      <ArrowLeftRight className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <span className="text-xs font-medium">Swap</span>
                   </button>
 
                   <button
+                    type="button"
                     className="flex flex-col items-center gap-2"
                     onClick={() => navigate("/wallet/withdraw")}
-                    disabled={!user?.hedera_account_id || stats.walletBalance <= 0}
+                    disabled={
+                      !user?.hedera_account_id || stats.walletBalance <= 0
+                    }
                   >
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-700 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
-                      <Download className="h-6 w-6 text-red-600 dark:text-red-400" />
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-700 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
+                      <Download className="h-5 w-5 text-red-600 dark:text-red-400" />
                     </div>
                     <span className="text-xs font-medium">Withdraw</span>
                   </button>
 
                   <button
+                    type="button"
                     className="flex flex-col items-center gap-2"
                     onClick={() => setShowFundModal(true)}
                   >
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
-                      <Upload className="h-6 w-6 text-green-600 dark:text-green-400" />
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
+                      <Upload className="h-5 w-5 text-green-600 dark:text-green-400" />
                     </div>
                     <span className="text-xs font-medium">Fund</span>
                   </button>

@@ -63,7 +63,9 @@ const InvestmentFlow = () => {
   const [step, setStep] = useState(1);
   const [investmentAmount, setInvestmentAmount] = useState(0);
   const [tokenCount, setTokenCount] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "wallet">("paystack");
+  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "wallet">(
+    "paystack"
+  );
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [tokenization, setTokenization] = useState<Tokenization | null>(null);
   const [loading, setLoading] = useState(true);
@@ -115,7 +117,8 @@ const InvestmentFlow = () => {
 
   const calculateROI = () => {
     if (!tokenization || !investmentAmount) return { monthly: 0, annual: 0 };
-    const annual = (investmentAmount * (tokenization.expected_roi_annual || 0)) / 100;
+    const annual =
+      (investmentAmount * (tokenization.expected_roi_annual || 0)) / 100;
     return {
       annual,
       monthly: annual / 12,
@@ -127,11 +130,18 @@ const InvestmentFlow = () => {
 
     if (step === 1) {
       if (!investmentAmount || investmentAmount < tokenization.min_investment) {
-        toast.error(`Minimum investment is ₦${tokenization.min_investment.toLocaleString()}`);
+        toast.error(
+          `Minimum investment is ₦${tokenization.min_investment.toLocaleString()}`
+        );
         return;
       }
-      if (tokenization.max_investment && investmentAmount > tokenization.max_investment) {
-        toast.error(`Maximum investment is ₦${tokenization.max_investment.toLocaleString()}`);
+      if (
+        tokenization.max_investment &&
+        investmentAmount > tokenization.max_investment
+      ) {
+        toast.error(
+          `Maximum investment is ₦${tokenization.max_investment.toLocaleString()}`
+        );
         return;
       }
       setStep(2);
@@ -203,10 +213,11 @@ const InvestmentFlow = () => {
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-4xl">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+        <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+          <ArrowLeft className="h-4 w-4" />
+          Back to Property
+        </Button>
+        <div className="flex items-center gap-4 mb-8 mt-4">
           <div>
             <h1 className="text-3xl font-bold">Invest in Property</h1>
             <p className="text-muted-foreground">
@@ -319,7 +330,9 @@ const InvestmentFlow = () => {
                         onClick={() => setPaymentMethod("paystack")}
                       >
                         <div className="flex items-center gap-3">
-                          <CreditCard className="h-5 w-5" />
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <CreditCard className="h-5 w-5 text-primary" />
+                          </div>
                           <div>
                             <h4 className="font-medium">Paystack Payment</h4>
                             <p className="text-sm text-muted-foreground">
@@ -338,39 +351,42 @@ const InvestmentFlow = () => {
                         onClick={() => setPaymentMethod("wallet")}
                       >
                         <div className="flex items-center gap-3">
-                          <Wallet className="h-5 w-5" />
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Wallet className="h-5 w-5" />
+                          </div>
+
                           <div>
                             <h4 className="font-medium">Wallet Balance</h4>
                             <div className="flex items-center justify-between">
                               <p className="text-sm text-muted-foreground">
                                 Use your account balance
                               </p>
-                              <div className="text-right ml-4">
-                                {isLoadingBalance ? (
-                                  <p className="text-sm text-muted-foreground">
-                                    Loading...
-                                  </p>
-                                ) : walletBalance ? (
-                                  <div>
-                                    <p className="text-sm font-medium">
-                                      ₦
-                                      {walletBalance.balanceNgn?.toLocaleString() ||
-                                        "0"}
-                                    </p>
-                                    {walletBalance.balanceHbar > 0 && (
-                                      <p className="text-xs text-muted-foreground">
-                                        {walletBalance.balanceHbar.toFixed(4)}{" "}
-                                        HBAR
-                                      </p>
-                                    )}
-                                  </div>
-                                ) : (
-                                  <p className="text-sm text-muted-foreground">
-                                    No balance
+                            </div>
+                          </div>
+
+                          <div className="text-right ml-4 flex-1">
+                            {isLoadingBalance ? (
+                              <p className="text-sm text-muted-foreground">
+                                Loading...
+                              </p>
+                            ) : walletBalance ? (
+                              <div>
+                                <p className="text-sm font-medium">
+                                  ₦
+                                  {walletBalance.balanceNgn?.toLocaleString() ||
+                                    "0"}
+                                </p>
+                                {walletBalance.balanceHbar > 0 && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {walletBalance.balanceHbar.toFixed(4)} HBAR
                                   </p>
                                 )}
                               </div>
-                            </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                No balance
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -454,19 +470,21 @@ const InvestmentFlow = () => {
                       </Alert>
                     )}
 
-                    {paymentMethod === "wallet" && walletBalance && 
-                     investmentAmount > (walletBalance.balanceNgn || 0) && (
-                      <Alert variant="destructive">
-                        <Wallet className="h-4 w-4" />
-                        <AlertTitle>Insufficient Balance</AlertTitle>
-                        <AlertDescription>
-                          Your wallet balance is ₦
-                          {(walletBalance.balanceNgn || 0).toLocaleString()}, but you're
-                          trying to invest ₦{investmentAmount.toLocaleString()}.
-                          Please top up your wallet or reduce your investment amount.
-                        </AlertDescription>
-                      </Alert>
-                    )}
+                    {paymentMethod === "wallet" &&
+                      walletBalance &&
+                      investmentAmount > (walletBalance.balanceNgn || 0) && (
+                        <Alert variant="destructive">
+                          <Wallet className="h-4 w-4" />
+                          <AlertTitle>Insufficient Balance</AlertTitle>
+                          <AlertDescription>
+                            Your wallet balance is ₦
+                            {(walletBalance.balanceNgn || 0).toLocaleString()},
+                            but you're trying to invest ₦
+                            {investmentAmount.toLocaleString()}. Please top up
+                            your wallet or reduce your investment amount.
+                          </AlertDescription>
+                        </Alert>
+                      )}
 
                     <div className="flex items-start space-x-2">
                       <Checkbox
@@ -514,7 +532,7 @@ const InvestmentFlow = () => {
                       <div className="flex gap-2">
                         <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
                         <div>
-                          <h4 className="font-medium text-blue-900 dark:text-blue-100">
+                          <h4 className="font-medium text-blue-700 dark:text-blue-100">
                             Investment Protection
                           </h4>
                           <p className="text-sm text-blue-700 dark:text-blue-200">
@@ -538,12 +556,13 @@ const InvestmentFlow = () => {
                     className="flex-1"
                     disabled={
                       isCreating ||
-                      (step === 3 && (
-                        !hasAccount ||
-                        !acceptTerms ||
-                        (paymentMethod === "wallet" && walletBalance && 
-                         investmentAmount > (walletBalance.balanceNgn || 0))
-                      ))
+                      (step === 3 &&
+                        (!hasAccount ||
+                          !acceptTerms ||
+                          (paymentMethod === "wallet" &&
+                            walletBalance &&
+                            investmentAmount >
+                              (walletBalance.balanceNgn || 0))))
                     }
                   >
                     {isCreating ? (
