@@ -674,91 +674,100 @@ const TokenizeProperty = () => {
                     Choose how investors will participate in your property
                   </p>
                 </div>
-
+                const Icon = type.icon;
                 <div className="grid md:grid-cols-3 gap-4">
-                  {tokenizationTypes.map((type) => (
-                    <HoverCard key={type.id} openDelay={150} closeDelay={100}>
-                      <HoverCardTrigger asChild>
-                        <Card
-                          className={`cursor-pointer transition-all hover:shadow-lg ${
-                            selectedType === type.id
-                              ? "ring-2 ring-primary"
-                              : ""
-                          }`}
-                          onClick={() => handleTypeSelection(type.id)}
-                        >
-                          <CardContent className="p-6">
-                            <div className="flex flex-col items-center text-center space-y-4">
-                              <type.icon className="h-12 w-12 text-primary" />
+                  {tokenizationTypes.map((type) => {
+                    const Icon = type.icon;
+                    return (
+                      <HoverCard key={type.id} openDelay={150} closeDelay={100}>
+                        <HoverCardTrigger asChild>
+                          <Card
+                            className={`cursor-pointer transition-all hover:shadow-lg ${
+                              selectedType === type.id
+                                ? "ring-2 ring-primary"
+                                : ""
+                            }`}
+                            onClick={() => handleTypeSelection(type.id)}
+                          >
+                            <CardContent className="p-6">
+                              <div className="flex flex-col items-center text-center space-y-4">
+                                <type.icon className="h-12 w-12 text-primary" />
+                                <div>
+                                  <h3 className="font-semibold">
+                                    {type.title}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {type.description}
+                                  </p>
+                                </div>
+                                <Badge variant="secondary">{type.badge}</Badge>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </HoverCardTrigger>
+                        <HoverCardContent align="center" className="w-80">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-5 w-5 text-primary" />
+                              <h4 className="font-semibold">{type.title}</h4>
+                            </div>
+
+                            <div className="space-y-3 text-sm">
                               <div>
-                                <h3 className="font-semibold">{type.title}</h3>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {type.description}
+                                <p className="font-medium text-muted-foreground flex items-center gap-2">
+                                  <Building className="h-4 w-4" />
+                                  Structure:
+                                </p>
+                                <p className="text-xs">
+                                  {type.details.structure}
                                 </p>
                               </div>
-                              <Badge variant="secondary">{type.badge}</Badge>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </HoverCardTrigger>
-                      <HoverCardContent align="center" className="w-80">
-                      <div className="space-y-4">
-                                <div className="flex items-center gap-2">
-                                  <Icon className="h-5 w-5 text-primary" />
-                                  <h4 className="font-semibold">
-                                    {type.title}
-                                  </h4>
-                                </div>
 
-                                <div className="space-y-3 text-sm">
-                                  <div>
-                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
-                                      <Building className="h-4 w-4" />
-                                      Structure:
-                                    </p>
-                                    <p className="text-xs">{type.details.structure}</p>
-                                  </div>
-
-                                  <div>
-                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
-                                      <TrendingUp className="h-4 w-4" />
-                                      Returns:
-                                    </p>
-                                    <p className="text-xs">{type.details.returns}</p>
-                                  </div>
-
-                                  <div>
-                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
-                                      <AlertTriangle className="h-4 w-4" />
-                                      Risk Level:
-                                    </p>
-                                    <p className="text-xs">{type.details.risk}</p>
-                                  </div>
-
-                                  <div>
-                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
-                                      <DollarSign className="h-4 w-4" />
-                                      Max Raise:
-                                    </p>
-                                    <p className="text-xs">{type.details.maxRaise}</p>
-                                  </div>
-
-                                  <Separator />
-
-                                  <div>
-                                    <p className="font-medium text-muted-foreground flex items-center gap-2">
-                                      <Info className="h-4 w-4" />
-                                      Example:
-                                    </p>
-                                    <p className="text-xs">
-                                      {type.details.example}
-                                    </p>
-                                  </div>
-                                </div>
+                              <div>
+                                <p className="font-medium text-muted-foreground flex items-center gap-2">
+                                  <TrendingUp className="h-4 w-4" />
+                                  Returns:
+                                </p>
+                                <p className="text-xs">
+                                  {type.details.returns}
+                                </p>
                               </div>
-                      </HoverCardContent>
-                    </HoverCard>
-                  ))}
+
+                              <div>
+                                <p className="font-medium text-muted-foreground flex items-center gap-2">
+                                  <AlertTriangle className="h-4 w-4" />
+                                  Risk Level:
+                                </p>
+                                <p className="text-xs">{type.details.risk}</p>
+                              </div>
+
+                              <div>
+                                <p className="font-medium text-muted-foreground flex items-center gap-2">
+                                  <DollarSign className="h-4 w-4" />
+                                  Max Raise:
+                                </p>
+                                <p className="text-xs">
+                                  {type.details.maxRaise}
+                                </p>
+                              </div>
+
+                              <Separator />
+
+                              <div>
+                                <p className="font-medium text-muted-foreground flex items-center gap-2">
+                                  <Info className="h-4 w-4" />
+                                  Example:
+                                </p>
+                                <p className="text-xs">
+                                  {type.details.example}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    );
+                  })}
                 </div>
               </div>
             )}
