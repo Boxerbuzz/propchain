@@ -216,9 +216,15 @@ export function FundAllocationBuilder({ tokenizationType, targetRaise, value, on
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map(cat => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))}
+                        {categories.map(cat => {
+                          // Check if this category is already used by another allocation
+                          const isUsed = allocations.some(a => a.id !== allocation.id && a.category === cat);
+                          return (
+                            <SelectItem key={cat} value={cat} disabled={isUsed}>
+                              {cat} {isUsed ? '(already used)' : ''}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </div>

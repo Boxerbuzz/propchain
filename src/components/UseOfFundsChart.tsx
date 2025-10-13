@@ -53,7 +53,12 @@ export function UseOfFundsChart({ data, targetRaise }: UseOfFundsChartProps) {
             <Tooltip 
               formatter={(value: number) => `₦${value.toLocaleString()}`}
             />
-            <Legend />
+            <Legend 
+              wrapperStyle={{
+                paddingTop: '20px'
+              }}
+              iconType="circle"
+            />
           </PieChart>
         </ResponsiveContainer>
 

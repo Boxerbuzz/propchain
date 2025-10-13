@@ -294,6 +294,29 @@ const TokenizeProperty = () => {
   const maxPossibleRaise =
     totalSupply && pricePerToken ? totalSupply * pricePerToken : 0;
 
+  // Auto-calculate target_raise and minimum_raise when total_supply or price_per_token changes
+  React.useEffect(() => {
+    if (totalSupply && pricePerToken && property) {
+      const calculatedMax = totalSupply * pricePerToken;
+      
+      // Set target_raise to 80% of the max possible raise or type-specific limit, whichever is lower
+      let targetPercentage = 0.8;
+      if (selectedType === "equity") {
+        targetPercentage = Math.min(calculatedMax, property.estimated_value) / calculatedMax;
+      } else if (selectedType === "debt") {
+        targetPercentage = Math.min(calculatedMax, property.estimated_value * 0.8) / calculatedMax;
+      } else if (selectedType === "revenue") {
+        targetPercentage = Math.min(calculatedMax, property.estimated_value * 2) / calculatedMax;
+      }
+      
+      const newTargetRaise = Math.floor(calculatedMax * targetPercentage);
+      const newMinimumRaise = Math.floor(newTargetRaise * 0.6); // 60% of target
+      
+      form.setValue("target_raise", newTargetRaise);
+      form.setValue("minimum_raise", newMinimumRaise);
+    }
+  }, [totalSupply, pricePerToken, selectedType, property]);
+
   const propertyEstValue = property?.estimated_value || 0;
   const typeMaxTotalValue =
     selectedType === "equity"
@@ -995,14 +1018,14 @@ const TokenizeProperty = () => {
                                   type="number"
                                   step="0.1"
                                   value={field.value || ""}
-                                  onChange={(e) => {
-                                    const val = parseFloat(e.target.value);
-                                    field.onChange(isNaN(val) ? 0 : val);
-                                  }}
-                                  onFocus={(e) => e.target.select()}
+                                  disabled
+                                  className="bg-muted cursor-not-allowed"
                                   placeholder="e.g., 2.5"
                                 />
                               </FormControl>
+                              <FormDescription className="text-xs">
+                                Set based on tokenization type
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1019,14 +1042,14 @@ const TokenizeProperty = () => {
                                   type="number"
                                   step="0.1"
                                   value={field.value || ""}
-                                  onChange={(e) => {
-                                    const val = parseFloat(e.target.value);
-                                    field.onChange(isNaN(val) ? 0 : val);
-                                  }}
-                                  onFocus={(e) => e.target.select()}
+                                  disabled
+                                  className="bg-muted cursor-not-allowed"
                                   placeholder="e.g., 1.0"
                                 />
                               </FormControl>
+                              <FormDescription className="text-xs">
+                                Standard platform fee (fixed)
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
