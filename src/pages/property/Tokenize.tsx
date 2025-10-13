@@ -43,7 +43,10 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import MoneyInput from "@/components/ui/money-input";
 import TokenizationTermsAcceptance from "@/components/TokenizationTermsAcceptance";
-import { FundAllocationBuilder, FundAllocation } from "@/components/FundAllocationBuilder";
+import {
+  FundAllocationBuilder,
+  FundAllocation,
+} from "@/components/FundAllocationBuilder";
 import { UseOfFundsChart } from "@/components/UseOfFundsChart";
 import {
   ArrowLeft,
@@ -53,8 +56,6 @@ import {
   Info,
   ChevronLeft,
   ChevronRight,
-  AlertTriangle,
-  DollarSign,
 } from "lucide-react";
 
 // Tokenization types
@@ -205,7 +206,9 @@ const createTokenizationSchema = (propertyValue: number) =>
       if (isFinite(maxTargetRaise) && data.target_raise > maxTargetRaise) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Target raise ₦${data.target_raise.toLocaleString()} exceeds max ₦${Math.floor(maxTargetRaise).toLocaleString()} for ${type} (${ruleText}).`,
+          message: `Target raise ₦${data.target_raise.toLocaleString()} exceeds max ₦${Math.floor(
+            maxTargetRaise
+          ).toLocaleString()} for ${type} (${ruleText}).`,
           path: ["target_raise"],
         });
       }
@@ -214,7 +217,11 @@ const createTokenizationSchema = (propertyValue: number) =>
       if (totalTokenValue > maxTotalTokenValue) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Total token value (supply × price) ₦${Math.floor(totalTokenValue).toLocaleString()} exceeds max ₦${Math.floor(maxTotalTokenValue).toLocaleString()} for ${type} (${ruleText}).`,
+          message: `Total token value (supply × price) ₦${Math.floor(
+            totalTokenValue
+          ).toLocaleString()} exceeds max ₦${Math.floor(
+            maxTotalTokenValue
+          ).toLocaleString()} for ${type} (${ruleText}).`,
           path: ["total_supply"],
         });
       }
@@ -227,7 +234,8 @@ const createTokenizationSchema = (propertyValue: number) =>
         return true;
       },
       {
-        message: "Maximum investment must be greater than or equal to minimum investment",
+        message:
+          "Maximum investment must be greater than or equal to minimum investment",
         path: ["max_investment"],
       }
     );
@@ -307,7 +315,6 @@ const TokenizeProperty = () => {
       : selectedType === "debt"
       ? "max 80% Loan-to-Value (LTV)"
       : "max 2× property value (cashflow proxy)";
-
 
   const createTokenizationMutation = useMutation({
     mutationFn: async (data: TokenizationForm) => {
@@ -394,22 +401,40 @@ const TokenizeProperty = () => {
 
     // Set type-specific default values
     if (type === "equity") {
-      form.setValue("target_raise", property ? Math.floor(property.estimated_value * 0.8) : 0);
-      form.setValue("minimum_raise", property ? Math.floor(property.estimated_value * 0.3) : 0);
+      form.setValue(
+        "target_raise",
+        property ? Math.floor(property.estimated_value * 0.8) : 0
+      );
+      form.setValue(
+        "minimum_raise",
+        property ? Math.floor(property.estimated_value * 0.3) : 0
+      );
       form.setValue("expected_roi_annual", 12);
       form.setValue("dividend_frequency", "quarterly");
       form.setValue("management_fee_percentage", 2.5);
       form.setValue("platform_fee_percentage", 1.0);
     } else if (type === "debt") {
-      form.setValue("target_raise", property ? Math.floor(property.estimated_value * 0.7) : 0);
-      form.setValue("minimum_raise", property ? Math.floor(property.estimated_value * 0.5) : 0);
+      form.setValue(
+        "target_raise",
+        property ? Math.floor(property.estimated_value * 0.7) : 0
+      );
+      form.setValue(
+        "minimum_raise",
+        property ? Math.floor(property.estimated_value * 0.5) : 0
+      );
       form.setValue("expected_roi_annual", 7);
       form.setValue("dividend_frequency", "monthly");
       form.setValue("management_fee_percentage", 1.5);
       form.setValue("platform_fee_percentage", 1.0);
     } else if (type === "revenue") {
-      form.setValue("target_raise", property ? Math.floor(property.estimated_value * 0.5) : 0);
-      form.setValue("minimum_raise", property ? Math.floor(property.estimated_value * 0.25) : 0);
+      form.setValue(
+        "target_raise",
+        property ? Math.floor(property.estimated_value * 0.5) : 0
+      );
+      form.setValue(
+        "minimum_raise",
+        property ? Math.floor(property.estimated_value * 0.25) : 0
+      );
       form.setValue("expected_roi_annual", 10);
       form.setValue("dividend_frequency", "monthly");
       form.setValue("management_fee_percentage", 3.0);
@@ -421,7 +446,7 @@ const TokenizeProperty = () => {
 
   const nextStep = async (e?: React.MouseEvent) => {
     console.log("🔄 nextStep called, current step:", step);
-    
+
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -469,7 +494,10 @@ const TokenizeProperty = () => {
 
     // Step 3 validation - Use of Funds
     if (step === 3) {
-      const totalPercentage = useOfFunds.reduce((sum, a) => sum + a.percentage, 0);
+      const totalPercentage = useOfFunds.reduce(
+        (sum, a) => sum + a.percentage,
+        0
+      );
       const totalAmount = useOfFunds.reduce((sum, a) => sum + a.amount_ngn, 0);
 
       if (useOfFunds.length === 0) {
@@ -491,7 +519,7 @@ const TokenizeProperty = () => {
       return;
     }
   };
-  
+
   const prevStep = () => {
     if (step === 1) {
       setStep(0);
@@ -502,13 +530,15 @@ const TokenizeProperty = () => {
 
   const onSubmit = (data: TokenizationForm) => {
     console.log("🚨 onSubmit called with step:", step);
-    
+
     if (step !== 4) {
       console.log("🚨 BLOCKED - not on final step. Current step:", step);
-      toast.error(`Cannot submit on step ${step}. Please complete all steps first.`);
+      toast.error(
+        `Cannot submit on step ${step}. Please complete all steps first.`
+      );
       return;
     }
-    
+
     if (!isAuthenticated || !user?.id) {
       toast.error("Please log in to continue.");
       return;
@@ -517,7 +547,7 @@ const TokenizeProperty = () => {
       toast.error("You can only tokenize your own property.");
       return;
     }
-    
+
     console.log("🚀 Creating tokenization...");
     createTokenizationMutation.mutate(data);
   };
@@ -553,6 +583,16 @@ const TokenizeProperty = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="mb-6"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Properties
+        </Button>
+
         {/* Step indicator */}
         <div className="mb-8">
           <Progress value={(step / 4) * 100} className="h-2" />
@@ -582,23 +622,34 @@ const TokenizeProperty = () => {
 
               {/* Property Info */}
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold truncate">{property.title}</h3>
+                <h3 className="text-lg font-semibold truncate">
+                  {property.title}
+                </h3>
                 <p className="text-sm text-muted-foreground truncate">
-                  {(property.location as any)?.city}, {(property.location as any)?.state}
+                  {(property.location as any)?.city},{" "}
+                  {(property.location as any)?.state}
                 </p>
+                <Badge variant="secondary" className="mr-2">
+                  {property.approval_status}
+                </Badge>
+                <Badge variant="secondary">{property.listing_status}</Badge>
               </div>
 
               {/* Financial Info */}
               <div className="flex gap-6 flex-shrink-0">
                 <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Monthly Rental</p>
+                  <p className="text-xs text-muted-foreground">
+                    Monthly Rental
+                  </p>
                   <p className="text-lg font-semibold">
                     ₦{(property.rental_income_monthly || 0).toLocaleString()}
                   </p>
                 </div>
                 <Separator orientation="vertical" className="h-12" />
                 <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Property Value</p>
+                  <p className="text-xs text-muted-foreground">
+                    Property Value
+                  </p>
                   <p className="text-lg font-semibold">
                     ₦{(property.estimated_value || 0).toLocaleString()}
                   </p>
@@ -614,7 +665,9 @@ const TokenizeProperty = () => {
             {step === 0 && (
               <div className="space-y-6">
                 <div className="text-center">
-                  <h2 className="text-2xl font-bold mb-2">Select Tokenization Type</h2>
+                  <h2 className="text-2xl font-bold mb-2">
+                    Select Tokenization Type
+                  </h2>
                   <p className="text-muted-foreground">
                     Choose how investors will participate in your property
                   </p>
@@ -626,7 +679,9 @@ const TokenizeProperty = () => {
                       <HoverCardTrigger asChild>
                         <Card
                           className={`cursor-pointer transition-all hover:shadow-lg ${
-                            selectedType === type.id ? "ring-2 ring-primary" : ""
+                            selectedType === type.id
+                              ? "ring-2 ring-primary"
+                              : ""
                           }`}
                           onClick={() => handleTypeSelection(type.id)}
                         >
@@ -646,12 +701,29 @@ const TokenizeProperty = () => {
                       </HoverCardTrigger>
                       <HoverCardContent align="center" className="w-80">
                         <div className="space-y-2 text-sm">
-                          <p><span className="font-medium">Structure:</span> {type.details.structure}</p>
-                          <p><span className="font-medium">Returns:</span> {type.details.returns}</p>
-                          <p><span className="font-medium">Risk:</span> {type.details.risk}</p>
-                          <p><span className="font-medium">Rights:</span> {type.details.rights}</p>
-                          <p><span className="font-medium">Example:</span> {type.details.example}</p>
-                          <p className="text-primary font-medium">Limit: {type.details.maxRaise}</p>
+                          <p>
+                            <span className="font-medium">Structure:</span>{" "}
+                            {type.details.structure}
+                          </p>
+                          <p>
+                            <span className="font-medium">Returns:</span>{" "}
+                            {type.details.returns}
+                          </p>
+                          <p>
+                            <span className="font-medium">Risk:</span>{" "}
+                            {type.details.risk}
+                          </p>
+                          <p>
+                            <span className="font-medium">Rights:</span>{" "}
+                            {type.details.rights}
+                          </p>
+                          <p>
+                            <span className="font-medium">Example:</span>{" "}
+                            {type.details.example}
+                          </p>
+                          <p className="text-primary font-medium">
+                            Limit: {type.details.maxRaise}
+                          </p>
                         </div>
                       </HoverCardContent>
                     </HoverCard>
@@ -664,7 +736,9 @@ const TokenizeProperty = () => {
             {step === 1 && (
               <div className="space-y-6">
                 <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold mb-2">Basic Token Information</h2>
+                  <h2 className="text-2xl font-bold mb-2">
+                    Basic Token Information
+                  </h2>
                   <p className="text-muted-foreground">
                     Configure your token details
                   </p>
@@ -679,7 +753,10 @@ const TokenizeProperty = () => {
                         <FormItem>
                           <FormLabel>Token Name</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="e.g., Luxury Villa Token" />
+                            <Input
+                              {...field}
+                              placeholder="e.g., Luxury Villa Token"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -693,7 +770,11 @@ const TokenizeProperty = () => {
                         <FormItem>
                           <FormLabel>Token Symbol</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="e.g., LVILLA" maxLength={10} />
+                            <Input
+                              {...field}
+                              placeholder="e.g., LVILLA"
+                              maxLength={10}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -711,7 +792,13 @@ const TokenizeProperty = () => {
                               <Input
                                 type="text"
                                 inputMode="numeric"
-                                value={form.watch("total_supply") ? form.watch("total_supply").toLocaleString() : ""}
+                                value={
+                                  form.watch("total_supply")
+                                    ? form
+                                        .watch("total_supply")
+                                        .toLocaleString()
+                                    : ""
+                                }
                                 onChange={(e) => {
                                   const raw = e.target.value.replace(/,/g, "");
                                   const num = parseFloat(raw);
@@ -748,14 +835,17 @@ const TokenizeProperty = () => {
                     </div>
 
                     {maxPossibleRaise > 0 && (
-                        <div className="p-4 bg-muted rounded-lg space-y-1">
-                          <p className="text-sm font-medium">
-                            Maximum Possible Raise: ₦{maxPossibleRaise.toLocaleString()}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Per-type cap (supply × price): ₦{Math.floor(typeMaxTotalValue).toLocaleString()} — {typeRuleText}
-                          </p>
-                        </div>
+                      <div className="p-4 bg-muted rounded-lg space-y-1">
+                        <p className="text-sm font-medium">
+                          Maximum Possible Raise: ₦
+                          {maxPossibleRaise.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Per-type cap (supply × price): ₦
+                          {Math.floor(typeMaxTotalValue).toLocaleString()} —{" "}
+                          {typeRuleText}
+                        </p>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -766,7 +856,9 @@ const TokenizeProperty = () => {
             {step === 2 && (
               <div className="space-y-6">
                 <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold mb-2">Investment Details</h2>
+                  <h2 className="text-2xl font-bold mb-2">
+                    Investment Details
+                  </h2>
                   <p className="text-muted-foreground">
                     Configure investment parameters and returns
                   </p>
@@ -813,7 +905,9 @@ const TokenizeProperty = () => {
                                   min={1}
                                 />
                               </FormControl>
-                              <FormDescription>Offering fails if not met</FormDescription>
+                              <FormDescription>
+                                Offering fails if not met
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -862,7 +956,9 @@ const TokenizeProperty = () => {
                                   min={1}
                                 />
                               </FormControl>
-                              <FormDescription>Optional cap per investor</FormDescription>
+                              <FormDescription>
+                                Optional cap per investor
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -885,7 +981,11 @@ const TokenizeProperty = () => {
                               <Input
                                 type="text"
                                 inputMode="numeric"
-                                value={field.value ? field.value.toLocaleString() : ""}
+                                value={
+                                  field.value
+                                    ? field.value.toLocaleString()
+                                    : ""
+                                }
                                 onChange={(e) => {
                                   const raw = e.target.value.replace(/,/g, "");
                                   const num = parseInt(raw);
@@ -896,7 +996,8 @@ const TokenizeProperty = () => {
                               />
                             </FormControl>
                             <FormDescription>
-                              Number of days the investment window will remain open
+                              Number of days the investment window will remain
+                              open
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -909,12 +1010,13 @@ const TokenizeProperty = () => {
                     {/* Returns & Distribution */}
                     <div className="space-y-4">
                       <h3 className="font-semibold">Returns & Distribution</h3>
-                      
+
                       {selectedType === "debt" && (
                         <Alert>
                           <Info className="h-4 w-4" />
                           <AlertDescription>
-                            For debt tokenization, expected ROI represents the fixed interest rate.
+                            For debt tokenization, expected ROI represents the
+                            fixed interest rate.
                           </AlertDescription>
                         </Alert>
                       )}
@@ -923,7 +1025,8 @@ const TokenizeProperty = () => {
                         <Alert>
                           <Info className="h-4 w-4" />
                           <AlertDescription>
-                            Revenue sharing tokens distribute a percentage of gross rental income.
+                            Revenue sharing tokens distribute a percentage of
+                            gross rental income.
                           </AlertDescription>
                         </Alert>
                       )}
@@ -959,16 +1062,25 @@ const TokenizeProperty = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Dividend Frequency</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select frequency" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="monthly">Monthly</SelectItem>
-                                  <SelectItem value="quarterly">Quarterly</SelectItem>
-                                  <SelectItem value="annually">Annually</SelectItem>
+                                  <SelectItem value="monthly">
+                                    Monthly
+                                  </SelectItem>
+                                  <SelectItem value="quarterly">
+                                    Quarterly
+                                  </SelectItem>
+                                  <SelectItem value="annually">
+                                    Annually
+                                  </SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -1039,9 +1151,12 @@ const TokenizeProperty = () => {
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-base">Auto-Refund</FormLabel>
+                              <FormLabel className="text-base">
+                                Auto-Refund
+                              </FormLabel>
                               <FormDescription>
-                                Automatically refund investors if minimum raise is not met
+                                Automatically refund investors if minimum raise
+                                is not met
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -1060,8 +1175,13 @@ const TokenizeProperty = () => {
                     {/* Token Purchase Limits (Optional) */}
                     <Collapsible>
                       <CollapsibleTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-between">
-                          <span className="font-semibold">Advanced: Token Purchase Limits</span>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-between"
+                        >
+                          <span className="font-semibold">
+                            Advanced: Token Purchase Limits
+                          </span>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                       </CollapsibleTrigger>
@@ -1077,9 +1197,16 @@ const TokenizeProperty = () => {
                                   <Input
                                     type="text"
                                     inputMode="numeric"
-                                    value={field.value ? field.value.toLocaleString() : ""}
+                                    value={
+                                      field.value
+                                        ? field.value.toLocaleString()
+                                        : ""
+                                    }
                                     onChange={(e) => {
-                                      const raw = e.target.value.replace(/,/g, "");
+                                      const raw = e.target.value.replace(
+                                        /,/g,
+                                        ""
+                                      );
                                       const num = parseInt(raw);
                                       field.onChange(isNaN(num) ? 0 : num);
                                     }}
@@ -1102,9 +1229,16 @@ const TokenizeProperty = () => {
                                   <Input
                                     type="text"
                                     inputMode="numeric"
-                                    value={field.value ? field.value.toLocaleString() : ""}
+                                    value={
+                                      field.value
+                                        ? field.value.toLocaleString()
+                                        : ""
+                                    }
                                     onChange={(e) => {
-                                      const raw = e.target.value.replace(/,/g, "");
+                                      const raw = e.target.value.replace(
+                                        /,/g,
+                                        ""
+                                      );
                                       const num = parseInt(raw);
                                       field.onChange(isNaN(num) ? 0 : num);
                                     }}
@@ -1121,31 +1255,46 @@ const TokenizeProperty = () => {
                     </Collapsible>
 
                     {/* Helpful Calculations */}
-                    {targetRaise > 0 && pricePerToken > 0 && form.watch("min_investment") > 0 && (
-                      <div className="p-4 bg-muted rounded-lg space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Min raise requires:</span>
-                          <span className="font-medium">
-                            {Math.ceil(form.watch("minimum_raise") / pricePerToken).toLocaleString()} tokens
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Target raise requires:</span>
-                          <span className="font-medium">
-                            {Math.ceil(targetRaise / pricePerToken).toLocaleString()} tokens
-                          </span>
-                        </div>
-                        {form.watch("max_investment") && (
+                    {targetRaise > 0 &&
+                      pricePerToken > 0 &&
+                      form.watch("min_investment") > 0 && (
+                        <div className="p-4 bg-muted rounded-lg space-y-2">
                           <div className="flex justify-between text-sm">
-                            <span>Estimated investor range:</span>
+                            <span>Min raise requires:</span>
                             <span className="font-medium">
-                              {Math.ceil(form.watch("minimum_raise") / form.watch("max_investment")!)} -{" "}
-                              {Math.floor(targetRaise / form.watch("min_investment"))} investors
+                              {Math.ceil(
+                                form.watch("minimum_raise") / pricePerToken
+                              ).toLocaleString()}{" "}
+                              tokens
                             </span>
                           </div>
-                        )}
-                      </div>
-                    )}
+                          <div className="flex justify-between text-sm">
+                            <span>Target raise requires:</span>
+                            <span className="font-medium">
+                              {Math.ceil(
+                                targetRaise / pricePerToken
+                              ).toLocaleString()}{" "}
+                              tokens
+                            </span>
+                          </div>
+                          {form.watch("max_investment") && (
+                            <div className="flex justify-between text-sm">
+                              <span>Estimated investor range:</span>
+                              <span className="font-medium">
+                                {Math.ceil(
+                                  form.watch("minimum_raise") /
+                                    form.watch("max_investment")!
+                                )}{" "}
+                                -{" "}
+                                {Math.floor(
+                                  targetRaise / form.watch("min_investment")
+                                )}{" "}
+                                investors
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                   </CardContent>
                 </Card>
               </div>
@@ -1169,7 +1318,10 @@ const TokenizeProperty = () => {
                 />
 
                 {useOfFunds.length > 0 && (
-                  <UseOfFundsChart data={useOfFunds} targetRaise={targetRaise || 0} />
+                  <UseOfFundsChart
+                    data={useOfFunds}
+                    targetRaise={targetRaise || 0}
+                  />
                 )}
               </div>
             )}
