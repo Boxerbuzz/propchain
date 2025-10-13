@@ -112,7 +112,11 @@ export const useWalletBalance = () => {
       return data;
     },
     onSuccess: (data) => {
+      // Invalidate both wallet balance and any wallet queries
       queryClient.invalidateQueries({ queryKey: ['wallet-balance', user?.hedera_account_id] });
+      
+      // Force refetch to get updated association status
+      refetch();
       
       if (data?.already_associated) {
         toast.success('USDC is already associated with your account');
