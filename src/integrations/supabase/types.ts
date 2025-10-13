@@ -2249,6 +2249,7 @@ export type Database = {
           usdc_associated_at: string | null
           usdc_token_association_tx: string | null
           user_id: string | null
+          vault_secret_id: string | null
           wallet_name: string | null
           wallet_type: string
         }
@@ -2271,6 +2272,7 @@ export type Database = {
           usdc_associated_at?: string | null
           usdc_token_association_tx?: string | null
           user_id?: string | null
+          vault_secret_id?: string | null
           wallet_name?: string | null
           wallet_type: string
         }
@@ -2293,6 +2295,7 @@ export type Database = {
           usdc_associated_at?: string | null
           usdc_token_association_tx?: string | null
           user_id?: string | null
+          vault_secret_id?: string | null
           wallet_name?: string | null
           wallet_type?: string
         }
@@ -2531,9 +2534,17 @@ export type Database = {
         Args: { p_property_id: string; p_user_id: string }
         Returns: number
       }
+      get_wallet_private_key: {
+        Args: { p_wallet_id: string }
+        Returns: string
+      }
       increment_tokenization_raise: {
         Args: { p_investment_id: string }
         Returns: undefined
+      }
+      migrate_private_keys_to_vault: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       reserve_tokens_with_timeout: {
         Args: {

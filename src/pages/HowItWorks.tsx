@@ -17,6 +17,9 @@ import {
   CreditCard,
   CheckCircle,
   Sparkles,
+  FileText,
+  Download,
+  Award,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
@@ -127,6 +130,37 @@ export default function HowItWorks() {
       title: "Democratic Governance",
       description:
         "Token holders can participate in major property decisions through our governance system.",
+    },
+  ];
+
+  const benefits = [
+    {
+      icon: FileText,
+      title: "Digital Ownership Certificates",
+      description:
+        "Receive blockchain-verified digital certificates proving your fractional ownership. Accessible anytime from your portfolio dashboard.",
+      badge: "Instant Access",
+    },
+    {
+      icon: FileCheck,
+      title: "Physical Documentation",
+      description:
+        "Get comprehensive physical documentation including investment agreements, property deeds, and legal certificates tailored to your property type.",
+      badge: "Legal Proof",
+    },
+    {
+      icon: Download,
+      title: "Document Type Varies by Property",
+      description:
+        "Equity investments include share certificates, debt investments include loan agreements, and revenue-sharing includes participation agreements.",
+      badge: "Customized",
+    },
+    {
+      icon: Award,
+      title: "SEC Compliant Records",
+      description:
+        "All documents are SEC-compliant and legally binding, providing you complete peace of mind and legal protection for your investment.",
+      badge: "Regulated",
     },
   ];
 
@@ -717,6 +751,79 @@ export default function HowItWorks() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-background" />
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-20">
+              <Badge
+                className="mb-6 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+                variant="outline"
+              >
+                <Award className="w-3.5 h-3.5 mr-2 inline" />
+                What You Receive
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-bold mb-5">
+                Complete Ownership Documentation
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light">
+                Every investment comes with both digital and physical documents
+                proving your ownership stake
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {benefits.map((benefit, index) => (
+                <Card
+                  key={index}
+                  className="relative overflow-hidden border border-primary/10 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-500 group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <CardContent className="p-8 relative">
+                    <Badge
+                      variant="outline"
+                      className="mb-4 bg-primary/10 text-primary border-primary/20 text-xs"
+                    >
+                      {benefit.badge}
+                    </Badge>
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                      <benefit.icon className="w-7 h-7 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-4">{benefit.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {benefit.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <div className="mt-12 text-center">
+              <Card className="inline-block border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent max-w-3xl mx-auto">
+                <CardContent className="p-8">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+                      <Shield className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="font-bold text-lg mb-2">
+                        Legal Protection & Transparency
+                      </h4>
+                      <p className="text-muted-foreground">
+                        All documentation is prepared by licensed legal
+                        professionals and complies with SEC Nigeria regulations.
+                        Your physical documents are securely delivered within 7-14
+                        business days, while digital versions are available
+                        instantly in your dashboard.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
