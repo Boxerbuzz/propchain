@@ -122,7 +122,7 @@ serve(async (req) => {
 
     // Sign with user's private key first
     console.log('Signing transaction with user private key');
-    const userPrivateKey = PrivateKey.fromStringECDSA(privateKeyData);
+    const userPrivateKey = PrivateKey.fromStringDer(privateKeyData);
     const userSignedTx = await frozenTx.sign(userPrivateKey);
 
     // Then sign with operator key
