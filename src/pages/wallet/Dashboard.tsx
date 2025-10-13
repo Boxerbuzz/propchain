@@ -51,6 +51,7 @@ import {
 } from "@/components/TransactionFilters";
 import { useWithdrawals } from "@/hooks/useWithdrawals";
 import { useNavigate } from "react-router-dom";
+import FundHbarModal from "@/components/FundHbarModal";
 
 const WalletDashboard = () => {
   const { toast } = useToast();
@@ -61,6 +62,7 @@ const WalletDashboard = () => {
   const [filteredTransactions, setFilteredTransactions] = useState<
     Transaction[]
   >([]);
+  const [showFundModal, setShowFundModal] = useState(false);
 
   const { connectedWallets, disconnectExternalWallet } = useWalletConnect();
 
@@ -346,6 +348,15 @@ const WalletDashboard = () => {
               <span className="hidden sm:inline">
                 {isSyncing || transactionsLoading ? "Syncing..." : "Sync All"}
               </span>
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setShowFundModal(true)}
+              disabled={!user?.hedera_account_id}
+            >
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline">Fund HBAR</span>
             </Button>
             <Button
               variant="default"
@@ -998,12 +1009,7 @@ const WalletDashboard = () => {
 
                   <button
                     className="flex flex-col items-center gap-2"
-                    onClick={() => {
-                      toast({
-                        title: "Fund Wallet",
-                        description: "Funding functionality coming soon",
-                      });
-                    }}
+                    onClick={() => setShowFundModal(true)}
                   >
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
                       <Upload className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -1040,6 +1046,13 @@ const WalletDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Fund HBAR Modal */}
+      <FundHbarModal
+        open={showFundModal}
+        onOpenChange={setShowFundModal}
+        hederaAccountId={user?.hedera_account_id}
+      />
     </div>
   );
 };

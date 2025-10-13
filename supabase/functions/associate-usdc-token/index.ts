@@ -33,9 +33,18 @@ serve(async (req) => {
       });
     }
 
-    // Check if user has Hedera account
-    if (!user.hedera_account_id) {
-      return new Response(JSON.stringify({ error: 'No Hedera account found' }), {
+    // Get user's wallet with Hedera account
+    const { data: wallet, error: walletError } = await supabase
+      .from('wallets')
+      .select('hedera_account_id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (walletError || !wallet?.hedera_account_id) {
+      console.error('Wallet lookup error:', walletError);
+      return new Response(JSON.stringify({ 
+        error: 'No Hedera wallet found. Please create a wallet first.' 
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -68,7 +77,7 @@ serve(async (req) => {
 
     // Create token association transaction
     const associateTx = new TokenAssociateTransaction()
-      .setAccountId(AccountId.fromString(user.hedera_account_id))
+      .setAccountId(AccountId.fromString(wallet.hedera_account_id))
       .setTokenIds([TokenId.fromString(USDC_TOKEN_ID)])
       .setTransactionMemo('USDC Token Association')
       .freezeWith(client);
@@ -97,7 +106,7 @@ serve(async (req) => {
       .update({
         usdc_token_association_tx: transactionId
       })
-      .eq('hedera_account_id', user.hedera_account_id);
+      .eq('hedera_account_id', wallet.hedera_account_id);
 
     // Create notification
     await supabase.from('notifications').insert({
@@ -109,7 +118,7 @@ serve(async (req) => {
       action_url: '/wallet/settings',
     });
 
-    console.log('USDC associated successfully:', user.hedera_account_id);
+    console.log('USDC associated successfully:', wallet.hedera_account_id);
 
     return new Response(JSON.stringify({
       success: true,

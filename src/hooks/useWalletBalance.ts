@@ -72,7 +72,19 @@ export const useWalletBalance = () => {
       toast.success("Wallet balance synced successfully!");
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to sync wallet balance");
+      // Extract user-friendly error message
+      let errorMessage = 'Failed to sync wallet balance';
+      
+      if (error.message) {
+        try {
+          const parsedError = JSON.parse(error.message);
+          errorMessage = parsedError.error || parsedError.details || errorMessage;
+        } catch {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast.error(errorMessage);
     },
   });
 
@@ -87,7 +99,19 @@ export const useWalletBalance = () => {
       toast.success('USDC associated successfully!');
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to associate USDC');
+      // Extract user-friendly error message
+      let errorMessage = 'Failed to associate USDC';
+      
+      if (error.message) {
+        try {
+          const parsedError = JSON.parse(error.message);
+          errorMessage = parsedError.error || errorMessage;
+        } catch {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast.error(errorMessage);
     },
   });
 
