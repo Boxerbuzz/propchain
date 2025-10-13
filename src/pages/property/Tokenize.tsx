@@ -561,6 +561,53 @@ const TokenizeProperty = () => {
           </div>
         </div>
 
+        {/* Property Details Card */}
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-6">
+              {/* Property Image */}
+              <div className="flex-shrink-0">
+                <div className="w-24 h-24 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                  {property.property_images?.[0] ? (
+                    <img
+                      src={property.property_images[0].image_url}
+                      alt={property.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Building className="h-10 w-10 text-muted-foreground" />
+                  )}
+                </div>
+              </div>
+
+              {/* Property Info */}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold truncate">{property.title}</h3>
+                <p className="text-sm text-muted-foreground truncate">
+                  {(property.location as any)?.city}, {(property.location as any)?.state}
+                </p>
+              </div>
+
+              {/* Financial Info */}
+              <div className="flex gap-6 flex-shrink-0">
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Monthly Rental</p>
+                  <p className="text-lg font-semibold">
+                    ₦{(property.rental_income_monthly || 0).toLocaleString()}
+                  </p>
+                </div>
+                <Separator orientation="vertical" className="h-12" />
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Property Value</p>
+                  <p className="text-lg font-semibold">
+                    ₦{(property.estimated_value || 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Step 0: Type Selection */}
