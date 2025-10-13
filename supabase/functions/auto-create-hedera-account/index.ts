@@ -87,14 +87,31 @@ serve(async (req) => {
       });
     }
 
-    // Create wallet record
+    // Store private key in Vault
+    console.log('Storing private key in Vault for account:', accountResult.data.accountId);
+    const { data: vaultSecret, error: vaultError } = await supabaseClient
+      .rpc('vault.create_secret', {
+        secret: accountResult.data.privateKey,
+        name: `hedera_private_key_${accountResult.data.accountId}`,
+        description: `Hedera private key for account ${accountResult.data.accountId}`
+      });
+
+    if (vaultError) {
+      console.error('Failed to store private key in Vault:', vaultError);
+      return new Response(JSON.stringify({ error: 'Failed to securely store wallet credentials' }), {
+        status: 500,
+        headers: corsHeaders,
+      });
+    }
+
+    // Create wallet record with vault_secret_id
     await supabaseClient
       .from('wallets')
       .insert({
         user_id: userId,
         wallet_type: 'hedera',
         hedera_account_id: accountResult.data.accountId,
-        private_key_encrypted: accountResult.data.privateKey, // Should be encrypted in production
+        vault_secret_id: vaultSecret,
         is_primary: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

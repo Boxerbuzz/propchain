@@ -36,7 +36,7 @@ serve(async (req) => {
     // Get user's wallet with Hedera account and wallet type
     const { data: wallet, error: walletError } = await supabase
       .from('wallets')
-      .select('hedera_account_id, wallet_type, private_key_encrypted')
+      .select('id, hedera_account_id, wallet_type, vault_secret_id')
       .eq('user_id', user.id)
       .single();
 
@@ -53,7 +53,7 @@ serve(async (req) => {
     console.log('Wallet found:', { 
       accountId: wallet.hedera_account_id, 
       walletType: wallet.wallet_type,
-      hasPrivateKey: !!wallet.private_key_encrypted 
+      hasVaultSecret: !!wallet.vault_secret_id 
     });
 
     // Check if already associated
@@ -76,7 +76,7 @@ serve(async (req) => {
     }
 
     // Check if wallet is external or custodial
-    if (wallet.wallet_type !== 'hedera' || !wallet.private_key_encrypted) {
+    if (wallet.wallet_type !== 'hedera' || !wallet.vault_secret_id) {
       console.log('External wallet detected, cannot associate server-side:', wallet.wallet_type);
       return new Response(JSON.stringify({ 
         error: 'external_wallet',
@@ -104,9 +104,25 @@ serve(async (req) => {
     // Freeze with client
     const frozenTx = await associateTx.freezeWith(client);
 
+    // Get user's private key from Vault
+    console.log('Retrieving private key from Vault');
+    const { data: privateKeyData, error: vaultError } = await supabase
+      .rpc('get_wallet_private_key', { p_wallet_id: wallet.id });
+
+    if (vaultError || !privateKeyData) {
+      console.error('Failed to retrieve private key from Vault:', vaultError);
+      return new Response(JSON.stringify({ 
+        error: 'vault_error',
+        message: 'Failed to retrieve wallet credentials. Please contact support.'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Sign with user's private key first
     console.log('Signing transaction with user private key');
-    const userPrivateKey = PrivateKey.fromStringECDSA(wallet.private_key_encrypted);
+    const userPrivateKey = PrivateKey.fromStringECDSA(privateKeyData);
     const userSignedTx = await frozenTx.sign(userPrivateKey);
 
     // Then sign with operator key
