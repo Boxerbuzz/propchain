@@ -22,6 +22,11 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
+import supportHero from "@/assets/support-hero.png";
+import supportChat from "@/assets/support-chat.png";
+import supportEmail from "@/assets/support-email.png";
+import supportPhone from "@/assets/support-phone.png";
+import supportCommunity from "@/assets/support-community.png";
 
 export default function SupportCenter() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
@@ -190,7 +195,8 @@ export default function SupportCenter() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.1),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(var(--primary)/0.08),transparent_50%)]" />
         <div className="container mx-auto px-4 relative">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+            <div className="text-center md:text-left order-2 md:order-1">
             <Badge
               className="mb-6 text-sm px-5 py-1 bg-primary/10 hover:bg-primary/20 border-primary/20"
               variant="outline"
@@ -204,12 +210,12 @@ export default function SupportCenter() {
                 Help You Today?
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-light mb-8">
+            <p className="text-lg md:text-xl text-muted-foreground md:max-w-none leading-relaxed font-light mb-8">
               Get help with your PropChain account, investments, and platform features
             </p>
 
             {/* Search Bar */}
-            <div className="max-w-2xl mx-auto">
+            <div className="md:max-w-none">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -220,6 +226,18 @@ export default function SupportCenter() {
                 />
               </div>
             </div>
+          </div>
+          
+          {/* Hero Image */}
+          <div className="order-1 md:order-2">
+            <div className="relative">
+              <img 
+                src={supportHero} 
+                alt="Customer Support" 
+                className="w-full h-auto rounded-2xl shadow-2xl"
+              />
+            </div>
+          </div>
           </div>
         </div>
       </section>
@@ -317,11 +335,21 @@ export default function SupportCenter() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6 mb-12">
-              {contactOptions.map((option, index) => (
+              {contactOptions.map((option, index) => {
+                const customImages: Record<string, string> = {
+                  'Live Chat': supportChat,
+                  'Email Support': supportEmail,
+                  'Phone Support': supportPhone
+                };
+                return (
                 <Card key={index} className="text-center hover:shadow-lg transition-all group border border-border/50">
                   <CardHeader className="pb-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                      <option.icon className="h-7 w-7 text-primary" />
+                    <div className="w-20 h-20 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform overflow-hidden bg-white">
+                      <img 
+                        src={customImages[option.title]} 
+                        alt={option.title}
+                        className="w-16 h-16 object-contain"
+                      />
                     </div>
                     <CardTitle className="text-xl">{option.title}</CardTitle>
                     <p className="text-muted-foreground text-sm">{option.description}</p>
@@ -339,7 +367,7 @@ export default function SupportCenter() {
                     <Button className="w-full">{option.action}</Button>
                   </CardContent>
                 </Card>
-              ))}
+              )})}
             </div>
 
             {/* Contact Form */}
@@ -385,7 +413,7 @@ export default function SupportCenter() {
       </section>
 
       {/* Resources Section */}
-      <section className="py-16 md:py-20">
+      <section className="py-16 md:py-20 relative overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
@@ -395,22 +423,37 @@ export default function SupportCenter() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {resources.map((resource, index) => (
-                <Card key={index} className="hover:shadow-lg transition-all group border border-border/50">
-                  <CardHeader className="text-center pb-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                      <resource.icon className="h-7 w-7 text-primary" />
-                    </div>
-                    <CardTitle className="text-lg">{resource.title}</CardTitle>
-                    <p className="text-muted-foreground text-sm">{resource.description}</p>
-                  </CardHeader>
-                  <CardContent className="text-center">
-                    <Badge variant="outline" className="mb-4">{resource.type}</Badge>
-                    <Button variant="outline" className="w-full">Access Resource</Button>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+              <div className="relative">
+                <img 
+                  src={supportCommunity} 
+                  alt="Community Support" 
+                  className="w-full h-auto rounded-2xl shadow-lg"
+                />
+              </div>
+              <div className="flex flex-col justify-center space-y-6">
+                {resources.map((resource, index) => (
+                  <Card key={index} className="hover:shadow-lg transition-all group border border-border/50">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                          <resource.icon className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <CardTitle className="text-base">{resource.title}</CardTitle>
+                            <Badge variant="outline" className="text-xs">{resource.type}</Badge>
+                          </div>
+                          <p className="text-muted-foreground text-sm">{resource.description}</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <Button variant="outline" size="sm" className="w-full">Access Resource</Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
         </div>
