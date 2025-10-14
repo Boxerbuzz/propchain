@@ -380,12 +380,14 @@ const WalletDashboard = () => {
 
         {/* Wallet Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-          {/* Animated Currency Card Stack */}
+          {/* Animated Currency Card Stack - Reordered with USDC first */}
           <div className="md:col-span-2 relative">
             <div className="relative h-[180px] perspective-1000">
-              {currencyCards.map((card, index) => {
-                const offset = index - activeCardIndex;
-                const isActive = index === activeCardIndex;
+              {[currencyCards[2], currencyCards[0], currencyCards[1]].map((card, displayIndex) => {
+                // Map display index back to original index for active state
+                const originalIndex = card.id === 'usdc' ? 2 : card.id === 'ngn' ? 0 : 1;
+                const offset = originalIndex - activeCardIndex;
+                const isActive = originalIndex === activeCardIndex;
                 const isVisible = Math.abs(offset) <= 1;
 
                 return (

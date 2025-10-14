@@ -36,6 +36,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { CurrencyToggle } from "@/components/CurrencyToggle";
 
 export default function Header() {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
@@ -154,6 +155,9 @@ export default function Header() {
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-3">
+          {/* Currency Toggle */}
+          <CurrencyToggle />
+          
           {/* Theme Toggle */}
           <ThemeToggle />
 
