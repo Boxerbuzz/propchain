@@ -35,7 +35,10 @@ import { useTheme } from "@/context/ThemeContext";
 
 export default function Landing() {
   const { theme } = useTheme();
-  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
   const autoplayPlugin = useRef(
     Autoplay({ delay: 5000, stopOnInteraction: true })
   );
@@ -319,7 +322,7 @@ export default function Landing() {
               variant="outline"
             >
               <Sparkles className="w-3.5 h-3.5 mr-2 inline" />
-              Now Live on Hedera Mainnet
+              Now Live on Hedera Testnet
             </Badge>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 leading-[1.1]">
@@ -574,7 +577,11 @@ export default function Landing() {
             <Card className="flex items-center justify-center h-32 w-full bg-card/50 backdrop-blur-sm border-primary/20 hover:bg-card hover:border-primary/40 transition-all duration-300 group">
               <CardContent className="p-6 flex items-center justify-center">
                 <img
-                  src={isDark ? "/partners/dark/hedera.svg" : "/partners/light/hedera.svg"}
+                  src={
+                    isDark
+                      ? "/partners/dark/hedera.svg"
+                      : "/partners/light/hedera.svg"
+                  }
                   alt="Hedera"
                   className="h-16 w-auto object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300 opacity-70 group-hover:opacity-100"
                 />
@@ -583,7 +590,11 @@ export default function Landing() {
             <Card className="flex items-center justify-center h-32 w-full bg-card/50 backdrop-blur-sm border-primary/20 hover:bg-card hover:border-primary/40 transition-all duration-300 group">
               <CardContent className="p-6 flex items-center justify-center">
                 <img
-                  src={isDark ? "/partners/dark/paystack.svg" : "/partners/light/paystack.svg"}
+                  src={
+                    isDark
+                      ? "/partners/dark/paystack.svg"
+                      : "/partners/light/paystack.svg"
+                  }
                   alt="Paystack"
                   className="h-12 w-auto object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300 opacity-70 group-hover:opacity-100"
                 />
@@ -592,7 +603,11 @@ export default function Landing() {
             <Card className="flex items-center justify-center h-32 w-full bg-card/50 backdrop-blur-sm border-primary/20 hover:bg-card hover:border-primary/40 transition-all duration-300 group">
               <CardContent className="p-6 flex items-center justify-center">
                 <img
-                  src={isDark ? "/partners/dark/hashgraph.svg" : "/partners/light/hashgraph.svg"}
+                  src={
+                    isDark
+                      ? "/partners/dark/hashgraph.svg"
+                      : "/partners/light/hashgraph.svg"
+                  }
                   alt="Hashgraph"
                   className="h-16 w-auto object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300 opacity-70 group-hover:opacity-100"
                 />

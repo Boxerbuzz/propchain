@@ -39,7 +39,6 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { CurrencyToggle } from "@/components/CurrencyToggle";
 
 export default function Header() {
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { isAuthenticated, logout, user } = useAuth();
@@ -157,7 +156,7 @@ export default function Header() {
         <div className="flex items-center space-x-3">
           {/* Currency Toggle */}
           <CurrencyToggle />
-          
+
           {/* Theme Toggle */}
           <ThemeToggle />
 
