@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useCurrency } from "@/context/CurrencyContext";
+import { CurrencyNgnIcon, CurrencyDollarIcon } from "@phosphor-icons/react";
 
 export const CurrencyToggle = () => {
   const { currency, setCurrency } = useCurrency();
@@ -12,7 +13,7 @@ export const CurrencyToggle = () => {
         onClick={() => setCurrency("NGN")}
         className="h-8 px-3 text-xs font-medium"
       >
-        ₦ NGN
+        <CurrencyNgnIcon />
       </Button>
       <Button
         size="sm"
@@ -20,7 +21,7 @@ export const CurrencyToggle = () => {
         onClick={() => setCurrency("USD")}
         className="h-8 px-3 text-xs font-medium"
       >
-        $ USD
+        <CurrencyDollarIcon />
       </Button>
     </div>
   );
