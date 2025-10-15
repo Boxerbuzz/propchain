@@ -17,6 +17,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import {
   Wallet,
   CreditCard,
   ArrowUpDown,
@@ -35,6 +40,11 @@ import {
   MoreVertical,
   ArrowLeftRight,
   Upload,
+  Check,
+  Clock,
+  X,
+  AlertCircle,
+  Wallet2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
@@ -77,6 +87,7 @@ const WalletDashboard = () => {
     isLoading: transactionsLoading,
     refetch: refetchTransactions,
   } = useWalletTransactions();
+  
   const {
     withdrawals,
     isLoading: withdrawalsLoading,
@@ -336,16 +347,28 @@ const WalletDashboard = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusIconBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+        return (
+          <div className="w-4 h-4 rounded-full bg-green-900 flex items-center justify-center border border-green-500 dark:border-green-600">
+            <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
+          </div>
+        );
       case "pending":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
+        return (
+          <div className="w-4 h-4 rounded-full bg-yellow-900 flex items-center justify-center border border-yellow-500 dark:border-yellow-600">
+            <Clock className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
+          </div>
+        );
       case "failed":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+        return (
+          <div className="w-4 h-4 rounded-full bg-red-900 flex items-center justify-center border border-red-500 dark:border-red-600">
+            <X className="h-3 w-3 text-red-600 dark:text-red-400" />
+          </div>
+        );
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+        return null;
     }
   };
 
@@ -458,18 +481,30 @@ const WalletDashboard = () => {
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <div className="flex items-center gap-3">
-                            <div
-                              className={`w-12 h-12 rounded-full ${card.iconBg} flex items-center justify-center`}
-                            >
-                              <img
-                                src={card.icon}
-                                alt={card.symbol}
-                                className="w-7 h-7 object-contain"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = "none";
-                                  e.currentTarget.parentElement!.innerHTML = `<span class="text-xl font-bold">${card.symbol[0]}</span>`;
-                                }}
-                              />
+                            <div className="relative">
+                              <div
+                                className={`w-12 h-12 rounded-full ${card.iconBg} flex items-center justify-center`}
+                              >
+                                <img
+                                  src={card.icon}
+                                  alt={card.symbol}
+                                  className="w-7 h-7 object-contain"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                    e.currentTarget.parentElement!.innerHTML = `<span class="text-xl font-bold">${card.symbol[0]}</span>`;
+                                  }}
+                                />
+                              </div>
+                              {/* Hedera badge for USDC to show it's HUSDC */}
+                              {card.id === "usdc" && (
+                                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white bg-gray-800 flex items-center justify-center border-2 border-blue-500 shadow-sm">
+                                  <img
+                                    src="/hedera.svg"
+                                    alt="Hedera"
+                                    className="w-3 h-3 object-contain"
+                                  />
+                                </div>
+                              )}
                             </div>
                             <div>
                               <CardTitle className="text-sm font-medium text-white/90">
@@ -640,7 +675,7 @@ const WalletDashboard = () => {
                       filteredCount={filteredTransactions.length}
                     />
 
-                    <div className="space-y-4">
+                    <div className="space-y-4 overflow-x-hidden">
                       {transactionsLoading ? (
                         <div className="text-center py-8 text-muted-foreground">
                           <RefreshCw className="h-8 w-8 mx-auto mb-4 animate-spin" />
@@ -660,30 +695,26 @@ const WalletDashboard = () => {
                         filteredTransactions.slice(0, 50).map((transaction) => (
                           <div
                             key={transaction.id}
-                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg transition-colors group cursor-pointer gap-3 overflow-hidden"
+                            className="flex items-center justify-between p-3 sm:p-4 border rounded-lg transition-colors group cursor-pointer gap-2 sm:gap-3 overflow-hidden"
                             onClick={() => {
                               window.open(transaction.explorerUrl, "_blank");
                             }}
                           >
-                            <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1 overflow-hidden">
-                              <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center border border-blue-200 dark:border-blue-700">
-                                {getTransactionIcon(transaction.type)}
+                            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
+                              <div className="relative flex-shrink-0">
+                                <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full w-10 h-10 flex items-center justify-center border border-blue-200 dark:border-blue-700">
+                                  {getTransactionIcon(transaction.type)}
+                                </div>
+                                {/* Status icon badge */}
+                                <div className="absolute -bottom-0 -right-1">
+                                  {getStatusIconBadge(transaction.status)}
+                                </div>
                               </div>
 
                               <div className="min-w-0 flex-1 overflow-hidden">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <p className="font-medium capitalize text-sm sm:text-base">
-                                    {transaction.type.replace("_", " ")}
-                                  </p>
-                                  <Badge
-                                    variant="secondary"
-                                    className={`${getStatusColor(
-                                      transaction.status
-                                    )} text-xs`}
-                                  >
-                                    {transaction.status}
-                                  </Badge>
-                                </div>
+                                <p className="font-medium capitalize text-sm sm:text-base truncate">
+                                  {transaction.type.replace("_", " ")}
+                                </p>
                                 <p className="text-xs sm:text-sm text-muted-foreground truncate">
                                   {transaction.description ||
                                     transaction.method}
@@ -705,90 +736,74 @@ const WalletDashboard = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 sm:text-right flex-shrink-0 min-w-0">
-                              <div className="min-w-0">
-                                <p
-                                  className={`font-semibold text-sm sm:text-base truncate sm:whitespace-nowrap ${
-                                    transaction.direction === "incoming"
-                                      ? "text-green-600"
-                                      : "text-red-600"
-                                  }`}
-                                >
-                                  {transaction.direction === "incoming"
-                                    ? "+"
-                                    : "-"}
-                                  {transaction.currency === "HBAR"
-                                    ? `${transaction.amount.toFixed(4)} ℏ`
-                                    : transaction.currency === "USDC"
-                                    ? `${transaction.amount.toFixed(2)} USDC`
-                                    : transaction.currency === "NGN"
-                                    ? `₦${transaction.amount.toLocaleString()}`
-                                    : `${transaction.amount} ${transaction.currency}`}
-                                </p>
-                                {/* Show converted amount in user's preferred currency */}
-                                {transaction.currency === "HBAR" &&
-                                  hederaBalance?.exchangeRates && (
-                                    <p className="text-xs text-muted-foreground truncate sm:whitespace-nowrap">
-                                      ≈{" "}
-                                      {formatAmount(
-                                        transaction.amount *
-                                          hederaBalance.exchangeRates
-                                            .hbarToUsd *
-                                          hederaBalance.exchangeRates.usdToNgn,
-                                        transaction.amount *
-                                          hederaBalance.exchangeRates.hbarToUsd
-                                      )}
-                                    </p>
-                                  )}
-                                {transaction.currency === "USDC" &&
-                                  hederaBalance?.exchangeRates && (
-                                    <p className="text-xs text-muted-foreground truncate sm:whitespace-nowrap">
-                                      ≈{" "}
-                                      {formatAmount(
-                                        transaction.amount *
-                                          hederaBalance.exchangeRates.usdToNgn,
-                                        transaction.amount
-                                      )}
-                                    </p>
-                                  )}
-                                {transaction.currency === "NGN" &&
-                                  currency === "USD" &&
-                                  hederaBalance?.exchangeRates && (
-                                    <p className="text-xs text-muted-foreground truncate sm:whitespace-nowrap">
-                                      ≈ $
-                                      {(
-                                        transaction.amount /
-                                        hederaBalance.exchangeRates.usdToNgn
-                                      ).toFixed(2)}
-                                    </p>
-                                  )}
-                              </div>
-                              <div className="text-right min-w-0">
-                                <p className="text-xs text-muted-foreground truncate sm:whitespace-nowrap">
-                                  {(() => {
-                                    const date = new Date(
-                                      transaction.timestamp
-                                    );
-                                    return isNaN(date.getTime())
-                                      ? "—"
-                                      : date.toLocaleString("en-US", {
-                                          month: "short",
-                                          day: "numeric",
-                                          year:
-                                            window.innerWidth >= 640
-                                              ? "numeric"
-                                              : undefined,
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        });
-                                  })()}
-                                </p>
-                                {transaction.fee && (
-                                  <p className="text-xs text-muted-foreground whitespace-nowrap hidden sm:block">
-                                    Fee: {transaction.fee.toFixed(6)} HBAR
+                            <div className="flex flex-col items-end text-right flex-shrink-0 min-w-0 max-w-[140px] sm:max-w-none">
+                              <p
+                                className={`font-semibold text-sm sm:text-base whitespace-nowrap overflow-hidden text-ellipsis ${
+                                  transaction.direction === "incoming"
+                                    ? "text-green-600"
+                                    : "text-red-600"
+                                }`}
+                              >
+                                {transaction.direction === "incoming"
+                                  ? "+"
+                                  : "-"}
+                                {transaction.currency === "HBAR"
+                                  ? `${transaction.amount.toFixed(4)} ℏ`
+                                  : transaction.currency === "USDC"
+                                  ? `${transaction.amount.toFixed(2)} USDC`
+                                  : transaction.currency === "NGN"
+                                  ? `₦${transaction.amount.toLocaleString()}`
+                                  : `${transaction.amount} ${transaction.currency}`}
+                              </p>
+                              {/* Show converted amount in user's preferred currency */}
+                              {transaction.currency === "HBAR" &&
+                                hederaBalance?.exchangeRates && (
+                                  <p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+                                    ≈{" "}
+                                    {formatAmount(
+                                      transaction.amount *
+                                        hederaBalance.exchangeRates.hbarToUsd *
+                                        hederaBalance.exchangeRates.usdToNgn,
+                                      transaction.amount *
+                                        hederaBalance.exchangeRates.hbarToUsd
+                                    )}
                                   </p>
                                 )}
-                              </div>
+                              {transaction.currency === "USDC" &&
+                                hederaBalance?.exchangeRates && (
+                                  <p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+                                    ≈{" "}
+                                    {formatAmount(
+                                      transaction.amount *
+                                        hederaBalance.exchangeRates.usdToNgn,
+                                      transaction.amount
+                                    )}
+                                  </p>
+                                )}
+                              {transaction.currency === "NGN" &&
+                                currency === "USD" &&
+                                hederaBalance?.exchangeRates && (
+                                  <p className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+                                    ≈ $
+                                    {(
+                                      transaction.amount /
+                                      hederaBalance.exchangeRates.usdToNgn
+                                    ).toFixed(2)}
+                                  </p>
+                                )}
+                              <p className="text-xs text-muted-foreground whitespace-nowrap hidden sm:block overflow-hidden text-ellipsis">
+                                {(() => {
+                                  const date = new Date(transaction.timestamp);
+                                  return isNaN(date.getTime())
+                                    ? "—"
+                                    : date.toLocaleString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      });
+                                })()}
+                              </p>
                             </div>
                           </div>
                         ))
@@ -1119,13 +1134,43 @@ const WalletDashboard = () => {
             {/* Wallet Address */}
             <Card>
               <CardHeader>
-                <CardTitle>Your Wallet Address</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  Your Wallet Address
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-sm font-mono break-all">
-                      {walletData.walletAddress}
+                  <div className="p-3 bg-muted rounded-lg flex items-center gap-2">
+                    <Wallet2 className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm font-mono break-all flex items-center gap-2 justify-between">
+                      <span>{walletData.walletAddress}</span>
+
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <AlertCircle className="h-4 w-4 text-amber-500 cursor-pointer" />
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-80">
+                          <div className="space-y-2">
+                            <h4 className="font-semibold flex items-center gap-2">
+                              <AlertCircle className="h-4 w-4 text-amber-500" />
+                              Important Warning
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              Only send{" "}
+                              <span className="font-semibold text-foreground">
+                                HBAR
+                              </span>{" "}
+                              and{" "}
+                              <span className="font-semibold text-foreground">
+                                HUSDC
+                              </span>{" "}
+                              (Hedera USDC) to this wallet address. Sending
+                              other tokens may result in permanent loss of
+                              funds.
+                            </p>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
                     </p>
                   </div>
                   <Button
