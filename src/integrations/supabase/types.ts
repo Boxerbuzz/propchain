@@ -610,6 +610,7 @@ export type Database = {
           investment_source: string | null
           investor_id: string | null
           payment_confirmed_at: string | null
+          payment_currency: string | null
           payment_method: string | null
           payment_status: string | null
           paystack_reference: string | null
@@ -634,6 +635,7 @@ export type Database = {
           investment_source?: string | null
           investor_id?: string | null
           payment_confirmed_at?: string | null
+          payment_currency?: string | null
           payment_method?: string | null
           payment_status?: string | null
           paystack_reference?: string | null
@@ -658,6 +660,7 @@ export type Database = {
           investment_source?: string | null
           investor_id?: string | null
           payment_confirmed_at?: string | null
+          payment_currency?: string | null
           payment_method?: string | null
           payment_status?: string | null
           paystack_reference?: string | null
@@ -2319,6 +2322,8 @@ export type Database = {
           bank_code: string | null
           bank_name: string | null
           created_at: string | null
+          currency_amount: number | null
+          currency_type: string | null
           failure_reason: string | null
           hedera_transaction_id: string | null
           id: string
@@ -2342,6 +2347,8 @@ export type Database = {
           bank_code?: string | null
           bank_name?: string | null
           created_at?: string | null
+          currency_amount?: number | null
+          currency_type?: string | null
           failure_reason?: string | null
           hedera_transaction_id?: string | null
           id?: string
@@ -2365,6 +2372,8 @@ export type Database = {
           bank_code?: string | null
           bank_name?: string | null
           created_at?: string | null
+          currency_amount?: number | null
+          currency_type?: string | null
           failure_reason?: string | null
           hedera_transaction_id?: string | null
           id?: string

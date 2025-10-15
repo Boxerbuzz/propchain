@@ -6,25 +6,42 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Wallet, CreditCard, Copy, ExternalLink, Info } from "lucide-react";
+import { Loader2, Wallet, CreditCard, Copy, ExternalLink, Info, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/context/AuthContext";
+import { useWalletBalance } from "@/hooks/useWalletBalance";
+import CurrencySelector from "./CurrencySelector";
 
-interface FundHbarModalProps {
+interface FundWalletModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   hederaAccountId?: string;
+  usdcAssociated?: boolean;
 }
 
-export default function FundHbarModal({ open, onOpenChange, hederaAccountId }: FundHbarModalProps) {
+export default function FundWalletModal({ 
+  open, 
+  onOpenChange, 
+  hederaAccountId,
+  usdcAssociated = false 
+}: FundWalletModalProps) {
   const { user } = useAuth();
+  const { associateUsdc, isAssociatingUsdc } = useWalletBalance();
+  const [selectedCurrency, setSelectedCurrency] = useState<"hbar" | "usdc">("hbar");
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<"external" | "fiat">("external");
   const [loading, setLoading] = useState(false);
 
-  // Exchange rate: 1 HBAR ≈ ₦100 (example rate, should be fetched dynamically)
-  const HBAR_TO_NGN_RATE = 100;
-  const hbarAmount = Number(amount) / HBAR_TO_NGN_RATE;
+  // Exchange rates (should be fetched dynamically in production)
+  const HBAR_TO_NGN_RATE = 262; // ~$0.05 HBAR * 5,240 NGN/USD
+  const USDC_TO_NGN_RATE = 1465; // 1:1 USD peg * 1,465 NGN/USD
+  
+  const cryptoAmount = 
+    selectedCurrency === "hbar"
+      ? Number(amount) / HBAR_TO_NGN_RATE
+      : Number(amount) / USDC_TO_NGN_RATE;
+  const exchangeRate = selectedCurrency === "hbar" ? HBAR_TO_NGN_RATE : USDC_TO_NGN_RATE;
 
   const copyAddress = () => {
     if (hederaAccountId) {
@@ -51,15 +68,15 @@ export default function FundHbarModal({ open, onOpenChange, hederaAccountId }: F
         body: {
           amount_ngn: Number(amount),
           currency: "NGN",
-          payment_type: "hbar_funding",
-          redirect_url: `${window.location.origin}/wallet`,
+          payment_type: selectedCurrency === "hbar" ? "hbar_funding" : "usdc_funding",
+          currency_type: selectedCurrency,
+          redirect_url: `${window.location.origin}/wallet/dashboard`,
         },
       });
 
       if (error) throw error;
 
       if (data?.authorization_url) {
-        // Redirect to Paystack payment page
         window.location.href = data.authorization_url;
       } else {
         throw new Error("Failed to initialize payment");
@@ -85,15 +102,54 @@ export default function FundHbarModal({ open, onOpenChange, hederaAccountId }: F
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="space-y-3">
-          <DialogTitle className="text-2xl">Fund HBAR Balance</DialogTitle>
+          <DialogTitle className="text-2xl">Fund Wallet</DialogTitle>
           <DialogDescription>
-            Add HBAR to your wallet via external transfer or fiat payment
+            Add HBAR or USDC to your wallet via external transfer or fiat payment
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Currency Selection */}
+          <div className="space-y-3">
+            <Label className="text-base">Select Currency</Label>
+            <CurrencySelector
+              selectedCurrency={selectedCurrency}
+              onCurrencyChange={setSelectedCurrency}
+              hbarBalance={0}
+              hbarBalanceNgn={0}
+              usdcBalance={0}
+              usdcBalanceNgn={0}
+              showBalances={false}
+            />
+          </div>
+
+          {/* USDC Association Check */}
+          {selectedCurrency === "usdc" && !usdcAssociated && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="space-y-2">
+                <p>USDC is not associated with your account yet.</p>
+                <Button
+                  onClick={() => associateUsdc()}
+                  disabled={isAssociatingUsdc}
+                  size="sm"
+                  variant="outline"
+                >
+                  {isAssociatingUsdc ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Associating...
+                    </>
+                  ) : (
+                    "Associate USDC Now"
+                  )}
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Method Selection */}
           <div className="space-y-3">
             <Label className="text-base">Select Funding Method</Label>
@@ -107,7 +163,9 @@ export default function FundHbarModal({ open, onOpenChange, hederaAccountId }: F
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold">External Transfer</p>
-                      <p className="text-sm text-muted-foreground">Send HBAR from another wallet</p>
+                      <p className="text-sm text-muted-foreground">
+                        Send {selectedCurrency.toUpperCase()} from another wallet
+                      </p>
                     </div>
                   </div>
                 </label>
@@ -122,7 +180,9 @@ export default function FundHbarModal({ open, onOpenChange, hederaAccountId }: F
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold">Pay with Naira</p>
-                      <p className="text-sm text-muted-foreground">Buy HBAR with card or bank transfer</p>
+                      <p className="text-sm text-muted-foreground">
+                        Buy {selectedCurrency.toUpperCase()} with card or bank transfer
+                      </p>
                     </div>
                   </div>
                 </label>
@@ -155,8 +215,16 @@ export default function FundHbarModal({ open, onOpenChange, hederaAccountId }: F
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p className="flex items-start gap-2">
                     <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    <span>Send HBAR to this account from any Hedera wallet (HashPack, Blade, etc.)</span>
+                    <span>
+                      Send {selectedCurrency.toUpperCase()} to this account from any Hedera wallet (HashPack, Blade, etc.)
+                    </span>
                   </p>
+                  {selectedCurrency === "usdc" && !usdcAssociated && (
+                    <p className="flex items-start gap-2 text-amber-600 dark:text-amber-500">
+                      <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <span>Please associate USDC first before receiving external transfers</span>
+                    </p>
+                  )}
                   <p className="flex items-start gap-2">
                     <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
                     <span>Funds will appear in your balance after network confirmation (~3-5 seconds)</span>
@@ -206,11 +274,12 @@ export default function FundHbarModal({ open, onOpenChange, hederaAccountId }: F
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">You will receive</span>
                         <span className="text-lg font-bold text-primary">
-                          ~{hbarAmount.toFixed(2)} HBAR
+                          ~{cryptoAmount.toFixed(selectedCurrency === "hbar" ? 2 : 2)}{" "}
+                          {selectedCurrency.toUpperCase()}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Rate: ₦{HBAR_TO_NGN_RATE.toLocaleString()} per HBAR
+                        Rate: ₦{exchangeRate.toLocaleString()} per {selectedCurrency.toUpperCase()}
                       </p>
                     </div>
                   </Card>
@@ -241,7 +310,9 @@ export default function FundHbarModal({ open, onOpenChange, hederaAccountId }: F
                   </p>
                   <p className="flex items-start gap-2">
                     <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                    <span>HBAR will be credited to your account after payment confirmation</span>
+                    <span>
+                      {selectedCurrency.toUpperCase()} will be credited to your account after payment confirmation
+                    </span>
                   </p>
                 </div>
               </div>
