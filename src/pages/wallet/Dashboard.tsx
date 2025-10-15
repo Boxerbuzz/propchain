@@ -62,7 +62,7 @@ import {
 } from "@/components/TransactionFilters";
 import { useWithdrawals } from "@/hooks/useWithdrawals";
 import { useNavigate } from "react-router-dom";
-import FundHbarModal from "@/components/FundHbarModal";
+import FundWalletModal from "@/components/FundWalletModal";
 import { WalletFundingInfo } from "@/components/WalletFundingInfo";
 
 const WalletDashboard = () => {
@@ -81,6 +81,7 @@ const WalletDashboard = () => {
 
   const { stats } = useDashboard();
   const { balance: hederaBalance, syncBalance, isSyncing } = useWalletBalance();
+  const balance = hederaBalance; // Alias for compatibility
   const {
     transactions: allTransactions,
     isLoading: transactionsLoading,
@@ -1187,11 +1188,12 @@ const WalletDashboard = () => {
         </div>
       </div>
 
-      {/* Fund HBAR Modal */}
-      <FundHbarModal
+      {/* Fund Wallet Modal */}
+      <FundWalletModal
         open={showFundModal}
         onOpenChange={setShowFundModal}
         hederaAccountId={user?.hedera_account_id}
+        usdcAssociated={balance?.usdcAssociated}
       />
     </div>
   );

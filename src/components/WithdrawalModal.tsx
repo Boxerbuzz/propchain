@@ -7,19 +7,26 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Wallet, Building2, Coins, ArrowRight, Info } from "lucide-react";
+import { Loader2, Wallet, Building2, ArrowRight, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import CurrencySelector from "./CurrencySelector";
 
 interface WithdrawalModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  balance: number;
+  balance: {
+    hbar: number;
+    hbarNgn: number;
+    usdc: number;
+    usdcNgn: number;
+  };
   onSuccess: () => void;
 }
 
 export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess }: WithdrawalModalProps) {
+  const [selectedCurrency, setSelectedCurrency] = useState<"hbar" | "usdc">("hbar");
   const [amount, setAmount] = useState("");
-  const [method, setMethod] = useState<"bank_transfer" | "hedera" | "usdc">("bank_transfer");
+  const [method, setMethod] = useState<"bank_transfer" | "hedera">("bank_transfer");
   const [loading, setLoading] = useState(false);
 
   // Bank transfer fields
@@ -31,8 +38,13 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
   // Hedera fields
   const [hederaAccount, setHederaAccount] = useState("");
 
+  const currentBalance = selectedCurrency === "hbar" ? balance.hbar : balance.usdc;
+  const currentBalanceNgn = selectedCurrency === "hbar" ? balance.hbarNgn : balance.usdcNgn;
   const processingFee = method === "bank_transfer" ? 100 : 0;
-  const netAmount = Number(amount) - processingFee;
+  
+  // For crypto amount entry
+  const amountInNgn = Number(amount) * (currentBalanceNgn / currentBalance);
+  const netAmountNgn = amountInNgn - processingFee;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,8 +54,8 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
       return;
     }
 
-    if (Number(amount) > balance) {
-      toast.error("Insufficient balance");
+    if (Number(amount) > currentBalance) {
+      toast.error(`Insufficient ${selectedCurrency.toUpperCase()} balance`);
       return;
     }
 
@@ -52,7 +64,7 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
       return;
     }
 
-    if ((method === "hedera" || method === "usdc") && !hederaAccount) {
+    if (method === "hedera" && !hederaAccount) {
       toast.error("Please enter Hedera account ID");
       return;
     }
@@ -62,7 +74,9 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
     try {
       const { data, error } = await supabase.functions.invoke('initiate-withdrawal', {
         body: {
-          amount_ngn: Number(amount),
+          amount_ngn: amountInNgn,
+          currency_type: selectedCurrency,
+          currency_amount: Number(amount),
           withdrawal_method: method,
           bank_details: method === "bank_transfer" ? {
             account_number: accountNumber,
@@ -70,7 +84,7 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
             bank_name: bankName,
             bank_code: bankCode,
           } : undefined,
-          hedera_account: (method === "hedera" || method === "usdc") ? hederaAccount : undefined,
+          hedera_account: method === "hedera" ? hederaAccount : undefined,
         },
       });
 
@@ -104,34 +118,43 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Available Balance Card */}
-          <Card className="p-6 bg-primary/5 border-primary/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Wallet className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Available Balance</p>
-                  <p className="text-3xl font-bold text-primary">₦{balance.toLocaleString()}</p>
-                </div>
-              </div>
-            </div>
-          </Card>
+          {/* Currency Selection */}
+          <div className="space-y-3">
+            <Label className="text-base">Select Currency to Withdraw</Label>
+            <CurrencySelector
+              selectedCurrency={selectedCurrency}
+              onCurrencyChange={setSelectedCurrency}
+              hbarBalance={balance.hbar}
+              hbarBalanceNgn={balance.hbarNgn}
+              usdcBalance={balance.usdc}
+              usdcBalanceNgn={balance.usdcNgn}
+            />
+          </div>
 
           {/* Amount */}
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount (₦)</Label>
+            <Label htmlFor="amount">
+              Amount ({selectedCurrency === "hbar" ? "ℏ" : "USDC"})
+            </Label>
             <Input
               id="amount"
               type="number"
-              placeholder="Enter amount"
+              step={selectedCurrency === "hbar" ? "0.0001" : "0.01"}
+              placeholder={`Enter amount in ${selectedCurrency.toUpperCase()}`}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              min="1"
-              max={balance}
+              min={selectedCurrency === "hbar" ? "0.0001" : "0.01"}
+              max={currentBalance}
               required
             />
+            {amount && (
+              <p className="text-sm text-muted-foreground">
+                ≈ ₦{amountInNgn.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </p>
+            )}
           </div>
 
           {/* Withdrawal Method */}
@@ -147,7 +170,9 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold">Bank Transfer</p>
-                      <p className="text-sm text-muted-foreground">₦100 processing fee</p>
+                      <p className="text-sm text-muted-foreground">
+                        Convert {selectedCurrency.toUpperCase()} to NGN (₦100 fee)
+                      </p>
                     </div>
                   </div>
                 </label>
@@ -162,22 +187,9 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold">Hedera Account</p>
-                      <p className="text-sm text-muted-foreground">Instant & Free</p>
-                    </div>
-                  </div>
-                </label>
-              </Card>
-
-              <Card className={`cursor-pointer transition-all ${method === 'usdc' ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
-                <label htmlFor="usdc" className="flex items-center p-4 cursor-pointer">
-                  <RadioGroupItem value="usdc" id="usdc" className="mr-3" />
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Coins className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold">USDC Transfer</p>
-                      <p className="text-sm text-muted-foreground">Stablecoin withdrawal - Free</p>
+                      <p className="text-sm text-muted-foreground">
+                        Send {selectedCurrency.toUpperCase()} directly - Free & Instant
+                      </p>
                     </div>
                   </div>
                 </label>
@@ -238,8 +250,8 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
             </Card>
           )}
 
-          {/* Hedera/USDC Fields */}
-          {(method === "hedera" || method === "usdc") && (
+          {/* Hedera Fields */}
+          {method === "hedera" && (
             <Card className="p-6 space-y-4 bg-muted/30">
               <div className="flex items-center gap-2 text-sm font-medium mb-2">
                 <Wallet className="h-4 w-4" />
@@ -270,20 +282,56 @@ export default function WithdrawalModal({ open, onOpenChange, balance, onSuccess
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Withdrawal Amount</span>
-                  <span className="font-semibold text-lg">₦{Number(amount).toLocaleString()}</span>
+                  <span className="font-semibold text-lg">
+                    {Number(amount).toFixed(selectedCurrency === "hbar" ? 4 : 2)}{" "}
+                    {selectedCurrency.toUpperCase()}
+                  </span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Processing Fee</span>
-                  <span className="font-medium text-muted-foreground">-₦{processingFee.toLocaleString()}</span>
-                </div>
-                <div className="h-px bg-border"></div>
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">You Will Receive</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-primary">₦{netAmount.toLocaleString()}</span>
-                    <ArrowRight className="h-5 w-5 text-primary" />
-                  </div>
-                </div>
+                {method === "bank_transfer" && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Converted to NGN</span>
+                      <span className="font-medium">
+                        ≈ ₦{amountInNgn.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Processing Fee</span>
+                      <span className="font-medium text-muted-foreground">
+                        -₦{processingFee.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="h-px bg-border"></div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold">You Will Receive</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl font-bold text-primary">
+                          ₦{netAmountNgn.toLocaleString()}
+                        </span>
+                        <ArrowRight className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+                  </>
+                )}
+                {method === "hedera" && (
+                  <>
+                    <div className="h-px bg-border"></div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold">You Will Receive</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl font-bold text-primary">
+                          {Number(amount).toFixed(selectedCurrency === "hbar" ? 4 : 2)}{" "}
+                          {selectedCurrency.toUpperCase()}
+                        </span>
+                        <ArrowRight className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Info className="h-3 w-3" />
+                      {selectedCurrency.toUpperCase()} will be sent directly to the specified Hedera account
+                    </p>
+                  </>
+                )}
               </div>
             </Card>
           )}
