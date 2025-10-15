@@ -715,10 +715,10 @@ const WalletDashboard = () => {
                                 <p className="font-medium capitalize text-sm sm:text-base truncate">
                                   {transaction.type.replace("_", " ")}
                                 </p>
-                                <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                                {/* <p className="text-xs sm:text-sm text-muted-foreground truncate">
                                   {transaction.description ||
                                     transaction.method}
-                                </p>
+                                </p> */}
                                 {transaction.reference && (
                                   <p className="text-xs text-muted-foreground font-mono flex items-center gap-1 mt-1 hidden sm:flex overflow-hidden">
                                     <Hash className="h-3 w-3 flex-shrink-0" />
