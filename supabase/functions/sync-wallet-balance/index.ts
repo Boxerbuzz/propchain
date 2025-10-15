@@ -62,7 +62,7 @@ serve(async (req) => {
     const balanceHbar = Number(hbarBalance.toString()) / 100000000; // Convert tinybars to HBAR
 
     // Check for USDC token balance
-    const usdcTokenId = Deno.env.get('HEDERA_USDC_TOKEN_ID') || '0.0.456858'; // Testnet USDC
+    const usdcTokenId = Deno.env.get('HEDERA_USDC_TOKEN_ID') || '0.0.429274'; // Testnet USDC
     let usdcBalance = 0;
     let usdcBalanceUsd = 0;
     let usdcBalanceNgn = 0;
