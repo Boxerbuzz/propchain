@@ -67,8 +67,10 @@ serve(async (req) => {
     let usdcBalanceUsd = 0;
     let usdcBalanceNgn = 0;
 
-    if (balance.tokens) {
-      const tokenMap = new Map(balance.tokens);
+    // Convert tokens to Map for easier access
+    const tokenMap = balance.tokens ? new Map(balance.tokens) : new Map();
+    
+    if (tokenMap.size > 0) {
       const usdcAmount = tokenMap.get(usdcTokenId);
       if (usdcAmount) {
         // USDC has 6 decimals
@@ -144,13 +146,13 @@ serve(async (req) => {
       usdcBalance: usdcBalance,
       usdcBalanceUsd: usdcBalanceUsd,
       usdcBalanceNgn: usdcBalanceNgn,
-      usdcAssociated: usdcBalance > 0 || (balance.tokens && balance.tokens.has(usdcTokenId)),
+      usdcAssociated: usdcBalance > 0 || tokenMap.has(usdcTokenId),
       exchangeRates: {
         hbarToUsd: balanceUsd / (balanceHbar || 1),
         usdToNgn: balanceNgn / (balanceUsd || 1),
       },
       lastSyncAt: new Date().toISOString(),
-      tokens: balance.tokens ? Object.fromEntries(balance.tokens) : {},
+      tokens: tokenMap.size > 0 ? Object.fromEntries(tokenMap) : {},
     };
 
     console.log('Balance sync completed:', result);
