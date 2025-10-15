@@ -64,7 +64,6 @@ import { useWithdrawals } from "@/hooks/useWithdrawals";
 import { useNavigate } from "react-router-dom";
 import FundHbarModal from "@/components/FundHbarModal";
 import { WalletFundingInfo } from "@/components/WalletFundingInfo";
-import { CurrencyToggle } from "@/components/CurrencyToggle";
 
 const WalletDashboard = () => {
   const { toast } = useToast();
@@ -383,7 +382,7 @@ const WalletDashboard = () => {
             </p>
           </div>
           <div className="flex gap-3 mt-4 md:mt-0">
-            <CurrencyToggle />
+           
             <Button
               variant="outline"
               size="sm"
