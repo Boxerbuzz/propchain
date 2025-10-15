@@ -87,7 +87,7 @@ const WalletDashboard = () => {
     isLoading: transactionsLoading,
     refetch: refetchTransactions,
   } = useWalletTransactions();
-  
+
   const {
     withdrawals,
     isLoading: withdrawalsLoading,
@@ -352,19 +352,19 @@ const WalletDashboard = () => {
       case "completed":
         return (
           <div className="w-4 h-4 rounded-full bg-green-900 flex items-center justify-center border border-green-500 dark:border-green-600">
-            <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
+            <Check className="h-3 w-3 text-white" />
           </div>
         );
       case "pending":
         return (
           <div className="w-4 h-4 rounded-full bg-yellow-900 flex items-center justify-center border border-yellow-500 dark:border-yellow-600">
-            <Clock className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
+            <Clock className="h-3 w-3 text-white" />
           </div>
         );
       case "failed":
         return (
           <div className="w-4 h-4 rounded-full bg-red-900 flex items-center justify-center border border-red-500 dark:border-red-600">
-            <X className="h-3 w-3 text-red-600 dark:text-red-400" />
+            <X className="h-3 w-3 text-white" />
           </div>
         );
       default:

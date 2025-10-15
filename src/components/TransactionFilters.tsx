@@ -75,7 +75,7 @@ export const TransactionFilters = ({ onFilter, totalCount, filteredCount }: Tran
         </Button>
         {hasActiveFilters && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={clearFilters}
             className="flex items-center gap-2"
