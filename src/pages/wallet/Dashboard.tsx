@@ -45,6 +45,7 @@ import {
   type Transaction,
 } from "@/hooks/useWalletTransactions";
 import { useAuth } from "@/context/AuthContext";
+import { useCurrency } from "@/context/CurrencyContext";
 import {
   TransactionFilters,
   type FilterOptions,
@@ -52,11 +53,14 @@ import {
 import { useWithdrawals } from "@/hooks/useWithdrawals";
 import { useNavigate } from "react-router-dom";
 import FundHbarModal from "@/components/FundHbarModal";
+import { WalletFundingInfo } from "@/components/WalletFundingInfo";
+import { CurrencyToggle } from "@/components/CurrencyToggle";
 
 const WalletDashboard = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { currency, formatAmount, getCurrencySymbol } = useCurrency();
   const [showBalance, setShowBalance] = useState(true);
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const [filteredTransactions, setFilteredTransactions] = useState<
@@ -122,28 +126,26 @@ const WalletDashboard = () => {
     lastSyncAt: hederaBalance?.lastSyncAt,
   };
 
+  // Calculate total portfolio value based on selected currency
+  const totalPortfolioValue = currency === "NGN" 
+    ? (hederaBalance?.balanceNgn || 0) + (hederaBalance?.usdcBalanceNgn || 0)
+    : (hederaBalance?.balanceUsd || 0) + (hederaBalance?.usdcBalanceUsd || 0);
+
+  // Breakdown text for third card
+  const portfolioBreakdown = `${(hederaBalance?.balanceHbar || 0).toFixed(2)} ℏ + ${(hederaBalance?.usdcBalance || 0).toFixed(2)} USDC`;
+
   // Currency cards configuration
   const currencyCards = [
-    {
-      id: "ngn",
-      name: "Nigerian Naira",
-      symbol: "NGN",
-      icon: "/ngn.svg",
-      balance: walletData.balance,
-      displayBalance: `₦${walletData.balance.toLocaleString()}`,
-      gradient: "from-green-500 to-emerald-600",
-      iconBg: "bg-green-100 dark:bg-green-900/30",
-    },
     {
       id: "hbar",
       name: "Hedera",
       symbol: "HBAR",
       icon: "/hedera.svg",
       balance: walletData.balanceHbar,
-      displayBalance: `${walletData.balanceHbar.toFixed(4)} HBAR`,
+      displayBalance: `${walletData.balanceHbar.toFixed(4)} ℏ`,
       gradient: "from-purple-500 to-indigo-600",
       iconBg: "bg-purple-100 dark:bg-purple-900/30",
-      secondaryInfo: `$${walletData.balanceUsd.toFixed(2)}`,
+      // No secondary info - shows only HBAR balance
     },
     {
       id: "usdc",
@@ -154,7 +156,20 @@ const WalletDashboard = () => {
       displayBalance: `${(hederaBalance?.usdcBalance || 0).toFixed(2)} USDC`,
       gradient: "from-blue-500 to-cyan-600",
       iconBg: "bg-blue-100 dark:bg-blue-900/30",
-      secondaryInfo: `≈ $${(hederaBalance?.usdcBalance || 0).toFixed(2)}`,
+      // No secondary info - shows only USDC balance
+    },
+    {
+      id: currency === "NGN" ? "ngn" : "usd",
+      name: "Total Value",
+      symbol: currency === "NGN" ? "NGN" : "USD",
+      icon: currency === "NGN" ? "/ngn.svg" : "/usd.svg",
+      balance: totalPortfolioValue,
+      displayBalance: currency === "NGN"
+        ? `₦${totalPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : `$${totalPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      gradient: currency === "NGN" ? "from-green-500 to-emerald-600" : "from-blue-600 to-indigo-700",
+      iconBg: currency === "NGN" ? "bg-green-100 dark:bg-green-900/30" : "bg-blue-100 dark:bg-blue-900/30",
+      secondaryInfo: portfolioBreakdown,
     },
   ];
 
@@ -329,6 +344,7 @@ const WalletDashboard = () => {
             </p>
           </div>
           <div className="flex gap-3 mt-4 md:mt-0">
+            <CurrencyToggle />
             <Button
               variant="outline"
               size="sm"
@@ -378,14 +394,17 @@ const WalletDashboard = () => {
           </div>
         </div>
 
+        {/* Wallet Funding Warning */}
+        <WalletFundingInfo />
+
         {/* Wallet Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-          {/* Animated Currency Card Stack - Reordered with USDC first */}
+          {/* Animated Currency Card Stack - Natural order: HBAR, USDC, Total Value */}
           <div className="md:col-span-2 relative">
             <div className="relative h-[180px] perspective-1000">
-              {[currencyCards[2], currencyCards[0], currencyCards[1]].map((card, displayIndex) => {
-                // Map display index back to original index for active state
-                const originalIndex = card.id === 'usdc' ? 2 : card.id === 'ngn' ? 0 : 1;
+              {currencyCards.map((card, displayIndex) => {
+                // Use natural order for cards
+                const originalIndex = displayIndex;
                 const offset = originalIndex - activeCardIndex;
                 const isActive = originalIndex === activeCardIndex;
                 const isVisible = Math.abs(offset) <= 1;
@@ -518,7 +537,7 @@ const WalletDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  ₦{walletData.totalDeposited.toLocaleString()}
+                  {formatAmount(walletData.totalDeposited, walletData.totalDeposited / (hederaBalance?.exchangeRates?.usdToNgn || 1500))}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Lifetime deposits
@@ -549,7 +568,7 @@ const WalletDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  ₦{walletData.totalWithdrawn.toLocaleString()}
+                  {formatAmount(walletData.totalWithdrawn, walletData.totalWithdrawn / (hederaBalance?.exchangeRates?.usdToNgn || 1500))}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Lifetime withdrawals
@@ -676,21 +695,34 @@ const WalletDashboard = () => {
                                     : "-"}
                                   {transaction.currency === "HBAR"
                                     ? `${transaction.amount.toFixed(4)} ℏ`
+                                    : transaction.currency === "USDC"
+                                    ? `${transaction.amount.toFixed(2)} USDC`
                                     : transaction.currency === "NGN"
                                     ? `₦${transaction.amount.toLocaleString()}`
                                     : `${transaction.amount} ${transaction.currency}`}
                                 </p>
-                                {transaction.currency === "HBAR" &&
-                                  hederaBalance?.balanceNgn && (
-                                    <p className="text-xs text-muted-foreground truncate sm:whitespace-nowrap">
-                                      ≈ ₦
-                                      {(
-                                        transaction.amount *
-                                          (hederaBalance.balanceNgn /
-                                            hederaBalance.balanceHbar) || 0
-                                      ).toLocaleString()}
-                                    </p>
-                                  )}
+                                {/* Show converted amount in user's preferred currency */}
+                                {transaction.currency === "HBAR" && hederaBalance?.exchangeRates && (
+                                  <p className="text-xs text-muted-foreground truncate sm:whitespace-nowrap">
+                                    ≈ {formatAmount(
+                                      transaction.amount * hederaBalance.exchangeRates.hbarToUsd * hederaBalance.exchangeRates.usdToNgn,
+                                      transaction.amount * hederaBalance.exchangeRates.hbarToUsd
+                                    )}
+                                  </p>
+                                )}
+                                {transaction.currency === "USDC" && hederaBalance?.exchangeRates && (
+                                  <p className="text-xs text-muted-foreground truncate sm:whitespace-nowrap">
+                                    ≈ {formatAmount(
+                                      transaction.amount * hederaBalance.exchangeRates.usdToNgn,
+                                      transaction.amount
+                                    )}
+                                  </p>
+                                )}
+                                {transaction.currency === "NGN" && currency === "USD" && hederaBalance?.exchangeRates && (
+                                  <p className="text-xs text-muted-foreground truncate sm:whitespace-nowrap">
+                                    ≈ ${(transaction.amount / hederaBalance.exchangeRates.usdToNgn).toFixed(2)}
+                                  </p>
+                                )}
                               </div>
                               <div className="text-right min-w-0">
                                 <p className="text-xs text-muted-foreground truncate sm:whitespace-nowrap">
