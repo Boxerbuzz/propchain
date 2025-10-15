@@ -126,21 +126,16 @@ const WalletDashboard = () => {
     lastSyncAt: hederaBalance?.lastSyncAt,
   };
 
+  // Calculate total portfolio value based on selected currency
+  const totalPortfolioValue = currency === "NGN" 
+    ? (hederaBalance?.balanceNgn || 0) + (hederaBalance?.usdcBalanceNgn || 0)
+    : (hederaBalance?.balanceUsd || 0) + (hederaBalance?.usdcBalanceUsd || 0);
+
+  // Breakdown text for third card
+  const portfolioBreakdown = `${(hederaBalance?.balanceHbar || 0).toFixed(2)} ℏ + ${(hederaBalance?.usdcBalance || 0).toFixed(2)} USDC`;
+
   // Currency cards configuration
   const currencyCards = [
-    {
-      id: "ngn",
-      name: "Nigerian Naira",
-      symbol: "NGN",
-      icon: "/ngn.svg",
-      balance: walletData.balance,
-      displayBalance: `₦${walletData.balance.toLocaleString()}`,
-      gradient: "from-green-500 to-emerald-600",
-      iconBg: "bg-green-100 dark:bg-green-900/30",
-      secondaryInfo: currency === "USD" && hederaBalance?.exchangeRates 
-        ? `≈ $${(walletData.balance / hederaBalance.exchangeRates.usdToNgn).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-        : undefined,
-    },
     {
       id: "hbar",
       name: "Hedera",
@@ -150,9 +145,7 @@ const WalletDashboard = () => {
       displayBalance: `${walletData.balanceHbar.toFixed(4)} ℏ`,
       gradient: "from-purple-500 to-indigo-600",
       iconBg: "bg-purple-100 dark:bg-purple-900/30",
-      secondaryInfo: currency === "NGN" 
-        ? `≈ ${formatAmount(walletData.balanceUsd * (hederaBalance?.exchangeRates?.usdToNgn || 1500), walletData.balanceUsd)}`
-        : `≈ $${walletData.balanceUsd.toFixed(2)}`,
+      // No secondary info - shows only HBAR balance
     },
     {
       id: "usdc",
@@ -163,9 +156,20 @@ const WalletDashboard = () => {
       displayBalance: `${(hederaBalance?.usdcBalance || 0).toFixed(2)} USDC`,
       gradient: "from-blue-500 to-cyan-600",
       iconBg: "bg-blue-100 dark:bg-blue-900/30",
-      secondaryInfo: currency === "NGN"
-        ? `≈ ${formatAmount((hederaBalance?.usdcBalanceNgn || 0), (hederaBalance?.usdcBalanceUsd || 0))}`
-        : `≈ $${(hederaBalance?.usdcBalanceUsd || 0).toFixed(2)}`,
+      // No secondary info - shows only USDC balance
+    },
+    {
+      id: currency === "NGN" ? "ngn" : "usd",
+      name: "Total Value",
+      symbol: currency === "NGN" ? "NGN" : "USD",
+      icon: currency === "NGN" ? "/ngn.svg" : "/usd.svg",
+      balance: totalPortfolioValue,
+      displayBalance: currency === "NGN"
+        ? `₦${totalPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : `$${totalPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      gradient: currency === "NGN" ? "from-green-500 to-emerald-600" : "from-blue-600 to-indigo-700",
+      iconBg: currency === "NGN" ? "bg-green-100 dark:bg-green-900/30" : "bg-blue-100 dark:bg-blue-900/30",
+      secondaryInfo: portfolioBreakdown,
     },
   ];
 
@@ -395,12 +399,12 @@ const WalletDashboard = () => {
 
         {/* Wallet Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-          {/* Animated Currency Card Stack - Reordered with USDC first */}
+          {/* Animated Currency Card Stack - Natural order: HBAR, USDC, Total Value */}
           <div className="md:col-span-2 relative">
             <div className="relative h-[180px] perspective-1000">
-              {[currencyCards[2], currencyCards[0], currencyCards[1]].map((card, displayIndex) => {
-                // Map display index back to original index for active state
-                const originalIndex = card.id === 'usdc' ? 2 : card.id === 'ngn' ? 0 : 1;
+              {currencyCards.map((card, displayIndex) => {
+                // Use natural order for cards
+                const originalIndex = displayIndex;
                 const offset = originalIndex - activeCardIndex;
                 const isActive = originalIndex === activeCardIndex;
                 const isVisible = Math.abs(offset) <= 1;
