@@ -67,6 +67,7 @@ const PropertyManagement = () => {
     isLoading,
     refetch,
   } = useUserProperties();
+
   const updatePropertyMutation = useUpdateProperty();
 
   // Financial summary - connect to real DB when available
@@ -635,7 +636,10 @@ const PropertyManagement = () => {
                                           : "destructive"
                                       }
                                     >
-                                      {property.approval_status}
+                                      {property.approval_status
+                                        .charAt(0)
+                                        .toUpperCase() +
+                                        property.approval_status.slice(1)}
                                     </Badge>
 
                                     {/* Tokenization Ready Badge */}
@@ -952,7 +956,7 @@ const PropertyManagement = () => {
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Generate Report
                 </Button>
-                <VaultMigrationButton/>
+                <VaultMigrationButton />
               </CardContent>
             </Card>
 
