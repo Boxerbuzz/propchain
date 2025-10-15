@@ -1,6 +1,6 @@
 // deno-lint-ignore-file
 import { serve } from 'https://deno.land/std@0.178.0/http/server.ts'
-import { Client, AccountBalanceQuery } from "https://esm.sh/@hashgraph/sdk@2.73.2"
+import { Client, AccountBalanceQuery, TokenId } from "https://esm.sh/@hashgraph/sdk@2.73.2"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 //2.73.2
@@ -62,22 +62,35 @@ serve(async (req) => {
     const balanceHbar = Number(hbarBalance.toString()) / 100000000; // Convert tinybars to HBAR
 
     // Check for USDC token balance
-    const usdcTokenId = Deno.env.get('HEDERA_USDC_TOKEN_ID') || '0.0.429274'; // Testnet USDC
+    const usdcTokenIdStr = Deno.env.get('HEDERA_USDC_TOKEN_ID') || '0.0.429274'; // Testnet USDC
+    console.log('Using USDC token ID:', usdcTokenIdStr);
+    
+    let usdcMicro = 0;
+    let hasUsdc = false;
     let usdcBalance = 0;
     let usdcBalanceUsd = 0;
     let usdcBalanceNgn = 0;
+    const tokensOut: Record<string, number> = {};
 
-    // Convert tokens to Map for easier access
-    const tokenMap = balance.tokens ? new Map(balance.tokens) : new Map();
-    
-    if (tokenMap.size > 0) {
-      const usdcAmount = tokenMap.get(usdcTokenId);
-      if (usdcAmount) {
-        // USDC has 6 decimals
-        usdcBalance = Number(usdcAmount.toString()) / 1000000;
-        console.log(`Account has ${usdcBalance} USDC`);
+    // Iterate through token map and build serializable tokens object
+    if (balance.tokens) {
+      for (const [tid, amountLong] of balance.tokens as unknown as Iterable<[any, any]>) {
+        const idStr = tid.toString();
+        const amountMicro = Number(amountLong.toString()); // Convert Long to number
+        tokensOut[idStr] = amountMicro; // Store raw units
+
+        if (idStr === usdcTokenIdStr) {
+          hasUsdc = true;
+          usdcMicro = amountMicro;
+        }
       }
     }
+
+    // USDC has 6 decimals
+    usdcBalance = usdcMicro / 1_000_000;
+    
+    console.log('Detected tokens:', tokensOut);
+    console.log(`USDC associated: ${hasUsdc}, USDC balance: ${usdcBalance}`);
 
     // Fetch real exchange rates
     let balanceUsd = 0;
@@ -122,6 +135,8 @@ serve(async (req) => {
           balance_hbar: balanceHbar,
           balance_usd: balanceUsd,
           balance_ngn: balanceNgn,
+          balance_usdc: usdcBalance,
+          usdc_associated: hasUsdc,
           last_sync_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -146,13 +161,13 @@ serve(async (req) => {
       usdcBalance: usdcBalance,
       usdcBalanceUsd: usdcBalanceUsd,
       usdcBalanceNgn: usdcBalanceNgn,
-      usdcAssociated: usdcBalance > 0 || tokenMap.has(usdcTokenId),
+      usdcAssociated: hasUsdc,
       exchangeRates: {
         hbarToUsd: balanceUsd / (balanceHbar || 1),
         usdToNgn: balanceNgn / (balanceUsd || 1),
       },
       lastSyncAt: new Date().toISOString(),
-      tokens: tokenMap.size > 0 ? Object.fromEntries(tokenMap) : {},
+      tokens: tokensOut,
     };
 
     console.log('Balance sync completed:', result);

@@ -96,10 +96,12 @@ serve(async (req) => {
         amount = tokenTransfer.amount;
         
         // Check if this is USDC token
-        const usdcTokenId = Deno.env.get('HEDERA_USDC_TOKEN_ID') || '0.0.456858'; // Testnet USDC
+        const usdcTokenId = Deno.env.get('HEDERA_USDC_TOKEN_ID') || '0.0.429274'; // Testnet USDC
+        console.log('Using USDC token ID for transactions:', usdcTokenId);
+        
         if (tokenTransfer.token_id === usdcTokenId) {
           // USDC has 6 decimals
-          amount = amount / 1000000;
+          amount = amount / 1_000_000;
           currency = 'USDC';
         } else {
           currency = tokenTransfer.token_id;
