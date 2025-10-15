@@ -13,6 +13,12 @@ interface WalletBalance {
   tokens?: Record<string, number>;
   usdcAssociated?: boolean;
   usdcBalance?: number;
+  usdcBalanceUsd?: number;
+  usdcBalanceNgn?: number;
+  exchangeRates?: {
+    hbarToUsd: number;
+    usdToNgn: number;
+  };
   associatedTokens?: Array<{
     tokenId: string;
     tokenName: string;

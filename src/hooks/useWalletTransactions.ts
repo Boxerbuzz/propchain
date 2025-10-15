@@ -9,6 +9,8 @@ export interface Transaction {
   type: 'investment' | 'dividend' | 'deposit' | 'withdrawal' | 'token_deposit' | 'token_withdrawal' | 'sync';
   amount: number;
   currency: string;
+  amountUsd?: number;
+  amountNgn?: number;
   status: 'pending' | 'completed' | 'failed';
   timestamp: string;
   date: string;

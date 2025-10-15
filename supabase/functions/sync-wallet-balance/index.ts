@@ -61,6 +61,22 @@ serve(async (req) => {
 
     const balanceHbar = Number(hbarBalance.toString()) / 100000000; // Convert tinybars to HBAR
 
+    // Check for USDC token balance
+    const usdcTokenId = Deno.env.get('HEDERA_USDC_TOKEN_ID') || '0.0.456858'; // Testnet USDC
+    let usdcBalance = 0;
+    let usdcBalanceUsd = 0;
+    let usdcBalanceNgn = 0;
+
+    if (balance.tokens) {
+      const tokenMap = new Map(balance.tokens);
+      const usdcAmount = tokenMap.get(usdcTokenId);
+      if (usdcAmount) {
+        // USDC has 6 decimals
+        usdcBalance = Number(usdcAmount.toString()) / 1000000;
+        console.log(`Account has ${usdcBalance} USDC`);
+      }
+    }
+
     // Fetch real exchange rates
     let balanceUsd = 0;
     let balanceNgn = 0;
@@ -78,6 +94,10 @@ serve(async (req) => {
 
       balanceUsd = balanceHbar * hbarToUsd;
       balanceNgn = balanceUsd * usdToNgn;
+
+      // Calculate USDC fiat values (USDC = USD 1:1)
+      usdcBalanceUsd = usdcBalance;
+      usdcBalanceNgn = usdcBalance * usdToNgn;
 
       console.log(`Exchange rates - HBAR/USD: ${hbarToUsd}, USD/NGN: ${usdToNgn}`);
     } catch (error) {
@@ -121,6 +141,14 @@ serve(async (req) => {
       balanceHbar: balanceHbar,
       balanceUsd: balanceUsd,
       balanceNgn: balanceNgn,
+      usdcBalance: usdcBalance,
+      usdcBalanceUsd: usdcBalanceUsd,
+      usdcBalanceNgn: usdcBalanceNgn,
+      usdcAssociated: usdcBalance > 0 || (balance.tokens && balance.tokens.has(usdcTokenId)),
+      exchangeRates: {
+        hbarToUsd: balanceUsd / (balanceHbar || 1),
+        usdToNgn: balanceNgn / (balanceUsd || 1),
+      },
       lastSyncAt: new Date().toISOString(),
       tokens: balance.tokens ? Object.fromEntries(balance.tokens) : {},
     };
