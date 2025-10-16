@@ -30,13 +30,16 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useDashboard } from "@/hooks/useDashboard";
-import { WithdrawalInput } from "@/components/WithdrawalInput";
+import { CurrencyAmountInput } from "@/components/CurrencyAmountInput";
+import { useWalletBalance } from "@/hooks/useWalletBalance";
 
 export default function WithdrawPage() {
   const navigate = useNavigate();
   const { stats } = useDashboard();
+  const { balance: walletBalance } = useWalletBalance();
   const balance = stats.walletBalance;
 
+  const [selectedCurrency, setSelectedCurrency] = useState<"hbar" | "usdc">("hbar");
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<"bank_transfer" | "hedera" | "usdc">(
     "bank_transfer"
@@ -89,6 +92,8 @@ export default function WithdrawPage() {
         {
           body: {
             amount_ngn: Number(amount),
+            currency_type: selectedCurrency,
+            currency_amount: Number(amount),
             withdrawal_method: method,
             bank_details:
               method === "bank_transfer"
@@ -167,23 +172,40 @@ export default function WithdrawPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Amount */}
-
-              <WithdrawalInput />
-
+              {/* Amount and Currency */}
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount (₦)</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  min="1"
-                  max={balance}
-                  required
-                  className="h-12 text-lg"
+                <Label>Select Currency and Amount</Label>
+                <CurrencyAmountInput
+                  currencies={[
+                    {
+                      id: 'hbar',
+                      name: 'HBAR',
+                      icon: '/hedera.svg',
+                      balance: walletBalance?.balanceHbar || 0,
+                      balanceNgn: walletBalance?.balanceNgn || 0,
+                      color: 'purple'
+                    },
+                    {
+                      id: 'usdc',
+                      name: 'USDC',
+                      icon: '/usdc.svg',
+                      balance: walletBalance?.usdcBalance || 0,
+                      balanceNgn: walletBalance?.usdcBalanceNgn || 0,
+                      color: 'blue'
+                    }
+                  ]}
+                  selectedCurrency={selectedCurrency}
+                  onCurrencyChange={setSelectedCurrency}
+                  amount={amount}
+                  onAmountChange={setAmount}
+                  showMaxButton={true}
+                  showBalance={true}
+                  placeholder="0.00"
+                  error={parseFloat(amount) > (selectedCurrency === 'hbar' ? (walletBalance?.balanceHbar || 0) : (walletBalance?.usdcBalance || 0))}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Withdraw from your {selectedCurrency.toUpperCase()} balance
+                </p>
               </div>
 
               {/* Withdrawal Method */}

@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/context/AuthContext";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
-import CurrencySelector from "./CurrencySelector";
+import { CurrencyAmountInput } from "./CurrencyAmountInput";
 
 interface FundWalletModalProps {
   open: boolean;
@@ -111,19 +111,6 @@ export default function FundWalletModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Currency Selection */}
-          <div className="space-y-3">
-            <Label className="text-base">Select Currency</Label>
-            <CurrencySelector
-              selectedCurrency={selectedCurrency}
-              onCurrencyChange={setSelectedCurrency}
-              hbarBalance={0}
-              hbarBalanceNgn={0}
-              usdcBalance={0}
-              usdcBalanceNgn={0}
-              showBalances={false}
-            />
-          </div>
 
           {/* USDC Association Check */}
           {selectedCurrency === "usdc" && !usdcAssociated && (
@@ -193,6 +180,38 @@ export default function FundWalletModal({
           {/* External Transfer Instructions */}
           {method === "external" && (
             <Card className="p-6 space-y-4 bg-muted/30">
+              <div className="space-y-3 mb-4">
+                <Label>Select Currency to Receive</Label>
+                <CurrencyAmountInput
+                  currencies={[
+                    {
+                      id: 'hbar',
+                      name: 'HBAR',
+                      icon: '/hedera.svg',
+                      balance: 0,
+                      balanceNgn: 0,
+                      color: 'purple'
+                    },
+                    {
+                      id: 'usdc',
+                      name: 'USDC',
+                      icon: '/usdc.svg',
+                      balance: 0,
+                      balanceNgn: 0,
+                      color: 'blue'
+                    }
+                  ]}
+                  selectedCurrency={selectedCurrency}
+                  onCurrencyChange={setSelectedCurrency}
+                  amount=""
+                  onAmountChange={() => {}}
+                  showMaxButton={false}
+                  showBalance={false}
+                  placeholder="Currency selection only"
+                  disabled={true}
+                />
+              </div>
+
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Wallet className="h-4 w-4" />
                 <span>Your Hedera Account</span>
@@ -254,16 +273,33 @@ export default function FundWalletModal({
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Amount (₦)</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    placeholder="Enter amount in Naira"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    min="1000"
-                    required
-                    className="h-11"
+                  <Label>Amount in Naira</Label>
+                  <CurrencyAmountInput
+                    currencies={[
+                      {
+                        id: 'hbar',
+                        name: 'HBAR',
+                        icon: '/hedera.svg',
+                        balance: 0,
+                        balanceNgn: HBAR_TO_NGN_RATE,
+                        color: 'purple'
+                      },
+                      {
+                        id: 'usdc',
+                        name: 'USDC',
+                        icon: '/usdc.svg',
+                        balance: 0,
+                        balanceNgn: USDC_TO_NGN_RATE,
+                        color: 'blue'
+                      }
+                    ]}
+                    selectedCurrency={selectedCurrency}
+                    onCurrencyChange={setSelectedCurrency}
+                    amount={amount}
+                    onAmountChange={setAmount}
+                    showMaxButton={false}
+                    showBalance={false}
+                    placeholder="1,000"
                   />
                   <p className="text-xs text-muted-foreground">Minimum: ₦1,000</p>
                 </div>
@@ -274,7 +310,7 @@ export default function FundWalletModal({
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">You will receive</span>
                         <span className="text-lg font-bold text-primary">
-                          ~{cryptoAmount.toFixed(selectedCurrency === "hbar" ? 2 : 2)}{" "}
+                          ~{cryptoAmount.toFixed(selectedCurrency === "hbar" ? 2 : 6)}{" "}
                           {selectedCurrency.toUpperCase()}
                         </span>
                       </div>
