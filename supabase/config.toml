@@ -15,3 +15,7 @@ verify_jwt = true
 verify_jwt = false
 [functions.create-maintenance-proposal]
 verify_jwt = true
+[functions.create-property-treasury]
+verify_jwt = false
+[functions.generate-mock-property-event]
+verify_jwt = false
