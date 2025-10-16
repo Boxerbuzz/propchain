@@ -1,10 +1,13 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PropertyEventSimulator } from "@/components/PropertyEventSimulator";
+import { MockDataGenerator } from "@/components/MockDataGenerator";
 
 const EventSimulator = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const propertyId = searchParams.get("propertyId");
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -25,6 +28,10 @@ const EventSimulator = () => {
           <p className="text-muted-foreground mt-2">
             Record property inspections, rentals, and purchase transactions on the Hedera blockchain
           </p>
+        </div>
+
+        <div className="grid gap-6 mb-6">
+          {propertyId && <MockDataGenerator propertyId={propertyId} />}
         </div>
 
         <PropertyEventSimulator />

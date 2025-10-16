@@ -1782,6 +1782,81 @@ export type Database = {
           },
         ]
       }
+      property_treasury_transactions: {
+        Row: {
+          amount_ngn: number
+          amount_usdc: number | null
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          exchange_rate: number | null
+          hedera_transaction_id: string | null
+          id: string
+          metadata: Json | null
+          paystack_reference: string | null
+          property_id: string | null
+          source_event_id: string | null
+          source_type: string
+          status: string | null
+          tokenization_id: string | null
+          transaction_type: string
+        }
+        Insert: {
+          amount_ngn: number
+          amount_usdc?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          exchange_rate?: number | null
+          hedera_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          paystack_reference?: string | null
+          property_id?: string | null
+          source_event_id?: string | null
+          source_type: string
+          status?: string | null
+          tokenization_id?: string | null
+          transaction_type: string
+        }
+        Update: {
+          amount_ngn?: number
+          amount_usdc?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          exchange_rate?: number | null
+          hedera_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          paystack_reference?: string | null
+          property_id?: string | null
+          source_event_id?: string | null
+          source_type?: string
+          status?: string | null
+          tokenization_id?: string | null
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_treasury_transactions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_treasury_transactions_tokenization_id_fkey"
+            columns: ["tokenization_id"]
+            isOneToOne: false
+            referencedRelation: "tokenizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_settings: {
         Row: {
           description: string | null
@@ -1934,7 +2009,15 @@ export type Database = {
           token_symbol: string | null
           tokenization_type: string
           tokens_sold: number | null
+          total_revenue_received_ngn: number | null
+          total_revenue_received_usdc: number | null
           total_supply: number
+          treasury_account_id: string | null
+          treasury_account_private_key_vault_id: string | null
+          treasury_balance_hbar: number | null
+          treasury_balance_ngn: number | null
+          treasury_balance_usdc: number | null
+          treasury_created_at: string | null
           type_specific_terms: Json | null
           updated_at: string | null
           use_of_funds: Json | null
@@ -1977,7 +2060,15 @@ export type Database = {
           token_symbol?: string | null
           tokenization_type?: string
           tokens_sold?: number | null
+          total_revenue_received_ngn?: number | null
+          total_revenue_received_usdc?: number | null
           total_supply: number
+          treasury_account_id?: string | null
+          treasury_account_private_key_vault_id?: string | null
+          treasury_balance_hbar?: number | null
+          treasury_balance_ngn?: number | null
+          treasury_balance_usdc?: number | null
+          treasury_created_at?: string | null
           type_specific_terms?: Json | null
           updated_at?: string | null
           use_of_funds?: Json | null
@@ -2020,7 +2111,15 @@ export type Database = {
           token_symbol?: string | null
           tokenization_type?: string
           tokens_sold?: number | null
+          total_revenue_received_ngn?: number | null
+          total_revenue_received_usdc?: number | null
           total_supply?: number
+          treasury_account_id?: string | null
+          treasury_account_private_key_vault_id?: string | null
+          treasury_balance_hbar?: number | null
+          treasury_balance_ngn?: number | null
+          treasury_balance_usdc?: number | null
+          treasury_created_at?: string | null
           type_specific_terms?: Json | null
           updated_at?: string | null
           use_of_funds?: Json | null

@@ -277,6 +277,43 @@ serve(async (req) => {
         `[TOKENIZATION-APPROVED] ✅ Tokenization ${record.id} successfully activated with token ID: ${tokenResult.data.tokenId}`
       );
 
+      // Create property treasury account
+      console.log(`[TOKENIZATION-APPROVED] 🏦 Creating property treasury account...`);
+      try {
+        const treasuryResponse = await fetch(
+          `${Deno.env.get("SUPABASE_URL")}/functions/v1/create-property-treasury`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              tokenization_id: record.id,
+            }),
+          }
+        );
+
+        const treasuryResult = await treasuryResponse.json();
+        console.log(`[TOKENIZATION-APPROVED] 📤 Treasury creation response:`, treasuryResult);
+
+        if (treasuryResult.success) {
+          console.log(
+            `[TOKENIZATION-APPROVED] ✅ Treasury account created: ${treasuryResult.data.treasury_account_id}`
+          );
+        } else {
+          console.error(
+            `[TOKENIZATION-APPROVED] ⚠️ Treasury creation failed (non-critical):`,
+            treasuryResult.error
+          );
+        }
+      } catch (treasuryError) {
+        console.error(
+          `[TOKENIZATION-APPROVED] ⚠️ Treasury creation error (non-critical):`,
+          treasuryError
+        );
+      }
+
       return new Response(
         JSON.stringify({
           success: true,
