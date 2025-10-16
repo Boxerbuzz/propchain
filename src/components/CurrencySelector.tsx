@@ -107,7 +107,8 @@ export default function CurrencySelector({
                     {currency.name}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    ≈ ₦{currency.balanceNgn.toLocaleString(undefined, {
+                    ≈ ₦
+                    {currency.balanceNgn.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}

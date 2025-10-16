@@ -167,9 +167,9 @@ export default function Header() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative hover:bg-muted/50 transition-colors"
+                  className="relative hover:bg-muted/50 transition-colors border border-border rounded-full"
                 >
-                  <Bell className="h-5 w-5" />
+                  <Bell className="h-5 w-5 text-black dark:text-white" />
                   {notifications.filter((n) => !n.read_at).length > 0 && (
                     <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-destructive">
                       {notifications.filter((n) => !n.read_at).length}

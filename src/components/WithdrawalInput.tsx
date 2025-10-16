@@ -194,7 +194,7 @@ export function WithdrawalInput() {
         <FieldLabel htmlFor="notion-prompt" className="sr-only">
           Prompt
         </FieldLabel>
-        <InputGroup >
+        <InputGroup>
           <InputGroupTextarea
             id="notion-prompt"
             placeholder="Ask, search, or make anything..."
