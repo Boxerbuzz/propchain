@@ -183,17 +183,22 @@ export function WithdrawalInput() {
 
   const hasMentions = mentions.length > 0;
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("Form submitted");
+  };
+
   return (
     <TooltipProvider>
-      <form className="[--radius:1.2rem]">
-        <Field>
-          <FieldLabel htmlFor="notion-prompt" className="sr-only">
-            Prompt
-          </FieldLabel>
-          <InputGroup>
+      <Field>
+        <FieldLabel htmlFor="notion-prompt" className="sr-only">
+          Prompt
+        </FieldLabel>
+        <InputGroup >
           <InputGroupTextarea
             id="notion-prompt"
             placeholder="Ask, search, or make anything..."
+            className="focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           <InputGroupAddon align="block-start">
             <Popover
@@ -217,7 +222,10 @@ export function WithdrawalInput() {
                 </TooltipTrigger>
                 <TooltipContent>Mention a person, page, or date</TooltipContent>
               </Tooltip>
-              <PopoverContent className="p-0 [--radius:1.2rem]" align="start">
+              <PopoverContent
+                className="w-[300px] p-0 [--radius:1.2rem]"
+                align="start"
+              >
                 <Command>
                   <CommandInput placeholder="Search pages..." />
                   <CommandList>
@@ -446,7 +454,6 @@ export function WithdrawalInput() {
           </InputGroupAddon>
         </InputGroup>
       </Field>
-    </form>
     </TooltipProvider>
   );
 }

@@ -17,7 +17,7 @@
     --secondary-hover: 160 84% 32%; /* Emerald 700 */
     --secondary-foreground: 0 0% 100%;
 
-    --accent: 200 98% 39%;         /* #0369a1 - Sky 700 */
+    --accent: 0 0% 15%;         /* - Light Grey */
     --accent-foreground: 0 0% 100%;
 
     --success: 142 76% 47%;        /* #22c55e - Green 500 */
@@ -200,5 +200,20 @@
   /* 3D Card Stack Utilities */
   .perspective-1000 {
     perspective: 1000px;
+  }
+}
+
+
+/* Withdrawal Input Styles */
+.withdrawal-input {
+  @apply bg-background-muted border border-border rounded-lg p-6;
+}
+
+@layer utilities {
+  .withdrawal-input-group {
+    @apply bg-background-muted border border-border rounded-lg p-6;
+  }
+  .radix-popper-content {
+    z-index: 50 !important;
   }
 }

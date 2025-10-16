@@ -383,7 +383,6 @@ const WalletDashboard = () => {
             </p>
           </div>
           <div className="flex gap-3 mt-4 md:mt-0">
-           
             <Button
               variant="outline"
               size="sm"
