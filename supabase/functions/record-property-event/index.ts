@@ -38,16 +38,35 @@ serve(async (req) => {
       throw new Error("No authorization header");
     }
 
-    const { data: userData, error: userError } = await supabase.auth.getUser(
-      authHeader.replace("Bearer ", "")
-    );
-
-    if (userError || !userData.user) {
-      throw new Error("Unauthorized");
-    }
+    const token = authHeader.replace("Bearer ", "");
+    const isServiceRole = token === supabaseServiceKey;
 
     const requestData: PropertyEventRequest = await req.json();
     const { property_id, event_type, event_data } = requestData;
+
+    let userId: string;
+
+    if (isServiceRole) {
+      // Service-to-service call - get user from property owner
+      console.log(`[RECORD-EVENT] Service role call - getting owner for property ${property_id}`);
+      const { data: property, error: propError } = await supabase
+        .from("properties")
+        .select("owner_id")
+        .eq("id", property_id)
+        .single();
+      
+      if (propError || !property) {
+        throw new Error("Property not found");
+      }
+      userId = property.owner_id;
+    } else {
+      // User-initiated call - validate JWT
+      const { data: userData, error: userError } = await supabase.auth.getUser(token);
+      if (userError || !userData.user) {
+        throw new Error("Unauthorized");
+      }
+      userId = userData.user.id;
+    }
 
     console.log(`[RECORD-EVENT] Recording ${event_type} event for property ${property_id}`);
 
@@ -62,8 +81,8 @@ serve(async (req) => {
       throw new Error("Property not found");
     }
 
-    // Verify user owns the property
-    if (property.owner_id !== userData.user.id) {
+    // Verify user owns the property (unless service role)
+    if (!isServiceRole && property.owner_id !== userId) {
       throw new Error("You don't have permission to record events for this property");
     }
 
@@ -86,7 +105,7 @@ serve(async (req) => {
         event_type,
         event_status: "completed",
         event_date: new Date().toISOString(),
-        conducted_by: userData.user.id,
+        conducted_by: userId,
         conducted_by_name: event_data.conductor_name || "",
         conducted_by_company: event_data.conductor_company || "",
         event_details: event_data,
@@ -95,7 +114,7 @@ serve(async (req) => {
         hcs_topic_id: property.hcs_topic_id,
         notes: event_data.notes || "",
         summary: eventSummary,
-        created_by: userData.user.id,
+        created_by: userId,
       })
       .select()
       .single();
@@ -241,7 +260,7 @@ serve(async (req) => {
       summary: eventSummary,
       details: event_data,
       recorded_by: {
-        user_id: userData.user.id,
+        user_id: userId,
         name: event_data.conductor_name || "Unknown",
       },
     };
@@ -281,7 +300,7 @@ serve(async (req) => {
 
     // Create activity log
     await supabase.from("activity_logs").insert({
-      user_id: userData.user.id,
+      user_id: userId,
       property_id,
       activity_type: `property_${event_type}`,
       activity_category: "property_event",
