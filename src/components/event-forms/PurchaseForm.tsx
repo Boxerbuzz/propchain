@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useCreatePropertyEvent } from "@/hooks/usePropertyEvents";
 import { Loader2, Sparkles } from "lucide-react";
 import { useMockDataPrefill } from "@/hooks/useMockDataPrefill";
+import MoneyInput from "@/components/ui/money-input";
 
 interface PurchaseFormProps {
   propertyId: string;
@@ -147,22 +148,18 @@ export const PurchaseForm = ({ propertyId, propertyTitle }: PurchaseFormProps) =
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Purchase Price (₦) *</Label>
-                <Input
-                  type="number"
-                  min="0"
+                <MoneyInput
                   required
                   value={formData.purchase_price_ngn}
-                  onChange={(e) => setFormData({ ...formData, purchase_price_ngn: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(value) => setFormData({ ...formData, purchase_price_ngn: value || 0 })}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label>Purchase Price (USD)</Label>
-                <Input
-                  type="number"
-                  min="0"
+                <MoneyInput
                   value={formData.purchase_price_usd}
-                  onChange={(e) => setFormData({ ...formData, purchase_price_usd: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(value) => setFormData({ ...formData, purchase_price_usd: value || 0 })}
                 />
               </div>
 
@@ -229,21 +226,17 @@ export const PurchaseForm = ({ propertyId, propertyTitle }: PurchaseFormProps) =
 
               <div className="space-y-2">
                 <Label>Down Payment (₦)</Label>
-                <Input
-                  type="number"
-                  min="0"
+                <MoneyInput
                   value={formData.down_payment_ngn}
-                  onChange={(e) => setFormData({ ...formData, down_payment_ngn: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(value) => setFormData({ ...formData, down_payment_ngn: value || 0 })}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label>Remaining Balance (₦)</Label>
-                <Input
-                  type="number"
-                  min="0"
+                <MoneyInput
                   value={formData.remaining_balance_ngn}
-                  onChange={(e) => setFormData({ ...formData, remaining_balance_ngn: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(value) => setFormData({ ...formData, remaining_balance_ngn: value || 0 })}
                 />
               </div>
             </div>

@@ -63,6 +63,7 @@ export function useMockDataPrefill() {
   const generateMockRental = () => {
     const tenant = generateName();
     const rentAmount = randomRange(150000, 800000);
+    const securityDeposit = rentAmount * 2;
     
     return {
       rental_type: randomChoice(["long_term", "short_term", "commercial"]),
@@ -71,16 +72,16 @@ export function useMockDataPrefill() {
       tenant_phone: generatePhone(),
       tenant_id_number: `NIN${randomDigits(11)}`,
       monthly_rent_ngn: rentAmount,
-      security_deposit_ngn: rentAmount * 2,
-      agency_fee_ngn: rentAmount * 0.1,
-      legal_fee_ngn: rentAmount * 0.05,
+      security_deposit_ngn: securityDeposit,
+      agency_fee_ngn: Math.round(rentAmount * 0.1),
+      legal_fee_ngn: Math.round(rentAmount * 0.05),
       start_date: futureDate(1, 30),
       end_date: futureDate(365, 730),
       lease_duration_months: randomChoice([12, 24, 36]),
       payment_method: randomChoice(["bank_transfer", "cash", "check"]),
       payment_status: "completed",
-      amount_paid_ngn: rentAmount + (rentAmount * 2),
-      special_terms: randomChoice([null, "Includes water bill", "Pet-friendly", "Renewable annually"]),
+      amount_paid_ngn: rentAmount + securityDeposit,
+      special_terms: randomChoice(["", "Includes water bill", "Pet-friendly", "Renewable annually"]),
       notes: randomChoice([
         "Tenant has excellent credit history",
         "Lease includes option to renew",
@@ -94,6 +95,7 @@ export function useMockDataPrefill() {
   const generateMockPurchase = () => {
     const buyer = generateName();
     const purchasePrice = randomRange(5000000, 50000000);
+    const downPayment = Math.round(purchasePrice * 0.3);
     
     return {
       transaction_type: randomChoice(["full_purchase", "partial_sellout", "token_buyback"]),
@@ -103,13 +105,13 @@ export function useMockDataPrefill() {
       buyer_id_number: `NIN${randomDigits(11)}`,
       seller_name: randomChoice(["PropChain Platform", "Previous Owner", "Estate Trust"]),
       purchase_price_ngn: purchasePrice,
-      purchase_price_usd: purchasePrice / 1500,
+      purchase_price_usd: Math.round(purchasePrice / 1500),
       tokens_involved: randomRange(100, 10000),
       percentage_sold: randomRange(5, 100),
       payment_method: randomChoice(["bank_transfer", "cash", "mortgage"]),
       payment_plan: randomChoice(["outright", "installment", "mortgage"]),
-      down_payment_ngn: purchasePrice * 0.3,
-      remaining_balance_ngn: purchasePrice * 0.7,
+      down_payment_ngn: downPayment,
+      remaining_balance_ngn: purchasePrice - downPayment,
       transaction_status: "completed",
       completion_date: futureDate(30, 90),
       notes: randomChoice([

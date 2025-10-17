@@ -4,9 +4,11 @@ import { cn } from '@/lib/utils';
 
 interface MoneyInputProps {
   value: number;
-  onChange: (value: number) => void;
+  onChange?: (value: number) => void;
+  onValueChange?: (value: number) => void;
   placeholder?: string;
   disabled?: boolean;
+  required?: boolean;
   className?: string;
   currency?: string;
   min?: number;
@@ -16,8 +18,10 @@ interface MoneyInputProps {
 const MoneyInput: React.FC<MoneyInputProps> = ({
   value,
   onChange,
+  onValueChange,
   placeholder = '0',
   disabled = false,
+  required = false,
   className,
   currency = '₦',
   min,
@@ -49,7 +53,8 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
     // Allow completely empty input
     if (inputValue === '' || inputValue === currency) {
       setDisplayValue('');
-      onChange(0);
+      if (onChange) onChange(0);
+      if (onValueChange) onValueChange(0);
       return;
     }
     
@@ -65,7 +70,8 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
     }
     
     setDisplayValue(formatNumber(constrainedValue));
-    onChange(constrainedValue);
+    if (onChange) onChange(constrainedValue);
+    if (onValueChange) onValueChange(constrainedValue);
   };
 
   const handleBlur = () => {
@@ -86,6 +92,7 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
         onFocus={(e) => e.target.select()}
         placeholder={placeholder}
         disabled={disabled}
+        required={required}
         className={cn("pl-8", className)}
       />
     </div>

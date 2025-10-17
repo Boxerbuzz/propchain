@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useCreatePropertyEvent } from "@/hooks/usePropertyEvents";
 import { Loader2, Sparkles } from "lucide-react";
 import { useMockDataPrefill } from "@/hooks/useMockDataPrefill";
+import MoneyInput from "@/components/ui/money-input";
 
 interface RentalFormProps {
   propertyId: string;
@@ -138,42 +139,34 @@ export const RentalForm = ({ propertyId, propertyTitle }: RentalFormProps) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Monthly Rent (₦) *</Label>
-                <Input
-                  type="number"
-                  min="0"
+                <MoneyInput
                   required
                   value={formData.monthly_rent_ngn}
-                  onChange={(e) => setFormData({ ...formData, monthly_rent_ngn: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(value) => setFormData({ ...formData, monthly_rent_ngn: value || 0 })}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label>Security Deposit (₦)</Label>
-                <Input
-                  type="number"
-                  min="0"
+                <MoneyInput
                   value={formData.security_deposit_ngn}
-                  onChange={(e) => setFormData({ ...formData, security_deposit_ngn: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(value) => setFormData({ ...formData, security_deposit_ngn: value || 0 })}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label>Agency Fee (₦)</Label>
-                <Input
-                  type="number"
-                  min="0"
+                <MoneyInput
                   value={formData.agency_fee_ngn}
-                  onChange={(e) => setFormData({ ...formData, agency_fee_ngn: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(value) => setFormData({ ...formData, agency_fee_ngn: value || 0 })}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label>Legal Fee (₦)</Label>
-                <Input
-                  type="number"
-                  min="0"
+                <MoneyInput
                   value={formData.legal_fee_ngn}
-                  onChange={(e) => setFormData({ ...formData, legal_fee_ngn: parseFloat(e.target.value) || 0 })}
+                  onValueChange={(value) => setFormData({ ...formData, legal_fee_ngn: value || 0 })}
                 />
               </div>
             </div>
@@ -252,11 +245,9 @@ export const RentalForm = ({ propertyId, propertyTitle }: RentalFormProps) => {
 
             <div className="space-y-2">
               <Label>Amount Paid (₦)</Label>
-              <Input
-                type="number"
-                min="0"
+              <MoneyInput
                 value={formData.amount_paid_ngn}
-                onChange={(e) => setFormData({ ...formData, amount_paid_ngn: parseFloat(e.target.value) || 0 })}
+                onValueChange={(value) => setFormData({ ...formData, amount_paid_ngn: value || 0 })}
               />
             </div>
           </div>

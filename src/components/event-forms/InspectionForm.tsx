@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useCreatePropertyEvent } from "@/hooks/usePropertyEvents";
 import { Loader2, Sparkles } from "lucide-react";
 import { useMockDataPrefill } from "@/hooks/useMockDataPrefill";
+import MoneyInput from "@/components/ui/money-input";
 
 interface InspectionFormProps {
   propertyId: string;
@@ -162,31 +163,25 @@ export const InspectionForm = ({ propertyId, propertyTitle }: InspectionFormProp
 
             <div className="space-y-2">
               <Label>Estimated Repair Cost (₦)</Label>
-              <Input
-                type="number"
-                min="0"
+              <MoneyInput
                 value={formData.estimated_repair_cost}
-                onChange={(e) => setFormData({ ...formData, estimated_repair_cost: parseFloat(e.target.value) || 0 })}
+                onValueChange={(value) => setFormData({ ...formData, estimated_repair_cost: value || 0 })}
               />
             </div>
 
             <div className="space-y-2">
               <Label>Market Value Estimate (₦)</Label>
-              <Input
-                type="number"
-                min="0"
+              <MoneyInput
                 value={formData.market_value_estimate}
-                onChange={(e) => setFormData({ ...formData, market_value_estimate: parseFloat(e.target.value) || 0 })}
+                onValueChange={(value) => setFormData({ ...formData, market_value_estimate: value || 0 })}
               />
             </div>
 
             <div className="space-y-2">
               <Label>Rental Value Estimate (₦/month)</Label>
-              <Input
-                type="number"
-                min="0"
+              <MoneyInput
                 value={formData.rental_value_estimate}
-                onChange={(e) => setFormData({ ...formData, rental_value_estimate: parseFloat(e.target.value) || 0 })}
+                onValueChange={(value) => setFormData({ ...formData, rental_value_estimate: value || 0 })}
               />
             </div>
           </div>
