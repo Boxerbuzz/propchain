@@ -13,6 +13,7 @@ import { RentalForm } from "./event-forms/RentalForm";
 import { PurchaseForm } from "./event-forms/PurchaseForm";
 import { MaintenanceForm } from "./event-forms/MaintenanceForm";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MockDataGenerator } from "@/components/MockDataGenerator";
 
 export const PropertyEventSimulator = () => {
   const [selectedProperty, setSelectedProperty] = useState<string>("");
@@ -108,42 +109,50 @@ export const PropertyEventSimulator = () => {
             )}
 
             {selectedProperty && (
-              <Tabs defaultValue="inspection" className="mt-6">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="inspection" className="flex items-center gap-2">
-                    <ClipboardCheck className="w-4 h-4" />
-                    Inspection
-                  </TabsTrigger>
-                  <TabsTrigger value="rental" className="flex items-center gap-2">
-                    <Home className="w-4 h-4" />
-                    Rental
-                  </TabsTrigger>
-                  <TabsTrigger value="purchase" className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    Purchase
-                  </TabsTrigger>
-                  <TabsTrigger value="maintenance" className="flex items-center gap-2">
-                    <Wrench className="w-4 h-4" />
-                    Maintenance
-                  </TabsTrigger>
-                </TabsList>
+              <>
+                {/* Mock Data Generator */}
+                <div className="mb-6">
+                  <MockDataGenerator propertyId={selectedProperty} />
+                </div>
 
-                <TabsContent value="inspection" className="mt-6">
-                  <InspectionForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
-                </TabsContent>
+                {/* Manual Event Forms */}
+                <Tabs defaultValue="inspection">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="inspection" className="flex items-center gap-2">
+                      <ClipboardCheck className="w-4 h-4" />
+                      Inspection
+                    </TabsTrigger>
+                    <TabsTrigger value="rental" className="flex items-center gap-2">
+                      <Home className="w-4 h-4" />
+                      Rental
+                    </TabsTrigger>
+                    <TabsTrigger value="purchase" className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4" />
+                      Purchase
+                    </TabsTrigger>
+                    <TabsTrigger value="maintenance" className="flex items-center gap-2">
+                      <Wrench className="w-4 h-4" />
+                      Maintenance
+                    </TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value="rental" className="mt-6">
-                  <RentalForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
-                </TabsContent>
+                  <TabsContent value="inspection" className="mt-6">
+                    <InspectionForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
+                  </TabsContent>
 
-                <TabsContent value="purchase" className="mt-6">
-                  <PurchaseForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
-                </TabsContent>
+                  <TabsContent value="rental" className="mt-6">
+                    <RentalForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
+                  </TabsContent>
 
-                <TabsContent value="maintenance" className="mt-6">
-                  <MaintenanceForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
-                </TabsContent>
-              </Tabs>
+                  <TabsContent value="purchase" className="mt-6">
+                    <PurchaseForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
+                  </TabsContent>
+
+                  <TabsContent value="maintenance" className="mt-6">
+                    <MaintenanceForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
+                  </TabsContent>
+                </Tabs>
+              </>
             )}
 
             {!selectedProperty && (

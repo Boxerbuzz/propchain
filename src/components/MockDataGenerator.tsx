@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, CheckCircle2, XCircle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, Sparkles, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,6 +16,7 @@ interface MockDataGeneratorProps {
 
 export const MockDataGenerator = ({ propertyId }: MockDataGeneratorProps) => {
   const [eventType, setEventType] = useState<string>("rental");
+  const [autoMode, setAutoMode] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch recent mock events
@@ -76,41 +78,72 @@ export const MockDataGenerator = ({ propertyId }: MockDataGeneratorProps) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Event Type Selector */}
-          <div className="space-y-2">
-            <Label htmlFor="event-type">Event Type</Label>
-            <Select value={eventType} onValueChange={setEventType}>
-              <SelectTrigger id="event-type">
-                <SelectValue placeholder="Select event type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="rental">💰 Rental Payment</SelectItem>
-                <SelectItem value="purchase">🏠 Property Purchase</SelectItem>
-                <SelectItem value="inspection">🔍 Property Inspection</SelectItem>
-                <SelectItem value="maintenance">🔧 Maintenance Work</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Auto/Manual Mode Toggle */}
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+            <div className="space-y-0.5">
+              <Label htmlFor="auto-mode" className="text-sm font-medium">
+                {autoMode ? "🤖 Auto Mode" : "✋ Manual Mode"}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {autoMode ? "Events generated automatically" : "Generate events manually"}
+              </p>
+            </div>
+            <Switch
+              id="auto-mode"
+              checked={autoMode}
+              onCheckedChange={setAutoMode}
+            />
           </div>
 
-          {/* Generate Button */}
-          <Button
-            onClick={handleGenerateEvent}
-            disabled={generateMockEvent.isPending}
-            className="w-full"
-            size="lg"
-          >
-            {generateMockEvent.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate Mock Event
-              </>
-            )}
-          </Button>
+          {!autoMode && (
+            <>
+              {/* Event Type Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="event-type">Event Type</Label>
+                <Select value={eventType} onValueChange={setEventType}>
+                  <SelectTrigger id="event-type">
+                    <SelectValue placeholder="Select event type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rental">💰 Rental Payment</SelectItem>
+                    <SelectItem value="purchase">🏠 Property Purchase</SelectItem>
+                    <SelectItem value="inspection">🔍 Property Inspection</SelectItem>
+                    <SelectItem value="maintenance">🔧 Maintenance Work</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Generate Button */}
+              <Button
+                onClick={handleGenerateEvent}
+                disabled={generateMockEvent.isPending}
+                className="w-full"
+                size="lg"
+              >
+                {generateMockEvent.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate Mock Event
+                  </>
+                )}
+              </Button>
+            </>
+          )}
+
+          {autoMode && (
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg text-center">
+              <Sparkles className="w-8 h-8 mx-auto mb-2 text-primary" />
+              <p className="text-sm font-medium">Auto mode enabled</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Mock events will be generated automatically in the background
+              </p>
+            </div>
+          )}
 
           {/* Info Box */}
           <div className="p-3 bg-muted rounded-lg text-sm space-y-1">
