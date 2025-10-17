@@ -9,8 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCreatePropertyEvent } from "@/hooks/usePropertyEvents";
-import { Loader2, Wrench } from "lucide-react";
+import { Loader2, Wrench, Sparkles } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useMockDataPrefill } from "@/hooks/useMockDataPrefill";
 
 const maintenanceFormSchema = z.object({
   maintenance_type: z.enum(["routine", "emergency", "preventive", "corrective", "repair", "upgrade"]),
@@ -39,6 +40,7 @@ interface MaintenanceFormProps {
 export const MaintenanceForm = ({ propertyId, propertyTitle }: MaintenanceFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const createEvent = useCreatePropertyEvent();
+  const { generateMockMaintenance } = useMockDataPrefill();
 
   const form = useForm<MaintenanceFormValues>({
     resolver: zodResolver(maintenanceFormSchema),
@@ -364,16 +366,27 @@ export const MaintenanceForm = ({ propertyId, propertyTitle }: MaintenanceFormPr
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Recording Maintenance Event...
-                </>
-              ) : (
-                "Record Maintenance Event"
-              )}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset(generateMockMaintenance())}
+                className="flex-1"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate Mock Data
+              </Button>
+              <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Recording...
+                  </>
+                ) : (
+                  "Record Event"
+                )}
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>

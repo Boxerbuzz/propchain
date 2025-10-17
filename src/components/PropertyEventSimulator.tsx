@@ -5,7 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { ClipboardCheck, Home, DollarSign, Wrench, Check, ChevronsUpDown } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { ClipboardCheck, Home, DollarSign, Wrench, Check, ChevronsUpDown, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUserProperties } from "@/hooks/usePropertyManagement";
 import { InspectionForm } from "./event-forms/InspectionForm";
@@ -13,14 +16,67 @@ import { RentalForm } from "./event-forms/RentalForm";
 import { PurchaseForm } from "./event-forms/PurchaseForm";
 import { MaintenanceForm } from "./event-forms/MaintenanceForm";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MockDataGenerator } from "@/components/MockDataGenerator";
+import { useMockDataPrefill } from "@/hooks/useMockDataPrefill";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const PropertyEventSimulator = () => {
   const [selectedProperty, setSelectedProperty] = useState<string>("");
   const [open, setOpen] = useState(false);
+  const [autoMode, setAutoMode] = useState(false);
+  const [eventType, setEventType] = useState<string>("rental");
+  const [isGenerating, setIsGenerating] = useState(false);
+  
   const { data: properties = [], isLoading } = useUserProperties();
+  const { generateMockRental, generateMockPurchase, generateMockInspection, generateMockMaintenance } = useMockDataPrefill();
 
   const selectedProp = properties.find((p) => p.id === selectedProperty);
+
+  const handleAutoGenerate = async () => {
+    if (!selectedProperty) {
+      toast.error("Please select a property first");
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      let eventData;
+      switch (eventType) {
+        case "rental":
+          eventData = generateMockRental();
+          break;
+        case "purchase":
+          eventData = generateMockPurchase();
+          break;
+        case "inspection":
+          eventData = generateMockInspection();
+          break;
+        case "maintenance":
+          eventData = generateMockMaintenance();
+          break;
+        default:
+          throw new Error(`Invalid event type: ${eventType}`);
+      }
+
+      const { data, error } = await supabase.functions.invoke("record-property-event", {
+        body: {
+          property_id: selectedProperty,
+          event_type: eventType,
+          event_data: eventData,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Failed to generate event");
+      
+      toast.success(`Mock ${eventType} event recorded successfully! 🎉`);
+    } catch (error: any) {
+      toast.error(`Failed to generate event: ${error.message}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -110,48 +166,113 @@ export const PropertyEventSimulator = () => {
 
             {selectedProperty && (
               <>
-                {/* Mock Data Generator */}
-                <div className="mb-6">
-                  <MockDataGenerator propertyId={selectedProperty} />
+                {/* Auto/Manual Mode Toggle */}
+                <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="auto-mode" className="text-sm font-medium cursor-pointer">
+                      {autoMode ? "🤖 Auto Mode" : "✋ Manual Mode"}
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      {autoMode ? "Generate and record events automatically" : "Fill forms manually or with mock data"}
+                    </p>
+                  </div>
+                  <Switch
+                    id="auto-mode"
+                    checked={autoMode}
+                    onCheckedChange={setAutoMode}
+                  />
                 </div>
 
-                {/* Manual Event Forms */}
-                <Tabs defaultValue="inspection">
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="inspection" className="flex items-center gap-2">
-                      <ClipboardCheck className="w-4 h-4" />
-                      Inspection
-                    </TabsTrigger>
-                    <TabsTrigger value="rental" className="flex items-center gap-2">
-                      <Home className="w-4 h-4" />
-                      Rental
-                    </TabsTrigger>
-                    <TabsTrigger value="purchase" className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4" />
-                      Purchase
-                    </TabsTrigger>
-                    <TabsTrigger value="maintenance" className="flex items-center gap-2">
-                      <Wrench className="w-4 h-4" />
-                      Maintenance
-                    </TabsTrigger>
-                  </TabsList>
+                {/* Auto Mode UI */}
+                {autoMode && (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="event-type">Event Type</Label>
+                        <Select value={eventType} onValueChange={setEventType}>
+                          <SelectTrigger id="event-type">
+                            <SelectValue placeholder="Select event type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="rental">💰 Rental Payment</SelectItem>
+                            <SelectItem value="purchase">🏠 Property Purchase</SelectItem>
+                            <SelectItem value="inspection">🔍 Property Inspection</SelectItem>
+                            <SelectItem value="maintenance">🔧 Maintenance Work</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                  <TabsContent value="inspection" className="mt-6">
-                    <InspectionForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
-                  </TabsContent>
+                      <Button
+                        onClick={handleAutoGenerate}
+                        disabled={isGenerating}
+                        className="w-full"
+                        size="lg"
+                      >
+                        {isGenerating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Generating & Recording...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Generate & Record Event
+                          </>
+                        )}
+                      </Button>
 
-                  <TabsContent value="rental" className="mt-6">
-                    <RentalForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
-                  </TabsContent>
+                      <div className="p-3 bg-muted rounded-lg text-sm space-y-1">
+                        <p className="font-medium">What happens:</p>
+                        <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                          <li>Realistic mock data is generated</li>
+                          <li>Event is recorded to database</li>
+                          <li>Event is submitted to HCS blockchain</li>
+                          <li>Treasury transactions created (if applicable)</li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-                  <TabsContent value="purchase" className="mt-6">
-                    <PurchaseForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
-                  </TabsContent>
+                {/* Manual Mode UI */}
+                {!autoMode && (
+                  <Tabs defaultValue="inspection">
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="inspection" className="flex items-center gap-2">
+                        <ClipboardCheck className="w-4 h-4" />
+                        Inspection
+                      </TabsTrigger>
+                      <TabsTrigger value="rental" className="flex items-center gap-2">
+                        <Home className="w-4 h-4" />
+                        Rental
+                      </TabsTrigger>
+                      <TabsTrigger value="purchase" className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4" />
+                        Purchase
+                      </TabsTrigger>
+                      <TabsTrigger value="maintenance" className="flex items-center gap-2">
+                        <Wrench className="w-4 h-4" />
+                        Maintenance
+                      </TabsTrigger>
+                    </TabsList>
 
-                  <TabsContent value="maintenance" className="mt-6">
-                    <MaintenanceForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
-                  </TabsContent>
-                </Tabs>
+                    <TabsContent value="inspection" className="mt-6">
+                      <InspectionForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
+                    </TabsContent>
+
+                    <TabsContent value="rental" className="mt-6">
+                      <RentalForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
+                    </TabsContent>
+
+                    <TabsContent value="purchase" className="mt-6">
+                      <PurchaseForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
+                    </TabsContent>
+
+                    <TabsContent value="maintenance" className="mt-6">
+                      <MaintenanceForm propertyId={selectedProperty} propertyTitle={selectedProp?.title || ""} />
+                    </TabsContent>
+                  </Tabs>
+                )}
               </>
             )}
 

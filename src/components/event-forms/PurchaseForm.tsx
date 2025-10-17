@@ -6,7 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCreatePropertyEvent } from "@/hooks/usePropertyEvents";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
+import { useMockDataPrefill } from "@/hooks/useMockDataPrefill";
 
 interface PurchaseFormProps {
   propertyId: string;
@@ -15,6 +16,7 @@ interface PurchaseFormProps {
 
 export const PurchaseForm = ({ propertyId, propertyTitle }: PurchaseFormProps) => {
   const createEvent = useCreatePropertyEvent();
+  const { generateMockPurchase } = useMockDataPrefill();
   const [formData, setFormData] = useState({
     transaction_type: "full_purchase",
     buyer_name: "",
@@ -286,10 +288,21 @@ export const PurchaseForm = ({ propertyId, propertyTitle }: PurchaseFormProps) =
             />
           </div>
 
-          <Button type="submit" disabled={createEvent.isPending} className="w-full">
-            {createEvent.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Record Purchase on Blockchain
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setFormData(generateMockPurchase())}
+              className="flex-1"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Generate Mock Data
+            </Button>
+            <Button type="submit" disabled={createEvent.isPending} className="flex-1">
+              {createEvent.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Record Event
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </form>
