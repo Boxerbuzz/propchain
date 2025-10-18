@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Wallet,
-  TrendingUp,
   ArrowUpDown,
   RefreshCw,
   Eye,
@@ -290,7 +289,9 @@ export default function AccountDashboard() {
                           <span>••••</span>
                         )}
                       </p>
-                      <p className="text-xs text-muted-foreground text-left">Price</p>
+                      <p className="text-xs text-muted-foreground text-left">
+                        Price
+                      </p>
                     </div>
 
                     {/* Column 4: Amount & Equivalent */}
@@ -347,7 +348,9 @@ export default function AccountDashboard() {
                           <span>••••</span>
                         )}
                       </p>
-                      <p className="text-xs text-muted-foreground text-left">Price</p>
+                      <p className="text-xs text-muted-foreground text-left">
+                        Price
+                      </p>
                     </div>
 
                     {/* Column 4: Amount & Equivalent */}

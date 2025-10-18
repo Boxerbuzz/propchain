@@ -107,9 +107,9 @@ export default function AccountLayout() {
                   />
                 )}
               </Button>
-            </div>
+          </div>
           ))}
-        </div>
+          </div>
       </nav>
 
       {/* Bottom section */}
@@ -118,27 +118,27 @@ export default function AccountLayout() {
         <p className="text-xs text-muted-foreground text-center font-medium">
           Built on Hedera
         </p>
-      </div>
+          </div>
     </>
-  );
+        );
 
   return (
-    <div className="min-h-screen bg-background flex pt-16">
+    <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex w-64 bg-card border-r border-border flex-col fixed left-0 top-16 h-[calc(100vh-4rem)]">
         <SidebarContent />
-      </div>
+          </div>
 
       {/* Mobile Menu Button & Sheet */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetTrigger asChild>
-          <Button
-            variant="outline"
+            <Button
+              variant="outline"
             size="icon"
             className="fixed top-20 left-4 z-50 md:hidden"
-          >
+            >
             <Menu className="h-5 w-5" />
-          </Button>
+            </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
           <div className="flex flex-col h-full">
@@ -160,10 +160,10 @@ export default function AccountLayout() {
           <div className="hidden md:block fixed left-64 top-16 h-[calc(100vh-4rem)] w-64 bg-card border-r border-border shadow-xl z-50 animate-in slide-in-from-left">
             <div className="p-6 border-b border-border">
               <h3 className="font-semibold">Tokens</h3>
-              <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                 Manage your assets
-              </p>
-            </div>
+                      </p>
+                    </div>
             <nav className="p-4">
               <div className="space-y-2">
                 {tokensSubmenu.map((item) => (
@@ -182,8 +182,8 @@ export default function AccountLayout() {
                     <item.icon className="h-5 w-5 mr-3" />
                     {item.name}
                   </Button>
-                ))}
-              </div>
+                  ))}
+                </div>
             </nav>
           </div>
         </>

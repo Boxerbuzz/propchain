@@ -111,7 +111,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50 font-spartan">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border font-spartan">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link

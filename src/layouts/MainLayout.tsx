@@ -5,7 +5,7 @@ export default function MainLayout() {
   return (
     <div className="min-h-screen bg-background font-spartan">
       <Header />
-      <main>
+      <main className="pt-16">
         <Outlet />
       </main>
     </div>
