@@ -17,7 +17,7 @@
     --secondary-hover: 160 84% 32%; /* Emerald 700 */
     --secondary-foreground: 0 0% 100%;
 
-    --accent: 0 1% 15%;         /* - Light Grey */
+    --accent: 0, 0%, 92.0%;         /* - Light Grey */
     --accent-foreground: 0 0% 100%;
 
     --success: 142 76% 47%;        /* #22c55e - Green 500 */
