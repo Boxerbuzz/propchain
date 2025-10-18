@@ -35,6 +35,7 @@ import AccountDashboard from "./pages/account/Dashboard";
 import Discovery from "./pages/account/Discovery";
 import TokenDetail from "./pages/account/TokenDetail";
 import BuyTokens from "./pages/account/tokens/Buy";
+import SellTokens from "./pages/account/tokens/Sell";
 import SendTokens from "./pages/account/tokens/Send";
 import SwapTokens from "./pages/account/tokens/Swap";
 import PropertyManagement from "./pages/property/Management";
@@ -125,6 +126,7 @@ const App = () => (
                   <Route path="discovery" element={<Discovery />} />
                   <Route path="discovery/:tokenId" element={<TokenDetail />} />
                   <Route path="tokens/buy" element={<BuyTokens />} />
+                  <Route path="tokens/sell" element={<SellTokens />} />
                   <Route path="tokens/send" element={<SendTokens />} />
                   <Route path="tokens/swap" element={<SwapTokens />} />
                 </Route>

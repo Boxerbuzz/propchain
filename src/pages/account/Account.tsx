@@ -45,6 +45,11 @@ export default function AccountLayout() {
       icon: Download,
     },
     {
+      name: "Sell",
+      href: "/account/tokens/sell",
+      icon: Send,
+    },
+    {
       name: "Send",
       href: "/account/tokens/send",
       icon: Send,

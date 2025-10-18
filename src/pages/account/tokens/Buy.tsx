@@ -1,12 +1,18 @@
+import { TokenSwapCard } from "@/components/account/TokenSwapCard";
+
 export default function BuyTokens() {
   return (
-    <div className="p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4">Buy Tokens</h1>
-        <p className="text-muted-foreground">Purchase HBAR and USDC</p>
-        {/* Content will be added later */}
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2">Buy Tokens</h1>
+          <p className="text-muted-foreground">
+            Purchase HBAR or USDC with your preferred payment method
+          </p>
+        </div>
+        
+        <TokenSwapCard defaultTab="buy" />
       </div>
     </div>
   );
 }
-
