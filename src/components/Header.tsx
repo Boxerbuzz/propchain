@@ -37,6 +37,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CurrencyToggle } from "@/components/CurrencyToggle";
+import logo from "@/assets/logo.png";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -118,11 +119,11 @@ export default function Header() {
           to="/"
           className="flex items-center space-x-3 hover:scale-105 transition-transform duration-200"
         >
-          <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-hover rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-primary-foreground font-bold text-lg">
-              PC
-            </span>
-          </div>
+          <img
+            src={logo}
+            alt="PropChain"
+            className="h-8 w-auto"
+          />
           <span className="text-xl font-bold text-foreground hidden sm:block tracking-tight">
             PropChain
           </span>
@@ -382,7 +383,11 @@ export default function Header() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-2">
-                    <Building className="h-6 w-6 text-primary" />
+                    <img
+                      src={logo}
+                      alt="PropChain"
+                      className="h-6 w-auto"
+                    />
                     <span className="font-bold text-lg text-foreground">
                       PropChain
                     </span>

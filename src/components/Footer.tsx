@@ -1,11 +1,12 @@
 import {
-  Building,
-  Twitter,
-  Linkedin,
-  Facebook,
-  Instagram,
-} from "lucide-react";
+  XLogoIcon,
+  LinkedinLogoIcon,
+  FacebookLogoIcon,
+  InstagramLogoIcon,
+  HeadphonesIcon
+} from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
+import logo from "@/assets/logo.png";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -32,21 +33,21 @@ export default function Footer() {
   ];
 
   const socialLinks = [
-    { name: "Twitter", href: "https://twitter.com/propchain", icon: Twitter },
+    { name: "Twitter", href: "https://twitter.com/propchain", icon: XLogoIcon },
     {
       name: "LinkedIn",
       href: "https://linkedin.com/company/propchain",
-      icon: Linkedin,
+      icon: LinkedinLogoIcon,
     },
     {
       name: "Facebook",
       href: "https://facebook.com/propchain",
-      icon: Facebook,
+      icon: FacebookLogoIcon,
     },
     {
       name: "Instagram",
       href: "https://instagram.com/propchain",
-      icon: Instagram,
+      icon: InstagramLogoIcon,
     },
   ];
 
@@ -61,11 +62,11 @@ export default function Footer() {
               to="/"
               className="flex items-center gap-3 mb-6 w-fit hover:scale-105 transition-transform duration-200 group"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-hover rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
-                <span className="text-primary-foreground font-bold text-lg">
-                  PC
-                </span>
-              </div>
+              <img
+                src={logo}
+                alt="PropChain"
+                className="h-8 w-auto"
+              />
               <span className="text-xl font-bold text-foreground tracking-tight">
                 PropChain
               </span>
@@ -159,7 +160,7 @@ export default function Footer() {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 hover:shadow-md hover:scale-105 transition-all duration-200 text-sm font-medium group"
               >
                 <span>Support Center</span>
-                <Building className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
+                <HeadphonesIcon className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
               </Link>
             </div>
           </div>
