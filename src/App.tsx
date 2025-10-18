@@ -35,6 +35,7 @@ import EventSimulator from "./pages/property/EventSimulator";
 import PropertyView from "./pages/property/PropertyView";
 import PropertyEdit from "./pages/property/PropertyEdit";
 import TokenizeProperty from "./pages/property/Tokenize";
+import Proposals from "./pages/property/Proposals";
 import Profile from "./pages/settings/Profile";
 import Notifications from "./pages/settings/Notifications";
 import Security from "./pages/settings/Security";
@@ -127,6 +128,10 @@ const App = () => (
                 <Route
                   path="/property/:propertyId/tokenize"
                   element={<TokenizeProperty />}
+                />
+                <Route
+                  path="/properties/:propertyId/governance"
+                  element={<Proposals />}
                 />
                 <Route
                   path="/properties/register"
