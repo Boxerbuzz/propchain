@@ -3,7 +3,6 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
-  Home,
   Compass,
   Coins,
   ChevronRight,
@@ -11,6 +10,7 @@ import {
   Send,
   ArrowLeftRight,
   Menu,
+  LayoutDashboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,9 +22,9 @@ export default function AccountLayout() {
 
   const mainNavItems = [
     {
-      name: "Dashboard",
+      name: "Overview",
       href: "/account/dashboard",
-      icon: Home,
+      icon: LayoutDashboard,
     },
     {
       name: "Discovery",
@@ -117,9 +117,9 @@ export default function AccountLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex pt-16">
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex w-64 bg-card border-r border-border flex-col fixed left-0 top-0 h-screen">
+      <div className="hidden md:flex w-64 bg-card border-r border-border flex-col fixed left-0 top-16 h-[calc(100vh-4rem)]">
         <SidebarContent />
       </div>
 
@@ -129,7 +129,7 @@ export default function AccountLayout() {
           <Button
             variant="outline"
             size="icon"
-            className="fixed top-4 left-4 z-50 md:hidden"
+            className="fixed top-20 left-4 z-50 md:hidden"
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -146,12 +146,12 @@ export default function AccountLayout() {
         <>
           {/* Backdrop */}
           <div
-            className="hidden md:block fixed inset-0 bg-black/20 z-40"
+            className="hidden md:block fixed inset-0 top-16 bg-black/20 z-40"
             onClick={() => setTokensExpanded(false)}
           />
-          
+
           {/* Floating Menu */}
-          <div className="hidden md:block fixed left-64 top-0 h-screen w-64 bg-card border-r border-border shadow-xl z-50 animate-in slide-in-from-left">
+          <div className="hidden md:block fixed left-64 top-16 h-[calc(100vh-4rem)] w-64 bg-card border-r border-border shadow-xl z-50 animate-in slide-in-from-left">
             <div className="p-6 border-b border-border">
               <h3 className="font-semibold">Tokens</h3>
               <p className="text-sm text-muted-foreground">

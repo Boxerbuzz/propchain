@@ -17,16 +17,21 @@ import {
   CheckCircle,
   Clock,
   Monitor,
-  MapPin
+  MapPin,
+  Globe,
+  DollarSign
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useCurrency } from "@/context/CurrencyContext";
 
 const Security = () => {
   const { toast } = useToast();
+  const { currency, setCurrency } = useCurrency();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
   const [loginAlerts, setLoginAlerts] = useState(true);
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
   
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -432,6 +437,119 @@ const Security = () => {
                     </Badge>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Preferences */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Preferences
+              </CardTitle>
+              <CardDescription>
+                Manage your display and regional settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Currency Selection */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Currency
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant={currency === "NGN" ? "default" : "outline"}
+                    onClick={() => setCurrency("NGN")}
+                    className="justify-start"
+                  >
+                    <img src="/ngn.svg" alt="NGN" className="w-5 h-5 mr-2" />
+                    NGN (₦)
+                  </Button>
+                  <Button
+                    variant={currency === "USD" ? "default" : "outline"}
+                    onClick={() => setCurrency("USD")}
+                    className="justify-start"
+                  >
+                    <img src="/usd.svg" alt="USD" className="w-5 h-5 mr-2" />
+                    USD ($)
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Select your preferred currency for displaying prices and balances
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* Language Selection */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Language
+                </Label>
+                <div className="grid grid-cols-1 gap-3">
+                  <Button
+                    variant={selectedLanguage === "en" ? "default" : "outline"}
+                    onClick={() => {
+                      setSelectedLanguage("en");
+                      toast({
+                        title: "Language Updated",
+                        description: "Display language set to English",
+                      });
+                    }}
+                    className="justify-start"
+                  >
+                    🇬🇧 English
+                  </Button>
+                  <Button
+                    variant={selectedLanguage === "yo" ? "default" : "outline"}
+                    onClick={() => {
+                      setSelectedLanguage("yo");
+                      toast({
+                        title: "Language Updated",
+                        description: "Display language set to Yoruba (Coming Soon)",
+                      });
+                    }}
+                    className="justify-start"
+                    disabled
+                  >
+                    🇳🇬 Yoruba (Coming Soon)
+                  </Button>
+                  <Button
+                    variant={selectedLanguage === "ha" ? "default" : "outline"}
+                    onClick={() => {
+                      setSelectedLanguage("ha");
+                      toast({
+                        title: "Language Updated",
+                        description: "Display language set to Hausa (Coming Soon)",
+                      });
+                    }}
+                    className="justify-start"
+                    disabled
+                  >
+                    🇳🇬 Hausa (Coming Soon)
+                  </Button>
+                  <Button
+                    variant={selectedLanguage === "ig" ? "default" : "outline"}
+                    onClick={() => {
+                      setSelectedLanguage("ig");
+                      toast({
+                        title: "Language Updated",
+                        description: "Display language set to Igbo (Coming Soon)",
+                      });
+                    }}
+                    className="justify-start"
+                    disabled
+                  >
+                    🇳🇬 Igbo (Coming Soon)
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Choose your preferred language for the interface
+                </p>
               </div>
             </CardContent>
           </Card>

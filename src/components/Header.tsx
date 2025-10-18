@@ -36,7 +36,6 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { CurrencyToggle } from "@/components/CurrencyToggle";
 import logo from "@/assets/logo.png";
 
 export default function Header() {
@@ -119,11 +118,7 @@ export default function Header() {
           to="/"
           className="flex items-center space-x-3 hover:scale-105 transition-transform duration-200"
         >
-          <img
-            src={logo}
-            alt="PropChain"
-            className="h-8 w-auto"
-          />
+          <img src={logo} alt="PropChain" className="h-8 w-auto" />
           <span className="text-xl font-bold text-foreground hidden sm:block tracking-tight">
             PropChain
           </span>
@@ -155,9 +150,6 @@ export default function Header() {
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-3">
-          {/* Currency Toggle */}
-          <CurrencyToggle />
-
           {/* Theme Toggle */}
           <ThemeToggle />
 
@@ -295,7 +287,7 @@ export default function Header() {
                     <img
                       src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.first_name} ${user?.last_name}&backgroundColor=6366f1,8b5cf6,ec4899,10b981`}
                       alt="User avatar"
-                      className="w-8 h-8 rounded-full border-2 border-border"
+                      className="w-9 h-9 rounded-full border-2 border-border"
                     />
                   </Button>
                 </DropdownMenuTrigger>
@@ -387,11 +379,7 @@ export default function Header() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-2">
-                    <img
-                      src={logo}
-                      alt="PropChain"
-                      className="h-6 w-auto"
-                    />
+                    <img src={logo} alt="PropChain" className="h-6 w-auto" />
                     <span className="font-bold text-lg text-foreground">
                       PropChain
                     </span>

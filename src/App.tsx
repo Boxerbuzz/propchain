@@ -33,6 +33,7 @@ import WalletSettings from "./pages/wallet/Settings";
 import Account from "./pages/account/Account";
 import AccountDashboard from "./pages/account/Dashboard";
 import Discovery from "./pages/account/Discovery";
+import TokenDetail from "./pages/account/TokenDetail";
 import BuyTokens from "./pages/account/tokens/Buy";
 import SendTokens from "./pages/account/tokens/Send";
 import SwapTokens from "./pages/account/tokens/Swap";
@@ -122,6 +123,7 @@ const App = () => (
                   <Route index element={<AccountDashboard />} />
                   <Route path="dashboard" element={<AccountDashboard />} />
                   <Route path="discovery" element={<Discovery />} />
+                  <Route path="discovery/:tokenId" element={<TokenDetail />} />
                   <Route path="tokens/buy" element={<BuyTokens />} />
                   <Route path="tokens/send" element={<SendTokens />} />
                   <Route path="tokens/swap" element={<SwapTokens />} />

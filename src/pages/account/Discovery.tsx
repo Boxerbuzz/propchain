@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
 
 export default function Discovery() {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<string>("popular");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -256,6 +258,7 @@ export default function Discovery() {
                 <div
                   key={token.id}
                   className="grid grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_1fr_120px_100px_80px_120px] items-center gap-3 sm:gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => navigate(`/account/discovery/${token.id}`)}
                 >
                   {/* Column 1: Icon with Hedera Badge */}
                   <div className="relative flex-shrink-0">
