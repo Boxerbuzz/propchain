@@ -30,6 +30,12 @@ import WalletSetup from "./pages/wallet/WalletSetup";
 import WalletDashboard from "./pages/wallet/Dashboard";
 import WithdrawPage from "./pages/wallet/Withdraw";
 import WalletSettings from "./pages/wallet/Settings";
+import Account from "./pages/account/Account";
+import AccountDashboard from "./pages/account/Dashboard";
+import Discovery from "./pages/account/Discovery";
+import BuyTokens from "./pages/account/tokens/Buy";
+import SendTokens from "./pages/account/tokens/Send";
+import SwapTokens from "./pages/account/tokens/Swap";
 import PropertyManagement from "./pages/property/Management";
 import EventSimulator from "./pages/property/EventSimulator";
 import PropertyView from "./pages/property/PropertyView";
@@ -112,6 +118,14 @@ const App = () => (
                 <Route path="/wallet/dashboard" element={<WalletDashboard />} />
                 <Route path="/wallet/withdraw" element={<WithdrawPage />} />
                 <Route path="/wallet/settings" element={<WalletSettings />} />
+                <Route path="/account" element={<Account />}>
+                  <Route index element={<AccountDashboard />} />
+                  <Route path="dashboard" element={<AccountDashboard />} />
+                  <Route path="discovery" element={<Discovery />} />
+                  <Route path="tokens/buy" element={<BuyTokens />} />
+                  <Route path="tokens/send" element={<SendTokens />} />
+                  <Route path="tokens/swap" element={<SwapTokens />} />
+                </Route>
                 <Route
                   path="/property/management"
                   element={<PropertyManagement />}

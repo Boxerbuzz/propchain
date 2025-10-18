@@ -45,6 +45,7 @@ import {
   X,
   AlertCircle,
   Wallet2,
+  XIcon,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWalletConnect } from "@/hooks/useWalletConnect";
@@ -351,20 +352,20 @@ const WalletDashboard = () => {
     switch (status) {
       case "completed":
         return (
-          <div className="w-4 h-4 rounded-full bg-green-900 flex items-center justify-center border border-green-500 dark:border-green-600">
-            <Check className="h-3 w-3 text-white" />
+          <div className="w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-green-500 shadow-sm">
+            <Check className="h-2.5 w-2.5 text-green-600 dark:text-green-400" />
           </div>
         );
       case "pending":
         return (
-          <div className="w-4 h-4 rounded-full bg-yellow-900 flex items-center justify-center border border-yellow-500 dark:border-yellow-600">
-            <Clock className="h-3 w-3 text-white" />
+          <div className="w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-yellow-500 shadow-sm">
+            <Clock className="h-2.5 w-2.5 text-yellow-600 dark:text-yellow-400" />
           </div>
         );
       case "failed":
         return (
-          <div className="w-4 h-4 rounded-full bg-red-900 flex items-center justify-center border border-red-500 dark:border-red-600">
-            <X className="h-3 w-3 text-white" />
+          <div className="w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-red-500 shadow-sm">
+            <XIcon className="h-2.5 w-2.5 text-red-600 dark:text-red-400" />
           </div>
         );
       default:
@@ -701,15 +702,13 @@ const WalletDashboard = () => {
                           >
                             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
                               <div className="relative flex-shrink-0">
-                                <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full w-10 h-10 flex items-center justify-center border border-blue-200 dark:border-blue-700">
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full flex items-center justify-center border border-blue-200 dark:border-blue-700">
                                   {getTransactionIcon(transaction.type)}
                                 </div>
-                                {/* Status icon badge */}
-                                <div className="absolute -bottom-0 -right-1">
+                                <div className="absolute -bottom-0.5 -right-0.5">
                                   {getStatusIconBadge(transaction.status)}
                                 </div>
                               </div>
-
                               <div className="min-w-0 flex-1 overflow-hidden">
                                 <p className="font-medium capitalize text-sm sm:text-base truncate">
                                   {transaction.type.replace("_", " ")}

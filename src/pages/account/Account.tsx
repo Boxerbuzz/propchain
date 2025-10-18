@@ -1,0 +1,192 @@
+import { useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Home,
+  Compass,
+  Coins,
+  ChevronRight,
+  Download,
+  Send,
+  ArrowLeftRight,
+  Menu,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export default function AccountLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [tokensExpanded, setTokensExpanded] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const mainNavItems = [
+    {
+      name: "Dashboard",
+      href: "/account/dashboard",
+      icon: Home,
+    },
+    {
+      name: "Discovery",
+      href: "/account/discovery",
+      icon: Compass,
+    },
+    {
+      name: "Tokens",
+      icon: Coins,
+      hasSubmenu: true,
+    },
+  ];
+
+  const tokensSubmenu = [
+    {
+      name: "Buy",
+      href: "/account/tokens/buy",
+      icon: Download,
+    },
+    {
+      name: "Send",
+      href: "/account/tokens/send",
+      icon: Send,
+    },
+    {
+      name: "Swap",
+      href: "/account/tokens/swap",
+      icon: ArrowLeftRight,
+    },
+  ];
+
+  const isActive = (href: string) => {
+    return (
+      location.pathname === href || location.pathname.startsWith(href + "/")
+    );
+  };
+
+  const handleNavClick = (item: (typeof mainNavItems)[0]) => {
+    if (item.hasSubmenu) {
+      setTokensExpanded(!tokensExpanded);
+    } else if (item.href) {
+      navigate(item.href);
+      setTokensExpanded(false);
+    }
+  };
+
+  const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+    <>
+      {/* Navigation */}
+      <nav className="flex-1 p-4">
+        <div className="space-y-2">
+          {mainNavItems.map((item) => (
+            <div key={item.name}>
+              <Button
+                variant={
+                  item.href && isActive(item.href) ? "secondary" : "ghost"
+                }
+                className={cn(
+                  "w-full justify-start",
+                  item.href && isActive(item.href) && "bg-accent"
+                )}
+                onClick={() => {
+                  handleNavClick(item);
+                  if (isMobile) setMobileMenuOpen(false);
+                }}
+              >
+                <item.icon className="h-5 w-5 mr-3" />
+                <span className="flex-1 text-left">{item.name}</span>
+                {item.hasSubmenu && (
+                  <ChevronRight
+                    className={cn(
+                      "h-4 w-4 transition-transform",
+                      tokensExpanded && "rotate-90"
+                    )}
+                  />
+                )}
+              </Button>
+            </div>
+          ))}
+        </div>
+      </nav>
+
+      {/* Bottom section */}
+      <div className="p-4 border-t border-border">
+        <p className="text-xs text-muted-foreground text-center">
+          Built on Hedera
+        </p>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="min-h-screen bg-background flex">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex w-64 bg-card border-r border-border flex-col fixed left-0 top-0 h-screen">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile Menu Button & Sheet */}
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="fixed top-4 left-4 z-50 md:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-64 p-0">
+          <div className="flex flex-col h-full">
+            <SidebarContent isMobile={true} />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Tokens Floating Submenu (Desktop Only) */}
+      {tokensExpanded && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="hidden md:block fixed inset-0 bg-black/20 z-40"
+            onClick={() => setTokensExpanded(false)}
+          />
+          
+          {/* Floating Menu */}
+          <div className="hidden md:block fixed left-64 top-0 h-screen w-64 bg-card border-r border-border shadow-xl z-50 animate-in slide-in-from-left">
+            <div className="p-6 border-b border-border">
+              <h3 className="font-semibold">Tokens</h3>
+              <p className="text-sm text-muted-foreground">
+                Manage your assets
+              </p>
+            </div>
+            <nav className="p-4">
+              <div className="space-y-2">
+                {tokensSubmenu.map((item) => (
+                  <Button
+                    key={item.name}
+                    variant={isActive(item.href) ? "secondary" : "ghost"}
+                    className={cn(
+                      "w-full justify-start",
+                      isActive(item.href) && "bg-accent"
+                    )}
+                    onClick={() => {
+                      navigate(item.href);
+                      setTokensExpanded(false);
+                    }}
+                  >
+                    <item.icon className="h-5 w-5 mr-3" />
+                    {item.name}
+                  </Button>
+                ))}
+              </div>
+            </nav>
+          </div>
+        </>
+      )}
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto md:ml-64">
+        <Outlet />
+      </div>
+    </div>
+  );
+}

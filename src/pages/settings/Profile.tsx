@@ -223,8 +223,8 @@ const Profile = () => {
             <Card>
               <CardHeader className="text-center">
                 <div className="flex justify-center mb-4">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage src="/placeholder.svg" />
+                  <Avatar className="h-24 w-24 border-2 border-border">
+                    <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${formData.firstName} ${formData.lastName}&backgroundColor=6366f1,8b5cf6,ec4899,10b981`} />
                     <AvatarFallback className="text-2xl">
                       {formData.firstName[0]}
                       {formData.lastName[0]}

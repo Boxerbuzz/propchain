@@ -292,9 +292,11 @@ export default function Header() {
                     size="icon"
                     className="relative hover:bg-gradient-to-br hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20 transition-all duration-200 rounded-full border border-transparent hover:border-blue-200 dark:hover:border-blue-700 hover:shadow-md"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-white" />
-                    </div>
+                    <img
+                      src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.first_name} ${user?.last_name}&backgroundColor=6366f1,8b5cf6,ec4899,10b981`}
+                      alt="User avatar"
+                      className="w-8 h-8 rounded-full border-2 border-border"
+                    />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -305,9 +307,11 @@ export default function Header() {
                   <DropdownMenuLabel className="font-normal p-0">
                     <div className="bg-gradient-to-br from-primary/5 to-secondary/5 p-4 border-b border-border">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center shadow-md ring-2 ring-background">
-                          <User className="h-6 w-6 text-primary-foreground" />
-                        </div>
+                        <img
+                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.first_name} ${user?.last_name}&backgroundColor=6366f1,8b5cf6,ec4899,10b981`}
+                          alt="User avatar"
+                          className="w-10 h-10 rounded-full shadow-md ring-2 ring-background border-2 border-border"
+                        />
                         <div className="flex flex-col space-y-1 min-w-0">
                           <p className="text-sm font-semibold text-card-foreground truncate">
                             {user?.first_name} {user?.last_name}
