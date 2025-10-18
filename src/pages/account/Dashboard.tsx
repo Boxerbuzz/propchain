@@ -29,8 +29,10 @@ export default function AccountDashboard() {
   const { balance: hederaBalance, syncBalance, isSyncing } = useWalletBalance();
   const { formatAmount } = useCurrency();
 
-  const totalValueNgn = (hederaBalance?.balanceNgn || 0) + (hederaBalance?.usdcBalanceNgn || 0);
-  const totalValueUsd = (hederaBalance?.balanceUsd || 0) + (hederaBalance?.usdcBalanceUsd || 0);
+  const totalValueNgn =
+    (hederaBalance?.balanceNgn || 0) + (hederaBalance?.usdcBalanceNgn || 0);
+  const totalValueUsd =
+    (hederaBalance?.balanceUsd || 0) + (hederaBalance?.usdcBalanceUsd || 0);
 
   // Mock NFTs data
   const mockNFTs = [
@@ -265,20 +267,22 @@ export default function AccountDashboard() {
                   <div className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_140px_180px] items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer">
                     {/* Column 1: Icon */}
                     <img src="/hedera.svg" alt="HBAR" className="w-10 h-10" />
-                    
+
                     {/* Column 2: Name & Symbol */}
                     <div>
                       <p className="font-semibold">Hedera</p>
                       <p className="text-sm text-muted-foreground">HBAR</p>
                     </div>
-                    
+
                     {/* Column 3: Price - Hidden on mobile */}
-                    <div className="hidden sm:block text-center">
-                      <p className="font-medium">
+                    <div className="hidden sm:block text-center text-align-left">
+                      <p className="font-medium text-left">
                         {showBalances ? (
                           formatAmount(
-                            hederaBalance?.exchangeRates?.hbarToUsd 
-                              ? (hederaBalance.exchangeRates.hbarToUsd * (hederaBalance?.exchangeRates?.usdToNgn || 1500))
+                            hederaBalance?.exchangeRates?.hbarToUsd
+                              ? hederaBalance.exchangeRates.hbarToUsd *
+                                  (hederaBalance?.exchangeRates?.usdToNgn ||
+                                    1500)
                               : 0,
                             hederaBalance?.exchangeRates?.hbarToUsd || 0
                           )
@@ -286,14 +290,17 @@ export default function AccountDashboard() {
                           <span>••••</span>
                         )}
                       </p>
-                      <p className="text-xs text-muted-foreground">Price</p>
+                      <p className="text-xs text-muted-foreground text-left">Price</p>
                     </div>
-                    
+
                     {/* Column 4: Amount & Equivalent */}
                     <div className="text-right">
                       <p className="font-semibold">
                         {showBalances ? (
-                          formatAmount(hederaBalance?.balanceNgn || 0, hederaBalance?.balanceUsd || 0)
+                          formatAmount(
+                            hederaBalance?.balanceNgn || 0,
+                            hederaBalance?.balanceUsd || 0
+                          )
                         ) : (
                           <span>••••••</span>
                         )}
@@ -314,36 +321,43 @@ export default function AccountDashboard() {
                     <div className="relative">
                       <img src="/usdc.svg" alt="USDC" className="w-10 h-10" />
                       <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-blue-500 shadow-sm">
-                        <img src="/hedera.svg" alt="Hedera" className="w-2.5 h-2.5" />
+                        <img
+                          src="/hedera.svg"
+                          alt="Hedera"
+                          className="w-2.5 h-2.5"
+                        />
                       </div>
                     </div>
-                    
+
                     {/* Column 2: Name & Symbol */}
                     <div>
                       <p className="font-semibold">USD Coin</p>
                       <p className="text-sm text-muted-foreground">USDC</p>
                     </div>
-                    
+
                     {/* Column 3: Price - Hidden on mobile */}
-                    <div className="hidden sm:block text-center">
-                      <p className="font-medium">
+                    <div className="hidden sm:block text-center text-align-left">
+                      <p className="font-medium text-left">
                         {showBalances ? (
                           formatAmount(
                             hederaBalance?.exchangeRates?.usdToNgn || 1500,
-                            1.00
+                            1.0
                           )
                         ) : (
                           <span>••••</span>
                         )}
                       </p>
-                      <p className="text-xs text-muted-foreground">Price</p>
+                      <p className="text-xs text-muted-foreground text-left">Price</p>
                     </div>
-                    
+
                     {/* Column 4: Amount & Equivalent */}
                     <div className="text-right">
                       <p className="font-semibold">
                         {showBalances ? (
-                          formatAmount(hederaBalance?.usdcBalanceNgn || 0, hederaBalance?.usdcBalanceUsd || 0)
+                          formatAmount(
+                            hederaBalance?.usdcBalanceNgn || 0,
+                            hederaBalance?.usdcBalanceUsd || 0
+                          )
                         ) : (
                           <span>••••••</span>
                         )}
@@ -366,7 +380,10 @@ export default function AccountDashboard() {
           <TabsContent value="nfts">
             <div className="grid md:grid-cols-3 gap-4">
               {mockNFTs.map((nft) => (
-                <Card key={nft.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Card
+                  key={nft.id}
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                >
                   <CardContent className="p-0">
                     <div className="aspect-square bg-muted rounded-t-lg overflow-hidden">
                       <img
@@ -385,7 +402,10 @@ export default function AccountDashboard() {
                           <p className="text-muted-foreground">Floor</p>
                           <p className="font-medium">
                             {showBalances
-                              ? formatAmount(nft.floorPrice, nft.floorPrice / 1500)
+                              ? formatAmount(
+                                  nft.floorPrice,
+                                  nft.floorPrice / 1500
+                                )
                               : "••••"}
                           </p>
                         </div>
@@ -394,7 +414,10 @@ export default function AccountDashboard() {
                             <p className="text-muted-foreground">Last Sale</p>
                             <p className="font-medium">
                               {showBalances
-                                ? formatAmount(nft.lastSale, nft.lastSale / 1500)
+                                ? formatAmount(
+                                    nft.lastSale,
+                                    nft.lastSale / 1500
+                                  )
                                 : "••••"}
                             </p>
                           </div>
@@ -421,7 +444,7 @@ export default function AccountDashboard() {
                       <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 rounded-full flex items-center justify-center">
                         <CircleDollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                       </div>
-                      
+
                       {/* Column 2: Protocol & Type */}
                       <div>
                         <p className="font-semibold">{position.protocol}</p>
@@ -429,14 +452,14 @@ export default function AccountDashboard() {
                           {position.type} • {position.pair}
                         </p>
                       </div>
-                      
+
                       {/* Column 3: APR - Hidden on mobile */}
                       <div className="hidden sm:block text-center">
                         <Badge variant="secondary" className="text-xs">
                           {position.apr}% APR
                         </Badge>
                       </div>
-                      
+
                       {/* Column 4: Value & P/L */}
                       <div className="text-right">
                         <p className="font-semibold">
@@ -492,7 +515,7 @@ export default function AccountDashboard() {
                       <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 rounded-full flex items-center justify-center">
                         <CircleDollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                       </div>
-                      
+
                       {/* Column 2: Protocol & Type */}
                       <div>
                         <p className="font-semibold">{position.protocol}</p>
@@ -500,14 +523,14 @@ export default function AccountDashboard() {
                           {position.type} • {position.pair}
                         </p>
                       </div>
-                      
+
                       {/* Column 3: APR - Hidden on mobile */}
                       <div className="hidden sm:block text-center">
                         <Badge variant="secondary" className="text-xs">
                           {position.apr}% APR
                         </Badge>
                       </div>
-                      
+
                       {/* Column 4: Value & P/L */}
                       <div className="text-right">
                         <p className="font-semibold">
@@ -571,7 +594,7 @@ export default function AccountDashboard() {
                           {getStatusBadge(tx.status)}
                         </div>
                       </div>
-                      
+
                       {/* Column 2: Type & Details */}
                       <div className="min-w-0">
                         <p className="font-medium capitalize">{tx.type}</p>
@@ -585,7 +608,7 @@ export default function AccountDashboard() {
                             : ""}
                         </p>
                       </div>
-                      
+
                       {/* Column 3: Timestamp - Hidden on mobile */}
                       <div className="hidden sm:block text-center">
                         <p className="text-sm text-muted-foreground">
@@ -601,7 +624,7 @@ export default function AccountDashboard() {
                           })}
                         </p>
                       </div>
-                      
+
                       {/* Column 4: Amount & Token */}
                       <div className="text-right">
                         <p
@@ -613,7 +636,11 @@ export default function AccountDashboard() {
                               : "text-blue-600"
                           }`}
                         >
-                          {tx.type === "receive" ? "+" : tx.type === "send" ? "-" : ""}
+                          {tx.type === "receive"
+                            ? "+"
+                            : tx.type === "send"
+                            ? "-"
+                            : ""}
                           {showBalances ? (
                             <>
                               {tx.amount} {tx.token}
@@ -640,4 +667,3 @@ export default function AccountDashboard() {
     </div>
   );
 }
-

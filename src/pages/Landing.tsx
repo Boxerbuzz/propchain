@@ -306,6 +306,15 @@ export default function Landing() {
       investment: "₦280K invested",
       returns: "11% annual return",
     },
+    {
+      name: "Tunde Adewale",
+      role: "University Student",
+      image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tunde",
+      content:
+        "As a student, I never thought I could invest in real estate. With PropChain, I started with just ₦5,000 from my allowance. It's teaching me about investing while building my future!",
+      investment: "₦25K invested",
+      returns: "₦280 monthly",
+    },
   ];
 
   return (
@@ -332,7 +341,7 @@ export default function Landing() {
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-4xl mx-auto leading-relaxed font-light">
+            <p className="text-md md:text-xl text-muted-foreground mb-12 max-w-4xl mx-auto leading-relaxed font-light">
               Invest in fractions of premium Nigerian properties through
               tokenized ownership on Hedera. Earn monthly rental income,
               participate in governance, and trade your ownership anytime.

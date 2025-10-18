@@ -113,8 +113,9 @@ export default function AccountLayout() {
       </nav>
 
       {/* Bottom section */}
-      <div className="p-4 border-t border-border">
-        <p className="text-xs text-muted-foreground text-center">
+      <div className="p-4 border-t border-border flex flex-col items-center justify-center gap-2">
+        <img src="/hedera.svg" alt="Hedera" className="w-10 h-10 mx-auto" />
+        <p className="text-xs text-muted-foreground text-center font-medium">
           Built on Hedera
         </p>
       </div>
