@@ -127,17 +127,19 @@ export function useMockDataPrefill() {
   const generateMockInspection = () => {
     const inspector = generateName();
     
+    const conditionValues = ["excellent", "good", "fair", "poor", "critical"];
+    
     return {
-      inspection_type: randomChoice(["pre_listing", "buyer_inspection", "routine", "post_repair"]),
+      inspection_type: randomChoice(["initial", "periodic", "pre_rental", "pre_sale", "maintenance"]),
       inspector_name: inspector.full,
       inspector_license: `INSP-${randomDigits(8)}`,
       inspector_company: randomChoice(COMPANIES),
-      structural_condition: randomChoice(["excellent", "good", "fair", "needs_repair"]),
-      foundation_status: randomChoice(["excellent", "good", "minor_issues", "needs_repair"]),
-      roof_status: randomChoice(["excellent", "good", "minor_leaks", "needs_replacement"]),
-      walls_status: randomChoice(["excellent", "good", "minor_cracks", "needs_repair"]),
-      electrical_status: randomChoice(["excellent", "good", "needs_upgrade", "fair"]),
-      plumbing_status: randomChoice(["excellent", "good", "minor_leaks", "needs_repair"]),
+      structural_condition: randomChoice(conditionValues),
+      foundation_status: randomChoice(conditionValues),
+      roof_status: randomChoice(conditionValues),
+      walls_status: randomChoice(conditionValues),
+      electrical_status: randomChoice(conditionValues),
+      plumbing_status: randomChoice(conditionValues),
       overall_rating: randomRange(6, 10),
       market_value_estimate: randomRange(8000000, 60000000),
       rental_value_estimate: randomRange(200000, 900000),

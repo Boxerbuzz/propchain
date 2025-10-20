@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
   Check,
   CheckCheck,
+  Activity,
 } from "lucide-react";
 import { useChatMessages, useSendMessage } from "@/hooks/useUserChatRooms";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,6 +41,7 @@ import { InspectionEventMessage } from "@/components/chat/InspectionEventMessage
 import { RentalEventMessage } from "@/components/chat/RentalEventMessage";
 import { PurchaseEventMessage } from "@/components/chat/PurchaseEventMessage";
 import { MaintenanceProposalMessage } from "@/components/chat/MaintenanceProposalMessage";
+import { PropertyActivitiesPanel } from "@/components/PropertyActivitiesPanel";
 
 const ChatRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -56,6 +58,7 @@ const ChatRoom = () => {
   } | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
   const [showProposalCreator, setShowProposalCreator] = useState(false);
+  const [showActivitiesPanel, setShowActivitiesPanel] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -258,6 +261,10 @@ const ChatRoom = () => {
                     <DropdownMenuItem>
                       <Users className="mr-2 h-4 w-4" />
                       <span>View Participants ({participantCount})</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowActivitiesPanel(true)}>
+                      <Activity className="mr-2 h-4 w-4" />
+                      <span>Property Activities</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuLabel>Governance Tools</DropdownMenuLabel>
@@ -566,6 +573,16 @@ const ChatRoom = () => {
           )}
         </div>
       </div>
+
+      {/* Property Activities Panel */}
+      {roomInfo && (
+        <PropertyActivitiesPanel
+          propertyId={roomInfo.property_id}
+          propertyTitle={roomInfo.properties?.title || roomInfo.name}
+          isOpen={showActivitiesPanel}
+          onClose={() => setShowActivitiesPanel(false)}
+        />
+      )}
     </div>
   );
 };
