@@ -4,19 +4,35 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { TokenSelector } from "./TokenSelector";
-import { QuoteProvider } from "./QuoteProvider";
-import { useMockQuotes } from "@/hooks/useMockQuotes";
+import { useMockQuotes, QuoteProvider as QuoteProviderType } from "@/hooks/useMockQuotes";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ArrowDownUp } from "lucide-react";
+import { ArrowLeft, ArrowDownUp } from "lucide-react";
+import { CustomTokenSelector } from "./CustomTokenSelector";
+import { CustomPaymentSelector } from "./CustomPaymentSelector";
+import { CustomQuoteSelector } from "./CustomQuoteSelector";
+import { CreditCard, Bank } from "@phosphor-icons/react";
+import { AppleLogo, GoogleLogo } from "@phosphor-icons/react";
+
+interface Token {
+  symbol: string;
+  name: string;
+  icon: string;
+  balance: number;
+}
+
+interface PaymentMethod {
+  id: string;
+  name: string;
+  icon: "card" | "bank" | "apple" | "google" | "venmo" | "paypal";
+}
+
+type CardState = 
+  | "main"
+  | "selectFromToken"
+  | "selectToToken"
+  | "selectPayment"
+  | "selectQuote";
 
 interface TokenSwapCardProps {
   defaultTab?: "buy" | "sell" | "swap";
@@ -24,11 +40,16 @@ interface TokenSwapCardProps {
 
 export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
   const [activeTab, setActiveTab] = useState<"buy" | "sell" | "swap">(defaultTab);
+  const [cardState, setCardState] = useState<CardState>("main");
   const [amount, setAmount] = useState<string>("100");
   const [fromToken, setFromToken] = useState<"HBAR" | "USDC" | "USD">("USD");
   const [toToken, setToToken] = useState<"HBAR" | "USDC" | "USD">("HBAR");
-  const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<string>("card");
+  const [selectedQuote, setSelectedQuote] = useState<QuoteProviderType | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>({
+    id: "card",
+    name: "Credit/Debit Card",
+    icon: "card",
+  });
 
   const { balance } = useWalletBalance();
   const { quotes, isLoading } = useMockQuotes(
@@ -38,7 +59,7 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
     activeTab
   );
 
-  const tokens = [
+  const tokens: Token[] = [
     {
       symbol: "HBAR",
       name: "Hedera",
@@ -51,6 +72,21 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
       icon: "💵",
       balance: balance?.usdcBalance || 0,
     },
+    {
+      symbol: "USD",
+      name: "US Dollar",
+      icon: "💵",
+      balance: 0,
+    },
+  ];
+
+  const paymentMethods: PaymentMethod[] = [
+    { id: "card", name: "Credit/Debit Card", icon: "card" },
+    { id: "bank", name: "Bank Transfer", icon: "bank" },
+    { id: "apple", name: "Apple Pay", icon: "apple" },
+    { id: "google", name: "Google Pay", icon: "google" },
+    { id: "venmo", name: "Venmo", icon: "venmo" },
+    { id: "paypal", name: "PayPal", icon: "paypal" },
   ];
 
   const quickAmounts = [50, 100, 250, 500, 1000];
@@ -58,6 +94,7 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
   const handleTabChange = (value: string) => {
     setActiveTab(value as "buy" | "sell" | "swap");
     setSelectedQuote(null);
+    setCardState("main");
     
     if (value === "buy") {
       setFromToken("USD");
@@ -79,17 +116,73 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
     }
   };
 
+  const handleSelectToken = (token: Token, type: "from" | "to") => {
+    if (type === "from") {
+      setFromToken(token.symbol as "HBAR" | "USDC" | "USD");
+    } else {
+      setToToken(token.symbol as "HBAR" | "USDC" | "USD");
+    }
+    setCardState("main");
+  };
+
+  const handleSelectPayment = (method: PaymentMethod) => {
+    setPaymentMethod(method);
+    setCardState("main");
+  };
+
+  const handleSelectQuote = (quote: QuoteProviderType) => {
+    setSelectedQuote(quote);
+    setCardState("main");
+  };
+
+  const getSelectedFromToken = () => tokens.find((t) => t.symbol === fromToken) || null;
+  const getSelectedToToken = () => tokens.find((t) => t.symbol === toToken) || null;
+
+  const PaymentIcon = ({ type }: { type: string }) => {
+    const iconProps = { size: 32, weight: "duotone" as const };
+    
+    switch (type) {
+      case "card":
+        return <CreditCard {...iconProps} />;
+      case "bank":
+        return <Bank {...iconProps} />;
+      case "apple":
+        return <AppleLogo {...iconProps} />;
+      case "google":
+        return <GoogleLogo {...iconProps} />;
+      case "venmo":
+        return <span className="text-3xl font-bold text-[#008CFF]">V</span>;
+      case "paypal":
+        return <span className="text-3xl font-bold text-[#00457C]">P</span>;
+      default:
+        return <CreditCard {...iconProps} />;
+    }
+  };
+
   return (
     <div className="w-full max-w-[500px] mx-auto p-6">
       <Card className="p-6 bg-card border-border">
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="buy">Buy</TabsTrigger>
-            <TabsTrigger value="sell">Sell</TabsTrigger>
-            <TabsTrigger value="swap">Swap</TabsTrigger>
-          </TabsList>
+        {cardState !== "main" && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setCardState("main")}
+            className="mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        )}
 
-          <TabsContent value={activeTab} className="space-y-6">
+        {cardState === "main" && (
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsTrigger value="buy">Buy</TabsTrigger>
+              <TabsTrigger value="sell">Sell</TabsTrigger>
+              <TabsTrigger value="swap">Swap</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value={activeTab} className="space-y-6">
             {/* Amount Input */}
             <div className="space-y-2">
               <Label>
@@ -127,14 +220,12 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
             {/* Token Selectors */}
             {activeTab === "swap" ? (
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>From</Label>
-                  <TokenSelector
-                    selectedToken={fromToken}
-                    onSelectToken={(token) => setFromToken(token as "HBAR" | "USDC")}
-                    tokens={tokens}
-                  />
-                </div>
+                <CustomTokenSelector
+                  selectedToken={getSelectedFromToken()}
+                  label="From"
+                  showBalance
+                  onClick={() => setCardState("selectFromToken")}
+                />
 
                 <div className="flex justify-center">
                   <Button
@@ -147,82 +238,179 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
                   </Button>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>To</Label>
-                  <TokenSelector
-                    selectedToken={toToken}
-                    onSelectToken={(token) => setToToken(token as "HBAR" | "USDC")}
-                    tokens={tokens}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label>
-                  {activeTab === "buy" ? "I want to receive" : "I'll receive"}
-                </Label>
-                <TokenSelector
-                  selectedToken={activeTab === "buy" ? toToken : fromToken}
-                  onSelectToken={(token) => {
-                    if (activeTab === "buy") {
-                      setToToken(token as "HBAR" | "USDC");
-                    } else {
-                      setFromToken(token as "HBAR" | "USDC");
-                    }
-                  }}
-                  tokens={tokens}
-                  showBalance={activeTab === "sell"}
+                <CustomTokenSelector
+                  selectedToken={getSelectedToToken()}
+                  label="To"
+                  onClick={() => setCardState("selectToToken")}
                 />
               </div>
+            ) : (
+              <CustomTokenSelector
+                selectedToken={
+                  activeTab === "buy" ? getSelectedToToken() : getSelectedFromToken()
+                }
+                label={activeTab === "buy" ? "I want to receive" : "I'll receive"}
+                showBalance={activeTab === "sell"}
+                onClick={() =>
+                  setCardState(activeTab === "buy" ? "selectToToken" : "selectFromToken")
+                }
+              />
             )}
 
             {/* Payment Method (for buy/sell only) */}
             {activeTab !== "swap" && (
-              <div className="space-y-2">
-                <Label>
-                  {activeTab === "buy" ? "Payment method" : "Receive to"}
-                </Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="card">💳 Credit/Debit Card</SelectItem>
-                    <SelectItem value="bank">🏦 Bank Transfer</SelectItem>
-                    <SelectItem value="apple">🍎 Apple Pay</SelectItem>
-                    <SelectItem value="google">📱 Google Pay</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <CustomPaymentSelector
+                selectedMethod={paymentMethod}
+                label={activeTab === "buy" ? "Payment method" : "Receive to"}
+                onClick={() => setCardState("selectPayment")}
+              />
             )}
 
-            {/* Quotes Section */}
-            <div className="space-y-3">
-              <Label>
-                {activeTab === "swap" ? "Select DEX" : "Select provider"}
-              </Label>
-              
-              {isLoading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-24 w-full" />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {quotes.map((quote) => (
-                    <QuoteProvider
-                      key={quote.id}
-                      quote={quote}
-                      isSelected={selectedQuote === quote.id}
-                      onSelect={() => setSelectedQuote(quote.id)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Quote Provider Selector */}
+            <CustomQuoteSelector
+              selectedQuote={selectedQuote}
+              label={activeTab === "swap" ? "Select DEX" : "Select provider"}
+              onClick={() => setCardState("selectQuote")}
+            />
+
+            {/* Continue Button */}
+            {selectedQuote && (
+              <Button className="w-full" size="lg">
+                Continue with {selectedQuote.name}
+              </Button>
+            )}
           </TabsContent>
         </Tabs>
+        )}
+
+        {/* Token Selection State */}
+        {(cardState === "selectFromToken" || cardState === "selectToToken") && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold">
+              Select {cardState === "selectFromToken" ? "From" : "To"} Token
+            </h3>
+            {tokens
+              .filter((t) => {
+                if (activeTab === "buy" && cardState === "selectFromToken") return false;
+                if (activeTab === "sell" && cardState === "selectToToken") return t.symbol === "USD";
+                if (activeTab === "swap") return t.symbol !== "USD";
+                return t.symbol !== "USD";
+              })
+              .map((token) => (
+                <Card
+                  key={token.symbol}
+                  className="p-4 cursor-pointer hover:bg-accent transition-colors"
+                  onClick={() =>
+                    handleSelectToken(
+                      token,
+                      cardState === "selectFromToken" ? "from" : "to"
+                    )
+                  }
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{token.icon}</span>
+                      <div>
+                        <p className="font-semibold">{token.symbol}</p>
+                        <p className="text-sm text-muted-foreground">{token.name}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">{token.balance.toFixed(4)}</p>
+                      <p className="text-xs text-muted-foreground">Balance</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+          </div>
+        )}
+
+        {/* Payment Method Selection State */}
+        {cardState === "selectPayment" && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold">
+              {activeTab === "buy" ? "Select Payment Method" : "Select Receive Method"}
+            </h3>
+            {paymentMethods.map((method) => (
+              <Card
+                key={method.id}
+                className="p-4 cursor-pointer hover:bg-accent transition-colors"
+                onClick={() => handleSelectPayment(method)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted">
+                    <PaymentIcon type={method.icon} />
+                  </div>
+                  <div>
+                    <p className="font-semibold">{method.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {method.id === "card" && "Instant • 2.9% fee"}
+                      {method.id === "bank" && "1-3 days • Lower fees"}
+                      {method.id === "apple" && "Instant • 2.5% fee"}
+                      {method.id === "google" && "Instant • 2.5% fee"}
+                      {method.id === "venmo" && "Instant • 3% fee"}
+                      {method.id === "paypal" && "Instant • 3.5% fee"}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Quote Provider Selection State */}
+        {cardState === "selectQuote" && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold">
+              {activeTab === "swap" ? "Select DEX" : "Select Provider"}
+            </h3>
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-24 w-full" />
+                ))}
+              </div>
+            ) : (
+              quotes.map((quote) => (
+                <Card
+                  key={quote.id}
+                  className="p-4 cursor-pointer hover:bg-accent transition-colors"
+                  onClick={() => handleSelectQuote(quote)}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{quote.logo}</span>
+                      <div>
+                        <p className="font-semibold">{quote.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {quote.processingTime}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-lg">${quote.total.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Fee: ${quote.fee.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                  {quote.badges.length > 0 && (
+                    <div className="flex gap-2">
+                      {quote.badges.map((badge) => (
+                        <span
+                          key={badge}
+                          className="text-xs px-2 py-1 rounded-full bg-muted"
+                        >
+                          {badge}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              ))
+            )}
+          </div>
+        )}
       </Card>
     </div>
   );
