@@ -128,7 +128,7 @@ export function useMockDataPrefill() {
     const inspector = generateName();
     
     return {
-      inspection_type: randomChoice(["pre_listing", "buyer_inspection", "routine", "post_repair"]),
+      inspection_type: randomChoice(["initial", "periodic", "pre_rental", "pre_sale", "maintenance"]),
       inspector_name: inspector.full,
       inspector_license: `INSP-${randomDigits(8)}`,
       inspector_company: randomChoice(COMPANIES),
