@@ -182,7 +182,7 @@ serve(async (req) => {
           utilities_included: event_data.utilities_included || [],
           special_terms: event_data.special_terms || null,
           rental_status: "active",
-          created_by: userData.user.id,
+          created_by: userId,
         })
         .select()
         .single();
@@ -211,7 +211,7 @@ serve(async (req) => {
           remaining_balance_ngn: event_data.remaining_balance_ngn || 0,
           transaction_status: event_data.transaction_status || "pending",
           completion_date: event_data.completion_date || null,
-          created_by: userData.user.id,
+          created_by: userId,
         })
         .select()
         .single();
@@ -239,7 +239,7 @@ serve(async (req) => {
           payment_status: event_data.payment_status || "pending",
           follow_up_required: event_data.follow_up_required || false,
           notes: event_data.notes || null,
-          created_by: userData.user.id,
+          created_by: userId,
         })
         .select()
         .single();
