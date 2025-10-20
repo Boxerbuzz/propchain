@@ -4,10 +4,37 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, Clock, AlertTriangle, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 export default function KYCStatus() {
-  // This would normally come from API/state
-  const kycStatus = "pending" as
+  const { user } = useAuth();
+  
+  const { data: kycData, isLoading } = useQuery({
+    queryKey: ['kyc-status', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('kyc_verifications')
+        .select('status, kyc_level, investment_limit_ngn, expires_at, rejection_reason, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching KYC status:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const kycStatus = kycData?.status === 'approved' ? 'verified' : kycData?.status || 'pending' as
     | "pending"
     | "verified"
     | "rejected"
@@ -104,6 +131,17 @@ export default function KYCStatus() {
       time: kycStatus === "verified" ? "Just now" : "Pending...",
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading KYC status...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -222,8 +260,16 @@ export default function KYCStatus() {
               ) : kycStatus === "rejected" ? (
                 <div className="space-y-4">
                   <p className="text-muted-foreground">
-                    Your verification was unsuccessful. Common reasons include:
+                    Your verification was unsuccessful.
                   </p>
+                  {kycData?.rejection_reason && (
+                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                      <p className="text-sm font-medium text-destructive">
+                        Reason: {kycData.rejection_reason}
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-sm text-muted-foreground">Common reasons include:</p>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li>• Poor image quality or unclear documents</li>
                     <li>• Mismatched information between documents</li>
