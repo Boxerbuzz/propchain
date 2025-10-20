@@ -4,19 +4,25 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useMockQuotes, QuoteProvider as QuoteProviderType } from "@/hooks/useMockQuotes";
+import {
+  useMockQuotes,
+  QuoteProvider as QuoteProviderType,
+} from "@/hooks/useMockQuotes";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ArrowDownUp } from "lucide-react";
 import { CustomTokenSelector } from "./CustomTokenSelector";
 import { CustomPaymentSelector } from "./CustomPaymentSelector";
 import { CustomQuoteSelector } from "./CustomQuoteSelector";
-import { CreditCard, Bank, CreditCardIcon, BankIcon, AppleLogoIcon, GoogleLogoIcon } from "@phosphor-icons/react";
-import { AppleLogo, GoogleLogo } from "@phosphor-icons/react";
+import { CreditCardIcon, BankIcon, AppleLogoIcon } from "@phosphor-icons/react";
 import { ProviderLogo } from "./ProviderLogo";
-import hederaIcon from "@/assets/logo.svg";
+import hederaIcon from "/hedera.svg";
 import usdcIcon from "/usdc.svg";
 import usdIcon from "/usd.svg";
+import paypalIcon from "@/assets/paypal.svg";
+import googlePayIcon from "@/assets/google-pay.svg";
+import venmoIcon from "@/assets/venmo-icon.svg";
+import { Badge } from "@/components/ui/badge";
 
 interface Token {
   symbol: string;
@@ -31,7 +37,7 @@ interface PaymentMethod {
   icon: "card" | "bank" | "apple" | "google" | "venmo" | "paypal";
 }
 
-type CardState = 
+type CardState =
   | "main"
   | "selectFromToken"
   | "selectToToken"
@@ -43,12 +49,16 @@ interface TokenSwapCardProps {
 }
 
 export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
-  const [activeTab, setActiveTab] = useState<"buy" | "sell" | "swap">(defaultTab);
+  const [activeTab, setActiveTab] = useState<"buy" | "sell" | "swap">(
+    defaultTab
+  );
   const [cardState, setCardState] = useState<CardState>("main");
   const [amount, setAmount] = useState<string>("100");
   const [fromToken, setFromToken] = useState<"HBAR" | "USDC" | "USD">("USD");
   const [toToken, setToToken] = useState<"HBAR" | "USDC" | "USD">("HBAR");
-  const [selectedQuote, setSelectedQuote] = useState<QuoteProviderType | null>(null);
+  const [selectedQuote, setSelectedQuote] = useState<QuoteProviderType | null>(
+    null
+  );
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>({
     id: "card",
     name: "Credit/Debit Card",
@@ -99,7 +109,7 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
     setActiveTab(value as "buy" | "sell" | "swap");
     setSelectedQuote(null);
     setCardState("main");
-    
+
     if (value === "buy") {
       setFromToken("USD");
       setToToken("HBAR");
@@ -139,12 +149,14 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
     setCardState("main");
   };
 
-  const getSelectedFromToken = () => tokens.find((t) => t.symbol === fromToken) || null;
-  const getSelectedToToken = () => tokens.find((t) => t.symbol === toToken) || null;
+  const getSelectedFromToken = () =>
+    tokens.find((t) => t.symbol === fromToken) || null;
+  const getSelectedToToken = () =>
+    tokens.find((t) => t.symbol === toToken) || null;
 
   const PaymentIcon = ({ type }: { type: string }) => {
     const iconProps = { size: 32, weight: "duotone" as const };
-    
+
     switch (type) {
       case "card":
         return <CreditCardIcon {...iconProps} />;
@@ -153,13 +165,17 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
       case "apple":
         return <AppleLogoIcon {...iconProps} />;
       case "google":
-        return <GoogleLogoIcon {...iconProps} />;
+        return (
+          <img src={googlePayIcon} alt="Google Pay" className="w-10 h-10" />
+        );
       case "venmo":
-        return <span className="text-3xl font-bold text-[#008CFF]">V</span>;
+        return (
+          <img src={venmoIcon} alt="Venmo" className="w-10 h-10 rounded-full" />
+        );
       case "paypal":
-        return <span className="text-3xl font-bold text-[#00457C]">P</span>;
+        return <img src={paypalIcon} alt="PayPal" className="w-10 h-10" />;
       default:
-        return <CreditCard {...iconProps} />;
+        return <CreditCardIcon {...iconProps} />;
     }
   };
 
@@ -168,7 +184,7 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
       <Card className="p-6 bg-card border-border">
         {cardState !== "main" && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => setCardState("main")}
             className="mb-4"
@@ -187,104 +203,114 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
             </TabsList>
 
             <TabsContent value={activeTab} className="space-y-6">
-            {/* Amount Input */}
-            <div className="space-y-2">
-              <Label>
-                {activeTab === "buy" ? "I want to spend" : activeTab === "sell" ? "I want to sell" : "From"}
-              </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-semibold">
-                  $
-                </span>
-                <Input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="text-2xl font-bold pl-8 h-14"
-                  placeholder="0.00"
-                />
-              </div>
-              
-              {/* Quick Amount Buttons */}
-              <div className="flex gap-2 flex-wrap">
-                {quickAmounts.map((amt) => (
-                  <Button
-                    key={amt}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAmount(amt.toString())}
-                    className="flex-1 min-w-[60px]"
-                  >
-                    ${amt}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Token Selectors */}
-            {activeTab === "swap" ? (
-              <div className="space-y-4">
-                <CustomTokenSelector
-                  selectedToken={getSelectedFromToken()}
-                  label="From"
-                  showBalance
-                  onClick={() => setCardState("selectFromToken")}
-                />
-
-                <div className="flex justify-center">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleSwapTokens}
-                    className="rounded-full"
-                  >
-                    <ArrowDownUp className="h-4 w-4" />
-                  </Button>
+              {/* Amount Input */}
+              <div className="space-y-2">
+                <Label>
+                  {activeTab === "buy"
+                    ? "I want to spend"
+                    : activeTab === "sell"
+                    ? "I want to sell"
+                    : "From"}
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-semibold">
+                    $
+                  </span>
+                  <Input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="text-2xl font-bold pl-8 h-14"
+                    placeholder="0.00"
+                  />
                 </div>
 
-                <CustomTokenSelector
-                  selectedToken={getSelectedToToken()}
-                  label="To"
-                  onClick={() => setCardState("selectToToken")}
-                />
+                {/* Quick Amount Buttons */}
+                <div className="flex gap-2 flex-wrap">
+                  {quickAmounts.map((amt) => (
+                    <Button
+                      key={amt}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAmount(amt.toString())}
+                      className="flex-1 min-w-[60px]"
+                    >
+                      ${amt}
+                    </Button>
+                  ))}
+                </div>
               </div>
-            ) : (
-              <CustomTokenSelector
-                selectedToken={
-                  activeTab === "buy" ? getSelectedToToken() : getSelectedFromToken()
-                }
-                label={activeTab === "buy" ? "I want to receive" : "I'll receive"}
-                showBalance={activeTab === "sell"}
-                onClick={() =>
-                  setCardState(activeTab === "buy" ? "selectToToken" : "selectFromToken")
-                }
+
+              {/* Token Selectors */}
+              {activeTab === "swap" ? (
+                <div className="space-y-4">
+                  <CustomTokenSelector
+                    selectedToken={getSelectedFromToken()}
+                    label="From"
+                    showBalance
+                    onClick={() => setCardState("selectFromToken")}
+                  />
+
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleSwapTokens}
+                      className="rounded-full"
+                    >
+                      <ArrowDownUp className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <CustomTokenSelector
+                    selectedToken={getSelectedToToken()}
+                    label="To"
+                    onClick={() => setCardState("selectToToken")}
+                  />
+                </div>
+              ) : (
+                <CustomTokenSelector
+                  selectedToken={
+                    activeTab === "buy"
+                      ? getSelectedToToken()
+                      : getSelectedFromToken()
+                  }
+                  label={
+                    activeTab === "buy" ? "I want to receive" : "I'll receive"
+                  }
+                  showBalance={activeTab === "sell"}
+                  onClick={() =>
+                    setCardState(
+                      activeTab === "buy" ? "selectToToken" : "selectFromToken"
+                    )
+                  }
+                />
+              )}
+
+              {/* Payment Method (for buy/sell only) */}
+              {activeTab !== "swap" && (
+                <CustomPaymentSelector
+                  selectedMethod={paymentMethod}
+                  label={activeTab === "buy" ? "Payment method" : "Receive to"}
+                  onClick={() => setCardState("selectPayment")}
+                />
+              )}
+
+              {/* Quote Provider Selector */}
+              <CustomQuoteSelector
+                selectedQuote={selectedQuote}
+                label={activeTab === "swap" ? "Select DEX" : "Select provider"}
+                onClick={() => setCardState("selectQuote")}
               />
-            )}
 
-            {/* Payment Method (for buy/sell only) */}
-            {activeTab !== "swap" && (
-              <CustomPaymentSelector
-                selectedMethod={paymentMethod}
-                label={activeTab === "buy" ? "Payment method" : "Receive to"}
-                onClick={() => setCardState("selectPayment")}
-              />
-            )}
-
-            {/* Quote Provider Selector */}
-            <CustomQuoteSelector
-              selectedQuote={selectedQuote}
-              label={activeTab === "swap" ? "Select DEX" : "Select provider"}
-              onClick={() => setCardState("selectQuote")}
-            />
-
-            {/* Continue Button */}
-            {selectedQuote && (
-              <Button className="w-full" size="lg">
-                Continue with {selectedQuote.name}
-              </Button>
-            )}
-          </TabsContent>
-        </Tabs>
+              {/* Continue Button */}
+              {selectedQuote && (
+                <Button className="w-full" size="lg">
+                  Continue with {selectedQuote.name}
+                </Button>
+              )}
+            </TabsContent>
+          </Tabs>
         )}
 
         {/* Token Selection State */}
@@ -295,8 +321,10 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
             </h3>
             {tokens
               .filter((t) => {
-                if (activeTab === "buy" && cardState === "selectFromToken") return false;
-                if (activeTab === "sell" && cardState === "selectToToken") return t.symbol === "USD";
+                if (activeTab === "buy" && cardState === "selectFromToken")
+                  return false;
+                if (activeTab === "sell" && cardState === "selectToToken")
+                  return t.symbol === "USD";
                 if (activeTab === "swap") return t.symbol !== "USD";
                 return t.symbol !== "USD";
               })
@@ -314,7 +342,7 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-12 h-12">
-                        {typeof token.icon === 'string' ? (
+                        {typeof token.icon === "string" ? (
                           <span className="text-3xl">{token.icon}</span>
                         ) : (
                           token.icon
@@ -322,11 +350,15 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
                       </div>
                       <div>
                         <p className="font-semibold">{token.symbol}</p>
-                        <p className="text-sm text-muted-foreground">{token.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {token.name}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{token.balance.toFixed(4)}</p>
+                      <p className="font-semibold">
+                        {token.balance.toFixed(4)}
+                      </p>
                       <p className="text-xs text-muted-foreground">Balance</p>
                     </div>
                   </div>
@@ -339,7 +371,9 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
         {cardState === "selectPayment" && (
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">
-              {activeTab === "buy" ? "Select Payment Method" : "Select Receive Method"}
+              {activeTab === "buy"
+                ? "Select Payment Method"
+                : "Select Receive Method"}
             </h3>
             {paymentMethods.map((method) => (
               <Card
@@ -389,26 +423,20 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-12 h-12">
-                        {typeof quote.logo === 'string' ? (
-                          quote.logo === '⚡' ? (
-                            <span className="text-3xl">{quote.logo}</span>
-                          ) : (
-                            <ProviderLogo provider={quote.logo} size="md" />
-                          )
-                        ) : (
-                          quote.logo
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-semibold">{quote.name}</p>
+                      <div className="space-y-1">
+                        <ProviderLogo
+                          provider={quote.logo as string}
+                          size="sm"
+                        />
                         <p className="text-sm text-muted-foreground">
                           {quote.processingTime}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg">${quote.total.toFixed(2)}</p>
+                      <p className="font-bold text-lg">
+                        ${quote.total.toFixed(2)}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Fee: ${quote.fee.toFixed(2)}
                       </p>
@@ -417,12 +445,13 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
                   {quote.badges.length > 0 && (
                     <div className="flex gap-2">
                       {quote.badges.map((badge) => (
-                        <span
+                        <Badge
                           key={badge}
-                          className="text-xs px-2 py-1 rounded-full bg-muted"
+                          variant="secondary"
+                          className="text-xs"
                         >
                           {badge}
-                        </span>
+                        </Badge>
                       ))}
                     </div>
                   )}

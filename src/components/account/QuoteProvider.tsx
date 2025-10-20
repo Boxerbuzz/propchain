@@ -19,9 +19,9 @@ export function QuoteProvider({ quote, onSelect, isSelected }: QuoteProviderProp
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">{quote.logo}</span>
+          
           <div>
-            <p className="font-semibold">{quote.name}</p>
+          <span className="text-2xl">{quote.logo}</span>
             <p className="text-sm text-muted-foreground">{quote.processingTime}</p>
           </div>
         </div>

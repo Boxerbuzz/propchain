@@ -1,6 +1,19 @@
 import { Card } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
-import { CreditCard, Bank, AppleLogo, GoogleLogo } from "@phosphor-icons/react";
+import {
+  CreditCardIcon,
+  BankIcon,
+  AppleLogoIcon,
+} from "@phosphor-icons/react";
+import venmoIcon from "@/assets/payment-methods/venmo-dark.png";
+import achIcon from "@/assets/payment-methods/ach@3x.png";
+import paypalIcon from "@/assets/payment-methods/paypal@3x.png";
+import visaIcon from "@/assets/payment-methods/visa@3x.png";
+import mastercardIcon from "@/assets/payment-methods/mastercard@3x.png";
+import revoltIcon from "@/assets/payment-methods/revolt.png";
+import paypalLogo from "@/assets/paypal.svg";
+import googlePayLogo from "@/assets/google-pay.svg";
+import venmoLogo from "@/assets/venmo-icon.svg";
 
 interface PaymentMethod {
   id: string;
@@ -16,22 +29,28 @@ interface CustomPaymentSelectorProps {
 
 const PaymentIcon = ({ type }: { type: string }) => {
   const iconProps = { size: 24, weight: "duotone" as const };
-  
+
   switch (type) {
     case "card":
-      return <CreditCard {...iconProps} />;
+      return <CreditCardIcon {...iconProps} />;
     case "bank":
-      return <Bank {...iconProps} />;
+      return <BankIcon {...iconProps} />;
     case "apple":
-      return <AppleLogo {...iconProps} />;
+      return <AppleLogoIcon {...iconProps} />;
     case "google":
-      return <GoogleLogo {...iconProps} />;
+      return <img src={googlePayLogo} alt="Google Pay" className="w-10 h-10" />;
     case "venmo":
-      return <span className="text-2xl font-bold text-[#008CFF]">V</span>;
+      return (
+        <img
+          src={venmoLogo}
+          alt="Venmo"
+          className="w-10 h-10 rounded-full m-1"
+        />
+      );
     case "paypal":
-      return <span className="text-2xl font-bold text-[#00457C]">P</span>;
+      return <img src={paypalLogo} alt="PayPal" className="w-10 h-10" />;
     default:
-      return <CreditCard {...iconProps} />;
+      return <CreditCardIcon {...iconProps} />;
   }
 };
 
@@ -48,24 +67,64 @@ export function CustomPaymentSelector({
         onClick={onClick}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
-              {selectedMethod ? (
-                <PaymentIcon type={selectedMethod.icon} />
-              ) : (
-                <CreditCard size={24} weight="duotone" />
-              )}
+          <div className="w-full">
+            <div className="flex items-center justify-between w-full border-b">
+              <div className="flex items-center gap-3 pb-2 w-full">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
+                  {selectedMethod ? (
+                    <PaymentIcon type={selectedMethod.icon} />
+                  ) : (
+                    <CreditCardIcon size={24} weight="duotone" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-semibold">
+                    {selectedMethod?.name || "Select method"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedMethod ? "Payment method" : "Choose how to pay"}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </div>
-            <div>
-              <p className="font-semibold">
-                {selectedMethod?.name || "Select method"}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {selectedMethod ? "Payment method" : "Choose how to pay"}
-              </p>
+
+            {/* Accepted Payment Methods */}
+            <div className="flex items-center gap-2 mt-1 pt-3">
+              <div className="flex items-center gap-2 flex-wrap w-full justify-end">
+                <img
+                  src={venmoIcon}
+                  alt="Venmo"
+                  className="h-4 w-auto opacity-60"
+                />
+                <img
+                  src={achIcon}
+                  alt="ACH"
+                  className="h-4 w-auto opacity-60"
+                />
+                <img
+                  src={paypalIcon}
+                  alt="PayPal"
+                  className="h-4 w-auto opacity-60"
+                />
+                <img
+                  src={visaIcon}
+                  alt="Visa"
+                  className="h-4 w-auto opacity-60"
+                />
+                <img
+                  src={mastercardIcon}
+                  alt="Mastercard"
+                  className="h-4 w-auto opacity-60"
+                />
+                <img
+                  src={revoltIcon}
+                  alt="Revolt"
+                  className="h-4 w-auto opacity-60"
+                />
+              </div>
             </div>
           </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground" />
         </div>
       </Card>
     </div>

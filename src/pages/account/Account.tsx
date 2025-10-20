@@ -84,12 +84,10 @@ export default function AccountLayout() {
           {mainNavItems.map((item) => (
             <div key={item.name}>
               <Button
-                variant={
-                  item.href && isActive(item.href) ? "secondary" : "ghost"
-                }
+                variant="ghost"
                 className={cn(
                   "w-full justify-start",
-                  item.href && isActive(item.href) && "bg-accent"
+                  item.href && isActive(item.href) && "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
                 onClick={() => {
                   handleNavClick(item);
@@ -107,7 +105,7 @@ export default function AccountLayout() {
                   />
                 )}
               </Button>
-          </div>
+            </div>
           ))}
           </div>
       </nav>
@@ -169,10 +167,10 @@ export default function AccountLayout() {
                 {tokensSubmenu.map((item) => (
                   <Button
                     key={item.name}
-                    variant={isActive(item.href) ? "secondary" : "ghost"}
+                    variant="ghost"
                     className={cn(
                       "w-full justify-start",
-                      isActive(item.href) && "bg-accent"
+                      isActive(item.href) && "bg-primary text-primary-foreground hover:bg-primary/90"
                     )}
                     onClick={() => {
                       navigate(item.href);
@@ -182,8 +180,8 @@ export default function AccountLayout() {
                     <item.icon className="h-5 w-5 mr-3" />
                     {item.name}
                   </Button>
-                  ))}
-                </div>
+                ))}
+              </div>
             </nav>
           </div>
         </>
