@@ -11,7 +11,7 @@ import { ArrowLeft, ArrowDownUp } from "lucide-react";
 import { CustomTokenSelector } from "./CustomTokenSelector";
 import { CustomPaymentSelector } from "./CustomPaymentSelector";
 import { CustomQuoteSelector } from "./CustomQuoteSelector";
-import { CreditCard, Bank } from "@phosphor-icons/react";
+import { CreditCard, Bank, CreditCardIcon, BankIcon, AppleLogoIcon, GoogleLogoIcon } from "@phosphor-icons/react";
 import { AppleLogo, GoogleLogo } from "@phosphor-icons/react";
 
 interface Token {
@@ -143,13 +143,13 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
     
     switch (type) {
       case "card":
-        return <CreditCard {...iconProps} />;
+        return <CreditCardIcon {...iconProps} />;
       case "bank":
-        return <Bank {...iconProps} />;
+        return <BankIcon {...iconProps} />;
       case "apple":
-        return <AppleLogo {...iconProps} />;
+        return <AppleLogoIcon {...iconProps} />;
       case "google":
-        return <GoogleLogo {...iconProps} />;
+        return <GoogleLogoIcon {...iconProps} />;
       case "venmo":
         return <span className="text-3xl font-bold text-[#008CFF]">V</span>;
       case "paypal":
