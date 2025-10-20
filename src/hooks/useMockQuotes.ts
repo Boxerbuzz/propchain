@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { ReactNode } from 'react';
 
 export interface QuoteProvider {
   id: string;
   name: string;
-  logo: string;
+  logo: string | ReactNode;
   rate: number;
   fee: number;
   total: number;
@@ -37,7 +38,7 @@ export const useMockQuotes = (
           {
             id: 'moonpay',
             name: 'MoonPay',
-            logo: '🌙',
+            logo: 'moonpay',
             rate: baseRates[toToken as 'HBAR' | 'USDC'],
             fee: amount * 0.045,
             total: amount + (amount * 0.045),
@@ -47,7 +48,7 @@ export const useMockQuotes = (
           {
             id: 'transak',
             name: 'Transak',
-            logo: '⚡',
+            logo: 'transak',
             rate: baseRates[toToken as 'HBAR' | 'USDC'] * 0.98,
             fee: amount * 0.035,
             total: amount + (amount * 0.035),
@@ -57,7 +58,7 @@ export const useMockQuotes = (
           {
             id: 'ramp',
             name: 'Ramp Network',
-            logo: '🚀',
+            logo: 'ramp',
             rate: baseRates[toToken as 'HBAR' | 'USDC'],
             fee: amount * 0.05,
             total: amount + (amount * 0.05),
@@ -70,7 +71,7 @@ export const useMockQuotes = (
           {
             id: 'moonpay',
             name: 'MoonPay',
-            logo: '🌙',
+            logo: 'moonpay',
             rate: baseRates[fromToken as 'HBAR' | 'USDC'],
             fee: amount * 0.04,
             total: amount - (amount * 0.04),
@@ -80,7 +81,7 @@ export const useMockQuotes = (
           {
             id: 'transak',
             name: 'Transak',
-            logo: '⚡',
+            logo: 'transak',
             rate: baseRates[fromToken as 'HBAR' | 'USDC'] * 1.02,
             fee: amount * 0.03,
             total: amount - (amount * 0.03),
@@ -93,7 +94,7 @@ export const useMockQuotes = (
           {
             id: 'saucerswap',
             name: 'SaucerSwap',
-            logo: '🍯',
+            logo: 'saucerswap',
             rate: baseRates[toToken as 'HBAR' | 'USDC'] / baseRates[fromToken as 'HBAR' | 'USDC'],
             fee: amount * 0.003,
             total: amount - (amount * 0.003),
@@ -103,7 +104,7 @@ export const useMockQuotes = (
           {
             id: 'pangolin',
             name: 'Pangolin',
-            logo: '🐧',
+            logo: 'pangolin',
             rate: (baseRates[toToken as 'HBAR' | 'USDC'] / baseRates[fromToken as 'HBAR' | 'USDC']) * 0.99,
             fee: amount * 0.005,
             total: amount - (amount * 0.005),

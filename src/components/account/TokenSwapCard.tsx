@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -13,11 +13,15 @@ import { CustomPaymentSelector } from "./CustomPaymentSelector";
 import { CustomQuoteSelector } from "./CustomQuoteSelector";
 import { CreditCard, Bank, CreditCardIcon, BankIcon, AppleLogoIcon, GoogleLogoIcon } from "@phosphor-icons/react";
 import { AppleLogo, GoogleLogo } from "@phosphor-icons/react";
+import { ProviderLogo } from "./ProviderLogo";
+import hederaIcon from "@/assets/logo.svg";
+import usdcIcon from "/usdc.svg";
+import usdIcon from "/usd.svg";
 
 interface Token {
   symbol: string;
   name: string;
-  icon: string;
+  icon: string | ReactNode;
   balance: number;
 }
 
@@ -63,19 +67,19 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
     {
       symbol: "HBAR",
       name: "Hedera",
-      icon: "ℏ",
+      icon: <img src={hederaIcon} alt="Hedera" className="w-10 h-10" />,
       balance: balance?.balanceHbar || 0,
     },
     {
       symbol: "USDC",
       name: "USD Coin",
-      icon: "💵",
+      icon: <img src={usdcIcon} alt="USDC" className="w-10 h-10" />,
       balance: balance?.usdcBalance || 0,
     },
     {
       symbol: "USD",
       name: "US Dollar",
-      icon: "💵",
+      icon: <img src={usdIcon} alt="USD" className="w-10 h-10" />,
       balance: 0,
     },
   ];
@@ -309,7 +313,13 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl">{token.icon}</span>
+                      <div className="flex items-center justify-center w-12 h-12">
+                        {typeof token.icon === 'string' ? (
+                          <span className="text-3xl">{token.icon}</span>
+                        ) : (
+                          token.icon
+                        )}
+                      </div>
                       <div>
                         <p className="font-semibold">{token.symbol}</p>
                         <p className="text-sm text-muted-foreground">{token.name}</p>
@@ -379,7 +389,17 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl">{quote.logo}</span>
+                      <div className="flex items-center justify-center w-12 h-12">
+                        {typeof quote.logo === 'string' ? (
+                          quote.logo === '⚡' ? (
+                            <span className="text-3xl">{quote.logo}</span>
+                          ) : (
+                            <ProviderLogo provider={quote.logo} size="md" />
+                          )
+                        ) : (
+                          quote.logo
+                        )}
+                      </div>
                       <div>
                         <p className="font-semibold">{quote.name}</p>
                         <p className="text-sm text-muted-foreground">
