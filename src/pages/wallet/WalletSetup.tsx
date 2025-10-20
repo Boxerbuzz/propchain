@@ -53,7 +53,7 @@ export default function WalletSetup() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <Link to="/dashboard">
-            <Button variant="ghost" className="flex items-center">
+            <Button variant="outline" className="flex items-center">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
