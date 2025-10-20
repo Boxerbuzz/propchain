@@ -190,7 +190,7 @@ const Profile = () => {
       default:
         return {
           message: "Identity verification not started",
-          badgeText: "Not Started",
+          badgeText: "Not Done",
           badgeClass: "bg-gray-100 text-gray-800",
           iconClass: "text-gray-600",
           cardClass: "bg-gray-50 dark:bg-gray-950/20",
@@ -224,7 +224,9 @@ const Profile = () => {
               <CardHeader className="text-center">
                 <div className="flex justify-center mb-4">
                   <Avatar className="h-24 w-24 border-2 border-border">
-                    <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${formData.firstName} ${formData.lastName}&backgroundColor=6366f1,8b5cf6,ec4899,10b981`} />
+                    <AvatarImage
+                      src={`https://api.dicebear.com/7.x/initials/svg?seed=${formData.firstName} ${formData.lastName}&backgroundColor=6366f1,8b5cf6,ec4899,10b981`}
+                    />
                     <AvatarFallback className="text-2xl">
                       {formData.firstName[0]}
                       {formData.lastName[0]}
@@ -395,7 +397,9 @@ const Profile = () => {
               <Card className="border-blue-200 bg-blue-50">
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
-                    <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                      <Info className="w-4 h-4 text-blue-600" />
+                    </div>
                     <div>
                       <h3 className="font-medium text-blue-800 mb-1">
                         Personal Details Modification
@@ -407,11 +411,7 @@ const Profile = () => {
                         these details.
                       </p>
                       <Link to="/kyc/start" className="inline-block mt-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-blue-300 text-blue-700 hover:bg-blue-100"
-                        >
+                        <Button size="sm" variant="default">
                           Complete KYC Verification
                         </Button>
                       </Link>

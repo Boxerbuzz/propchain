@@ -203,10 +203,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <Link to="/kyc/start">
-                  <Button
-                    variant="outline"
-                    className="border-amber-300 text-amber-700 hover:bg-amber-100 w-full md:w-auto"
-                  >
+                  <Button variant="default" className=" w-full md:w-auto">
                     {!kycStatus
                       ? "Verify Now"
                       : kycStatus.status === "pending"
@@ -368,11 +365,12 @@ export default function Dashboard() {
                                 {activity.title}
                               </p>
                               <div className="flex items-center space-x-2">
-                                {activity.amount && activity.currency === 'NGN' && (
-                                  <span className="text-sm font-semibold text-foreground">
-                                    {formatNumber(activity.amount)}
-                                  </span>
-                                )}
+                                {activity.amount &&
+                                  activity.currency === "NGN" && (
+                                    <span className="text-sm font-semibold text-foreground">
+                                      {formatNumber(activity.amount)}
+                                    </span>
+                                  )}
                                 {getStatusBadge(activity.status)}
                               </div>
                             </div>
@@ -463,7 +461,7 @@ export default function Dashboard() {
                     View Portfolio
                   </Button>
                 </Link>
-                {kycStatus?.status !== 'approved' && (
+                {kycStatus?.status !== "approved" && (
                   <Link to="/kyc/start" className="block">
                     <Button
                       variant="outline"

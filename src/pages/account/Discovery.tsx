@@ -11,7 +11,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useCurrency } from "@/context/CurrencyContext";
 
 export default function Discovery() {
@@ -198,16 +197,24 @@ export default function Discovery() {
   const endIndex = startIndex + itemsPerPage;
   const currentTokens = allPropertyTokens.slice(startIndex, endIndex);
 
-  const MiniChart = ({ data, isPositive }: { data: number[]; isPositive: boolean }) => {
+  const MiniChart = ({
+    data,
+    isPositive,
+  }: {
+    data: number[];
+    isPositive: boolean;
+  }) => {
     const max = Math.max(...data);
     const min = Math.min(...data);
     const range = max - min || 1;
-    
-    const path = data.map((value, index) => {
-      const x = (index / (data.length - 1)) * 60;
-      const y = 20 - ((value - min) / range) * 18;
-      return `${index === 0 ? 'M' : 'L'} ${x},${y}`;
-    }).join(" ");
+
+    const path = data
+      .map((value, index) => {
+        const x = (index / (data.length - 1)) * 60;
+        const y = 20 - ((value - min) / range) * 18;
+        return `${index === 0 ? "M" : "L"} ${x},${y}`;
+      })
+      .join(" ");
 
     return (
       <svg width="60" height="20" className="inline-block" viewBox="0 0 60 20">
@@ -270,34 +277,40 @@ export default function Discovery() {
                       />
                     </div>
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-purple-500 shadow-sm">
-                      <img src="/hedera.svg" alt="Hedera" className="w-2.5 h-2.5" />
+                      <img
+                        src="/hedera.svg"
+                        alt="Hedera"
+                        className="w-2.5 h-2.5"
+                      />
                     </div>
                   </div>
-                  
+
                   {/* Column 2: Name & Symbol */}
                   <div className="min-w-0">
                     <p className="font-semibold truncate">{token.name}</p>
-                    <p className="text-sm text-muted-foreground">{token.symbol}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {token.symbol}
+                    </p>
                   </div>
-                  
+
                   {/* Column 3: Price - Hidden on mobile */}
                   <div className="hidden sm:block text-right">
                     <p className="font-medium">
                       {formatAmount(token.price, token.priceUsd)}
                     </p>
                   </div>
-                  
+
                   {/* Column 4: Change - Hidden on mobile */}
                   <div className="hidden sm:block text-right">
                     <Badge
                       variant={token.change24h > 0 ? "default" : "destructive"}
-                      className="text-xs"
+                      className="text-xs text-white"
                     >
                       {token.change24h > 0 ? "+" : ""}
                       {token.change24h}%
                     </Badge>
                   </div>
-                  
+
                   {/* Column 5: Chart - Hidden on mobile */}
                   <div className="hidden sm:flex justify-center">
                     <MiniChart
@@ -305,7 +318,7 @@ export default function Discovery() {
                       isPositive={token.change24h > 0}
                     />
                   </div>
-                  
+
                   {/* Column 6: Market Cap */}
                   <div className="text-right">
                     <p className="font-semibold">
@@ -322,7 +335,9 @@ export default function Discovery() {
         {/* Pagination */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
           <p className="text-sm text-muted-foreground">
-            Showing {startIndex + 1}-{Math.min(endIndex, allPropertyTokens.length)} of {allPropertyTokens.length} tokens
+            Showing {startIndex + 1}-
+            {Math.min(endIndex, allPropertyTokens.length)} of{" "}
+            {allPropertyTokens.length} tokens
           </p>
           <div className="flex gap-2">
             <Button
@@ -335,17 +350,19 @@ export default function Discovery() {
               <span className="hidden sm:inline">Previous</span>
             </Button>
             <div className="hidden sm:flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCurrentPage(page)}
-                  className="w-8 h-8 p-0"
-                >
-                  {page}
-                </Button>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {page}
+                  </Button>
+                )
+              )}
             </div>
             <div className="sm:hidden flex items-center px-3">
               <span className="text-sm font-medium">
@@ -367,5 +384,3 @@ export default function Discovery() {
     </div>
   );
 }
-
-
