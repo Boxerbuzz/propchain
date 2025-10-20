@@ -13,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Spinner } from "@/components/ui/spinner";
+import googleLogo from "/google.svg";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -147,11 +148,7 @@ export default function Login() {
         {/* Social Login */}
         <div className="space-y-3">
           <Button variant="outline" className="w-full" size="lg">
-            <img
-              src="https://developers.google.com/identity/images/g-logo.png"
-              alt="Google"
-              className="w-4 h-4 mr-2"
-            />
+            <img src={googleLogo} alt="Google" className="w-4 h-4 mr-2" />
             Continue with Google
           </Button>
         </div>
