@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
+import { ReactNode } from "react";
 
 interface Token {
   symbol: string;
   name: string;
-  icon: string;
+  icon: string | ReactNode;
   balance?: number;
 }
 
@@ -30,7 +31,13 @@ export function CustomTokenSelector({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{selectedToken?.icon || "?"}</span>
+            <div className="flex items-center justify-center w-10 h-10">
+              {typeof selectedToken?.icon === 'string' ? (
+                <span className="text-3xl">{selectedToken?.icon || "?"}</span>
+              ) : (
+                selectedToken?.icon || "?"
+              )}
+            </div>
             <div>
               <p className="font-semibold">{selectedToken?.symbol || "Select"}</p>
               <p className="text-sm text-muted-foreground">

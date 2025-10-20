@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
 import { QuoteProvider as QuoteProviderType } from "@/hooks/useMockQuotes";
+import { ProviderLogo } from "./ProviderLogo";
 
 interface CustomQuoteSelectorProps {
   selectedQuote: QuoteProviderType | null;
@@ -22,7 +23,17 @@ export function CustomQuoteSelector({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{selectedQuote?.logo || "?"}</span>
+            <div className="flex items-center justify-center w-10 h-10">
+              {selectedQuote?.logo ? (
+                typeof selectedQuote.logo === 'string' ? (
+                  <ProviderLogo provider={selectedQuote.logo} size="sm" />
+                ) : (
+                  selectedQuote.logo
+                )
+              ) : (
+                "?"
+              )}
+            </div>
             <div>
               <p className="font-semibold">
                 {selectedQuote?.name || "Select provider"}
