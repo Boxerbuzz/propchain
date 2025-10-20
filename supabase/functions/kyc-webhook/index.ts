@@ -59,9 +59,12 @@ serve(async (req) => {
 
     // Simulate ID validation process
     const validationResult = await simulateIDValidation(record);
-    console.log("[KYC-WEBHOOK] ✅ Validation result:", validationResult);
+    console.log("[KYC-WEBHOOK] ✅ Validation result:", JSON.stringify(validationResult, null, 2));
+    console.log("[KYC-WEBHOOK] 🔍 isValid flag:", validationResult.isValid);
 
     if (validationResult.isValid) {
+      console.log("[KYC-WEBHOOK] ✅ Proceeding with APPROVAL");
+
       // Update KYC verification to approved
       const { error: kycError } = await supabaseClient
         .from("kyc_verifications")
@@ -128,6 +131,9 @@ serve(async (req) => {
 
       console.log(`[KYC-WEBHOOK] ✅ KYC approved for user ${userId}`);
     } else {
+      console.log("[KYC-WEBHOOK] ❌ Proceeding with REJECTION");
+      console.log("[KYC-WEBHOOK] ❌ Rejection reason:", validationResult.rejectionReason);
+      
       // Update KYC verification to rejected
       const { error: kycError } = await supabaseClient
         .from("kyc_verifications")

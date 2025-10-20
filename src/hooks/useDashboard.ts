@@ -45,7 +45,9 @@ export const useDashboard = () => {
         .from('kyc_verifications')
         .select('status, kyc_level, investment_limit_ngn, expires_at')
         .eq('user_id', user.id)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
       
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching KYC status:', error);
