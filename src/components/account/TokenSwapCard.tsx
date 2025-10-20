@@ -164,8 +164,8 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
   };
 
   return (
-    <div className="w-full max-w-[500px] mx-auto p-6">
-      <Card className="p-6 bg-card border-border">
+    <div className="w-full max-w-[500px] mx-auto px-4 sm:px-6 py-4 sm:py-6">
+      <Card className="p-4 sm:p-6 bg-card border-border">
         {cardState !== "main" && (
           <Button
             variant="ghost"
@@ -180,13 +180,13 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
 
         {cardState === "main" && (
           <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6">
               <TabsTrigger value="buy">Buy</TabsTrigger>
               <TabsTrigger value="sell">Sell</TabsTrigger>
               <TabsTrigger value="swap">Swap</TabsTrigger>
             </TabsList>
 
-            <TabsContent value={activeTab} className="space-y-6">
+            <TabsContent value={activeTab} className="space-y-4 sm:space-y-6">
             {/* Amount Input */}
             <div className="space-y-2">
               <Label>
@@ -200,7 +200,7 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="text-2xl font-bold pl-8 h-14"
+                  className="text-xl sm:text-2xl font-bold pl-8 h-12 sm:h-14"
                   placeholder="0.00"
                 />
               </div>

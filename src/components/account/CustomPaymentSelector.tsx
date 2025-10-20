@@ -47,25 +47,25 @@ export function CustomPaymentSelector({
         className="p-4 cursor-pointer hover:bg-accent transition-colors"
         onClick={onClick}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-muted flex-shrink-0">
               {selectedMethod ? (
                 <PaymentIcon type={selectedMethod.icon} />
               ) : (
                 <CreditCard size={24} weight="duotone" />
               )}
             </div>
-            <div>
-              <p className="font-semibold">
+            <div className="min-w-0">
+              <p className="font-semibold text-sm sm:text-base truncate">
                 {selectedMethod?.name || "Select method"}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">
                 {selectedMethod ? "Payment method" : "Choose how to pay"}
               </p>
             </div>
           </div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
         </div>
       </Card>
     </div>
