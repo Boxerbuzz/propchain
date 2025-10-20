@@ -9,9 +9,96 @@ import {
   Clock,
   CheckCircle,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import KYCRejectionCard from "@/components/KYCRejectionCard";
+import { useEffect } from "react";
 
 export default function KYCStart() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  const { data: kycData, isLoading } = useQuery({
+    queryKey: ['kyc-status-check', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('kyc_verifications')
+        .select('status, rejection_reason, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching KYC status:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Redirect if already pending or approved
+  useEffect(() => {
+    if (kycData) {
+      if (kycData.status === 'pending') {
+        navigate('/kyc/status');
+      } else if (kycData.status === 'approved') {
+        navigate('/kyc/status');
+      }
+    }
+  }, [kycData, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show rejection UI if status is rejected
+  if (kycData?.status === 'rejected') {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Shield className="w-10 h-10 text-destructive" />
+            </div>
+            <h1 className="text-3xl font-bold text-foreground mb-4">
+              Verify Your Identity
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Your previous verification was not successful. Please review the feedback below and resubmit.
+            </p>
+          </div>
+
+          <KYCRejectionCard 
+            rejectionReason={kycData.rejection_reason}
+            submittedAt={kycData.created_at}
+          />
+
+          <div className="text-center mt-8">
+            <Link to="/dashboard">
+              <Button variant="outline" size="lg" className="px-8">
+                Maybe Later
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-12">

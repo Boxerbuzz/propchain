@@ -132,6 +132,68 @@ class KYCService {
     try {
       console.log("🚀 Starting KYC submission for user:", data.userId);
 
+      // Check for existing rejected records and clean them up
+      const { data: existingRejected, error: fetchError } = await supabase
+        .from('kyc_verifications')
+        .select('id, rejection_reason, created_at')
+        .eq('user_id', data.userId)
+        .eq('status', 'rejected')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error("❌ Error checking existing records:", fetchError);
+      }
+
+      if (existingRejected) {
+        console.log("🧹 Cleaning up old rejected record:", existingRejected.id);
+
+        // Delete old rejected record
+        const { error: deleteError } = await supabase
+          .from('kyc_verifications')
+          .delete()
+          .eq('id', existingRejected.id);
+
+        if (deleteError) {
+          console.error("❌ Error deleting old record:", deleteError);
+        } else {
+          console.log("✅ Old rejected record deleted");
+        }
+
+        // Delete draft data if exists
+        const { error: draftDeleteError } = await supabase
+          .from('kyc_drafts')
+          .delete()
+          .eq('user_id', data.userId);
+
+        if (draftDeleteError) {
+          console.error("❌ Error deleting draft:", draftDeleteError);
+        }
+
+        // Log to activity_logs
+        const { error: logError } = await supabase
+          .from('activity_logs')
+          .insert({
+            user_id: data.userId,
+            activity_type: 'kyc_resubmission',
+            activity_category: 'kyc',
+            description: `User resubmitted KYC after rejection: ${existingRejected.rejection_reason || 'No reason provided'}`,
+            metadata: {
+              previous_rejection_reason: existingRejected.rejection_reason,
+              previous_submission_date: existingRejected.created_at,
+              resubmission_date: new Date().toISOString(),
+              previous_kyc_id: existingRejected.id,
+            },
+          });
+
+        if (logError) {
+          console.error("❌ Error logging resubmission:", logError);
+        } else {
+          console.log("✅ Resubmission logged to activity_logs");
+        }
+      }
+
       // Create KYC verification record using actual schema columns
       const kycData = {
         user_id: data.userId,

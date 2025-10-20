@@ -6,10 +6,13 @@ import { CheckCircle, Clock, AlertTriangle, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { toast } from "@/hooks/use-toast";
 
 export default function KYCStatus() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   
   const { data: kycData, isLoading } = useQuery({
     queryKey: ['kyc-status', user?.id],
@@ -32,7 +35,57 @@ export default function KYCStatus() {
       return data;
     },
     enabled: !!user?.id,
+    refetchInterval: (query) => {
+      // Poll every 10s if status is pending
+      return query.state.data?.status === 'pending' ? 10000 : false;
+    },
   });
+
+  // Real-time subscription for KYC status changes
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    console.log('Setting up real-time subscription for KYC status changes');
+    
+    const channel = supabase
+      .channel('kyc-status-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'kyc_verifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('KYC status changed:', payload);
+          
+          // Invalidate query to refetch
+          queryClient.invalidateQueries({ queryKey: ['kyc-status', user.id] });
+          
+          // Show toast notification
+          const newStatus = payload.new.status;
+          if (newStatus === 'approved') {
+            toast({
+              title: "KYC Verified! 🎉",
+              description: "Your identity has been successfully verified",
+            });
+          } else if (newStatus === 'rejected') {
+            toast({
+              title: "KYC Rejected",
+              description: payload.new.rejection_reason || "Please review and resubmit",
+              variant: "destructive",
+            });
+          }
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      console.log('Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   const kycStatus = kycData?.status === 'approved' ? 'verified' : kycData?.status || 'pending' as
     | "pending"
