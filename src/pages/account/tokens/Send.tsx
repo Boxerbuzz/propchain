@@ -44,13 +44,6 @@ export default function SendTokens() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-[500px] mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">Send Tokens</h1>
-          <p className="text-muted-foreground">
-            Transfer HBAR or USDC to another wallet
-          </p>
-        </div>
-
         <Card className="p-6 bg-card border-border">
           <div className="space-y-6">
             {/* Recipient Address */}
@@ -72,7 +65,9 @@ export default function SendTokens() {
               <Label>Token</Label>
               <TokenSelector
                 selectedToken={selectedToken}
-                onSelectToken={(token) => setSelectedToken(token as "HBAR" | "USDC")}
+                onSelectToken={(token) =>
+                  setSelectedToken(token as "HBAR" | "USDC")
+                }
                 tokens={tokens}
               />
             </div>
@@ -93,7 +88,9 @@ export default function SendTokens() {
                   size="sm"
                   className="absolute right-2 top-1/2 -translate-y-1/2"
                   onClick={() => {
-                    const token = tokens.find((t) => t.symbol === selectedToken);
+                    const token = tokens.find(
+                      (t) => t.symbol === selectedToken
+                    );
                     if (token) setAmount(token.balance.toString());
                   }}
                 >
@@ -101,7 +98,11 @@ export default function SendTokens() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Available: {tokens.find((t) => t.symbol === selectedToken)?.balance.toFixed(4)} {selectedToken}
+                Available:{" "}
+                {tokens
+                  .find((t) => t.symbol === selectedToken)
+                  ?.balance.toFixed(4)}{" "}
+                {selectedToken}
               </p>
             </div>
 
@@ -114,7 +115,8 @@ export default function SendTokens() {
               <div className="flex justify-between items-center text-sm mt-2">
                 <span className="text-muted-foreground">Total</span>
                 <span className="font-bold">
-                  {amount ? parseFloat(amount).toFixed(4) : "0.00"} {selectedToken}
+                  {amount ? parseFloat(amount).toFixed(4) : "0.00"}{" "}
+                  {selectedToken}
                 </span>
               </div>
             </div>
@@ -126,16 +128,7 @@ export default function SendTokens() {
             </Button>
           </div>
         </Card>
-
-        {/* Transaction History */}
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">Recent Transactions</h3>
-          <div className="text-center text-muted-foreground py-8">
-            <p>No recent transactions</p>
-          </div>
-        </div>
       </div>
     </div>
   );
 }
-
