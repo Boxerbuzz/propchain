@@ -106,7 +106,7 @@ export default function AccountLayout() {
                 )}
                 onClick={() => {
                   handleNavClick(item);
-                  if (isMobile) setMobileMenuOpen(false);
+                  if (isMobile && !item.hasSubmenu) setMobileMenuOpen(false);
                 }}
               >
                 <item.icon className="h-5 w-5 mr-3" />
@@ -120,6 +120,31 @@ export default function AccountLayout() {
                   />
                 )}
               </Button>
+              
+              {/* Submenu items (Mobile) */}
+              {isMobile && item.hasSubmenu && item.submenuType === "tokens" && tokensExpanded && (
+                <div className="ml-8 mt-2 space-y-2">
+                  {tokensSubmenu.map((subItem) => (
+                    <Button
+                      key={subItem.name}
+                      variant="ghost"
+                      size="sm"
+                      className={cn(
+                        "w-full justify-start",
+                        isActive(subItem.href) && "bg-primary text-primary-foreground hover:bg-primary/90"
+                      )}
+                      onClick={() => {
+                        navigate(subItem.href);
+                        setTokensExpanded(false);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <subItem.icon className="h-4 w-4 mr-3" />
+                      {subItem.name}
+                    </Button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
           </div>
