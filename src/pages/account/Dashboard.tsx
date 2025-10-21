@@ -294,13 +294,13 @@ export default function AccountDashboard() {
   };
 
   return (
-    <div className="p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="p-4 md:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground mt-1 text-sm md:text-base">
               Overview of your wallet and assets
             </p>
           </div>
@@ -309,6 +309,7 @@ export default function AccountDashboard() {
             size="sm"
             onClick={() => syncBalance()}
             disabled={isSyncing}
+            className="w-full sm:w-auto"
           >
             <RefreshCw
               className={`h-4 w-4 mr-2 ${isSyncing ? "animate-spin" : ""}`}
@@ -318,10 +319,10 @@ export default function AccountDashboard() {
         </div>
 
         {/* Wallet Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 mb-6 md:mb-8">
           {/* Animated Currency Card Stack */}
-          <div className="md:col-span-2 relative">
-            <div className="relative h-[180px] perspective-1000">
+          <div className="lg:col-span-1 xl:col-span-2 relative">
+            <div className="relative h-[180px] perspective-1000 w-full max-w-md lg:max-w-none mx-auto lg:mx-0">
               {currencyCards.map((card, displayIndex) => {
                 const originalIndex = displayIndex;
                 const offset = originalIndex - activeCardIndex;
@@ -503,22 +504,22 @@ export default function AccountDashboard() {
 
         {/* Tabs */}
         <Tabs defaultValue="tokens" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="tokens" className="gap-2">
-              <Coins className="h-4 w-4" />
-              <span className="hidden sm:inline">Tokens</span>
+          <TabsList className="grid w-full grid-cols-4 mb-6 md:mb-8 h-auto gap-1 p-1">
+            <TabsTrigger value="tokens" className="gap-1 sm:gap-2 px-2 sm:px-3">
+              <Coins className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline text-xs sm:text-sm">Tokens</span>
             </TabsTrigger>
-            <TabsTrigger value="nfts" className="gap-2">
-              <Image className="h-4 w-4" />
-              <span className="hidden sm:inline">NFTs</span>
+            <TabsTrigger value="nfts" className="gap-1 sm:gap-2 px-2 sm:px-3">
+              <Image className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline text-xs sm:text-sm">NFTs</span>
             </TabsTrigger>
-            <TabsTrigger value="defi" className="gap-2">
-              <CircleDollarSign className="h-4 w-4" />
-              <span className="hidden sm:inline">DeFi</span>
+            <TabsTrigger value="defi" className="gap-1 sm:gap-2 px-2 sm:px-3">
+              <CircleDollarSign className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline text-xs sm:text-sm">DeFi</span>
             </TabsTrigger>
-            <TabsTrigger value="transactions" className="gap-2">
-              <Receipt className="h-4 w-4" />
-              <span className="hidden sm:inline">Transactions</span>
+            <TabsTrigger value="transactions" className="gap-1 sm:gap-2 px-2 sm:px-3">
+              <Receipt className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline text-xs sm:text-sm">Transactions</span>
             </TabsTrigger>
           </TabsList>
 
