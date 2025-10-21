@@ -21,22 +21,30 @@ export const useSmartContractTransaction = (transactionHash?: string) => {
       return data;
     },
     enabled: !!transactionHash && pollingEnabled,
-    refetchInterval: (data) => {
-      if (data?.transaction_status === 'confirmed' || data?.transaction_status === 'failed') {
-        setPollingEnabled(false);
-        return false;
-      }
-      return 5000;
-    },
+    refetchInterval: 5000,
   });
 
+  // Stop polling when transaction is finalized
   useEffect(() => {
-    if (transaction?.transaction_status === 'confirmed') {
-      toast.success('Transaction confirmed');
-    } else if (transaction?.transaction_status === 'failed') {
-      toast.error('Transaction failed');
+    if (transaction) {
+      const status = (transaction as any).transaction_status;
+      if (status === 'confirmed' || status === 'failed') {
+        setPollingEnabled(false);
+      }
     }
-  }, [transaction?.transaction_status]);
+  }, [transaction]);
+
+  // Show toast notifications on status changes
+  useEffect(() => {
+    if (transaction) {
+      const status = (transaction as any).transaction_status;
+      if (status === 'confirmed') {
+        toast.success('Transaction confirmed');
+      } else if (status === 'failed') {
+        toast.error('Transaction failed');
+      }
+    }
+  }, [(transaction as any)?.transaction_status]);
 
   return {
     transaction,
