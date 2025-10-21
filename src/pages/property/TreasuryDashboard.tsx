@@ -8,9 +8,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useContractBalance } from '@/hooks/useContractBalance';
 import { MultiSigWithdrawalCard } from '@/components/treasury/MultiSigWithdrawalCard';
 import { format } from 'date-fns';
+import { useAuth } from '@/context/AuthContext';
 
 export default function TreasuryDashboard() {
   const { propertyId } = useParams();
+  const { user } = useAuth();
 
   // Fetch tokenization with treasury details
   const { data: tokenization, isLoading: loadingTokenization } = useQuery({
@@ -177,12 +179,26 @@ export default function TreasuryDashboard() {
             pendingWithdrawals.map((withdrawal: any) => (
               <MultiSigWithdrawalCard
                 key={withdrawal.id}
-                amount={withdrawal.amount_ngn}
-                description={withdrawal.description || 'No description'}
-                approvalsCount={withdrawal.metadata?.approvals_count || 0}
-                approvalsRequired={withdrawal.metadata?.approvals_required || 2}
-                status={withdrawal.status}
-                createdAt={withdrawal.created_at}
+                withdrawal={{
+                  id: withdrawal.id,
+                  requestId: withdrawal.hedera_transaction_id || withdrawal.id,
+                  amount_ngn: withdrawal.amount_ngn,
+                  description: withdrawal.description || 'No description',
+                  status: withdrawal.status,
+                  created_at: withdrawal.created_at,
+                  metadata: {
+                    withdrawalRequestId: withdrawal.hedera_transaction_id || withdrawal.id,
+                    recipient: withdrawal.metadata?.recipient || 'Unknown',
+                    multisig_status: withdrawal.status,
+                    approvals: withdrawal.metadata?.approvers || [],
+                    requiredApprovals: withdrawal.metadata?.approvals_required || 2,
+                  }
+                }}
+                currentUserIsSigner={tokenization?.treasury_signers?.includes(user?.id) || false}
+                currentUserAddress={user?.id}
+                onApprovalChange={() => {
+                  // Refetch withdrawals after approval
+                }}
               />
             ))
           ) : (
