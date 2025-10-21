@@ -1,0 +1,149 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/tim/Documents/Relett/propchain-visuals/contracts/solidity/DividendDistributor.sol": {
+      "lastModificationDate": 1761018610007,
+      "contentHash": "5e866560ebe7f82b07b2064bf190c7bc",
+      "sourceName": "solidity/DividendDistributor.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "DividendDistributor"
+      ]
+    },
+    "/Users/tim/Documents/Relett/propchain-visuals/contracts/solidity/GovernanceExecutor.sol": {
+      "lastModificationDate": 1761018610008,
+      "contentHash": "16cb1f44e7f9692a04ed29e033ce2c21",
+      "sourceName": "solidity/GovernanceExecutor.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "GovernanceExecutor"
+      ]
+    },
+    "/Users/tim/Documents/Relett/propchain-visuals/contracts/solidity/MultiSigTreasury.sol": {
+      "lastModificationDate": 1761018610008,
+      "contentHash": "ee1cc7af592f9cddd416f158df356ec1",
+      "sourceName": "solidity/MultiSigTreasury.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "MultiSigTreasury"
+      ]
+    },
+    "/Users/tim/Documents/Relett/propchain-visuals/contracts/solidity/PlatformEscrowManager.sol": {
+      "lastModificationDate": 1761018610008,
+      "contentHash": "9aea313ea15c8e318d59a307f23c301c",
+      "sourceName": "solidity/PlatformEscrowManager.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "PlatformEscrowManager"
+      ]
+    }
+  }
+}

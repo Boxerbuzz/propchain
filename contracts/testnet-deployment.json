@@ -1,0 +1,31 @@
+{
+  "network": "hedera_testnet",
+  "timestamp": "2025-10-21T04:24:28.307Z",
+  "deployer": "0xdE8D00D1F800AC4944055Af937a1B53460162Cb5",
+  "contracts": {
+    "governanceExecutor": {
+      "address": "0x637De4b8E8e39f97638485BdC90F937A5898daA7",
+      "deployedAt": "2025-10-21T04:24:39.761Z",
+      "deploymentTx": "0xd76139a473e00ba0b581a44b54db7d505d2116e6216d591592b00fe2f0dc7e06",
+      "version": "1.0.0"
+    },
+    "dividendDistributor": {
+      "address": "0x418BC4d08A8ac4F2AeA9C71a9cf3BE7De0eB508A",
+      "deployedAt": "2025-10-21T04:24:47.465Z",
+      "deploymentTx": "0x479f8c3daada30417dd2a9d88352e5156b081e4b58cfbaf1e02a720dcf042e04",
+      "version": "1.0.0"
+    },
+    "multiSigTreasury": {
+      "address": "0x2b461A252EEb91A11fE003e751aa98DA1D625F2C",
+      "deployedAt": "2025-10-21T04:25:00.642Z",
+      "deploymentTx": "0xc557053fc4468c6f3246937574fed13dea1e996a73fe8b00ca1d0612c537a3e3",
+      "version": "1.0.0"
+    },
+    "platformEscrowManager": {
+      "address": "0x72401B82c03fb61756A804785f3fA8C5AB65ea9B",
+      "deployedAt": "2025-10-21T04:25:12.279Z",
+      "deploymentTx": "0x272c929cc3cab9a388159deb0b35eac732e4ec3253dd0d1761fc08bdabc514d2",
+      "version": "1.0.0"
+    }
+  }
+}

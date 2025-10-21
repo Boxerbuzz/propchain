@@ -1,18 +1,14 @@
-import { ethers } from "ethers";
-import { readFileSync, writeFileSync } from "fs";
+import { ethers } from "hardhat";
+import { writeFileSync } from "fs";
 import { join } from "path";
+import * as dotenv from "dotenv";
 
-/**
- * Deployment script for Hedera Testnet
- * 
- * Prerequisites:
- * 1. Set HEDERA_TESTNET_RPC_URL in environment
- * 2. Set DEPLOYER_PRIVATE_KEY in environment
- * 3. Ensure deployer account has sufficient HBAR
- */
+dotenv.config();
 
 interface DeploymentConfig {
   network: string;
+  timestamp: string;
+  deployer: string;
   contracts: {
     [key: string]: {
       address: string;
@@ -26,73 +22,113 @@ interface DeploymentConfig {
 async function main() {
   console.log("🚀 Starting deployment to Hedera Testnet...\n");
 
-  // Setup provider and wallet
-  const rpcUrl = process.env.HEDERA_TESTNET_RPC_URL || "https://testnet.hashio.io/api";
-  const provider = new ethers.JsonRpcProvider(rpcUrl);
-  
-  const deployerPrivateKey = process.env.DEPLOYER_PRIVATE_KEY;
-  if (!deployerPrivateKey) {
-    throw new Error("DEPLOYER_PRIVATE_KEY environment variable not set");
-  }
-  
-  const deployer = new ethers.Wallet(deployerPrivateKey, provider);
+  // Get deployer
+  const [deployer] = await ethers.getSigners();
   console.log(`📍 Deployer address: ${deployer.address}`);
   
-  const balance = await provider.getBalance(deployer.address);
+  const balance = await ethers.provider.getBalance(deployer.address);
   console.log(`💰 Deployer balance: ${ethers.formatEther(balance)} HBAR\n`);
 
-  // Load compiled contracts
-  const contractsPath = join(__dirname, "../solidity");
-  
+  if (balance < ethers.parseEther("10")) {
+    console.warn("⚠️  Warning: Balance is low. You may need more HBAR for deployment.\n");
+  }
+
   const config: DeploymentConfig = {
-    network: "testnet",
+    network: "hedera_testnet",
+    timestamp: new Date().toISOString(),
+    deployer: deployer.address,
     contracts: {}
   };
 
   // Deploy GovernanceExecutor
   console.log("📝 Deploying GovernanceExecutor...");
-  const governanceExecutorSource = readFileSync(
-    join(contractsPath, "GovernanceExecutor.sol"),
-    "utf8"
-  );
-  // Note: In production, you'd use Hardhat or Foundry to compile
-  // This is a placeholder for the deployment flow
-  console.log("   Contract compilation would happen here");
-  console.log("   ✅ GovernanceExecutor deployed (placeholder)\n");
+  const GovernanceExecutor = await ethers.getContractFactory("GovernanceExecutor");
+  const governanceExecutor = await GovernanceExecutor.deploy();
+  await governanceExecutor.waitForDeployment();
+  const govAddress = await governanceExecutor.getAddress();
+  
+  console.log(`   ✅ GovernanceExecutor deployed at: ${govAddress}`);
+  config.contracts.governanceExecutor = {
+    address: govAddress,
+    deployedAt: new Date().toISOString(),
+    deploymentTx: governanceExecutor.deploymentTransaction()?.hash || "",
+    version: "1.0.0"
+  };
+  console.log("");
 
   // Deploy DividendDistributor
   console.log("📝 Deploying DividendDistributor...");
-  console.log("   Contract compilation would happen here");
-  console.log("   ✅ DividendDistributor deployed (placeholder)\n");
+  const DividendDistributor = await ethers.getContractFactory("DividendDistributor");
+  const dividendDistributor = await DividendDistributor.deploy();
+  await dividendDistributor.waitForDeployment();
+  const divAddress = await dividendDistributor.getAddress();
+  
+  console.log(`   ✅ DividendDistributor deployed at: ${divAddress}`);
+  config.contracts.dividendDistributor = {
+    address: divAddress,
+    deployedAt: new Date().toISOString(),
+    deploymentTx: dividendDistributor.deploymentTransaction()?.hash || "",
+    version: "1.0.0"
+  };
+  console.log("");
 
-  // Deploy MultiSigTreasury (with initial signers)
+  // Deploy MultiSigTreasury
   console.log("📝 Deploying MultiSigTreasury...");
-  const initialSigners = [
-    deployer.address,
-    // Add platform admin and other signers
-  ];
-  const requiredApprovals = 2;
+  const initialSigners = [deployer.address]; // Add more signers as needed
+  const requiredApprovals = 1; // Adjust based on requirements
+  const propertyOwner = deployer.address; // Platform as initial property owner
+  
+  const MultiSigTreasury = await ethers.getContractFactory("MultiSigTreasury");
+  const multiSigTreasury = await MultiSigTreasury.deploy(initialSigners, requiredApprovals, propertyOwner);
+  await multiSigTreasury.waitForDeployment();
+  const treasuryAddress = await multiSigTreasury.getAddress();
+  
+  console.log(`   ✅ MultiSigTreasury deployed at: ${treasuryAddress}`);
   console.log(`   Initial signers: ${initialSigners.length}`);
   console.log(`   Required approvals: ${requiredApprovals}`);
-  console.log("   Contract compilation would happen here");
-  console.log("   ✅ MultiSigTreasury deployed (placeholder)\n");
+  config.contracts.multiSigTreasury = {
+    address: treasuryAddress,
+    deployedAt: new Date().toISOString(),
+    deploymentTx: multiSigTreasury.deploymentTransaction()?.hash || "",
+    version: "1.0.0"
+  };
+  console.log("");
 
   // Deploy PlatformEscrowManager
   console.log("📝 Deploying PlatformEscrowManager...");
-  console.log("   Contract compilation would happen here");
-  console.log("   ✅ PlatformEscrowManager deployed (placeholder)\n");
+  const PlatformEscrowManager = await ethers.getContractFactory("PlatformEscrowManager");
+  const platformEscrowManager = await PlatformEscrowManager.deploy();
+  await platformEscrowManager.waitForDeployment();
+  const escrowAddress = await platformEscrowManager.getAddress();
+  
+  console.log(`   ✅ PlatformEscrowManager deployed at: ${escrowAddress}`);
+  config.contracts.platformEscrowManager = {
+    address: escrowAddress,
+    deployedAt: new Date().toISOString(),
+    deploymentTx: platformEscrowManager.deploymentTransaction()?.hash || "",
+    version: "1.0.0"
+  };
+  console.log("");
 
   // Save deployment config
-  const configPath = join(__dirname, "testnet-deployment.json");
+  const configPath = join(__dirname, "../testnet-deployment.json");
   writeFileSync(configPath, JSON.stringify(config, null, 2));
-  console.log(`\n💾 Deployment config saved to: ${configPath}`);
+  console.log(`💾 Deployment config saved to: testnet-deployment.json\n`);
 
-  console.log("\n✅ All contracts deployed successfully!");
-  console.log("\n📋 Next steps:");
-  console.log("1. Verify contracts on Hedera Explorer");
-  console.log("2. Update Supabase secrets with contract addresses");
+  console.log("✅ All contracts deployed successfully!\n");
+  console.log("📋 Deployment Summary:");
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log(`GovernanceExecutor:      ${govAddress}`);
+  console.log(`DividendDistributor:     ${divAddress}`);
+  console.log(`MultiSigTreasury:        ${treasuryAddress}`);
+  console.log(`PlatformEscrowManager:   ${escrowAddress}`);
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+
+  console.log("📋 Next steps:");
+  console.log("1. Verify contracts on HashScan (https://hashscan.io/testnet)");
+  console.log("2. Update Supabase with contract addresses");
   console.log("3. Run integration tests");
-  console.log("4. Update frontend with contract ABIs\n");
+  console.log("4. Update frontend configuration\n");
 }
 
 main()

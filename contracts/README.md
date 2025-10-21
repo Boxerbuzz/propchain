@@ -4,7 +4,7 @@ This directory contains Solidity smart contracts for trustless governance, divid
 
 ## 📁 Directory Structure
 
-```
+```bash
 contracts/
 ├── solidity/                    # Smart contract source files
 │   ├── GovernanceExecutor.sol   # Proposal execution with escrow
@@ -21,9 +21,11 @@ contracts/
 ## 🔑 Smart Contracts Overview
 
 ### 1. GovernanceExecutor
+
 **Purpose:** Executes approved governance proposals with automatic fund locking and release.
 
 **Key Features:**
+
 - Register proposals on-chain after off-chain voting setup
 - Automatic fund locking when proposal passes
 - Controlled fund release to contractors
@@ -32,23 +34,28 @@ contracts/
 **Gas Estimate:** ~150,000 gas per execution
 
 ### 2. DividendDistributor
+
 **Purpose:** Manages dividend distribution to token holders.
 
 **Key Features:**
+
 - Create distributions with snapshot mechanism
 - Both claim-based (gas-efficient) and batch distribution (better UX)
 - Expiry mechanism for unclaimed dividends
 - Claimable amount tracking per holder
 
-**Gas Estimate:** 
+**Gas Estimate:**
+
 - Create distribution: ~100,000 gas
 - Claim: ~50,000 gas per claim
 - Batch (50 recipients): ~2,500,000 gas
 
 ### 3. MultiSigTreasury
+
 **Purpose:** Secure multi-signature wallet for property treasury management.
 
 **Key Features:**
+
 - Configurable signer list and approval threshold
 - Withdrawal request submission and approval flow
 - Automatic execution when threshold met
@@ -57,9 +64,11 @@ contracts/
 **Gas Estimate:** ~200,000 gas per withdrawal
 
 ### 4. PlatformEscrowManager
+
 **Purpose:** Holds investment funds until tokenization target is met.
 
 **Key Features:**
+
 - Escrow creation with target/minimum raise amounts
 - Investment deposit tracking
 - Automatic finalization or refund based on outcome
@@ -70,6 +79,7 @@ contracts/
 ## 🛠️ Development Setup
 
 ### Prerequisites
+
 ```bash
 # Install Node.js dependencies (if using Hardhat)
 npm install --save-dev hardhat @nomiclabs/hardhat-ethers ethers
@@ -80,6 +90,7 @@ foundryup
 ```
 
 ### Compilation
+
 ```bash
 # Using Hardhat
 npx hardhat compile
@@ -89,6 +100,7 @@ forge build
 ```
 
 ### Testing
+
 ```bash
 # Using Hardhat
 npx hardhat test
@@ -100,6 +112,7 @@ forge test -vvv
 ## 🚀 Deployment
 
 ### Testnet Deployment
+
 ```bash
 # Set environment variables
 export HEDERA_TESTNET_RPC_URL="https://testnet.hashio.io/api"
@@ -110,6 +123,7 @@ npx ts-node deployment/deploy-testnet.ts
 ```
 
 ### Mainnet Deployment
+
 ```bash
 # Set environment variables
 export HEDERA_MAINNET_RPC_URL="https://mainnet.hashio.io/api"
@@ -148,7 +162,9 @@ INSERT INTO smart_contract_config (
 5. **Upgrade Strategy:** Deploy new versions and migrate data (contracts are not upgradeable)
 
 ### Recommended Security Audits
+
 Before mainnet deployment:
+
 - [ ] Internal code review
 - [ ] Unit test coverage > 95%
 - [ ] Integration testing
@@ -183,6 +199,7 @@ Before mainnet deployment:
 ## 🤝 Contributing
 
 When adding new contracts:
+
 1. Follow existing naming conventions
 2. Add comprehensive NatSpec comments
 3. Write unit tests (>90% coverage)

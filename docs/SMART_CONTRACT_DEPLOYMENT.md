@@ -68,7 +68,8 @@ npx hardhat compile
 ```
 
 Expected output:
-```
+
+```bash
 Compiled 4 Solidity files successfully
 ```
 
@@ -81,13 +82,15 @@ npx ts-node deployment/deploy-testnet.ts
 ```
 
 The script will:
+
 1. Deploy GovernanceExecutor
 2. Deploy DividendDistributor
 3. Deploy PlatformEscrowManager
 4. Save deployment info to `testnet-deployment.json`
 
 Expected output:
-```
+
+```bash
 🚀 Starting deployment to Hedera Testnet...
 📍 Deployer address: 0xYOUR_ADDRESS
 💰 Deployer balance: 50.00 HBAR
@@ -172,7 +175,7 @@ INSERT INTO smart_contract_config (
 
 Verify each contract on HashScan:
 
-1. Visit https://hashscan.io/testnet
+1. Visit <https://hashscan.io/testnet>
 2. Search for contract address
 3. Verify source code matches deployment
 
@@ -181,6 +184,7 @@ Verify each contract on HashScan:
 Edge functions will automatically use the deployed contracts once the database is populated.
 
 Test by creating a proposal:
+
 ```bash
 curl -X POST https://YOUR_PROJECT.supabase.co/functions/v1/create-proposal \
   -H "Authorization: Bearer YOUR_ANON_KEY" \
@@ -196,13 +200,16 @@ curl -X POST https://YOUR_PROJECT.supabase.co/functions/v1/create-proposal \
 ## Troubleshooting
 
 ### "Insufficient HBAR balance"
+
 - Fund your account with at least 50 HBAR for deployment
 
 ### "Contract creation failed"
+
 - Check gas limits in deployment script
 - Verify Solidity compiler version matches
 
 ### "Transaction reverted"
+
 - Check constructor parameters
 - Verify all dependencies are deployed first
 
@@ -216,6 +223,7 @@ curl -X POST https://YOUR_PROJECT.supabase.co/functions/v1/create-proposal \
 ## Next Steps
 
 After successful deployment:
+
 1. Run integration tests (see `docs/TESTING_GUIDE.md`)
 2. Monitor contract events via webhook
 3. Proceed with mainnet deployment when ready

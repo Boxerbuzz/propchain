@@ -1,0 +1,23 @@
+{
+  "name": "propchain-contracts",
+  "version": "1.0.0",
+  "description": "PropChain Smart Contracts for Hedera",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy:testnet": "ts-node deployment/deploy-testnet.ts",
+    "test": "hardhat test"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "hardhat": "^2.19.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.38.0",
+    "dotenv": "^16.3.1",
+    "ethers": "^6.9.0"
+  }
+}
+

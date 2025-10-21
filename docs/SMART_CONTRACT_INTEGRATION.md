@@ -113,6 +113,7 @@ Initializes the service with Hedera client and Supabase connection.
 Registers a governance proposal on the GovernanceExecutor contract.
 
 **Parameters:**
+
 ```typescript
 {
   proposalId: string;      // UUID of proposal
@@ -124,6 +125,7 @@ Registers a governance proposal on the GovernanceExecutor contract.
 ```
 
 **Returns:**
+
 ```typescript
 {
   txHash: string;          // Hedera transaction ID
@@ -137,6 +139,7 @@ Registers a governance proposal on the GovernanceExecutor contract.
 Creates a dividend distribution on the DividendDistributor contract.
 
 **Parameters:**
+
 ```typescript
 {
   distributionId: string;  // UUID of distribution
@@ -148,6 +151,7 @@ Creates a dividend distribution on the DividendDistributor contract.
 ```
 
 **Returns:**
+
 ```typescript
 {
   txHash: string;
@@ -161,6 +165,7 @@ Creates a dividend distribution on the DividendDistributor contract.
 Claims a dividend for the caller.
 
 **Parameters:**
+
 ```typescript
 {
   distributionId: string;  // UUID of distribution
@@ -168,6 +173,7 @@ Claims a dividend for the caller.
 ```
 
 **Returns:**
+
 ```typescript
 {
   txHash: string;
@@ -180,6 +186,7 @@ Claims a dividend for the caller.
 Submits a withdrawal request to MultiSigTreasury.
 
 **Parameters:**
+
 ```typescript
 {
   treasuryAddress: string; // Treasury contract address
@@ -190,6 +197,7 @@ Submits a withdrawal request to MultiSigTreasury.
 ```
 
 **Returns:**
+
 ```typescript
 {
   txHash: string;
@@ -202,6 +210,7 @@ Submits a withdrawal request to MultiSigTreasury.
 Approves a pending withdrawal request.
 
 **Parameters:**
+
 ```typescript
 {
   treasuryAddress: string;
@@ -210,6 +219,7 @@ Approves a pending withdrawal request.
 ```
 
 **Returns:**
+
 ```typescript
 {
   txHash: string;
@@ -224,6 +234,7 @@ Approves a pending withdrawal request.
 The `smart-contract-webhook` function processes contract events:
 
 **Event Types:**
+
 - `ProposalExecuted`
 - `FundsLocked`
 - `FundsReleased`
@@ -232,6 +243,7 @@ The `smart-contract-webhook` function processes contract events:
 - `WithdrawalExecuted`
 
 **Event Payload:**
+
 ```typescript
 {
   eventName: string;
@@ -248,6 +260,7 @@ The `smart-contract-webhook` function processes contract events:
 ### Polling Strategy
 
 The `poll-contract-events` function:
+
 1. Runs every 5 minutes (via cron)
 2. Queries Hedera Mirror Node for new events
 3. Processes events through webhook
@@ -312,6 +325,7 @@ try {
 ### Gas Estimation
 
 Service automatically estimates gas based on function complexity:
+
 - Simple reads: 100,000 gas
 - Writes: 1,000,000 gas
 - Complex operations: 2,000,000 gas
