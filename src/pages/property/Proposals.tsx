@@ -6,9 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, ThumbsUp, ThumbsDown, Minus } from 'lucide-react';
+import { Loader2, ThumbsUp, ThumbsDown, Minus, Link2, Lock, ExternalLink, Play } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '@/context/AuthContext';
+import { ProposalExecutionStatus } from '@/components/governance/ProposalExecutionStatus';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export default function Proposals() {
   const { propertyId } = useParams();
@@ -16,6 +19,7 @@ export default function Proposals() {
   const { data: proposals, isLoading } = useProposals(propertyId);
   const voteOnProposal = useVoteOnProposal();
   const [votingProposalId, setVotingProposalId] = useState<string | null>(null);
+  const [executingProposal, setExecutingProposal] = useState<string | null>(null);
 
   const handleVote = async (proposalId: string, voteChoice: 'for' | 'against' | 'abstain') => {
     setVotingProposalId(proposalId);
@@ -27,6 +31,26 @@ export default function Proposals() {
       });
     } finally {
       setVotingProposalId(null);
+    }
+  };
+
+  const handleExecuteProposal = async (proposalId: string) => {
+    setExecutingProposal(proposalId);
+    try {
+      const { data, error } = await supabase.functions.invoke('execute-proposal', {
+        body: { proposal_id: proposalId }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast.success('Proposal executed successfully!');
+      }
+    } catch (error: any) {
+      console.error('Failed to execute proposal:', error);
+      toast.error(error.message || 'Failed to execute proposal');
+    } finally {
+      setExecutingProposal(null);
     }
   };
 
@@ -95,6 +119,8 @@ export default function Proposals() {
               userId={user?.id}
               getStatusBadge={getStatusBadge}
               getProposalTypeBadge={getProposalTypeBadge}
+              onExecute={handleExecuteProposal}
+              isExecuting={executingProposal === proposal.id}
             />
           ))}
         </TabsContent>
@@ -109,6 +135,8 @@ export default function Proposals() {
               userId={user?.id}
               getStatusBadge={getStatusBadge}
               getProposalTypeBadge={getProposalTypeBadge}
+              onExecute={handleExecuteProposal}
+              isExecuting={executingProposal === proposal.id}
             />
           ))}
         </TabsContent>
@@ -123,6 +151,8 @@ export default function Proposals() {
               userId={user?.id}
               getStatusBadge={getStatusBadge}
               getProposalTypeBadge={getProposalTypeBadge}
+              onExecute={handleExecuteProposal}
+              isExecuting={executingProposal === proposal.id}
             />
           ))}
         </TabsContent>
@@ -137,6 +167,8 @@ export default function Proposals() {
               userId={user?.id}
               getStatusBadge={getStatusBadge}
               getProposalTypeBadge={getProposalTypeBadge}
+              onExecute={handleExecuteProposal}
+              isExecuting={executingProposal === proposal.id}
             />
           ))}
         </TabsContent>
@@ -152,9 +184,11 @@ interface ProposalCardProps {
   userId?: string;
   getStatusBadge: (status: string) => JSX.Element;
   getProposalTypeBadge: (type: string) => JSX.Element;
+  onExecute: (proposalId: string) => void;
+  isExecuting: boolean;
 }
 
-function ProposalCard({ proposal, onVote, isVoting, getStatusBadge, getProposalTypeBadge }: ProposalCardProps) {
+function ProposalCard({ proposal, onVote, isVoting, getStatusBadge, getProposalTypeBadge, onExecute, isExecuting }: ProposalCardProps) {
   const totalVotes = Number(proposal.total_votes_cast || 0);
   const votesFor = Number(proposal.votes_for || 0);
   const votesAgainst = Number(proposal.votes_against || 0);
@@ -177,12 +211,30 @@ function ProposalCard({ proposal, onVote, isVoting, getStatusBadge, getProposalT
               <CardTitle>{proposal.title}</CardTitle>
               {getStatusBadge(proposal.status)}
               {getProposalTypeBadge(proposal.proposal_type)}
+              {proposal.contract_proposal_id && (
+                <Badge variant="outline" className="bg-blue-500/10 text-blue-500">
+                  <Link2 className="h-3 w-3 mr-1" />
+                  On-Chain
+                </Badge>
+              )}
+              {proposal.funds_locked && (
+                <Badge variant="outline" className="bg-green-500/10 text-green-500">
+                  <Lock className="h-3 w-3 mr-1" />
+                  Funds Locked
+                </Badge>
+              )}
             </div>
             <CardDescription>{proposal.description}</CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {proposal.contract_proposal_id && (
+          <ProposalExecutionStatus
+            proposal={proposal}
+          />
+        )}
+
         {proposal.budget_ngn && (
           <div>
             <p className="text-sm font-medium mb-1">Budget</p>
@@ -268,6 +320,32 @@ function ProposalCard({ proposal, onVote, isVoting, getStatusBadge, getProposalT
                 Abstain
               </Button>
             </div>
+          )}
+
+          {proposal.status === 'approved_pending_execution' && !proposal.funds_locked && (
+            <Button
+              size="sm"
+              onClick={() => onExecute(proposal.id)}
+              disabled={isExecuting}
+            >
+              {isExecuting ? (
+                <><Loader2 className="h-4 w-4 animate-spin mr-2" />Executing...</>
+              ) : (
+                <><Play className="h-4 w-4 mr-2" />Execute Proposal</>
+              )}
+            </Button>
+          )}
+
+          {proposal.contract_transaction_hash && (
+            <a
+              href={`https://hashscan.io/testnet/transaction/${proposal.contract_transaction_hash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary hover:underline flex items-center gap-1"
+            >
+              View on Hedera
+              <ExternalLink className="h-3 w-3" />
+            </a>
           )}
         </div>
       </CardContent>

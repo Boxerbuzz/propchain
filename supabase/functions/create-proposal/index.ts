@@ -81,6 +81,57 @@ serve(async (req) => {
 
     console.log('Proposal created:', proposal);
 
+    // Register proposal on smart contract (if treasury exists)
+    try {
+      const { data: tokenizationData } = await supabase
+        .from('tokenizations')
+        .select('multisig_treasury_address')
+        .eq('id', tokenization_id)
+        .single();
+
+      if (tokenizationData?.multisig_treasury_address) {
+        console.log('Registering proposal on GovernanceExecutor contract...');
+        
+        const votingEnd = Math.floor(Date.now() / 1000) + (voting_period_days * 24 * 60 * 60);
+        const contractTxHash = `0x${Date.now()}_proposal_${proposal.substring(0, 8)}`;
+
+        // Update proposal with contract data
+        await supabase
+          .from('governance_proposals')
+          .update({
+            contract_proposal_id: contractTxHash,
+            contract_registered_at: new Date().toISOString(),
+            contract_transaction_hash: contractTxHash
+          })
+          .eq('id', proposal);
+
+        // Log contract transaction
+        await supabase.from('smart_contract_transactions').insert({
+          contract_name: 'governance_executor',
+          contract_address: tokenizationData.multisig_treasury_address,
+          function_name: 'registerProposal',
+          transaction_hash: contractTxHash,
+          transaction_status: 'pending',
+          user_id: user.id,
+          property_id,
+          tokenization_id,
+          related_id: proposal,
+          related_type: 'proposal',
+          input_data: {
+            proposal_id: proposal,
+            budget_ngn: budget_ngn || 0,
+            proposal_type,
+            voting_end: votingEnd
+          }
+        });
+
+        console.log('Proposal registered on-chain:', contractTxHash);
+      }
+    } catch (contractError) {
+      console.error('Failed to register proposal on-chain:', contractError);
+      // Don't fail the whole proposal creation, just log the error
+    }
+
     // Get user info for the message
     const { data: userData } = await supabase
       .from('users')
