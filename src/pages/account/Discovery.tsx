@@ -264,7 +264,7 @@ export default function Discovery() {
               {currentTokens.map((token) => (
                 <div
                   key={token.id}
-                  className="grid grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_1fr_120px_100px_80px_120px] items-center gap-3 sm:gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                  className="grid grid-cols-[auto_1fr_auto] lg:grid-cols-[auto_1fr_120px_100px_80px_120px] items-center gap-3 sm:gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
                   onClick={() => navigate(`/account/discovery/${token.id}`)}
                 >
                   {/* Column 1: Icon with Hedera Badge */}
@@ -276,7 +276,7 @@ export default function Discovery() {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-purple-500 shadow-sm">
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-card flex items-center justify-center border-2 border-primary shadow-sm">
                       <img
                         src="/hedera.svg"
                         alt="Hedera"
@@ -293,15 +293,15 @@ export default function Discovery() {
                     </p>
                   </div>
 
-                  {/* Column 3: Price - Hidden on mobile */}
-                  <div className="hidden sm:block text-right">
+                  {/* Column 3: Price - Hidden on mobile and tablet */}
+                  <div className="hidden lg:block text-right">
                     <p className="font-medium">
                       {formatAmount(token.price, token.priceUsd)}
                     </p>
                   </div>
 
-                  {/* Column 4: Change - Hidden on mobile */}
-                  <div className="hidden sm:block text-right">
+                  {/* Column 4: Change - Hidden on mobile and tablet */}
+                  <div className="hidden lg:block text-right">
                     <Badge
                       variant={token.change24h > 0 ? "default" : "destructive"}
                       className="text-xs text-white"
@@ -311,8 +311,8 @@ export default function Discovery() {
                     </Badge>
                   </div>
 
-                  {/* Column 5: Chart - Hidden on mobile */}
-                  <div className="hidden sm:flex justify-center">
+                  {/* Column 5: Chart - Hidden on mobile and tablet */}
+                  <div className="hidden lg:flex justify-center">
                     <MiniChart
                       data={token.chartData}
                       isPositive={token.change24h > 0}
