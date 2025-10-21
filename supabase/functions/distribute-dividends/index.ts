@@ -43,17 +43,28 @@ serve(async (req) => {
           .single();
 
         if (tokenizationData?.token_id) {
-          console.log('Creating distribution on DividendDistributor contract...');
+          // Import contract service
+          const { SmartContractService } = await import('../_shared/contractService.ts');
+          const contractService = new SmartContractService(supabase);
           
-          const contractTxHash = `0x${Date.now()}_dist_${distribution_id.substring(0, 8)}`;
-          const blockNumber = Math.floor(Date.now() / 1000); // Simulated block number
+          // Get current block number
+          const blockNumber = await contractService.getLatestBlockNumber();
+          
+          // ✅ REAL CONTRACT CALL
+          const result = await contractService.createDistributionOnChain({
+            distributionId: distribution_id,
+            tokenContract: tokenizationData.token_id,
+            totalAmount: distribution.total_amount_ngn,
+            perTokenAmount: distribution.per_token_amount,
+            snapshotBlock: blockNumber
+          });
 
-          // Update distribution with contract data
+          // Update distribution with REAL contract data
           await supabase
             .from('dividend_distributions')
             .update({
-              contract_distribution_id: contractTxHash,
-              contract_transaction_hash: contractTxHash,
+              contract_distribution_id: result.distributionId,
+              contract_transaction_hash: result.txHash, // ✅ REAL TX HASH
               contract_created_at: new Date().toISOString(),
               snapshot_block_number: blockNumber
             })
@@ -62,10 +73,10 @@ serve(async (req) => {
           // Log contract transaction
           await supabase.from('smart_contract_transactions').insert({
             contract_name: 'dividend_distributor',
-            contract_address: 'simulated-address',
+            contract_address: result.contractAddress,
             function_name: 'createDistribution',
-            transaction_hash: contractTxHash,
-            transaction_status: 'pending',
+            transaction_hash: result.txHash,
+            transaction_status: 'confirmed',
             tokenization_id: distribution.tokenization_id,
             related_id: distribution_id,
             related_type: 'dividend',
@@ -76,11 +87,11 @@ serve(async (req) => {
             }
           });
 
-          console.log('Distribution registered on-chain:', contractTxHash);
+          console.log('✅ Distribution registered on-chain:', result.txHash);
         }
       }
     } catch (contractError) {
-      console.error('Failed to register distribution on-chain:', contractError);
+      console.error('❌ Failed to register distribution on-chain:', contractError);
       // Continue with off-chain distribution
     }
 

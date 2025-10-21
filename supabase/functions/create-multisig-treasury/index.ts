@@ -48,11 +48,14 @@ serve(async (req) => {
       'platform-admin-id', // Platform admin (should be from env or settings)
     ];
 
-    // Deploy MultiSigTreasury contract (simulated)
-    const treasuryAddress = `0x${Date.now()}_treasury_${tokenization_id.substring(0, 8)}`;
     const threshold = 2; // 2 of 3 signers
 
-    console.log('Deploying MultiSigTreasury contract...');
+    // NOTE: MultiSigTreasury deployment requires running the deployment script
+    // For now, using simulated address until contracts are deployed
+    // TODO: Replace with actual contract deployment using SmartContractService
+    const treasuryAddress = `0x${Date.now()}_treasury_${tokenization_id.substring(0, 8)}`;
+    
+    console.log('⚠️ Using simulated treasury address - deploy contracts first');
     console.log('Signers:', signers);
     console.log('Threshold:', threshold);
 

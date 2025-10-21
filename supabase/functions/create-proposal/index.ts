@@ -90,28 +90,38 @@ serve(async (req) => {
         .single();
 
       if (tokenizationData?.multisig_treasury_address) {
-        console.log('Registering proposal on GovernanceExecutor contract...');
+        // Import contract service
+        const { SmartContractService } = await import('../_shared/contractService.ts');
+        const contractService = new SmartContractService(supabase);
         
         const votingEnd = Math.floor(Date.now() / 1000) + (voting_period_days * 24 * 60 * 60);
-        const contractTxHash = `0x${Date.now()}_proposal_${proposal.substring(0, 8)}`;
+        
+        // ✅ REAL CONTRACT CALL
+        const result = await contractService.registerProposalOnChain({
+          proposalId: proposal,
+          propertyTreasuryAddress: tokenizationData.multisig_treasury_address,
+          budget: budget_ngn || 0,
+          proposalType: proposal_type,
+          votingEnd: votingEnd
+        });
 
-        // Update proposal with contract data
+        // Update proposal with REAL contract data
         await supabase
           .from('governance_proposals')
           .update({
-            contract_proposal_id: contractTxHash,
+            contract_proposal_id: result.proposalId,
             contract_registered_at: new Date().toISOString(),
-            contract_transaction_hash: contractTxHash
+            contract_transaction_hash: result.txHash // ✅ REAL HEDERA TX HASH
           })
           .eq('id', proposal);
 
         // Log contract transaction
         await supabase.from('smart_contract_transactions').insert({
           contract_name: 'governance_executor',
-          contract_address: tokenizationData.multisig_treasury_address,
+          contract_address: result.contractAddress,
           function_name: 'registerProposal',
-          transaction_hash: contractTxHash,
-          transaction_status: 'pending',
+          transaction_hash: result.txHash,
+          transaction_status: 'confirmed',
           user_id: user.id,
           property_id,
           tokenization_id,
@@ -125,10 +135,10 @@ serve(async (req) => {
           }
         });
 
-        console.log('Proposal registered on-chain:', contractTxHash);
+        console.log('✅ Proposal registered on-chain:', result.txHash);
       }
     } catch (contractError) {
-      console.error('Failed to register proposal on-chain:', contractError);
+      console.error('❌ Failed to register proposal on-chain:', contractError);
       // Don't fail the whole proposal creation, just log the error
     }
 

@@ -64,52 +64,67 @@ serve(async (req) => {
       );
     }
 
-    // Execute proposal on smart contract (simulated - actual implementation would call contract)
-    console.log('Executing proposal on GovernanceExecutor contract...');
+    // Execute proposal on smart contract
+    try {
+      // Import contract service
+      const { SmartContractService } = await import('../_shared/contractService.ts');
+      const contractService = new SmartContractService(supabase);
+      
+      // ✅ REAL CONTRACT CALL - Lock funds for proposal
+      const result = await contractService.executeProposalOnChain({
+        proposalId: proposal_id
+      });
 
-    // Lock funds in escrow if budget > 0
-    if (proposal.budget_ngn > 0) {
+      // Lock funds in escrow if budget > 0
+      if (proposal.budget_ngn > 0) {
+        await supabase
+          .from('governance_proposals')
+          .update({
+            funds_locked: true,
+            funds_locked_at: new Date().toISOString(),
+            execution_status: 'funds_locked',
+            execution_contract_tx: result.txHash,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', proposal_id);
+
+        console.log('✅ Funds locked on-chain for proposal:', proposal.budget_ngn);
+      }
+
+      // Update proposal status
       await supabase
         .from('governance_proposals')
         .update({
-          funds_locked: true,
-          funds_locked_at: new Date().toISOString(),
-          execution_status: 'funds_locked',
+          status: 'executed',
+          execution_date: new Date().toISOString(),
+          execution_status: proposal.budget_ngn > 0 ? 'funds_locked' : 'executed',
           updated_at: new Date().toISOString()
         })
         .eq('id', proposal_id);
 
-      console.log('Funds locked for proposal:', proposal.budget_ngn);
+      // Log contract transaction
+      await supabase.from('smart_contract_transactions').insert({
+        contract_name: 'governance_executor',
+        contract_address: result.contractAddress,
+        function_name: 'lockFundsForProposal',
+        transaction_hash: result.txHash,
+        transaction_status: 'confirmed',
+        property_id: proposal.tokenizations.property_id,
+        tokenization_id: proposal.tokenization_id,
+        related_id: proposal_id,
+        related_type: 'proposal',
+        input_data: {
+          proposal_id,
+          budget: proposal.budget_ngn
+        },
+        confirmed_at: new Date().toISOString()
+      });
+
+      console.log('✅ Proposal executed on-chain:', result.txHash);
+    } catch (contractError: any) {
+      console.error('❌ Contract execution failed:', contractError);
+      throw new Error(`Failed to execute proposal on-chain: ${contractError.message}`);
     }
-
-    // Update proposal status
-    await supabase
-      .from('governance_proposals')
-      .update({
-        status: 'executed',
-        execution_date: new Date().toISOString(),
-        execution_status: 'executed',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', proposal_id);
-
-    // Log contract transaction
-    await supabase.from('smart_contract_transactions').insert({
-      contract_name: 'governance_executor',
-      contract_address: 'simulated-address',
-      function_name: 'executeProposal',
-      transaction_hash: `0x${Date.now()}`,
-      transaction_status: 'confirmed',
-      property_id: proposal.tokenizations.property_id,
-      tokenization_id: proposal.tokenization_id,
-      related_id: proposal_id,
-      related_type: 'proposal',
-      input_data: {
-        proposal_id,
-        budget: proposal.budget_ngn
-      },
-      confirmed_at: new Date().toISOString()
-    });
 
     // Create notifications for property owner and investors
     await supabase.from('notifications').insert({
