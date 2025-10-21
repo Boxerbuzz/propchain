@@ -17,7 +17,6 @@ import {
 import {
   Bell,
   User,
-  Wallet,
   Menu,
   Building,
   TrendingUp,
@@ -101,7 +100,6 @@ export default function Header() {
     { name: "Profile", href: "/settings/profile", icon: User },
     { name: "Favorites", href: "/favorites", icon: Heart },
     { name: "Account", href: "/account/dashboard", icon: Coins },
-    { name: "Wallet", href: "/wallet/dashboard", icon: Wallet },
     { name: "Settings", href: "/settings/security", icon: Settings },
     { name: "Logout", href: "#", icon: LogOut },
   ];
