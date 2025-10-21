@@ -6,13 +6,14 @@ import {
   Compass,
   Coins,
   ChevronRight,
-  Download,
-  Send,
-  ArrowLeftRight,
   Menu,
   LayoutDashboard,
-  Wallet,
   ArrowUpFromLine,
+  ArrowDownToLine,
+  CirclePlus,
+  CircleMinus,
+  Send,
+  ArrowLeftRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,12 +46,12 @@ export default function AccountLayout() {
     {
       name: "Buy",
       href: "/account/tokens/buy",
-      icon: Download,
+      icon: CirclePlus,
     },
     {
       name: "Sell",
       href: "/account/tokens/sell",
-      icon: Send,
+      icon: CircleMinus,
     },
     {
       name: "Send",
@@ -65,7 +66,7 @@ export default function AccountLayout() {
     {
       name: "Fund",
       href: "/account/wallet/fund",
-      icon: Download,
+      icon: ArrowDownToLine,
     },
     {
       name: "Withdraw",
