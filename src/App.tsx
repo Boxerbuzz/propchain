@@ -32,6 +32,7 @@ import WithdrawPage from "./pages/wallet/Withdraw";
 import WalletSettings from "./pages/wallet/Settings";
 import Account from "./pages/account/Account";
 import AccountDashboard from "./pages/account/Dashboard";
+import AccountWalletDashboard from "./pages/account/wallet/Dashboard";
 import Discovery from "./pages/account/Discovery";
 import TokenDetail from "./pages/account/TokenDetail";
 import BuyTokens from "./pages/account/tokens/Buy";
@@ -119,12 +120,12 @@ const App = () => (
                 />
                 <Route path="/favorites" element={<Favorites />} />
                 <Route path="/wallet/setup" element={<WalletSetup />} />
-                <Route path="/wallet/dashboard" element={<WalletDashboard />} />
                 <Route path="/wallet/withdraw" element={<WithdrawPage />} />
                 <Route path="/wallet/settings" element={<WalletSettings />} />
                 <Route path="/account" element={<Account />}>
                   <Route index element={<AccountDashboard />} />
                   <Route path="dashboard" element={<AccountDashboard />} />
+                  <Route path="wallet" element={<AccountWalletDashboard />} />
                   <Route path="discovery" element={<Discovery />} />
                   <Route path="discovery/:tokenId" element={<TokenDetail />} />
                   <Route path="tokens/buy" element={<BuyTokens />} />
