@@ -38,6 +38,8 @@ import BuyTokens from "./pages/account/tokens/Buy";
 import SellTokens from "./pages/account/tokens/Sell";
 import SendTokens from "./pages/account/tokens/Send";
 import SwapTokens from "./pages/account/tokens/Swap";
+import WithdrawFunds from "./pages/account/wallet/Withdraw";
+import FundWallet from "./pages/account/wallet/Fund";
 import PropertyManagement from "./pages/property/Management";
 import EventSimulator from "./pages/property/EventSimulator";
 import PropertyView from "./pages/property/PropertyView";
@@ -129,6 +131,8 @@ const App = () => (
                   <Route path="tokens/sell" element={<SellTokens />} />
                   <Route path="tokens/send" element={<SendTokens />} />
                   <Route path="tokens/swap" element={<SwapTokens />} />
+                  <Route path="wallet/withdraw" element={<WithdrawFunds />} />
+                  <Route path="wallet/fund" element={<FundWallet />} />
                 </Route>
                 <Route
                   path="/property/management"

@@ -1,0 +1,400 @@
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useWalletBalance } from "@/hooks/useWalletBalance";
+import { ArrowLeft, Building2, Wallet, Coins } from "lucide-react";
+import { CurrencyAmountInput } from "@/components/CurrencyAmountInput";
+import { CustomMethodSelector } from "./CustomMethodSelector";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+type CardState = "main" | "selectMethod" | "bankDetails" | "hederaDetails";
+
+interface WalletOperationsCardProps {
+  defaultTab?: "withdraw" | "fund";
+}
+
+interface WithdrawalMethod {
+  id: "bank_transfer" | "hedera" | "usdc";
+  name: string;
+  description: string;
+  icon: "bank" | "hedera" | "usdc";
+  fee: string;
+}
+
+export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperationsCardProps) {
+  const [activeTab, setActiveTab] = useState<"withdraw" | "fund">(defaultTab);
+  const [cardState, setCardState] = useState<CardState>("main");
+  const [amount, setAmount] = useState<string>("");
+  const [selectedCurrency, setSelectedCurrency] = useState<"hbar" | "usdc">("hbar");
+  const [selectedMethod, setSelectedMethod] = useState<WithdrawalMethod | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Bank details
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [bankName, setBankName] = useState("");
+
+  // Hedera details
+  const [hederaAccount, setHederaAccount] = useState("");
+
+  const { balance } = useWalletBalance();
+
+  const withdrawalMethods: WithdrawalMethod[] = [
+    {
+      id: "bank_transfer",
+      name: "Bank Transfer",
+      description: "₦100 processing fee",
+      icon: "bank",
+      fee: "₦100",
+    },
+    {
+      id: "hedera",
+      name: "Hedera Account",
+      description: "Instant & Free",
+      icon: "hedera",
+      fee: "Free",
+    },
+    {
+      id: "usdc",
+      name: "USDC Transfer",
+      description: "Instant & Free",
+      icon: "usdc",
+      fee: "Free",
+    },
+  ];
+
+  const quickAmounts = [1000, 5000, 10000, 25000, 50000];
+
+  const currencies = [
+    {
+      id: 'hbar' as const,
+      name: 'HBAR',
+      icon: '/hedera.svg',
+      balance: balance?.balanceHbar || 0,
+      balanceNgn: balance?.balanceNgn || 0,
+      color: 'purple' as const,
+    },
+    {
+      id: 'usdc' as const,
+      name: 'USDC',
+      icon: '/usdc.svg',
+      balance: balance?.usdcBalance || 0,
+      balanceNgn: balance?.usdcBalanceNgn || 0,
+      color: 'blue' as const,
+    }
+  ];
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as "withdraw" | "fund");
+    setCardState("main");
+    setSelectedMethod(null);
+    setAmount("");
+  };
+
+  const handleSelectMethod = (method: WithdrawalMethod) => {
+    setSelectedMethod(method);
+    if (method.id === "bank_transfer") {
+      setCardState("bankDetails");
+    } else {
+      setCardState("hederaDetails");
+    }
+  };
+
+  const processingFee = selectedMethod?.id === "bank_transfer" ? 100 : 0;
+  const netAmount = Number(amount) - processingFee;
+
+  const handleSubmitWithdrawal = async () => {
+    if (!amount || Number(amount) <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    const currentBalance = selectedCurrency === 'hbar' ? balance?.balanceHbar || 0 : balance?.usdcBalance || 0;
+    if (Number(amount) > currentBalance) {
+      toast.error("Insufficient balance");
+      return;
+    }
+
+    if (!selectedMethod) {
+      toast.error("Please select a withdrawal method");
+      return;
+    }
+
+    if (selectedMethod.id === "bank_transfer" && (!accountNumber || !accountName || !bankName)) {
+      toast.error("Please fill in all bank details");
+      return;
+    }
+
+    if ((selectedMethod.id === "hedera" || selectedMethod.id === "usdc") && !hederaAccount) {
+      toast.error("Please enter Hedera account ID");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.functions.invoke("initiate-withdrawal", {
+        body: {
+          amount_ngn: Number(amount),
+          currency_type: selectedCurrency,
+          currency_amount: Number(amount),
+          withdrawal_method: selectedMethod.id,
+          bank_details: selectedMethod.id === "bank_transfer"
+            ? {
+                account_number: accountNumber,
+                account_name: accountName,
+                bank_name: bankName,
+                bank_code: "",
+              }
+            : undefined,
+          hedera_account: (selectedMethod.id === "hedera" || selectedMethod.id === "usdc")
+            ? hederaAccount
+            : undefined,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("Withdrawal request submitted successfully");
+      setAmount("");
+      setSelectedMethod(null);
+      setCardState("main");
+      setAccountNumber("");
+      setAccountName("");
+      setBankName("");
+      setHederaAccount("");
+    } catch (error: any) {
+      console.error("Withdrawal error:", error);
+      toast.error(error.message || "Failed to submit withdrawal request");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-[500px] mx-auto p-6">
+      <Card className="p-6 bg-card border-border">
+        {cardState !== "main" && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCardState("main")}
+            className="mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        )}
+
+        {cardState === "main" && (
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
+              <TabsTrigger value="fund">Fund</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value={activeTab} className="space-y-6">
+              {/* Amount Input */}
+              <div className="space-y-2">
+                <Label>
+                  {activeTab === "withdraw" ? "Amount to withdraw" : "Amount to fund"}
+                </Label>
+                <CurrencyAmountInput
+                  currencies={currencies}
+                  selectedCurrency={selectedCurrency}
+                  onCurrencyChange={setSelectedCurrency}
+                  amount={amount}
+                  onAmountChange={setAmount}
+                  showMaxButton={true}
+                  showBalance={true}
+                  placeholder="0.00"
+                  error={parseFloat(amount) > (selectedCurrency === 'hbar' ? (balance?.balanceHbar || 0) : (balance?.usdcBalance || 0))}
+                />
+
+                {/* Quick Amount Buttons */}
+                <div className="flex gap-2 flex-wrap">
+                  {quickAmounts.map((amt) => (
+                    <Button
+                      key={amt}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAmount(amt.toString())}
+                      className="flex-1 min-w-[60px]"
+                    >
+                      ₦{amt.toLocaleString()}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Method Selector */}
+              {activeTab === "withdraw" && (
+                <CustomMethodSelector
+                  selectedMethod={selectedMethod}
+                  label="Withdrawal method"
+                  onClick={() => setCardState("selectMethod")}
+                />
+              )}
+
+              {/* Summary Card */}
+              {amount && selectedMethod && (
+                <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Amount</span>
+                      <span className="font-semibold text-lg">
+                        ₦{Number(amount).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Processing Fee</span>
+                      <span className="font-medium text-muted-foreground">
+                        -{selectedMethod.fee}
+                      </span>
+                    </div>
+                    <div className="h-px bg-border"></div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold">You'll Receive</span>
+                      <span className="text-2xl font-bold text-primary">
+                        ₦{netAmount.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Submit Button */}
+              {selectedMethod && amount && (
+                <Button 
+                  className="w-full" 
+                  size="lg"
+                  onClick={handleSubmitWithdrawal}
+                  disabled={loading}
+                >
+                  {loading ? "Processing..." : `Withdraw with ${selectedMethod.name}`}
+                </Button>
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {/* Method Selection State */}
+        {cardState === "selectMethod" && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold">Select Withdrawal Method</h3>
+            {withdrawalMethods.map((method) => {
+              const Icon = method.icon === "bank" ? Building2 : method.icon === "hedera" ? Wallet : Coins;
+              return (
+                <Card
+                  key={method.id}
+                  className="p-4 cursor-pointer hover:bg-accent transition-colors"
+                  onClick={() => handleSelectMethod(method)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                      <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold">{method.name}</p>
+                      <p className="text-sm text-muted-foreground">{method.description}</p>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Bank Details State */}
+        {cardState === "bankDetails" && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold">Bank Account Details</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="accountNumber">Account Number</Label>
+                <Input
+                  id="accountNumber"
+                  placeholder="1234567890"
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="accountName">Account Name</Label>
+                <Input
+                  id="accountName"
+                  placeholder="John Doe"
+                  value={accountName}
+                  onChange={(e) => setAccountName(e.target.value)}
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bankName">Bank Name</Label>
+                <Select value={bankName} onValueChange={setBankName}>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Select your bank" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gtbank">GTBank</SelectItem>
+                    <SelectItem value="access">Access Bank</SelectItem>
+                    <SelectItem value="zenith">Zenith Bank</SelectItem>
+                    <SelectItem value="firstbank">First Bank</SelectItem>
+                    <SelectItem value="uba">UBA</SelectItem>
+                    <SelectItem value="fidelity">Fidelity Bank</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button 
+                className="w-full" 
+                size="lg"
+                onClick={() => setCardState("main")}
+              >
+                Continue
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Hedera Details State */}
+        {cardState === "hederaDetails" && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold">Hedera Account Details</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="hederaAccount">Hedera Account ID</Label>
+                <Input
+                  id="hederaAccount"
+                  placeholder="0.0.123456"
+                  value={hederaAccount}
+                  onChange={(e) => setHederaAccount(e.target.value)}
+                  className="h-11 font-mono"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter your Hedera account ID in the format 0.0.XXXXXX
+                </p>
+              </div>
+
+              <Button 
+                className="w-full" 
+                size="lg"
+                onClick={() => setCardState("main")}
+              >
+                Continue
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}

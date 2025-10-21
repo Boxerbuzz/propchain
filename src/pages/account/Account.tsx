@@ -11,6 +11,8 @@ import {
   ArrowLeftRight,
   Menu,
   LayoutDashboard,
+  Wallet,
+  ArrowUpFromLine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +20,7 @@ export default function AccountLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [tokensExpanded, setTokensExpanded] = useState(false);
+  const [walletExpanded, setWalletExpanded] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const mainNavItems = [
@@ -35,6 +38,13 @@ export default function AccountLayout() {
       name: "Tokens",
       icon: Coins,
       hasSubmenu: true,
+      submenuType: "tokens",
+    },
+    {
+      name: "Wallet",
+      icon: Wallet,
+      hasSubmenu: true,
+      submenuType: "wallet",
     },
   ];
 
@@ -61,6 +71,19 @@ export default function AccountLayout() {
     },
   ];
 
+  const walletSubmenu = [
+    {
+      name: "Withdraw",
+      href: "/account/wallet/withdraw",
+      icon: ArrowUpFromLine,
+    },
+    {
+      name: "Fund",
+      href: "/account/wallet/fund",
+      icon: Download,
+    },
+  ];
+
   const isActive = (href: string) => {
     return (
       location.pathname === href || location.pathname.startsWith(href + "/")
@@ -69,10 +92,17 @@ export default function AccountLayout() {
 
   const handleNavClick = (item: (typeof mainNavItems)[0]) => {
     if (item.hasSubmenu) {
-      setTokensExpanded(!tokensExpanded);
+      if (item.submenuType === "tokens") {
+        setTokensExpanded(!tokensExpanded);
+        setWalletExpanded(false);
+      } else if (item.submenuType === "wallet") {
+        setWalletExpanded(!walletExpanded);
+        setTokensExpanded(false);
+      }
     } else if (item.href) {
       navigate(item.href);
       setTokensExpanded(false);
+      setWalletExpanded(false);
     }
   };
 
@@ -100,7 +130,8 @@ export default function AccountLayout() {
                   <ChevronRight
                     className={cn(
                       "h-4 w-4 transition-transform",
-                      tokensExpanded && "rotate-90"
+                      ((item.submenuType === "tokens" && tokensExpanded) || 
+                       (item.submenuType === "wallet" && walletExpanded)) && "rotate-90"
                     )}
                   />
                 )}
@@ -158,10 +189,10 @@ export default function AccountLayout() {
           <div className="hidden md:block fixed left-64 top-16 h-[calc(100vh-4rem)] w-64 bg-card border-r border-border shadow-xl z-50 animate-in slide-in-from-left">
             <div className="p-6 border-b border-border">
               <h3 className="font-semibold">Tokens</h3>
-                      <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Manage your assets
-                      </p>
-                    </div>
+              </p>
+            </div>
             <nav className="p-4">
               <div className="space-y-2">
                 {tokensSubmenu.map((item) => (
@@ -175,6 +206,48 @@ export default function AccountLayout() {
                     onClick={() => {
                       navigate(item.href);
                       setTokensExpanded(false);
+                    }}
+                  >
+                    <item.icon className="h-5 w-5 mr-3" />
+                    {item.name}
+                  </Button>
+                ))}
+              </div>
+            </nav>
+          </div>
+        </>
+      )}
+
+      {/* Wallet Floating Submenu (Desktop Only) */}
+      {walletExpanded && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="hidden md:block fixed inset-0 top-16 bg-black/20 z-40"
+            onClick={() => setWalletExpanded(false)}
+          />
+
+          {/* Floating Menu */}
+          <div className="hidden md:block fixed left-64 top-16 h-[calc(100vh-4rem)] w-64 bg-card border-r border-border shadow-xl z-50 animate-in slide-in-from-left">
+            <div className="p-6 border-b border-border">
+              <h3 className="font-semibold">Wallet</h3>
+              <p className="text-sm text-muted-foreground">
+                Manage your funds
+              </p>
+            </div>
+            <nav className="p-4">
+              <div className="space-y-2">
+                {walletSubmenu.map((item) => (
+                  <Button
+                    key={item.name}
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start",
+                      isActive(item.href) && "bg-primary text-primary-foreground hover:bg-primary/90"
+                    )}
+                    onClick={() => {
+                      navigate(item.href);
+                      setWalletExpanded(false);
                     }}
                   >
                     <item.icon className="h-5 w-5 mr-3" />
