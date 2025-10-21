@@ -423,7 +423,7 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="space-y-1">
+                      <div className="space-y-1 ">
                         <ProviderLogo
                           provider={quote.logo as string}
                           size="sm"
