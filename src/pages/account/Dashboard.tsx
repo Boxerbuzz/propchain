@@ -242,79 +242,49 @@ export default function AccountDashboard() {
     },
   ];
 
-  // Mock transactions
-  const mockTransactions = [
-    {
-      id: "1",
-      type: "send",
-      status: "completed",
-      token: "HBAR",
-      amount: 100,
-      to: "0.0.12345",
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      hash: "0x1234567890abcdef",
-    },
-    {
-      id: "2",
-      type: "receive",
-      status: "completed",
-      token: "USDC",
-      amount: 50,
-      from: "0.0.67890",
-      timestamp: new Date(Date.now() - 7200000).toISOString(),
-      hash: "0xabcdef1234567890",
-    },
-    {
-      id: "3",
-      type: "send",
-      status: "pending",
-      token: "HBAR",
-      amount: 25,
-      to: "0.0.11111",
-      timestamp: new Date(Date.now() - 1800000).toISOString(),
-      hash: "0x9999999900000000",
-    },
-    {
-      id: "4",
-      type: "swap",
-      status: "completed",
-      token: "HBAR",
-      amount: 200,
-      toToken: "USDC",
-      toAmount: 10,
-      timestamp: new Date(Date.now() - 10800000).toISOString(),
-      hash: "0xaaaaaabbbbbbcccc",
-    },
-    {
-      id: "5",
-      type: "receive",
-      status: "failed",
-      token: "HBAR",
-      amount: 75,
-      from: "0.0.99999",
-      timestamp: new Date(Date.now() - 86400000).toISOString(),
-      hash: "0xddddddeeeeee1111",
-    },
-  ];
+  // Map all real transactions to simple display format
+  const displayTransactions = (allTransactions || [])
+    .map((tx) => {
+      // Determine simple type based on transaction type
+      let simpleType: "send" | "receive" | "swap";
+      if (tx.type === "investment" || tx.type === "withdrawal" || tx.type === "token_withdrawal") {
+        simpleType = "send";
+      } else if (tx.type === "dividend" || tx.type === "deposit" || tx.type === "token_deposit") {
+        simpleType = "receive";
+      } else {
+        simpleType = "send"; // default
+      }
 
-  // Map withdrawal transactions to simple format
-  const withdrawalTransactions = (allTransactions || [])
-    .filter((tx) => tx.type === "withdrawal")
-    .map((tx) => ({
-      id: tx.id,
-      type: "send" as const,
-      status: tx.status === "completed" ? "completed" : tx.status === "pending" ? "pending" : "failed",
-      token: tx.currency || "NGN",
-      amount: tx.amount || 0,
-      to: tx.description || "Bank account",
-      timestamp: tx.timestamp,
-      hash: tx.reference || tx.hash || "",
-    }));
+      // Determine status
+      const status = tx.status === "completed" ? "completed" : tx.status === "failed" ? "failed" : "pending";
 
-  // Combine mock and real withdrawal transactions
-  const displayTransactions = [...mockTransactions, ...withdrawalTransactions].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
+      // Format details based on transaction type
+      let details = "";
+      if (tx.type === "investment") {
+        details = tx.description || "Investment";
+      } else if (tx.type === "dividend") {
+        details = tx.description || "Dividend";
+      } else if (tx.type === "withdrawal") {
+        details = tx.description || "Bank account";
+      } else if (tx.type === "deposit" || tx.type === "token_deposit") {
+        details = tx.description || "Received";
+      } else {
+        details = tx.description || "";
+      }
+
+      return {
+        id: tx.id,
+        type: simpleType,
+        status,
+        token: tx.currency || "HBAR",
+        amount: tx.amount || 0,
+        to: simpleType === "send" ? details : undefined,
+        from: simpleType === "receive" ? details : undefined,
+        timestamp: tx.timestamp,
+        hash: tx.hash || tx.reference || tx.explorerUrl || "",
+      };
+    })
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -902,9 +872,7 @@ export default function AccountDashboard() {
                           {tx.type === "send"
                             ? `To: ${tx.to}`
                             : tx.type === "receive"
-                            ? `From: ${(tx as any).from}`
-                            : tx.type === "swap"
-                            ? `${tx.amount} ${tx.token} → ${(tx as any).toAmount} ${(tx as any).toToken}`
+                            ? `From: ${tx.from}`
                             : ""}
                         </p>
                       </div>
@@ -951,9 +919,6 @@ export default function AccountDashboard() {
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {tx.token}
-                          {tx.type === "swap" && (tx as any).toToken && (
-                            <span> → {(tx as any).toToken}</span>
-                          )}
                         </p>
                       </div>
                     </div>
