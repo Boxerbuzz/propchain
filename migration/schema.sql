@@ -1,5 +1,10 @@
+-- ============================================
+-- COMPLETE DATABASE SCHEMA FOR REAL ESTATE TOKENIZATION PLATFORM
+-- Updated: 2025-01-21
+-- ============================================
+
 -- Enhanced Users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   phone TEXT UNIQUE,
@@ -12,7 +17,7 @@ CREATE TABLE users (
   annual_income DECIMAL,
   investment_experience TEXT, -- beginner, intermediate, advanced
   hedera_account_id TEXT,
-  kyc_status TEXT DEFAULT 'pending', -- pending, verified, rejected, expired
+  kyc_status TEXT DEFAULT 'not_started', -- not_started, pending, approved, rejected, expired
   kyc_level TEXT DEFAULT 'tier_1', -- tier_1, tier_2, tier_3
   account_status TEXT DEFAULT 'active', -- active, suspended, closed
   wallet_type TEXT, -- custodial, external, hybrid
@@ -25,7 +30,7 @@ CREATE TABLE users (
 );
 
 -- Enhanced Properties table
-CREATE TABLE properties (
+CREATE TABLE IF NOT EXISTS properties (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
   description TEXT,
@@ -60,7 +65,7 @@ CREATE TABLE properties (
 );
 
 -- Property images
-CREATE TABLE property_images (
+CREATE TABLE IF NOT EXISTS property_images (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
   image_url TEXT NOT NULL,
@@ -73,7 +78,7 @@ CREATE TABLE property_images (
 );
 
 -- Property documents (enhanced)
-CREATE TABLE property_documents (
+CREATE TABLE IF NOT EXISTS property_documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
   document_type TEXT NOT NULL, -- title_deed, survey, valuation, tax_receipt, insurance, etc.
@@ -92,12 +97,13 @@ CREATE TABLE property_documents (
 );
 
 -- Enhanced Tokenizations table
-CREATE TABLE tokenizations (
+CREATE TABLE IF NOT EXISTS tokenizations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   property_id UUID REFERENCES properties(id),
   token_id TEXT, -- Hedera Token ID
   token_name TEXT,
   token_symbol TEXT,
+  tokenization_type TEXT NOT NULL DEFAULT 'equity', -- equity, debt, revenue_share
   total_supply BIGINT NOT NULL,
   price_per_token DECIMAL NOT NULL,
   min_investment DECIMAL NOT NULL,
@@ -113,8 +119,25 @@ CREATE TABLE tokenizations (
   investor_count INTEGER DEFAULT 0,
   expected_roi_annual DECIMAL, -- percentage
   dividend_frequency TEXT, -- monthly, quarterly, annually
+  interest_rate DECIMAL, -- for debt tokenization
+  revenue_share_percentage DECIMAL, -- for revenue sharing
   management_fee_percentage DECIMAL DEFAULT 2.5,
   platform_fee_percentage DECIMAL DEFAULT 1.0,
+  use_of_funds JSONB DEFAULT '[]', -- array of fund allocation items
+  use_of_funds_breakdown JSONB, -- detailed breakdown
+  type_specific_terms JSONB DEFAULT '{}', -- additional terms based on type
+  terms_accepted_at TIMESTAMP,
+  
+  -- Treasury management
+  treasury_account_id TEXT,
+  treasury_account_private_key_vault_id UUID,
+  treasury_balance_ngn DECIMAL DEFAULT 0,
+  treasury_balance_usdc DECIMAL DEFAULT 0,
+  treasury_balance_hbar DECIMAL DEFAULT 0,
+  treasury_created_at TIMESTAMP,
+  total_revenue_received_ngn DECIMAL DEFAULT 0,
+  total_revenue_received_usdc DECIMAL DEFAULT 0,
+  
   status TEXT DEFAULT 'draft', -- draft, upcoming, active, closed, minting, completed, failed
   auto_refund BOOLEAN DEFAULT TRUE,
   created_by UUID REFERENCES users(id),
@@ -127,44 +150,272 @@ CREATE TABLE tokenizations (
 );
 
 -- Enhanced Investments table
-create table public.investments (
-  id uuid not null default gen_random_uuid (),
-  tokenization_id uuid null,
-  investor_id uuid null,
-  amount_ngn numeric not null,
-  amount_usd numeric null,
-  exchange_rate numeric null,
-  tokens_requested bigint not null,
-  tokens_allocated bigint null default 0,
-  percentage_ownership numeric null,
-  paystack_reference text null,
-  payment_status text null default 'pending'::text,
-  payment_method text null,
-  payment_confirmed_at timestamp without time zone null,
-  refund_processed_at timestamp without time zone null,
-  refund_amount numeric null,
-  investment_source text null,
-  created_at timestamp without time zone null default now(),
-  updated_at timestamp without time zone null default now(),
-  reservation_status text null default 'pending'::text,
-  reservation_expires_at timestamp with time zone null,
-  constraint investments_pkey primary key (id),
-  constraint investments_paystack_reference_key unique (paystack_reference),
-  constraint investments_investor_id_fkey foreign KEY (investor_id) references users (id),
-  constraint investments_tokenization_id_fkey foreign KEY (tokenization_id) references tokenizations (id)
-) TABLESPACE pg_default;
+CREATE TABLE IF NOT EXISTS investments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tokenization_id UUID REFERENCES tokenizations(id),
+  investor_id UUID REFERENCES users(id),
+  amount_ngn DECIMAL NOT NULL,
+  amount_usd DECIMAL,
+  exchange_rate DECIMAL,
+  payment_currency TEXT DEFAULT 'ngn',
+  tokens_requested BIGINT NOT NULL,
+  tokens_allocated BIGINT DEFAULT 0,
+  percentage_ownership DECIMAL,
+  paystack_reference TEXT UNIQUE,
+  payment_status TEXT DEFAULT 'pending',
+  payment_method TEXT,
+  payment_confirmed_at TIMESTAMP,
+  refund_processed_at TIMESTAMP,
+  refund_amount DECIMAL,
+  investment_source TEXT,
+  reservation_status TEXT DEFAULT 'pending',
+  reservation_expires_at TIMESTAMP,
+  terms_version TEXT DEFAULT '1.0',
+  terms_accepted_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
 
-create index IF not exists idx_investments_investor on public.investments using btree (investor_id) TABLESPACE pg_default;
+-- Property Events (parent table for all property-related events)
+CREATE TABLE IF NOT EXISTS property_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id) NOT NULL,
+  event_type TEXT NOT NULL, -- inspection, maintenance, rental, purchase
+  event_date TIMESTAMP NOT NULL,
+  event_status TEXT DEFAULT 'completed',
+  summary TEXT,
+  notes TEXT,
+  amount_ngn DECIMAL,
+  amount_usd DECIMAL,
+  conducted_by UUID REFERENCES users(id),
+  conducted_by_name TEXT,
+  conducted_by_company TEXT,
+  event_details JSONB NOT NULL, -- type-specific details
+  photos JSONB,
+  documents JSONB,
+  hcs_topic_id TEXT,
+  hcs_transaction_id TEXT,
+  hcs_sequence_number TEXT,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
 
-create index IF not exists idx_investments_tokenization on public.investments using btree (tokenization_id) TABLESPACE pg_default;
+-- Property Inspections (linked to events)
+CREATE TABLE IF NOT EXISTS property_inspections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id),
+  property_event_id UUID REFERENCES property_events(id),
+  inspection_date TIMESTAMP NOT NULL,
+  inspection_type TEXT NOT NULL, -- pre_purchase, routine, damage_assessment
+  inspector_id UUID REFERENCES users(id),
+  inspector_name TEXT,
+  inspector_company TEXT,
+  inspector_license TEXT,
+  
+  -- Structural assessments
+  structural_condition TEXT,
+  foundation_status TEXT,
+  roof_status TEXT,
+  walls_status TEXT,
+  electrical_status TEXT,
+  plumbing_status TEXT,
+  room_assessments JSONB,
+  
+  -- Issues and repairs
+  issues_found JSONB,
+  required_repairs JSONB,
+  estimated_repair_cost DECIMAL,
+  
+  -- Valuations
+  overall_rating INTEGER,
+  market_value_estimate DECIMAL,
+  rental_value_estimate DECIMAL,
+  
+  inspection_photos JSONB,
+  inspection_report_url TEXT,
+  hcs_transaction_id TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
 
-create trigger investment_activity_trigger
-after
-update on investments for EACH row
-execute FUNCTION log_investment_activity ();
+-- Property Maintenance (linked to events)
+CREATE TABLE IF NOT EXISTS property_maintenance (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id),
+  property_event_id UUID REFERENCES property_events(id),
+  proposal_id UUID REFERENCES governance_proposals(id),
+  maintenance_date TIMESTAMP NOT NULL,
+  maintenance_type TEXT NOT NULL, -- routine, emergency, repair, upgrade
+  maintenance_status TEXT DEFAULT 'scheduled',
+  issue_description TEXT NOT NULL,
+  issue_severity TEXT,
+  issue_category TEXT,
+  work_performed TEXT,
+  
+  -- Contractor details
+  contractor_name TEXT,
+  contractor_company TEXT,
+  contractor_phone TEXT,
+  contractor_license TEXT,
+  
+  -- Financial
+  estimated_cost_ngn DECIMAL,
+  actual_cost_ngn DECIMAL,
+  payment_method TEXT,
+  payment_status TEXT DEFAULT 'pending',
+  invoice_url TEXT,
+  
+  -- Documentation
+  before_photos JSONB,
+  after_photos JSONB,
+  parts_replaced JSONB,
+  warranty_info TEXT,
+  warranty_expiry_date DATE,
+  
+  -- Follow-up
+  follow_up_required BOOLEAN DEFAULT FALSE,
+  follow_up_date DATE,
+  completion_date TIMESTAMP,
+  notes TEXT,
+  
+  hcs_transaction_id TEXT,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Property Rentals (linked to events)
+CREATE TABLE IF NOT EXISTS property_rentals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id),
+  property_event_id UUID REFERENCES property_events(id),
+  
+  -- Tenant information
+  tenant_name TEXT NOT NULL,
+  tenant_email TEXT,
+  tenant_phone TEXT,
+  tenant_id_number TEXT,
+  
+  -- Rental terms
+  rental_type TEXT, -- short_term, long_term, commercial
+  monthly_rent_ngn DECIMAL NOT NULL,
+  security_deposit_ngn DECIMAL,
+  agency_fee_ngn DECIMAL,
+  legal_fee_ngn DECIMAL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  lease_duration_months INTEGER,
+  
+  -- Lease details
+  lease_agreement_url TEXT,
+  agreement_signed BOOLEAN DEFAULT FALSE,
+  signed_at TIMESTAMP,
+  utilities_included JSONB,
+  special_terms TEXT,
+  
+  -- Payment tracking
+  amount_paid_ngn DECIMAL DEFAULT 0,
+  payment_status TEXT DEFAULT 'pending',
+  payment_method TEXT,
+  rental_status TEXT DEFAULT 'active',
+  
+  -- Distribution to investors
+  distribution_id UUID REFERENCES dividend_distributions(id),
+  distribution_status TEXT DEFAULT 'pending',
+  distributed_at TIMESTAMP,
+  
+  hcs_transaction_id TEXT,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Property Purchases/Sales (linked to events)
+CREATE TABLE IF NOT EXISTS property_purchases (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id),
+  property_event_id UUID REFERENCES property_events(id),
+  transaction_type TEXT NOT NULL, -- full_sale, partial_sale, buyback
+  
+  -- Buyer information
+  buyer_user_id UUID REFERENCES users(id),
+  buyer_name TEXT,
+  buyer_email TEXT,
+  buyer_phone TEXT,
+  buyer_id_number TEXT,
+  
+  -- Seller information
+  seller_user_id UUID REFERENCES users(id),
+  seller_name TEXT,
+  
+  -- Transaction details
+  purchase_price_ngn DECIMAL NOT NULL,
+  purchase_price_usd DECIMAL,
+  tokens_involved BIGINT,
+  percentage_sold DECIMAL,
+  
+  -- Payment details
+  down_payment_ngn DECIMAL,
+  remaining_balance_ngn DECIMAL,
+  payment_plan TEXT,
+  payment_method TEXT,
+  
+  -- Legal documents
+  sale_agreement_url TEXT,
+  title_transfer_doc_url TEXT,
+  agreement_signed BOOLEAN DEFAULT FALSE,
+  signed_at TIMESTAMP,
+  
+  -- Transaction status
+  transaction_status TEXT DEFAULT 'pending',
+  completion_date DATE,
+  
+  hcs_transaction_id TEXT,
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Property Treasury Transactions
+CREATE TABLE IF NOT EXISTS property_treasury_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id),
+  tokenization_id UUID REFERENCES tokenizations(id),
+  transaction_type TEXT NOT NULL, -- deposit, withdrawal, fee, distribution
+  source_type TEXT NOT NULL, -- rental, sale, investment, maintenance
+  source_event_id UUID REFERENCES property_events(id),
+  amount_ngn DECIMAL NOT NULL,
+  amount_usdc DECIMAL,
+  exchange_rate DECIMAL,
+  hedera_transaction_id TEXT,
+  paystack_reference TEXT,
+  description TEXT,
+  status TEXT DEFAULT 'pending',
+  metadata JSONB DEFAULT '{}',
+  created_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  completed_at TIMESTAMP
+);
+
+-- Investment Documents (generated documents)
+CREATE TABLE IF NOT EXISTS investment_documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  investment_id UUID REFERENCES investments(id) NOT NULL,
+  user_id UUID REFERENCES users(id) NOT NULL,
+  tokenization_id UUID REFERENCES tokenizations(id) NOT NULL,
+  property_id UUID REFERENCES properties(id) NOT NULL,
+  document_type TEXT NOT NULL, -- token_certificate, subscription_agreement, disclosure
+  document_number TEXT NOT NULL,
+  document_url TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}',
+  generated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
 
 -- Chat rooms with enhanced features
-CREATE TABLE chat_rooms (
+CREATE TABLE IF NOT EXISTS chat_rooms (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   property_id UUID REFERENCES properties(id),
   tokenization_id UUID REFERENCES tokenizations(id),
@@ -182,7 +433,7 @@ CREATE TABLE chat_rooms (
 );
 
 -- Chat room participants
-CREATE TABLE chat_participants (
+CREATE TABLE IF NOT EXISTS chat_participants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   room_id UUID REFERENCES chat_rooms(id) ON DELETE CASCADE,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -196,7 +447,7 @@ CREATE TABLE chat_participants (
 );
 
 -- Enhanced Chat messages
-CREATE TABLE chat_messages (
+CREATE TABLE IF NOT EXISTS chat_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   room_id UUID REFERENCES chat_rooms(id) ON DELETE CASCADE,
   sender_id UUID REFERENCES users(id),
@@ -213,7 +464,7 @@ CREATE TABLE chat_messages (
 );
 
 -- Enhanced Governance proposals
-CREATE TABLE governance_proposals (
+CREATE TABLE IF NOT EXISTS governance_proposals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   property_id UUID REFERENCES properties(id),
   tokenization_id UUID REFERENCES tokenizations(id),
@@ -242,7 +493,7 @@ CREATE TABLE governance_proposals (
 );
 
 -- Enhanced Votes
-CREATE TABLE votes (
+CREATE TABLE IF NOT EXISTS votes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   proposal_id UUID REFERENCES governance_proposals(id) ON DELETE CASCADE,
   voter_id UUID REFERENCES users(id),
@@ -255,14 +506,15 @@ CREATE TABLE votes (
   UNIQUE(proposal_id, voter_id)
 );
 
--- Wallets (enhanced)
-CREATE TABLE wallets (
+-- Wallets (enhanced with Vault support)
+CREATE TABLE IF NOT EXISTS wallets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   wallet_type TEXT NOT NULL, -- custodial, external, hardware
   wallet_name TEXT, -- user-defined name
   hedera_account_id TEXT UNIQUE,
-  private_key_encrypted TEXT, -- only for custodial wallets
+  private_key_encrypted TEXT, -- deprecated - use vault_secret_id instead
+  vault_secret_id UUID, -- reference to Supabase Vault secret
   public_key TEXT,
   balance_hbar DECIMAL DEFAULT 0,
   balance_ngn DECIMAL DEFAULT 0,
@@ -277,7 +529,7 @@ CREATE TABLE wallets (
 );
 
 -- Token holdings (track all user token holdings)
-CREATE TABLE token_holdings (
+CREATE TABLE IF NOT EXISTS token_holdings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id),
   tokenization_id UUID REFERENCES tokenizations(id),
@@ -296,7 +548,7 @@ CREATE TABLE token_holdings (
 );
 
 -- Activity logs (comprehensive tracking)
-CREATE TABLE activity_logs (
+CREATE TABLE IF NOT EXISTS activity_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id),
   property_id UUID REFERENCES properties(id),
@@ -312,7 +564,7 @@ CREATE TABLE activity_logs (
 );
 
 -- Notifications
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id),
   title TEXT NOT NULL,
@@ -329,7 +581,7 @@ CREATE TABLE notifications (
 );
 
 -- User favorites
-CREATE TABLE user_favorites (
+CREATE TABLE IF NOT EXISTS user_favorites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id),
   property_id UUID REFERENCES properties(id),
@@ -338,7 +590,7 @@ CREATE TABLE user_favorites (
 );
 
 -- Dividend distributions
-CREATE TABLE dividend_distributions (
+CREATE TABLE IF NOT EXISTS dividend_distributions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   property_id UUID REFERENCES properties(id),
   tokenization_id UUID REFERENCES tokenizations(id),
@@ -358,7 +610,7 @@ CREATE TABLE dividend_distributions (
 );
 
 -- Individual dividend payments
-CREATE TABLE dividend_payments (
+CREATE TABLE IF NOT EXISTS dividend_payments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   distribution_id UUID REFERENCES dividend_distributions(id),
   recipient_id UUID REFERENCES users(id),
@@ -376,7 +628,7 @@ CREATE TABLE dividend_payments (
 );
 
 -- System settings/configuration
-CREATE TABLE system_settings (
+CREATE TABLE IF NOT EXISTS system_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   setting_key TEXT UNIQUE NOT NULL,
   setting_value JSONB NOT NULL,
@@ -387,85 +639,8 @@ CREATE TABLE system_settings (
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Indexes for performance
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_hedera_account ON users(hedera_account_id);
-CREATE INDEX idx_properties_status ON properties(approval_status, listing_status);
-CREATE INDEX idx_properties_location ON properties USING GIN(location);
-CREATE INDEX idx_tokenizations_status ON tokenizations(status);
-CREATE INDEX idx_tokenizations_window ON tokenizations(investment_window_start, investment_window_end);
-CREATE INDEX idx_investments_investor ON investments(investor_id);
-CREATE INDEX idx_investments_tokenization ON investments(tokenization_id);
-CREATE INDEX idx_chat_participants_room ON chat_participants(room_id);
-CREATE INDEX idx_chat_participants_user ON chat_participants(user_id);
-CREATE INDEX idx_chat_messages_room ON chat_messages(room_id, created_at);
-CREATE INDEX idx_governance_proposals_property ON governance_proposals(property_id);
-CREATE INDEX idx_votes_proposal ON votes(proposal_id);
-CREATE INDEX idx_token_holdings_user ON token_holdings(user_id);
-CREATE INDEX idx_activity_logs_user ON activity_logs(user_id, created_at);
-CREATE INDEX idx_notifications_user ON notifications(user_id, read_at);
-
-
-
-
-create view public.user_chat_rooms_with_last_message as
-select
-  cp.user_id,
-  cp.room_id,
-  cp.role,
-  cp.joined_at,
-  cp.last_seen_at,
-  cp.voting_power,
-  cr.name as room_name,
-  cr.description as room_description,
-  cr.room_type,
-  p.title as property_title,
-  p.location as property_location,
-  t.token_symbol,
-  t.status as tokenization_status,
-  lm.message_text as last_message,
-  lm.created_at as last_message_at,
-  lm.message_type as last_message_type,
-  u.first_name as last_sender_first_name,
-  u.last_name as last_sender_last_name,
-  (
-    select
-      count(*) as count
-    from
-      chat_messages cm2
-    where
-      cm2.room_id = cp.room_id
-      and cm2.created_at > COALESCE(
-        cp.last_seen_at,
-        '1970-01-01 00:00:00'::timestamp without time zone
-      )
-  ) as unread_count
-from
-  chat_participants cp
-  join chat_rooms cr on cp.room_id = cr.id
-  left join properties p on cr.property_id = p.id
-  left join tokenizations t on cr.tokenization_id = t.id
-  left join lateral (
-    select
-      cm.message_text,
-      cm.created_at,
-      cm.message_type,
-      cm.sender_id
-    from
-      chat_messages cm
-    where
-      cm.room_id = cp.room_id
-    order by
-      cm.created_at desc
-    limit
-      1
-  ) lm on true
-  left join users u on lm.sender_id = u.id;
-
-
-
-  -- KYC verification table
-CREATE TABLE public.kyc_verifications (
+-- KYC verification table
+CREATE TABLE IF NOT EXISTS kyc_verifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   
@@ -515,15 +690,87 @@ CREATE TABLE public.kyc_verifications (
   
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),
-  expires_at TIMESTAMP, -- KYC typically expires after 1-2 years
-  
-  CONSTRAINT kyc_verifications_user_id_key UNIQUE(user_id)
+  expires_at TIMESTAMP -- KYC typically expires after 1-2 years
 );
 
--- Add KYC status to users table
-ALTER TABLE users ADD COLUMN kyc_status TEXT DEFAULT 'not_started';
-ALTER TABLE users ADD COLUMN kyc_level TEXT DEFAULT 'tier_1';
+-- KYC Drafts table (for saving KYC progress)
+CREATE TABLE IF NOT EXISTS kyc_drafts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  current_step TEXT NOT NULL DEFAULT 'document_type',
+  completed_steps TEXT[] DEFAULT '{}',
+  form_data JSONB NOT NULL DEFAULT '{}',
+  document_image_url TEXT,
+  selfie_url TEXT,
+  proof_of_address_url TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  expires_at TIMESTAMP DEFAULT (NOW() + INTERVAL '7 days')
+);
 
--- Index for performance
-CREATE INDEX idx_kyc_status ON kyc_verifications(status);
-CREATE INDEX idx_kyc_user_id ON kyc_verifications(user_id);
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_hedera_account ON users(hedera_account_id);
+CREATE INDEX IF NOT EXISTS idx_users_kyc_status ON users(kyc_status);
+CREATE INDEX IF NOT EXISTS idx_properties_status ON properties(approval_status, listing_status);
+CREATE INDEX IF NOT EXISTS idx_properties_location ON properties USING GIN(location);
+CREATE INDEX IF NOT EXISTS idx_tokenizations_status ON tokenizations(status);
+CREATE INDEX IF NOT EXISTS idx_tokenizations_window ON tokenizations(investment_window_start, investment_window_end);
+CREATE INDEX IF NOT EXISTS idx_investments_investor ON investments(investor_id);
+CREATE INDEX IF NOT EXISTS idx_investments_tokenization ON investments(tokenization_id);
+CREATE INDEX IF NOT EXISTS idx_investments_payment_status ON investments(payment_status);
+CREATE INDEX IF NOT EXISTS idx_investments_reservation ON investments(reservation_status, reservation_expires_at);
+CREATE INDEX IF NOT EXISTS idx_property_events_property ON property_events(property_id, event_date);
+CREATE INDEX IF NOT EXISTS idx_property_events_type ON property_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_chat_participants_room ON chat_participants(room_id);
+CREATE INDEX IF NOT EXISTS idx_chat_participants_user ON chat_participants(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_room ON chat_messages(room_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_governance_proposals_property ON governance_proposals(property_id);
+CREATE INDEX IF NOT EXISTS idx_votes_proposal ON votes(proposal_id);
+CREATE INDEX IF NOT EXISTS idx_token_holdings_user ON token_holdings(user_id);
+CREATE INDEX IF NOT EXISTS idx_token_holdings_tokenization ON token_holdings(tokenization_id);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, read_at);
+CREATE INDEX IF NOT EXISTS idx_kyc_status ON kyc_verifications(status);
+CREATE INDEX IF NOT EXISTS idx_kyc_user_id ON kyc_verifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_kyc_drafts_user ON kyc_drafts(user_id);
+
+-- View: User chat rooms with last message
+CREATE OR REPLACE VIEW user_chat_rooms_with_last_message AS
+SELECT
+  cp.user_id,
+  cp.room_id,
+  cp.role,
+  cp.joined_at,
+  cp.last_seen_at,
+  cp.voting_power,
+  cr.name as room_name,
+  cr.description as room_description,
+  cr.room_type,
+  p.title as property_title,
+  p.location as property_location,
+  t.token_symbol,
+  t.status as tokenization_status,
+  lm.message_text as last_message,
+  lm.created_at as last_message_at,
+  lm.message_type as last_message_type,
+  u.first_name as last_sender_first_name,
+  u.last_name as last_sender_last_name,
+  (
+    SELECT count(*)
+    FROM chat_messages cm2
+    WHERE cm2.room_id = cp.room_id
+      AND cm2.created_at > COALESCE(cp.last_seen_at, '1970-01-01 00:00:00'::timestamp)
+  ) as unread_count
+FROM chat_participants cp
+JOIN chat_rooms cr ON cp.room_id = cr.id
+LEFT JOIN properties p ON cr.property_id = p.id
+LEFT JOIN tokenizations t ON cr.tokenization_id = t.id
+LEFT JOIN LATERAL (
+  SELECT cm.message_text, cm.created_at, cm.message_type, cm.sender_id
+  FROM chat_messages cm
+  WHERE cm.room_id = cp.room_id
+  ORDER BY cm.created_at DESC
+  LIMIT 1
+) lm ON true
+LEFT JOIN users u ON lm.sender_id = u.id;
