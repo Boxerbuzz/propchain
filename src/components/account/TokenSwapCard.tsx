@@ -9,6 +9,8 @@ import {
   QuoteProvider as QuoteProviderType,
 } from "@/hooks/useMockQuotes";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
+import { useWalletFunding } from "@/hooks/useWalletFunding";
+import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ArrowDownUp } from "lucide-react";
 import { CustomTokenSelector } from "./CustomTokenSelector";
@@ -49,6 +51,9 @@ interface TokenSwapCardProps {
 }
 
 export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
+  const { user } = useAuth();
+  const { fundWallet, isFunding } = useWalletFunding();
+  
   const [activeTab, setActiveTab] = useState<"buy" | "sell" | "swap">(
     defaultTab
   );
@@ -72,6 +77,16 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
     toToken,
     activeTab
   );
+
+  const handleBuyClick = () => {
+    if (!amount || !user?.email || !selectedQuote) return;
+    
+    fundWallet({
+      amount_ngn: parseFloat(amount),
+      target_token: toToken as 'HBAR' | 'USDC',
+      email: user.email,
+    });
+  };
 
   const tokens: Token[] = [
     {
@@ -305,8 +320,13 @@ export function TokenSwapCard({ defaultTab = "buy" }: TokenSwapCardProps) {
 
               {/* Continue Button */}
               {selectedQuote && (
-                <Button className="w-full" size="lg">
-                  Continue with {selectedQuote.name}
+                <Button 
+                  className="w-full" 
+                  size="lg"
+                  onClick={activeTab === "buy" ? handleBuyClick : undefined}
+                  disabled={isFunding || !amount}
+                >
+                  {isFunding ? "Processing..." : `Continue with ${selectedQuote.name}`}
                 </Button>
               )}
             </TabsContent>
