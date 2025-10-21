@@ -34,6 +34,7 @@ import Account from "./pages/account/Account";
 import AccountDashboard from "./pages/account/Dashboard";
 import Discovery from "./pages/account/Discovery";
 import TokenDetail from "./pages/account/TokenDetail";
+import AllTransactions from "./pages/account/AllTransactions";
 import BuyTokens from "./pages/account/tokens/Buy";
 import SellTokens from "./pages/account/tokens/Sell";
 import SendTokens from "./pages/account/tokens/Send";
@@ -124,6 +125,7 @@ const App = () => (
                 <Route path="/account" element={<Account />}>
                   <Route index element={<AccountDashboard />} />
                   <Route path="dashboard" element={<AccountDashboard />} />
+                  <Route path="transactions" element={<AllTransactions />} />
                   <Route path="discovery" element={<Discovery />} />
                   <Route path="discovery/:tokenId" element={<TokenDetail />} />
                   <Route path="tokens/buy" element={<BuyTokens />} />

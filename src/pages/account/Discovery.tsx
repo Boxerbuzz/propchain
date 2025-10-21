@@ -264,7 +264,7 @@ export default function Discovery() {
               {currentTokens.map((token) => (
                 <div
                   key={token.id}
-                  className="grid grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_1fr_120px_100px_80px_120px] items-center gap-3 sm:gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                  className="grid grid-cols-[auto_1fr_auto] md:grid-cols-[auto_1fr_120px_100px] lg:grid-cols-[auto_1fr_120px_100px_80px_120px] items-center gap-3 sm:gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
                   onClick={() => navigate(`/account/discovery/${token.id}`)}
                 >
                   {/* Column 1: Icon with Hedera Badge */}
@@ -294,14 +294,14 @@ export default function Discovery() {
                   </div>
 
                   {/* Column 3: Price - Hidden on mobile */}
-                  <div className="hidden sm:block text-right">
+                  <div className="hidden md:block text-right">
                     <p className="font-medium">
                       {formatAmount(token.price, token.priceUsd)}
                     </p>
                   </div>
 
-                  {/* Column 4: Change - Hidden on mobile */}
-                  <div className="hidden sm:block text-right">
+                  {/* Column 4: Change - Hidden on mobile and tablet */}
+                  <div className="hidden md:block text-right">
                     <Badge
                       variant={token.change24h > 0 ? "default" : "destructive"}
                       className="text-xs text-white"
@@ -311,8 +311,8 @@ export default function Discovery() {
                     </Badge>
                   </div>
 
-                  {/* Column 5: Chart - Hidden on mobile */}
-                  <div className="hidden sm:flex justify-center">
+                  {/* Column 5: Chart - Hidden on mobile and tablet */}
+                  <div className="hidden lg:flex justify-center">
                     <MiniChart
                       data={token.chartData}
                       isPositive={token.change24h > 0}
