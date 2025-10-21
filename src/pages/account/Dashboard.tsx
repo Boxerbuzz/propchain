@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Wallet,
   ArrowUpDown,
   RefreshCw,
   Eye,
@@ -18,18 +17,12 @@ import {
   Clock,
   X as XIcon,
   ArrowLeftRight,
-  Plus,
-  TrendingUp,
-  ArrowUpRight,
-  ArrowDownLeft,
-  ExternalLink,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useWalletTransactions } from "@/hooks/useWalletTransactions";
-import { cn } from "@/lib/utils";
 
 export default function AccountDashboard() {
   const [showBalances, setShowBalances] = useState(true);
@@ -247,16 +240,29 @@ export default function AccountDashboard() {
     .map((tx) => {
       // Determine simple type based on transaction type
       let simpleType: "send" | "receive" | "swap";
-      if (tx.type === "investment" || tx.type === "withdrawal" || tx.type === "token_withdrawal") {
+      if (
+        tx.type === "investment" ||
+        tx.type === "withdrawal" ||
+        tx.type === "token_withdrawal"
+      ) {
         simpleType = "send";
-      } else if (tx.type === "dividend" || tx.type === "deposit" || tx.type === "token_deposit") {
+      } else if (
+        tx.type === "dividend" ||
+        tx.type === "deposit" ||
+        tx.type === "token_deposit"
+      ) {
         simpleType = "receive";
       } else {
         simpleType = "send"; // default
       }
 
       // Determine status
-      const status = tx.status === "completed" ? "completed" : tx.status === "failed" ? "failed" : "pending";
+      const status =
+        tx.status === "completed"
+          ? "completed"
+          : tx.status === "failed"
+          ? "failed"
+          : "pending";
 
       // Format details based on transaction type
       let details = "";
@@ -284,7 +290,10 @@ export default function AccountDashboard() {
         hash: tx.hash || tx.reference || tx.explorerUrl || "",
       };
     })
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    .sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -500,7 +509,9 @@ export default function AccountDashboard() {
           <TabsList className="grid w-full grid-cols-4 mb-6 md:mb-8 h-auto gap-1 p-1">
             <TabsTrigger value="tokens" className="gap-1 sm:gap-2 px-2 sm:px-3">
               <Coins className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline text-xs sm:text-sm">Tokens</span>
+              <span className="hidden sm:inline text-xs sm:text-sm">
+                Tokens
+              </span>
             </TabsTrigger>
             <TabsTrigger value="nfts" className="gap-1 sm:gap-2 px-2 sm:px-3">
               <Image className="h-4 w-4 flex-shrink-0" />
@@ -510,9 +521,14 @@ export default function AccountDashboard() {
               <CircleDollarSign className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline text-xs sm:text-sm">DeFi</span>
             </TabsTrigger>
-            <TabsTrigger value="transactions" className="gap-1 sm:gap-2 px-2 sm:px-3">
+            <TabsTrigger
+              value="transactions"
+              className="gap-1 sm:gap-2 px-2 sm:px-3"
+            >
               <Receipt className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline text-xs sm:text-sm">Transactions</span>
+              <span className="hidden sm:inline text-xs sm:text-sm">
+                Transactions
+              </span>
             </TabsTrigger>
           </TabsList>
 
