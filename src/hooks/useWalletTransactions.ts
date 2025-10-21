@@ -11,7 +11,7 @@ export interface Transaction {
   currency: string;
   amountUsd?: number;
   amountNgn?: number;
-  status: 'pending' | 'completed' | 'failed';
+  status: 'pending' | 'completed' | 'failed' | 'cancelled' | 'rejected';
   timestamp: string;
   date: string;
   fee?: number;
@@ -121,6 +121,42 @@ export const useWalletTransactions = () => {
     refetchInterval: 60000, // Refresh every minute
   });
 
+  // Fetch withdrawal requests
+  const withdrawalsQuery = useQuery({
+    queryKey: ['withdrawal-transactions', user?.id],
+    queryFn: async (): Promise<Transaction[]> => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('withdrawal_requests' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map((withdrawal: any) => ({
+        id: `wdr-${withdrawal.id}`,
+        type: 'withdrawal' as const,
+        amount: withdrawal.amount_ngn || withdrawal.amount_usd || 0,
+        currency: withdrawal.currency?.toUpperCase() || 'NGN',
+        amountNgn: withdrawal.amount_ngn,
+        amountUsd: withdrawal.amount_usd,
+        status: withdrawal.status === 'completed' ? 'completed' as const :
+                withdrawal.status === 'cancelled' ? 'cancelled' as const :
+                withdrawal.status === 'rejected' ? 'rejected' as const :
+                withdrawal.status === 'approved' ? 'pending' as const : 'pending' as const,
+        timestamp: withdrawal.created_at,
+        date: new Date(withdrawal.created_at).toISOString().split('T')[0],
+        method: `Bank Transfer to ${withdrawal.bank_name || 'Bank'}`,
+        direction: 'outgoing' as const,
+        description: `Withdrawal to ${withdrawal.account_number ? `****${withdrawal.account_number.slice(-4)}` : 'bank account'}`,
+        reference: withdrawal.reference_number,
+      }));
+    },
+    enabled: !!user?.id,
+  });
+
   // Set up real-time subscriptions
   useEffect(() => {
     if (!user?.id) return;
@@ -157,9 +193,26 @@ export const useWalletTransactions = () => {
       )
       .subscribe();
 
+    const withdrawalChannel = supabase
+      .channel('withdrawal-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'withdrawal_requests',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          withdrawalsQuery.refetch();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(investmentChannel);
       supabase.removeChannel(dividendChannel);
+      supabase.removeChannel(withdrawalChannel);
     };
   }, [user?.id]);
 
@@ -168,16 +221,18 @@ export const useWalletTransactions = () => {
     ...(investmentsQuery.data || []),
     ...(dividendsQuery.data || []),
     ...(hederaQuery.data || []),
+    ...(withdrawalsQuery.data || []),
   ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return {
     transactions: allTransactions,
-    isLoading: investmentsQuery.isLoading || dividendsQuery.isLoading || hederaQuery.isLoading,
-    error: investmentsQuery.error || dividendsQuery.error || hederaQuery.error,
+    isLoading: investmentsQuery.isLoading || dividendsQuery.isLoading || hederaQuery.isLoading || withdrawalsQuery.isLoading,
+    error: investmentsQuery.error || dividendsQuery.error || hederaQuery.error || withdrawalsQuery.error,
     refetch: () => {
       investmentsQuery.refetch();
       dividendsQuery.refetch();
       hederaQuery.refetch();
+      withdrawalsQuery.refetch();
     },
   };
 };

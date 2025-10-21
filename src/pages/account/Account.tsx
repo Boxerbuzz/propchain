@@ -29,11 +29,6 @@ export default function AccountLayout() {
       icon: LayoutDashboard,
     },
     {
-      name: "Wallet",
-      href: "/account/wallet",
-      icon: Wallet,
-    },
-    {
       name: "Discovery",
       href: "/account/discovery",
       icon: Compass,

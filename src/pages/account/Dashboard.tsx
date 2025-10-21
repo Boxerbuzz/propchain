@@ -20,19 +20,26 @@ import {
   ArrowLeftRight,
   Plus,
   TrendingUp,
+  ArrowUpRight,
+  ArrowDownLeft,
+  ExternalLink,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useWalletTransactions } from "@/hooks/useWalletTransactions";
+import { TransactionFilters, FilterOptions } from "@/components/TransactionFilters";
+import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AccountDashboard() {
   const [showBalances, setShowBalances] = useState(true);
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const { balance: hederaBalance, syncBalance, isSyncing } = useWalletBalance();
   const { currency, formatAmount } = useCurrency();
-  const { transactions: allTransactions } = useWalletTransactions();
+  const { transactions: allTransactions, isLoading: isLoadingTransactions } = useWalletTransactions();
+  const [filteredTransactions, setFilteredTransactions] = useState(allTransactions);
 
   const totalValueNgn =
     (hederaBalance?.balanceNgn || 0) + (hederaBalance?.usdcBalanceNgn || 0);
@@ -148,6 +155,111 @@ export default function AccountDashboard() {
     ) {
       handleNextCard();
     }
+  };
+
+  // Update filtered transactions when transactions change
+  useEffect(() => {
+    setFilteredTransactions(allTransactions);
+  }, [allTransactions]);
+
+  // Filter transactions
+  const filterTransactions = (filters: FilterOptions) => {
+    let filtered = [...allTransactions];
+
+    // Search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filtered = filtered.filter(
+        (tx) =>
+          tx.description?.toLowerCase().includes(searchLower) ||
+          tx.reference?.toLowerCase().includes(searchLower) ||
+          tx.hash?.toLowerCase().includes(searchLower) ||
+          tx.type.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Type filter
+    if (filters.type && filters.type !== "all") {
+      filtered = filtered.filter((tx) => tx.type === filters.type);
+    }
+
+    // Status filter
+    if (filters.status && filters.status !== "all") {
+      filtered = filtered.filter((tx) => tx.status === filters.status);
+    }
+
+    // Date range filter
+    if (filters.dateRange && filters.dateRange !== "all") {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      filtered = filtered.filter((tx) => {
+        const txDate = new Date(tx.timestamp);
+        
+        switch (filters.dateRange) {
+          case "today":
+            return txDate >= today;
+          case "week":
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return txDate >= weekAgo;
+          case "month":
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            return txDate >= monthAgo;
+          case "quarter":
+            const quarterAgo = new Date(today);
+            quarterAgo.setMonth(quarterAgo.getMonth() - 3);
+            return txDate >= quarterAgo;
+          case "year":
+            const yearAgo = new Date(today);
+            yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+            return txDate >= yearAgo;
+          default:
+            return true;
+        }
+      });
+    }
+
+    setFilteredTransactions(filtered);
+  };
+
+  const getTransactionIcon = (type: string, direction: string) => {
+    switch (type) {
+      case "investment":
+        return <TrendingUp className="h-4 w-4" />;
+      case "dividend":
+        return <ArrowDownLeft className="h-4 w-4 text-green-500" />;
+      case "deposit":
+      case "token_deposit":
+        return <ArrowDownLeft className="h-4 w-4 text-green-500" />;
+      case "withdrawal":
+      case "token_withdrawal":
+        return <ArrowUpRight className="h-4 w-4 text-red-500" />;
+      case "sync":
+        return <RefreshCw className="h-4 w-4 text-blue-500" />;
+      default:
+        return direction === "incoming" ? (
+          <ArrowDownLeft className="h-4 w-4 text-green-500" />
+        ) : (
+          <ArrowUpRight className="h-4 w-4 text-red-500" />
+        );
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      completed: { icon: Check, color: "text-green-500" },
+      pending: { icon: Clock, color: "text-yellow-500" },
+      failed: { icon: XIcon, color: "text-red-500" },
+      cancelled: { icon: XIcon, color: "text-gray-500" },
+      rejected: { icon: XIcon, color: "text-red-500" },
+    };
+
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    const StatusIcon = config.icon;
+
+    return <StatusIcon className={`h-4 w-4 ${config.color}`} />;
   };
 
   // Mock NFTs data
@@ -842,94 +954,120 @@ export default function AccountDashboard() {
           </TabsContent>
 
           {/* Transactions Tab */}
-          <TabsContent value="transactions">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Transactions</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y divide-border">
-                  {mockTransactions.map((tx) => (
-                    <div
-                      key={tx.id}
-                      className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_140px_180px] items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
-                    >
-                      {/* Column 1: Icon with Status Badge */}
-                      <div className="relative flex-shrink-0">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full flex items-center justify-center border border-blue-200 dark:border-blue-700">
-                          {getTransactionIcon(tx.type)}
+          <TabsContent value="transactions" className="space-y-4">
+            <TransactionFilters
+              onFilter={filterTransactions}
+              totalCount={allTransactions.length}
+              filteredCount={filteredTransactions.length}
+            />
+
+            {isLoadingTransactions ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 flex-1">
+                          <Skeleton className="h-10 w-10 rounded-full" />
+                          <div className="space-y-2 flex-1">
+                            <Skeleton className="h-4 w-1/3" />
+                            <Skeleton className="h-3 w-1/4" />
+                          </div>
                         </div>
-                        <div className="absolute -bottom-0.5 -right-0.5">
-                          {getStatusBadge(tx.status)}
+                        <div className="text-right space-y-2">
+                          <Skeleton className="h-4 w-20" />
+                          <Skeleton className="h-3 w-16" />
                         </div>
                       </div>
-
-                      {/* Column 2: Type & Details */}
-                      <div className="min-w-0">
-                        <p className="font-medium capitalize">{tx.type}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {tx.type === "send"
-                            ? `To: ${tx.to}`
-                            : tx.type === "receive"
-                            ? `From: ${tx.from}`
-                            : tx.type === "swap"
-                            ? `${tx.amount} ${tx.token} → ${tx.toAmount} ${tx.toToken}`
-                            : ""}
-                        </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredTransactions.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Receipt className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">
+                    {allTransactions.length === 0
+                      ? "No transactions yet"
+                      : "No transactions match your filters"}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              filteredTransactions.map((transaction) => (
+                <Card
+                  key={transaction.id}
+                  className={cn(
+                    "transition-colors",
+                    transaction.explorerUrl && "cursor-pointer hover:border-primary/50"
+                  )}
+                  onClick={() => {
+                    if (transaction.explorerUrl) {
+                      window.open(transaction.explorerUrl, "_blank");
+                    }
+                  }}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="p-2 rounded-full bg-primary/10">
+                          {getTransactionIcon(transaction.type, transaction.direction)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium truncate">
+                              {transaction.description || transaction.type}
+                            </p>
+                            {getStatusBadge(transaction.status)}
+                            {transaction.explorerUrl && (
+                              <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>{new Date(transaction.timestamp).toLocaleString()}</span>
+                            {transaction.reference && (
+                              <>
+                                <span>•</span>
+                                <span className="truncate">
+                                  Ref: {transaction.reference}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          {transaction.method && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {transaction.method}
+                            </p>
+                          )}
+                        </div>
                       </div>
-
-                      {/* Column 3: Timestamp - Hidden on mobile */}
-                      <div className="hidden sm:block text-center">
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(tx.timestamp).toLocaleDateString([], {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(tx.timestamp).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
-
-                      {/* Column 4: Amount & Token */}
-                      <div className="text-right">
+                      <div className="text-right ml-4">
                         <p
-                          className={`font-semibold ${
-                            tx.type === "receive"
-                              ? "text-green-600"
-                              : tx.type === "send"
-                              ? "text-red-600"
-                              : "text-blue-600"
-                          }`}
+                          className={cn(
+                            "font-medium",
+                            transaction.direction === "incoming"
+                              ? "text-green-500"
+                              : "text-foreground"
+                          )}
                         >
-                          {tx.type === "receive"
-                            ? "+"
-                            : tx.type === "send"
-                            ? "-"
-                            : ""}
-                          {showBalances ? (
-                            <>
-                              {tx.amount} {tx.token}
-                            </>
-                          ) : (
-                            <span>••••</span>
-                          )}
+                          {transaction.direction === "incoming" ? "+" : "-"}
+                          {transaction.amount.toLocaleString()} {transaction.currency}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          {tx.token}
-                          {tx.type === "swap" && tx.toToken && (
-                            <span> → {tx.toToken}</span>
-                          )}
+                        {transaction.hash && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {transaction.hash.slice(0, 6)}...{transaction.hash.slice(-4)}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground capitalize mt-1">
+                          {transaction.status}
                         </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
         </Tabs>
       </div>
