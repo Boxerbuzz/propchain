@@ -277,57 +277,78 @@ export type Database = {
       }
       dividend_distributions: {
         Row: {
+          contract_created_at: string | null
+          contract_distribution_id: string | null
+          contract_transaction_hash: string | null
           created_at: string | null
           created_by: string | null
           distribution_date: string
           distribution_period: string | null
+          expiry_date: string | null
           failed_payments: number | null
           hcs_record_id: string | null
           id: string
           payment_status: string | null
           per_token_amount: number
           property_id: string | null
+          snapshot_block_number: number | null
           successful_payments: number | null
           tokenization_id: string | null
           total_amount_ngn: number
           total_amount_usd: number | null
+          total_claimed_amount: number | null
           total_recipients: number | null
+          unclaimed_amount: number | null
           updated_at: string | null
         }
         Insert: {
+          contract_created_at?: string | null
+          contract_distribution_id?: string | null
+          contract_transaction_hash?: string | null
           created_at?: string | null
           created_by?: string | null
           distribution_date: string
           distribution_period?: string | null
+          expiry_date?: string | null
           failed_payments?: number | null
           hcs_record_id?: string | null
           id?: string
           payment_status?: string | null
           per_token_amount: number
           property_id?: string | null
+          snapshot_block_number?: number | null
           successful_payments?: number | null
           tokenization_id?: string | null
           total_amount_ngn: number
           total_amount_usd?: number | null
+          total_claimed_amount?: number | null
           total_recipients?: number | null
+          unclaimed_amount?: number | null
           updated_at?: string | null
         }
         Update: {
+          contract_created_at?: string | null
+          contract_distribution_id?: string | null
+          contract_transaction_hash?: string | null
           created_at?: string | null
           created_by?: string | null
           distribution_date?: string
           distribution_period?: string | null
+          expiry_date?: string | null
           failed_payments?: number | null
           hcs_record_id?: string | null
           id?: string
           payment_status?: string | null
           per_token_amount?: number
           property_id?: string | null
+          snapshot_block_number?: number | null
           successful_payments?: number | null
           tokenization_id?: string | null
           total_amount_ngn?: number
           total_amount_usd?: number | null
+          total_claimed_amount?: number | null
           total_recipients?: number | null
+          unclaimed_amount?: number | null
           updated_at?: string | null
         }
         Relationships: [
@@ -432,11 +453,19 @@ export type Database = {
           approval_threshold: number | null
           budget_ngn: number | null
           budget_usd: number | null
+          contract_proposal_id: string | null
+          contract_registered_at: string | null
+          contract_transaction_hash: string | null
           created_at: string | null
           description: string
+          execution_contract_tx: string | null
           execution_date: string | null
           execution_notes: string | null
           execution_status: string | null
+          funds_locked: boolean | null
+          funds_locked_at: string | null
+          funds_released: boolean | null
+          funds_released_at: string | null
           hcs_record_id: string | null
           id: string
           property_id: string | null
@@ -459,11 +488,19 @@ export type Database = {
           approval_threshold?: number | null
           budget_ngn?: number | null
           budget_usd?: number | null
+          contract_proposal_id?: string | null
+          contract_registered_at?: string | null
+          contract_transaction_hash?: string | null
           created_at?: string | null
           description: string
+          execution_contract_tx?: string | null
           execution_date?: string | null
           execution_notes?: string | null
           execution_status?: string | null
+          funds_locked?: boolean | null
+          funds_locked_at?: string | null
+          funds_released?: boolean | null
+          funds_released_at?: string | null
           hcs_record_id?: string | null
           id?: string
           property_id?: string | null
@@ -486,11 +523,19 @@ export type Database = {
           approval_threshold?: number | null
           budget_ngn?: number | null
           budget_usd?: number | null
+          contract_proposal_id?: string | null
+          contract_registered_at?: string | null
+          contract_transaction_hash?: string | null
           created_at?: string | null
           description?: string
+          execution_contract_tx?: string | null
           execution_date?: string | null
           execution_notes?: string | null
           execution_status?: string | null
+          funds_locked?: boolean | null
+          funds_locked_at?: string | null
+          funds_released?: boolean | null
+          funds_released_at?: string | null
           hcs_record_id?: string | null
           id?: string
           property_id?: string | null
@@ -1857,6 +1902,126 @@ export type Database = {
           },
         ]
       }
+      smart_contract_config: {
+        Row: {
+          abi: Json
+          contract_address: string
+          contract_name: string
+          contract_version: string
+          created_at: string | null
+          deployed_at: string
+          deployed_by: string | null
+          deployment_network: string
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          abi: Json
+          contract_address: string
+          contract_name: string
+          contract_version: string
+          created_at?: string | null
+          deployed_at: string
+          deployed_by?: string | null
+          deployment_network: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          abi?: Json
+          contract_address?: string
+          contract_name?: string
+          contract_version?: string
+          created_at?: string | null
+          deployed_at?: string
+          deployed_by?: string | null
+          deployment_network?: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      smart_contract_transactions: {
+        Row: {
+          block_number: number | null
+          confirmed_at: string | null
+          contract_address: string
+          contract_name: string
+          created_at: string | null
+          error_message: string | null
+          function_name: string
+          gas_used: number | null
+          id: string
+          input_data: Json | null
+          output_data: Json | null
+          property_id: string | null
+          related_id: string | null
+          related_type: string | null
+          tokenization_id: string | null
+          transaction_hash: string
+          transaction_status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          block_number?: number | null
+          confirmed_at?: string | null
+          contract_address: string
+          contract_name: string
+          created_at?: string | null
+          error_message?: string | null
+          function_name: string
+          gas_used?: number | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          property_id?: string | null
+          related_id?: string | null
+          related_type?: string | null
+          tokenization_id?: string | null
+          transaction_hash: string
+          transaction_status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          block_number?: number | null
+          confirmed_at?: string | null
+          contract_address?: string
+          contract_name?: string
+          created_at?: string | null
+          error_message?: string | null
+          function_name?: string
+          gas_used?: number | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          property_id?: string | null
+          related_id?: string | null
+          related_type?: string | null
+          tokenization_id?: string | null
+          transaction_hash?: string
+          transaction_status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_contract_transactions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "smart_contract_transactions_tokenization_id_fkey"
+            columns: ["tokenization_id"]
+            isOneToOne: false
+            referencedRelation: "tokenizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_settings: {
         Row: {
           description: string | null
@@ -1980,6 +2145,9 @@ export type Database = {
           created_by: string | null
           current_raise: number | null
           dividend_frequency: string | null
+          escrow_contract_address: string | null
+          escrow_created_at: string | null
+          escrow_finalized_at: string | null
           expected_roi_annual: number | null
           id: string
           interest_rate: number | null
@@ -1996,6 +2164,9 @@ export type Database = {
           minimum_raise: number
           minted_at: string | null
           minting_transaction_id: string | null
+          multisig_signers: Json | null
+          multisig_threshold: number | null
+          multisig_treasury_address: string | null
           platform_fee_percentage: number | null
           price_per_token: number
           property_id: string | null
@@ -2031,6 +2202,9 @@ export type Database = {
           created_by?: string | null
           current_raise?: number | null
           dividend_frequency?: string | null
+          escrow_contract_address?: string | null
+          escrow_created_at?: string | null
+          escrow_finalized_at?: string | null
           expected_roi_annual?: number | null
           id?: string
           interest_rate?: number | null
@@ -2047,6 +2221,9 @@ export type Database = {
           minimum_raise: number
           minted_at?: string | null
           minting_transaction_id?: string | null
+          multisig_signers?: Json | null
+          multisig_threshold?: number | null
+          multisig_treasury_address?: string | null
           platform_fee_percentage?: number | null
           price_per_token: number
           property_id?: string | null
@@ -2082,6 +2259,9 @@ export type Database = {
           created_by?: string | null
           current_raise?: number | null
           dividend_frequency?: string | null
+          escrow_contract_address?: string | null
+          escrow_created_at?: string | null
+          escrow_finalized_at?: string | null
           expected_roi_annual?: number | null
           id?: string
           interest_rate?: number | null
@@ -2098,6 +2278,9 @@ export type Database = {
           minimum_raise?: number
           minted_at?: string | null
           minting_transaction_id?: string | null
+          multisig_signers?: Json | null
+          multisig_threshold?: number | null
+          multisig_treasury_address?: string | null
           platform_fee_percentage?: number | null
           price_per_token?: number
           property_id?: string | null
