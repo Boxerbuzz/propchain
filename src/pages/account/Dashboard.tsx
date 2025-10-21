@@ -865,72 +865,102 @@ export default function AccountDashboard() {
           </TabsContent>
 
           {/* Transactions Tab */}
-          <TabsContent value="transactions" className="space-y-4">
-            {displayTransactions.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <Receipt className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No transactions yet</p>
-                </CardContent>
-              </Card>
-            ) : (
-              displayTransactions.map((transaction) => (
-                <Card
-                  key={transaction.id}
-                  className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => {
-                    if (transaction.hash) {
-                      window.open(
-                        `https://hashscan.io/testnet/transaction/${transaction.hash}`,
-                        "_blank"
-                      );
-                    }
-                  }}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-primary/10">
-                          {getTransactionIcon(transaction.type)}
+          <TabsContent value="transactions">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Transactions</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-border">
+                  {displayTransactions.map((tx) => (
+                    <div
+                      key={tx.id}
+                      className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_140px_180px] items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={() => {
+                        if (tx.hash) {
+                          window.open(
+                            `https://hashscan.io/testnet/transaction/${tx.hash}`,
+                            "_blank"
+                          );
+                        }
+                      }}
+                    >
+                      {/* Column 1: Icon with Status Badge */}
+                      <div className="relative flex-shrink-0">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full flex items-center justify-center border border-blue-200 dark:border-blue-700">
+                          {getTransactionIcon(tx.type)}
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium capitalize">
-                              {transaction.type}
-                            </p>
-                            {getStatusBadge(transaction.status)}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {transaction.type === "send" && transaction.to && `To: ${transaction.to}`}
-                            {transaction.type === "receive" && (transaction as any).from && `From: ${(transaction as any).from}`}
-                            {transaction.type === "swap" && (transaction as any).toToken && `${transaction.token} → ${(transaction as any).toToken}`}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(transaction.timestamp).toLocaleString()}
-                          </p>
+                        <div className="absolute -bottom-0.5 -right-0.5">
+                          {getStatusBadge(tx.status)}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium">
-                          {transaction.type === "receive" ? "+" : "-"}
-                          {transaction.amount.toLocaleString()} {transaction.token}
+
+                      {/* Column 2: Type & Details */}
+                      <div className="min-w-0">
+                        <p className="font-medium capitalize">{tx.type}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {tx.type === "send"
+                            ? `To: ${tx.to}`
+                            : tx.type === "receive"
+                            ? `From: ${(tx as any).from}`
+                            : tx.type === "swap"
+                            ? `${tx.amount} ${tx.token} → ${(tx as any).toAmount} ${(tx as any).toToken}`
+                            : ""}
                         </p>
-                        {(transaction as any).toToken && (transaction as any).toAmount && (
-                          <p className="text-sm text-muted-foreground">
-                            +{(transaction as any).toAmount.toLocaleString()} {(transaction as any).toToken}
-                          </p>
-                        )}
-                        {transaction.hash && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {transaction.hash.slice(0, 6)}...{transaction.hash.slice(-4)}
-                          </p>
-                        )}
+                      </div>
+
+                      {/* Column 3: Timestamp - Hidden on mobile */}
+                      <div className="hidden sm:block text-center">
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(tx.timestamp).toLocaleDateString([], {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(tx.timestamp).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+
+                      {/* Column 4: Amount & Token */}
+                      <div className="text-right">
+                        <p
+                          className={`font-semibold ${
+                            tx.type === "receive"
+                              ? "text-green-600"
+                              : tx.type === "send"
+                              ? "text-red-600"
+                              : "text-blue-600"
+                          }`}
+                        >
+                          {tx.type === "receive"
+                            ? "+"
+                            : tx.type === "send"
+                            ? "-"
+                            : ""}
+                          {showBalances ? (
+                            <>
+                              {tx.amount} {tx.token}
+                            </>
+                          ) : (
+                            <span>••••</span>
+                          )}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {tx.token}
+                          {tx.type === "swap" && (tx as any).toToken && (
+                            <span> → {(tx as any).toToken}</span>
+                          )}
+                        </p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
