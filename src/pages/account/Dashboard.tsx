@@ -367,44 +367,6 @@ export default function AccountDashboard() {
     },
   ];
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "completed":
-        return (
-          <div className="w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-green-500 shadow-sm">
-            <Check className="h-2.5 w-2.5 text-green-600 dark:text-green-400" />
-          </div>
-        );
-      case "pending":
-        return (
-          <div className="w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-yellow-500 shadow-sm">
-            <Clock className="h-2.5 w-2.5 text-yellow-600 dark:text-yellow-400" />
-          </div>
-        );
-      case "failed":
-        return (
-          <div className="w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-red-500 shadow-sm">
-            <XIcon className="h-2.5 w-2.5 text-red-600 dark:text-red-400" />
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getTransactionIcon = (type: string) => {
-    switch (type) {
-      case "send":
-        return <Send className="h-4 w-4" />;
-      case "receive":
-        return <Download className="h-4 w-4" />;
-      case "swap":
-        return <ArrowLeftRight className="h-4 w-4" />;
-      default:
-        return <ArrowUpDown className="h-4 w-4" />;
-    }
-  };
-
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
