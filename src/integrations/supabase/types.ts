@@ -665,15 +665,18 @@ export type Database = {
       investment_documents: {
         Row: {
           created_at: string
+          document_hash: string | null
           document_number: string
           document_type: string
           document_url: string
           generated_at: string
+          hcs_verification_id: string | null
           id: string
           investment_id: string
           is_current: boolean | null
           metadata: Json | null
           property_id: string
+          qr_code_data: string | null
           reason_for_update: string | null
           superseded_by: string | null
           tokenization_id: string
@@ -684,15 +687,18 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          document_hash?: string | null
           document_number: string
           document_type: string
           document_url: string
           generated_at?: string
+          hcs_verification_id?: string | null
           id?: string
           investment_id: string
           is_current?: boolean | null
           metadata?: Json | null
           property_id: string
+          qr_code_data?: string | null
           reason_for_update?: string | null
           superseded_by?: string | null
           tokenization_id: string
@@ -703,15 +709,18 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          document_hash?: string | null
           document_number?: string
           document_type?: string
           document_url?: string
           generated_at?: string
+          hcs_verification_id?: string | null
           id?: string
           investment_id?: string
           is_current?: boolean | null
           metadata?: Json | null
           property_id?: string
+          qr_code_data?: string | null
           reason_for_update?: string | null
           superseded_by?: string | null
           tokenization_id?: string

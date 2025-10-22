@@ -64,6 +64,7 @@ import SupportCenter from "./pages/support/SupportCenter";
 import HowItWorks from "./pages/HowItWorks";
 import AboutUs from "./pages/AboutUs";
 import SecurityPage from "./pages/Security";
+import VerifyDocument from "./pages/VerifyDocument";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import RouteGuard from "./components/auth/RouteGuard";
@@ -92,9 +93,10 @@ const App = () => (
               <Route path="/browse" element={<BrowseProperties />} />
               <Route path="/browse/:id" element={<PropertyDetails />} />
               <Route path="/browse/:id/invest" element={<InvestmentFlow />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/about" element={<AboutUs />} />
-              <Route path="/security" element={<SecurityPage />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/security" element={<SecurityPage />} />
+            <Route path="/verify/:documentNumber" element={<VerifyDocument />} />
               {/* Onboarding routes */}
               <Route path="/onboarding/welcome" element={<Welcome />} />
               <Route
