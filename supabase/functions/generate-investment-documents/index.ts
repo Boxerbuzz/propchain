@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+import { generateAgreementPDF, generateReceiptPDF, generateShareCertificatePDF } from "./pdf-templates.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -76,17 +77,30 @@ serve(async (req) => {
     const agreementNumber = `AGR-${Date.now()}-${investment_id.substring(0, 8).toUpperCase()}`;
     const receiptNumber = `REC-${Date.now()}-${investment_id.substring(0, 8).toUpperCase()}`;
 
-    // Generate PDF content using React-PDF templates
+    // Generate document numbers
+    const certificateNumber = `CERT-${Date.now()}-${investment_id.substring(0, 8).toUpperCase()}`;
+    const currentDate = new Date().toLocaleString();
+
+    // Generate PDF content using templates
     const agreementContent = generateAgreementPDF({
       investment,
       kycData,
       documentNumber: agreementNumber,
+      currentDate,
     });
 
     const receiptContent = generateReceiptPDF({
       investment,
       kycData,
       documentNumber: receiptNumber,
+      currentDate,
+    });
+
+    const certificateContent = generateShareCertificatePDF({
+      investment,
+      kycData,
+      documentNumber: certificateNumber,
+      currentDate,
     });
 
     // Upload documents to storage
@@ -95,6 +109,7 @@ serve(async (req) => {
     
     const agreementPath = `${userId}/agreement-${timestamp}.pdf`;
     const receiptPath = `${userId}/receipt-${timestamp}.pdf`;
+    const certificatePath = `${userId}/certificate-${timestamp}.pdf`;
 
     // Upload agreement
     const { error: agreementUploadError } = await supabase.storage
@@ -122,9 +137,22 @@ serve(async (req) => {
       throw new Error(`Failed to upload receipt: ${receiptUploadError.message}`);
     }
 
+    // Upload certificate
+    const { error: certificateUploadError } = await supabase.storage
+      .from('investment-documents')
+      .upload(certificatePath, certificateContent, {
+        contentType: 'application/pdf',
+        upsert: false
+      });
+
+    if (certificateUploadError) {
+      console.error('Certificate upload error:', certificateUploadError);
+      throw new Error(`Failed to upload certificate: ${certificateUploadError.message}`);
+    }
+
     console.log('Documents uploaded successfully');
 
-    // Create database records
+    // Create database records with versioning support
     const documents = [
       {
         investment_id: investment_id,
@@ -134,10 +162,14 @@ serve(async (req) => {
         document_type: 'agreement',
         document_url: agreementPath,
         document_number: agreementNumber,
+        version: 1,
+        version_date: new Date().toISOString(),
+        is_current: true,
         metadata: {
           property_title: (investment.tokenizations as any).properties?.title,
           amount_ngn: investment.amount_ngn,
           tokens_requested: investment.tokens_requested,
+          tokenization_type: (investment.tokenizations as any).tokenization_type,
         }
       },
       {
@@ -148,10 +180,30 @@ serve(async (req) => {
         document_type: 'receipt',
         document_url: receiptPath,
         document_number: receiptNumber,
+        version: 1,
+        version_date: new Date().toISOString(),
+        is_current: true,
         metadata: {
           payment_method: investment.payment_method,
           payment_reference: investment.paystack_reference,
           amount_ngn: investment.amount_ngn,
+        }
+      },
+      {
+        investment_id: investment_id,
+        user_id: userId,
+        tokenization_id: investment.tokenization_id,
+        property_id: (investment.tokenizations as any).property_id,
+        document_type: 'certificate',
+        document_url: certificatePath,
+        document_number: certificateNumber,
+        version: 1,
+        version_date: new Date().toISOString(),
+        is_current: true,
+        metadata: {
+          property_title: (investment.tokenizations as any).properties?.title,
+          tokens_held: investment.tokens_requested,
+          ownership_percentage: ((investment.tokens_requested / (investment.tokenizations as any).total_supply) * 100).toFixed(4),
         }
       }
     ];
@@ -169,9 +221,14 @@ serve(async (req) => {
     await supabase.from('notifications').insert({
       user_id: userId,
       title: 'Investment Documents Ready',
-      message: `Your investment agreement and receipt for ${(investment.tokenizations as any).properties?.title} are now available for download.`,
+      message: `Your investment documents (Agreement, Receipt, and Share Certificate) for ${(investment.tokenizations as any).properties?.title} are now available for download.`,
       notification_type: 'document_ready',
+      priority: 'high',
       action_url: `/portfolio/${investment.tokenization_id}`,
+      action_data: {
+        investment_id: investment_id,
+        document_count: 3,
+      },
     });
 
     console.log('Documents generated successfully');
@@ -181,8 +238,10 @@ serve(async (req) => {
         success: true,
         documents: {
           agreement: { path: agreementPath, number: agreementNumber },
-          receipt: { path: receiptPath, number: receiptNumber }
-        }
+          receipt: { path: receiptPath, number: receiptNumber },
+          certificate: { path: certificatePath, number: certificateNumber }
+        },
+        message: 'Investment documents generated successfully'
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -196,116 +255,4 @@ serve(async (req) => {
   }
 });
 
-// Simple PDF generation functions (placeholder - would use @react-pdf/renderer in production)
-function generateAgreementPDF(data: any): Uint8Array {
-  const { investment, kycData, documentNumber } = data;
-  const tokenization = investment.tokenizations;
-  const property = tokenization.properties;
-  const investor = investment.investor;
-  
-  const tokenizationType = tokenization.tokenization_type || 'equity';
-  const typeLabel = tokenizationType === 'equity' ? 'OWNERSHIP' 
-    : tokenizationType === 'debt' ? 'LENDING' 
-    : 'REVENUE SHARING';
-  
-  let typeSpecificTerms = '';
-  if (tokenizationType === 'equity') {
-    typeSpecificTerms = `
-EQUITY OWNERSHIP TERMS:
-- Ownership Share: ${((investment.tokens_requested / tokenization.total_supply) * 100).toFixed(4)}%
-- Voting Rights: Proportional to token holdings
-- Profit Distribution: Proportional to ownership percentage
-- Capital Appreciation: Shared proportionally on property sale`;
-  } else if (tokenizationType === 'debt') {
-    typeSpecificTerms = `
-DEBT LENDING TERMS:
-- Interest Rate: ${tokenization.interest_rate || 'N/A'}% per annum
-- Loan Term: ${tokenization.loan_term_months || 'N/A'} months
-- LTV Ratio: ${tokenization.ltv_ratio || 'N/A'}%
-- Repayment Priority: Senior debt with property collateral
-- No ownership or voting rights`;
-  } else {
-    typeSpecificTerms = `
-REVENUE SHARING TERMS:
-- Revenue Share: ${tokenization.revenue_share_percentage || 'N/A'}%
-- Distribution Frequency: ${tokenization.dividend_frequency || 'Quarterly'}
-- Based on gross rental income
-- No ownership or voting rights`;
-  }
-  
-  const content = `
-${typeLabel} INVESTMENT AGREEMENT
-${documentNumber}
-
-Bamboo Systems Technology Limited
-Real Estate Tokenization Platform
-Investment Type: ${typeLabel}
-Generated: ${new Date().toLocaleString()}
-
-INVESTOR INFORMATION:
-Name: ${investor.first_name} ${investor.last_name}
-Email: ${investor.email}
-${kycData?.address ? `Address: ${kycData.address}, ${kycData.city}, ${kycData.state}` : ''}
-
-PROPERTY DETAILS:
-Title: ${property.title}
-Location: ${JSON.parse(property.location).address}
-Estimated Value: ₦${property.estimated_value.toLocaleString()}
-
-INVESTMENT TERMS:
-Amount Invested: ₦${investment.amount_ngn.toLocaleString()}
-Tokens Allocated: ${investment.tokens_requested}
-Token Symbol: ${tokenization.token_symbol}
-Price per Token: ₦${tokenization.price_per_token.toLocaleString()}
-Expected Annual ROI: ${tokenization.expected_roi_annual}%
-
-${typeSpecificTerms}
-
-This agreement is governed by the laws of the Federal Republic of Nigeria.
-  `.trim();
-
-  return new TextEncoder().encode(content);
-}
-
-function generateReceiptPDF(data: any): Uint8Array {
-  const { investment, kycData, documentNumber } = data;
-  const tokenization = investment.tokenizations;
-  const property = tokenization.properties;
-  const investor = investment.investor;
-  
-  const tokenizationType = tokenization.tokenization_type || 'equity';
-  const typeLabel = tokenizationType === 'equity' ? 'Ownership' 
-    : tokenizationType === 'debt' ? 'Lending' 
-    : 'Revenue Sharing';
-  
-  const content = `
-INVESTMENT RECEIPT
-${documentNumber}
-
-Bamboo Systems Technology Limited
-Receipt Date: ${new Date().toLocaleString()}
-Investment Type: ${typeLabel}
-
-PAYMENT DETAILS:
-Receipt Number: ${documentNumber}
-Transaction Reference: ${investment.paystack_reference || 'WALLET-' + investment.id.substring(0, 8)}
-Payment Method: ${investment.payment_method === 'wallet' ? 'Wallet Balance' : 'Paystack'}
-Amount Paid: ₦${investment.amount_ngn.toLocaleString()}
-Payment Status: ${investment.payment_status}
-Payment Date: ${investment.payment_confirmed_at ? new Date(investment.payment_confirmed_at).toLocaleString() : 'Pending'}
-
-INVESTOR:
-${investor.first_name} ${investor.last_name}
-${investor.email}
-
-INVESTMENT DETAILS:
-Property: ${property.title}
-Investment Type: ${typeLabel}
-Tokens Allocated: ${investment.tokens_requested} ${tokenization.token_symbol}
-Token ID: ${tokenization.token_id || 'Pending'}
-
-This is a computer-generated receipt and does not require a signature.
-  `.trim();
-
-  return new TextEncoder().encode(content);
-}
+// PDF generation functions are now imported from pdf-templates.ts

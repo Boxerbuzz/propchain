@@ -671,11 +671,16 @@ export type Database = {
           generated_at: string
           id: string
           investment_id: string
+          is_current: boolean | null
           metadata: Json | null
           property_id: string
+          reason_for_update: string | null
+          superseded_by: string | null
           tokenization_id: string
           updated_at: string
           user_id: string
+          version: number | null
+          version_date: string | null
         }
         Insert: {
           created_at?: string
@@ -685,11 +690,16 @@ export type Database = {
           generated_at?: string
           id?: string
           investment_id: string
+          is_current?: boolean | null
           metadata?: Json | null
           property_id: string
+          reason_for_update?: string | null
+          superseded_by?: string | null
           tokenization_id: string
           updated_at?: string
           user_id: string
+          version?: number | null
+          version_date?: string | null
         }
         Update: {
           created_at?: string
@@ -699,11 +709,16 @@ export type Database = {
           generated_at?: string
           id?: string
           investment_id?: string
+          is_current?: boolean | null
           metadata?: Json | null
           property_id?: string
+          reason_for_update?: string | null
+          superseded_by?: string | null
           tokenization_id?: string
           updated_at?: string
           user_id?: string
+          version?: number | null
+          version_date?: string | null
         }
         Relationships: [
           {
@@ -718,6 +733,13 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_documents_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "investment_documents"
             referencedColumns: ["id"]
           },
           {
@@ -2220,6 +2242,82 @@ export type Database = {
           },
         ]
       }
+      token_transfers: {
+        Row: {
+          created_at: string | null
+          from_user_id: string
+          hedera_transaction_id: string | null
+          id: string
+          metadata: Json | null
+          notes: string | null
+          status: string | null
+          to_user_id: string
+          tokenization_id: string
+          tokens_transferred: number
+          total_transfer_value: number | null
+          transfer_date: string | null
+          transfer_price_per_token: number | null
+          transfer_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          from_user_id: string
+          hedera_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          status?: string | null
+          to_user_id: string
+          tokenization_id: string
+          tokens_transferred: number
+          total_transfer_value?: number | null
+          transfer_date?: string | null
+          transfer_price_per_token?: number | null
+          transfer_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          from_user_id?: string
+          hedera_transaction_id?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          status?: string | null
+          to_user_id?: string
+          tokenization_id?: string
+          tokens_transferred?: number
+          total_transfer_value?: number | null
+          transfer_date?: string | null
+          transfer_price_per_token?: number | null
+          transfer_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_transfers_from_user_id_fkey"
+            columns: ["from_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "token_transfers_to_user_id_fkey"
+            columns: ["to_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "token_transfers_tokenization_id_fkey"
+            columns: ["tokenization_id"]
+            isOneToOne: false
+            referencedRelation: "tokenizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tokenizations: {
         Row: {
           approved_at: string | null
@@ -2903,6 +3001,19 @@ export type Database = {
           p_tokenization_id: string
           p_tokens_requested: number
         }
+        Returns: Json
+      }
+      create_new_document_version: {
+        Args: {
+          p_new_document_url: string
+          p_new_user_id?: string
+          p_old_document_id: string
+          p_reason: string
+        }
+        Returns: string
+      }
+      generate_transfer_documents: {
+        Args: { p_transfer_id: string }
         Returns: Json
       }
       get_user_voting_power: {

@@ -227,7 +227,22 @@ serve(async (req) => {
 
     
 
-    // Step 6: Create success notification
+    // Step 6: Generate investment documents
+    console.log("[PROCESS-COMPLETION] Generating investment documents");
+    const { data: documentsResult, error: documentsError } = await supabase.functions.invoke(
+      'generate-investment-documents',
+      {
+        body: { investment_id: investment_id }
+      }
+    );
+
+    if (documentsError) {
+      console.error("[PROCESS-COMPLETION] Failed to generate documents:", documentsError);
+    } else {
+      console.log("[PROCESS-COMPLETION] Documents generated:", documentsResult);
+    }
+
+    // Step 7: Create success notification
     console.log("[PROCESS-COMPLETION] Creating success notification");
     const { error: notificationError } = await supabase
       .from("notifications")
@@ -238,13 +253,15 @@ serve(async (req) => {
           investment.tokenizations.properties.title
         } has been confirmed. You now own ${investment.tokens_requested} ${
           investment.tokenizations.token_symbol || "tokens"
-        }.`,
+        }. Your investment documents are being generated.`,
         notification_type: "investment_success",
-        action_url: `/portfolio`,
+        priority: "high",
+        action_url: `/portfolio/${investment.tokenization_id}`,
         action_data: {
           investment_id: investment.id,
           property_id: investment.tokenizations.property_id,
           tokenization_id: investment.tokenization_id,
+          documents_generated: !!documentsResult?.success,
         },
       });
 

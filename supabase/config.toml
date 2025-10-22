@@ -25,3 +25,7 @@ verify_jwt = false
 verify_jwt = false
 [functions.process-scheduled-dividends]
 verify_jwt = false
+[functions.generate-investment-documents]
+verify_jwt = false
+[functions.handle-token-transfer]
+verify_jwt = true

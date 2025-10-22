@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import InvestmentDocumentCard from "@/components/InvestmentDocumentCard";
 import DocumentPreviewModal from "@/components/DocumentPreviewModal";
+import DocumentHistoryTimeline from "@/components/DocumentHistoryTimeline";
 
 const PortfolioDetail = () => {
   const { tokenizationId } = useParams<{ tokenizationId: string }>();
@@ -515,34 +516,12 @@ const PortfolioDetail = () => {
           </TabsContent>
 
           <TabsContent value="documents" className="space-y-6">
-            {/* Investment Documents */}
+            {/* Document History with Versioning */}
             {investmentDocuments && investmentDocuments.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Investment Documents</CardTitle>
-                  <CardDescription>
-                    Your investment agreements and receipts
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {investmentDocuments.map((doc) => (
-                      <InvestmentDocumentCard
-                        key={doc.id}
-                        document={doc}
-                        onPreview={(url) =>
-                          handlePreview(
-                            url,
-                            doc.document_type === "agreement"
-                              ? "Investment Agreement"
-                              : "Investment Receipt"
-                          )
-                        }
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <DocumentHistoryTimeline
+                documents={investmentDocuments}
+                onPreview={(url, title) => handlePreview(url, title)}
+              />
             )}
 
             {/* Property Documents */}
