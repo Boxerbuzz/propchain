@@ -1,8 +1,7 @@
-/// <reference path="../types/custom-elements.d.ts" />
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Mermaid } from "@/components/ui/mermaid";
 import { Info } from "lucide-react";
 
 interface FlowDiagramProps {
@@ -29,9 +28,7 @@ const FlowDiagram = ({
       <CardContent className="space-y-4">
         {/* Mermaid Diagram */}
         <div className="bg-muted p-6 rounded-lg overflow-x-auto">
-          <lov-mermaid>
-            {mermaidCode}
-          </lov-mermaid>
+          <Mermaid chart={mermaidCode} />
         </div>
 
         {/* Legend */}

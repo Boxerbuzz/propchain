@@ -1,8 +1,7 @@
-/// <reference path="../types/custom-elements.d.ts" />
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Mermaid } from "@/components/ui/mermaid";
 
 const DatabaseSchema = () => {
   const tables = [
@@ -193,8 +192,8 @@ const DatabaseSchema = () => {
         {/* Entity Relationship Diagram */}
         <div className="bg-muted p-6 rounded-lg overflow-x-auto">
           <h3 className="text-lg font-semibold text-foreground mb-4">Entity Relationship Diagram</h3>
-          <lov-mermaid>
-            {`erDiagram
+          <Mermaid
+            chart={`erDiagram
     users ||--o{ properties : owns
     users ||--o{ investments : makes
     users ||--o{ token_holdings : holds
@@ -209,7 +208,7 @@ const DatabaseSchema = () => {
     investments ||--|| token_holdings : creates
     dividend_distributions ||--o{ dividend_payments : "distributes to"
     governance_proposals ||--o{ governance_votes : "receives votes"`}
-          </lov-mermaid>
+          />
         </div>
 
         <Separator />
