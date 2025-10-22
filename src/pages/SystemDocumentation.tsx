@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import FlowDiagram from "@/components/docs/FlowDiagram";
 import TechStack from "@/components/docs/TechStack";
 import DatabaseSchema from "@/components/docs/DatabaseSchema";
-import { FileText, Code, Database, Shield, ArrowLeft, Menu } from "lucide-react";
+import { FileText, Code, Database, Shield, ArrowLeft, Menu, User, Monitor } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const SystemDocumentation = () => {
@@ -125,8 +125,14 @@ const SystemDocumentation = () => {
                 <CardContent>
                   <Tabs defaultValue="user" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 h-auto">
-                      <TabsTrigger value="user" className="text-xs md:text-sm">User Perspective</TabsTrigger>
-                      <TabsTrigger value="technical" className="text-xs md:text-sm">Technical Perspective</TabsTrigger>
+                      <TabsTrigger value="user" className="text-xs md:text-sm gap-2">
+                        <User className="h-4 w-4" />
+                        User Perspective
+                      </TabsTrigger>
+                      <TabsTrigger value="technical" className="text-xs md:text-sm gap-2">
+                        <Monitor className="h-4 w-4" />
+                        Technical Perspective
+                      </TabsTrigger>
                     </TabsList>
                     <TabsContent value="user" className="space-y-4 pt-4">
                       <p className="text-muted-foreground">
@@ -188,18 +194,18 @@ const SystemDocumentation = () => {
                 title="1. Property Registration & Verification"
                 description="How property owners submit their properties for tokenization"
                 mermaidCode={`graph TD
-    A[👤 Owner: Fill Property Form] --> B[📤 Upload Documents]
-    B --> C[🖼️ Upload Property Images]
-    C --> D[✅ Submit for Review]
-    D --> E{🔐 HCS Topic Creation}
-    E --> F[📂 Upload Documents to HFS]
-    F --> G[🔐 Calculate SHA-256 Hash]
-    G --> H[⛓️ Submit Metadata to HCS]
-    H --> I[💾 Store in Database]
-    I --> J{👨‍💼 Admin Review}
-    J -->|Approved| K[✅ Property Status: Approved]
-    J -->|Rejected| L[❌ Property Status: Rejected]
-    K --> M[📋 Property Listed - Ready for Tokenization]
+    A[Owner: Fill Property Form] --> B[Upload Documents]
+    B --> C[Upload Property Images]
+    C --> D[Submit for Review]
+    D --> E{HCS Topic Creation}
+    E --> F[Upload Documents to HFS]
+    F --> G[Calculate SHA-256 Hash]
+    G --> H[Submit Metadata to HCS]
+    H --> I[Store in Database]
+    I --> J{Admin Review}
+    J -->|Approved| K[Property Status: Approved]
+    J -->|Rejected| L[Property Status: Rejected]
+    K --> M[Property Listed - Ready for Tokenization]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style M fill:#10b981,stroke:#059669,color:#fff
@@ -239,24 +245,24 @@ const SystemDocumentation = () => {
                 title="2. Tokenization Setup"
                 description="How properties are converted into blockchain tokens"
                 mermaidCode={`graph TD
-    A[👤 Owner: Click Tokenize Property] --> B{💼 Choose Tokenization Type}
-    B -->|Equity| C[🏢 Equity: Ownership Shares]
-    B -->|Debt| D[💰 Debt: Fixed Returns]
-    B -->|Revenue| E[📈 Revenue: Profit Sharing]
-    C --> F[⚙️ Configure Token Parameters]
+    A[Owner: Click Tokenize Property] --> B{Choose Tokenization Type}
+    B -->|Equity| C[Equity: Ownership Shares]
+    B -->|Debt| D[Debt: Fixed Returns]
+    B -->|Revenue| E[Revenue: Profit Sharing]
+    C --> F[Configure Token Parameters]
     D --> F
     E --> F
-    F --> G[💵 Define Use of Funds]
-    G --> H[📜 Accept Legal Terms]
-    H --> I[✅ Submit for Approval]
-    I --> J{👨‍💼 Admin Review}
-    J -->|Approved| K[🪙 Create Hedera Token HTS]
-    J -->|Rejected| Z[❌ Tokenization Rejected]
-    K --> L[🔐 Deploy MultiSig Treasury Contract]
-    L --> M[💼 Create Property Treasury Wallet]
-    M --> N[🔗 Associate USDC Token]
-    N --> O[✅ Investment Window Opens]
-    O --> P[📱 Notify Investors]
+    F --> G[Define Use of Funds]
+    G --> H[Accept Legal Terms]
+    H --> I[Submit for Approval]
+    I --> J{Admin Review}
+    J -->|Approved| K[Create Hedera Token HTS]
+    J -->|Rejected| Z[Tokenization Rejected]
+    K --> L[Deploy MultiSig Treasury Contract]
+    L --> M[Create Property Treasury Wallet]
+    M --> N[Associate USDC Token]
+    N --> O[Investment Window Opens]
+    O --> P[Notify Investors]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style K fill:#3b82f6,stroke:#2563eb,color:#fff
@@ -302,29 +308,29 @@ const SystemDocumentation = () => {
                 title="3. Investment Flow"
                 description="Complete journey from browsing to token ownership"
                 mermaidCode={`graph TD
-    A[👤 Investor: Browse Properties] --> B[🔍 View Property Details]
-    B --> C[💰 Click Invest]
-    C --> D{✅ KYC Verified?}
-    D -->|No| E[🔐 Complete KYC Process]
-    E --> F[📋 Return to Investment]
+    A[Investor: Browse Properties] --> B[View Property Details]
+    B --> C[Click Invest]
+    C --> D{KYC Verified?}
+    D -->|No| E[Complete KYC Process]
+    E --> F[Return to Investment]
     D -->|Yes| F
-    F --> G[💵 Enter Investment Amount]
-    G --> H{💳 Choose Payment Method}
-    H -->|Paystack| I[💳 Pay with NGN]
-    H -->|Wallet| J[💼 Pay with HBAR/USDC]
-    I --> K[🔄 Paystack Redirect]
-    K --> L[✅ Payment Confirmed]
+    F --> G[Enter Investment Amount]
+    G --> H{Choose Payment Method}
+    H -->|Paystack| I[Pay with NGN]
+    H -->|Wallet| J[Pay with HBAR/USDC]
+    I --> K[Paystack Redirect]
+    K --> L[Payment Confirmed]
     J --> L
-    L --> M[🎫 Tokens Reserved]
-    M --> N{⏰ Investment Window Closed?}
-    N -->|Yes| O[🪙 Mint Tokens to Treasury]
-    N -->|No| P[⏳ Wait for Window Close]
+    L --> M[Tokens Reserved]
+    M --> N{Investment Window Closed?}
+    N -->|Yes| O[Mint Tokens to Treasury]
+    N -->|No| P[Wait for Window Close]
     P --> O
-    O --> Q[📤 Distribute Tokens to KYC Users]
-    Q --> R[📄 Generate Investment Documents]
-    R --> S[🔗 Submit to HCS]
-    S --> T[✅ Tokens in Investor Wallet]
-    T --> U[📧 Email Confirmation + Certificate]
+    O --> Q[Distribute Tokens to KYC Users]
+    Q --> R[Generate Investment Documents]
+    R --> S[Submit to HCS]
+    S --> T[Tokens in Investor Wallet]
+    T --> U[Email Confirmation + Certificate]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style L fill:#3b82f6,stroke:#2563eb,color:#fff
@@ -385,25 +391,25 @@ const SystemDocumentation = () => {
                 title="4. Property Events"
                 description="Recording rental, inspection, maintenance, and purchase events on blockchain"
                 mermaidCode={`graph TD
-    A[👤 Owner: Go to Event Simulator] --> B{📋 Select Event Type}
-    B -->|Rental| C[🏠 Rental Event Form]
-    B -->|Inspection| D[🔍 Inspection Event Form]
-    B -->|Maintenance| E[🔧 Maintenance Event Form]
-    B -->|Purchase| F[🏡 Purchase Event Form]
-    C --> G[📝 Fill Event Details]
+    A[Owner: Go to Event Simulator] --> B{Select Event Type}
+    B -->|Rental| C[Rental Event Form]
+    B -->|Inspection| D[Inspection Event Form]
+    B -->|Maintenance| E[Maintenance Event Form]
+    B -->|Purchase| F[Purchase Event Form]
+    C --> G[Fill Event Details]
     D --> G
     E --> G
     F --> G
-    G --> H[📸 Upload Event Photos]
-    H --> I[✅ Submit Event]
-    I --> J[💾 Create Event Record in DB]
-    J --> K[⛓️ Submit to HCS Topic]
-    K --> L[💬 Notify Investors in Chat]
-    L --> M[📊 Update Activity Logs]
+    G --> H[Upload Event Photos]
+    H --> I[Submit Event]
+    I --> J[Create Event Record in DB]
+    J --> K[Submit to HCS Topic]
+    K --> L[Notify Investors in Chat]
+    L --> M[Update Activity Logs]
     M --> N{Is Rental Event?}
-    N -->|Yes| O[💰 Auto-Create Dividend Distribution]
-    N -->|No| P[✅ Event Recorded]
-    O --> Q[🔄 Process Rental Dividend]
+    N -->|Yes| O[Auto-Create Dividend Distribution]
+    N -->|No| P[Event Recorded]
+    O --> Q[Process Rental Dividend]
     Q --> P
     
     style A fill:#10b981,stroke:#059669,color:#fff
@@ -454,25 +460,25 @@ const SystemDocumentation = () => {
                 title="5. Dividend Distribution"
                 description="How investors receive returns from their investments"
                 mermaidCode={`graph TD
-    A[👤 Owner: Create Dividend Distribution] --> B[💵 Set Amount Per Token]
-    B --> C[📅 Set Distribution Date]
-    C --> D[✅ Submit Distribution]
-    D --> E[💾 Create Distribution Record]
-    E --> F{📜 Smart Contract Enabled?}
-    F -->|Yes| G[🔗 Register on DividendDistributor.sol]
-    F -->|No| H[🔍 Calculate Recipients]
+    A[Owner: Create Dividend Distribution] --> B[Set Amount Per Token]
+    B --> C[Set Distribution Date]
+    C --> D[Submit Distribution]
+    D --> E[Create Distribution Record]
+    E --> F{Smart Contract Enabled?}
+    F -->|Yes| G[Register on DividendDistributor.sol]
+    F -->|No| H[Calculate Recipients]
     G --> H
-    H --> I[👥 Query Token Holders KYC-Verified]
-    I --> J[💰 Calculate: amount × tokens_held]
-    J --> K[💾 Create Payment Records]
-    K --> L{⚙️ Distribution Method}
-    L -->|Manual Claim| M[⏳ Wait for User Claim]
-    L -->|Auto-Distribute| N[💸 Transfer Funds via Hedera]
-    M --> O[👤 User: Click Claim Button]
+    H --> I[Query Token Holders KYC-Verified]
+    I --> J[Calculate: amount × tokens_held]
+    J --> K[Create Payment Records]
+    K --> L{Distribution Method}
+    L -->|Manual Claim| M[Wait for User Claim]
+    L -->|Auto-Distribute| N[Transfer Funds via Hedera]
+    M --> O[User: Click Claim Button]
     O --> N
-    N --> P[✅ Update Payment Status: Completed]
-    P --> Q[📧 Send Notification]
-    Q --> R[✅ Dividend Received in Wallet]
+    N --> P[Update Payment Status: Completed]
+    P --> Q[Send Notification]
+    Q --> R[Dividend Received in Wallet]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style G fill:#8b5cf6,stroke:#7c3aed,color:#fff
@@ -523,28 +529,28 @@ const SystemDocumentation = () => {
                 title="6. Governance & Voting"
                 description="Token-weighted voting for property decisions"
                 mermaidCode={`graph TD
-    A[👤 Token Holder: Create Proposal] --> B[📋 Select Proposal Type]
-    B --> C[📝 Fill Proposal Details]
-    C --> D[💰 Specify Required Funds]
-    D --> E[📅 Set Voting Period]
-    E --> F[✅ Submit Proposal]
-    F --> G[🔗 Register on GovernanceExecutor.sol]
-    G --> H[📢 Notify All Token Holders]
-    H --> I{🗳️ Voting Process}
-    I --> J[👥 Token Holders Vote]
-    J --> K[💪 Voting Weight = Token Balance]
-    K --> L{⏰ Voting Period Ended?}
+    A[Token Holder: Create Proposal] --> B[Select Proposal Type]
+    B --> C[Fill Proposal Details]
+    C --> D[Specify Required Funds]
+    D --> E[Set Voting Period]
+    E --> F[Submit Proposal]
+    F --> G[Register on GovernanceExecutor.sol]
+    G --> H[Notify All Token Holders]
+    H --> I{Voting Process}
+    I --> J[Token Holders Vote]
+    J --> K[Voting Weight = Token Balance]
+    K --> L{Voting Period Ended?}
     L -->|No| J
-    L -->|Yes| M{📊 Check Results}
-    M --> N{✅ Quorum Met? 50%+}
-    N -->|No| O[❌ Proposal Rejected]
-    N -->|Yes| P{✅ Approval Met? 60%+}
+    L -->|Yes| M{Check Results}
+    M --> N{Quorum Met? 50%+}
+    N -->|No| O[Proposal Rejected]
+    N -->|Yes| P{Approval Met? 60%+}
     P -->|No| O
-    P -->|Yes| Q[✅ Proposal Approved]
-    Q --> R[🔒 Lock Funds in Contract]
-    R --> S[⚙️ Execute Action]
-    S --> T[💸 Release Funds to Recipient]
-    T --> U[📝 Update Execution Status]
+    P -->|Yes| Q[Proposal Approved]
+    Q --> R[Lock Funds in Contract]
+    R --> S[Execute Action]
+    S --> T[Release Funds to Recipient]
+    T --> U[Update Execution Status]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style G fill:#8b5cf6,stroke:#7c3aed,color:#fff
@@ -600,32 +606,32 @@ const SystemDocumentation = () => {
                 title="7. MultiSig Treasury Withdrawal"
                 description="Secure multi-signature approval for treasury withdrawals"
                 mermaidCode={`graph TD
-    A[👤 Property Owner: Submit Withdrawal] --> B[💵 Enter Amount & Reason]
-    B --> C[✅ Submit Request]
-    C --> D{🔐 Verify: Is User a Signer?}
-    D -->|No| E[❌ Unauthorized]
-    D -->|Yes| F[💾 Create Transaction Record]
-    F --> G[🔗 Submit to MultiSigTreasury.sol]
-    G --> H[📧 Notify All Signers]
-    H --> I{✅ First Signer Approval}
-    I --> J[👨‍💼 Signer 1 Reviews]
-    J --> K{✅ Approve or Reject?}
-    K -->|Reject| L[❌ Request Cancelled]
-    K -->|Approve| M[🔗 Call approveWithdrawal]
-    M --> N[📊 Update Approvers List]
-    N --> O{🔢 Check Threshold: 2-of-2}
-    O -->|Not Met| P[⏳ Wait for Second Approval]
-    P --> Q{✅ Second Signer Approval}
-    Q --> R[👨‍💼 Signer 2 Reviews]
-    R --> S{✅ Approve?}
+    A[Property Owner: Submit Withdrawal] --> B[Enter Amount & Reason]
+    B --> C[Submit Request]
+    C --> D{Verify: Is User a Signer?}
+    D -->|No| E[Unauthorized]
+    D -->|Yes| F[Create Transaction Record]
+    F --> G[Submit to MultiSigTreasury.sol]
+    G --> H[Notify All Signers]
+    H --> I{First Signer Approval}
+    I --> J[Signer 1 Reviews]
+    J --> K{Approve or Reject?}
+    K -->|Reject| L[Request Cancelled]
+    K -->|Approve| M[Call approveWithdrawal]
+    M --> N[Update Approvers List]
+    N --> O{Check Threshold: 2-of-2}
+    O -->|Not Met| P[Wait for Second Approval]
+    P --> Q{Second Signer Approval}
+    Q --> R[Signer 2 Reviews]
+    R --> S{Approve?}
     S -->|No| L
-    S -->|Yes| T[🔗 Call approveWithdrawal]
-    T --> U[✅ Threshold Met: 2/2 Approvals]
-    U --> V[⚙️ Auto-Execute Withdrawal]
-    V --> W[🔗 executeWithdrawal on Contract]
-    W --> X[💸 Transfer Funds to Recipient]
-    X --> Y[✅ Status: Completed]
-    Y --> Z[📝 Create Activity Logs]
+    S -->|Yes| T[Call approveWithdrawal]
+    T --> U[Threshold Met: 2/2 Approvals]
+    U --> V[Auto-Execute Withdrawal]
+    V --> W[executeWithdrawal on Contract]
+    W --> X[Transfer Funds to Recipient]
+    X --> Y[Status: Completed]
+    Y --> Z[Create Activity Logs]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style G fill:#8b5cf6,stroke:#7c3aed,color:#fff
