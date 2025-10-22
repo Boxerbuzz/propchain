@@ -50,6 +50,7 @@ import Proposals from "./pages/property/Proposals";
 import Profile from "./pages/settings/Profile";
 import Notifications from "./pages/settings/Notifications";
 import Security from "./pages/settings/Security";
+import SystemDocumentation from "./pages/SystemDocumentation";
 import Chat from "./pages/chat/Chat";
 import ChatRoom from "./pages/chat/ChatRoom";
 import RegisterProperty from "./pages/properties/RegisterProperty";
@@ -170,6 +171,7 @@ const App = () => (
                   element={<Notifications />}
                 />
                 <Route path="/settings/security" element={<Security />} />
+                <Route path="/system-docs" element={<SystemDocumentation />} />
               </Route>
             </Route>
 
