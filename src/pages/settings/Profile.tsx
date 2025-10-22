@@ -22,6 +22,7 @@ import {
   Info,
   MessageSquare,
   MessageCircle,
+  FileText,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -263,6 +264,13 @@ const Profile = () => {
                   <Upload className="h-4 w-4 mr-2" />
                   Change Photo
                 </Button>
+
+                <Link to="/system-docs" className="block mb-4">
+                  <Button variant="outline" className="w-full">
+                    <FileText className="h-4 w-4 mr-2" />
+                    System Documentation
+                  </Button>
+                </Link>
 
                 <div className="space-y-3">
                   <div className="flex justify-between">
