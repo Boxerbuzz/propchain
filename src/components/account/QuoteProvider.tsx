@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QuoteProvider as QuoteProviderType } from "@/hooks/useMockQuotes";
+import { ProviderLogo } from "./ProviderLogo";
 
 interface QuoteProviderProps {
   quote: QuoteProviderType;
@@ -19,9 +20,8 @@ export function QuoteProvider({ quote, onSelect, isSelected }: QuoteProviderProp
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          
           <div>
-          <span className="text-2xl">{quote.logo}</span>
+            <ProviderLogo provider={typeof quote.logo === 'string' ? quote.logo : ''} size="md" />
             <p className="text-sm text-muted-foreground">{quote.processingTime}</p>
           </div>
         </div>

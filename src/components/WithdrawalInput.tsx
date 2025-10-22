@@ -12,6 +12,19 @@ import {
   SwordIcon,
   XIcon,
 } from "@phosphor-icons/react";
+import {
+  FileText,
+  BarChart3,
+  Lightbulb,
+  Calendar,
+  BookOpen,
+  Target,
+  Coins,
+  Users,
+  Wrench,
+  TrendingUp,
+  LucideIcon,
+} from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -61,52 +74,52 @@ const SAMPLE_DATA = {
     {
       type: "page",
       title: "Meeting Notes",
-      image: "📝",
+      icon: "FileText",
     },
     {
       type: "page",
       title: "Project Dashboard",
-      image: "📊",
+      icon: "BarChart3",
     },
     {
       type: "page",
       title: "Ideas & Brainstorming",
-      image: "💡",
+      icon: "Lightbulb",
     },
     {
       type: "page",
       title: "Calendar & Events",
-      image: "📅",
+      icon: "Calendar",
     },
     {
       type: "page",
       title: "Documentation",
-      image: "📚",
+      icon: "BookOpen",
     },
     {
       type: "page",
       title: "Goals & Objectives",
-      image: "🎯",
+      icon: "Target",
     },
     {
       type: "page",
       title: "Budget Planning",
-      image: "💰",
+      icon: "Coins",
     },
     {
       type: "page",
       title: "Team Directory",
-      image: "👥",
+      icon: "Users",
     },
     {
       type: "page",
       title: "Technical Specs",
-      image: "🔧",
+      icon: "Wrench",
     },
     {
       type: "page",
       title: "Analytics Report",
-      image: "📈",
+      icon: "TrendingUp",
     },
     {
       type: "user",
@@ -146,13 +159,32 @@ function MentionableIcon({
 }: {
   item: (typeof SAMPLE_DATA.mentionable)[0];
 }) {
-  return item.type === "page" ? (
-    <span className="flex size-4 items-center justify-center">
-      {item.image}
-    </span>
-  ) : (
+  if (item.type === "page" && "icon" in item) {
+    const iconMap: Record<string, LucideIcon> = {
+      FileText,
+      BarChart3,
+      Lightbulb,
+      Calendar,
+      BookOpen,
+      Target,
+      Coins,
+      Users,
+      Wrench,
+      TrendingUp,
+    };
+    
+    const IconComponent = iconMap[item.icon as string];
+    
+    return (
+      <span className="flex size-4 items-center justify-center">
+        {IconComponent && <IconComponent className="h-4 w-4" />}
+      </span>
+    );
+  }
+  
+  return (
     <Avatar className="size-4">
-      <AvatarImage src={item.image} />
+      <AvatarImage src={"image" in item ? item.image : ""} />
       <AvatarFallback>{item.title[0]}</AvatarFallback>
     </Avatar>
   );

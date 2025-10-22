@@ -5,7 +5,9 @@ import rampLogo from "@/assets/ramp-network.svg";
 import rampLogoLight from "@/assets/light/ramp-network.svg";
 import pangolinLogo from "@/assets/pangolin.svg";
 import saucerswapLogo from "@/assets/saucerswap.webp";
+import hSuiteLogo from "@/assets/hsuite_logo.png";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { Building2 } from "lucide-react";
 
 interface ProviderLogoProps {
   provider: string;
@@ -52,7 +54,9 @@ export function ProviderLogo({ provider, size = "md" }: ProviderLogoProps) {
           </h4>
         </div>
       );
+    case "hsuite":
+      return <img src={hSuiteLogo} alt="HSuite" className={className} />;
     default:
-      return <span className="text-2xl">?</span>;
+      return <Building2 className={className} />;
   }
 }
