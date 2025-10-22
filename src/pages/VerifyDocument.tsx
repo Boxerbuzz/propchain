@@ -37,25 +37,16 @@ export default function VerifyDocument() {
     
     setVerifying(true);
     try {
-      // Use RPC function to fetch document
       const { data, error } = await supabase
         .rpc('get_document_by_number' as any, { doc_number: documentNumber });
 
-      if (error) {
-        console.error('Verification error:', error);
+      if (error || !data || data.length === 0) {
         setResult({ isValid: false, error: 'Document not found in our records' });
         return;
       }
 
-      const docs = data as DocumentData[];
-      const doc = docs && docs.length > 0 ? docs[0] : null;
+      const doc = (data as DocumentData[])[0];
 
-      if (!doc) {
-        setResult({ isValid: false, error: 'Document not found in our records' });
-        return;
-      }
-
-      // Verify document status
       setResult({
         isValid: doc.is_current ?? false,
         documentType: doc.document_type,

@@ -296,35 +296,43 @@ async function generateDocumentHash(content: Uint8Array): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Helper function to generate QR code (simple data URL)
+// Generate QR code using qrcode library
 async function generateQRCode(url: string): Promise<string> {
-  // In production, use a proper QR code library
-  // For now, return the URL as placeholder
-  return `qr:${url}`;
+  try {
+    const QRCode = (await import('https://esm.sh/qrcode@1.5.4')).default;
+    return await QRCode.toDataURL(url, {
+      errorCorrectionLevel: 'H',
+      margin: 1,
+      width: 200,
+      color: { dark: '#000000', light: '#FFFFFF' }
+    });
+  } catch (error) {
+    console.error('QR code generation failed:', error);
+    throw error;
+  }
 }
 
 // Helper function to submit hash to HCS
 async function submitToHCS(supabase: any, documentNumber: string, hash: string): Promise<void> {
   try {
-    // Get HCS topic ID from config or create one
-    const topicId = Deno.env.get('DOCUMENTS_HCS_TOPIC_ID') || '0.0.XXXXXX';
+    const topicId = Deno.env.get('DOCUMENTS_HCS_TOPIC_ID') || '0.0.5260491';
     
-    // Submit to HCS via edge function
     await supabase.functions.invoke('submit-to-hcs', {
       body: {
-        topic_id: topicId,
+        topicId: topicId,
         message: JSON.stringify({
           type: 'document_hash',
           document_number: documentNumber,
           hash: hash,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          platform: 'PropChain',
+          version: '1.0'
         })
       }
     });
     
-    console.log(`Document hash submitted to HCS: ${documentNumber}`);
+    console.log(`Document hash submitted to HCS topic ${topicId}: ${documentNumber}`);
   } catch (error) {
-    console.error('Failed to submit to HCS:', error);
-    throw error;
+    console.error('HCS submission error:', error);
   }
 }
