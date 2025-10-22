@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { ArrowLeft, Building2, Wallet, Coins } from "lucide-react";
 import { CurrencyAmountInput } from "@/components/CurrencyAmountInput";
-import { CustomMethodSelector } from "./CustomMethodSelector";
+import { CustomWithdrawalMethodSelector } from "./CustomWithdrawalMethodSelector";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 type CardState = "main" | "selectMethod" | "bankDetails" | "hederaDetails";
 
@@ -24,6 +25,8 @@ interface WithdrawalMethod {
   description: string;
   icon: "bank" | "hedera" | "usdc";
   fee: string;
+  badge?: string;
+  processingTime?: string;
 }
 
 export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperationsCardProps) {
@@ -51,6 +54,8 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
       description: "₦100 processing fee",
       icon: "bank",
       fee: "₦100",
+      badge: "Most Popular",
+      processingTime: "1-3 business days",
     },
     {
       id: "hedera",
@@ -58,6 +63,8 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
       description: "Instant & Free",
       icon: "hedera",
       fee: "Free",
+      badge: "Fastest",
+      processingTime: "Instant",
     },
     {
       id: "usdc",
@@ -65,6 +72,8 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
       description: "Instant & Free",
       icon: "usdc",
       fee: "Free",
+      badge: "Lowest Fee",
+      processingTime: "Instant",
     },
   ];
 
@@ -234,7 +243,7 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
 
               {/* Method Selector */}
               {activeTab === "withdraw" && (
-                <CustomMethodSelector
+                <CustomWithdrawalMethodSelector
                   selectedMethod={selectedMethod}
                   label="Withdrawal method"
                   onClick={() => setCardState("selectMethod")}
@@ -286,22 +295,37 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
         {/* Method Selection State */}
         {cardState === "selectMethod" && (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Select Withdrawal Method</h3>
+            <h3 className="text-xl font-semibold mb-2">Select Withdrawal Method</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Choose how you want to receive your funds
+            </p>
             {withdrawalMethods.map((method) => {
               const Icon = method.icon === "bank" ? Building2 : method.icon === "hedera" ? Wallet : Coins;
               return (
                 <Card
                   key={method.id}
-                  className="p-4 cursor-pointer hover:bg-accent transition-colors"
+                  className="p-4 cursor-pointer hover:bg-accent hover:border-primary/50 transition-all border-2"
                   onClick={() => handleSelectMethod(method)}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
                       <Icon className="h-6 w-6 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold">{method.name}</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold text-base">{method.name}</p>
+                        {method.badge && (
+                          <Badge variant="secondary" className="text-xs">
+                            {method.badge}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">{method.description}</p>
+                      {method.processingTime && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ⏱️ {method.processingTime}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -313,7 +337,12 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
         {/* Bank Details State */}
         {cardState === "bankDetails" && (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Bank Account Details</h3>
+            <div>
+              <h3 className="text-xl font-semibold mb-1">Bank Account Details</h3>
+              <p className="text-sm text-muted-foreground">
+                Enter your bank account information for withdrawal
+              </p>
+            </div>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="accountNumber">Account Number</Label>
@@ -368,7 +397,12 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
         {/* Hedera Details State */}
         {cardState === "hederaDetails" && (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Hedera Account Details</h3>
+            <div>
+              <h3 className="text-xl font-semibold mb-1">Hedera Account Details</h3>
+              <p className="text-sm text-muted-foreground">
+                Enter your Hedera account ID to receive funds instantly
+              </p>
+            </div>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="hederaAccount">Hedera Account ID</Label>
