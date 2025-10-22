@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { ArrowLeft, Building2, Wallet, Coins, Clock } from "lucide-react";
-import { CurrencyAmountInput } from "@/components/CurrencyAmountInput";
 import { CustomWithdrawalMethodSelector } from "./CustomWithdrawalMethodSelector";
+import { CustomTokenSelector } from "./CustomTokenSelector";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import hederaIcon from "/hedera.svg";
 import usdcIcon from "/usdc.svg";
 
-type CardState = "main" | "selectMethod" | "bankDetails" | "hederaDetails";
+type CardState = "main" | "selectMethod" | "selectCurrency" | "bankDetails" | "hederaDetails";
 
 interface WalletOperationsCardProps {
   defaultTab?: "withdraw" | "fund";
@@ -81,24 +81,24 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
 
   const quickAmounts = [1000, 5000, 10000, 25000, 50000];
 
-  const currencies = [
+  const tokens = [
     {
-      id: 'hbar' as const,
-      name: 'HBAR',
-      icon: hederaIcon,
+      symbol: 'HBAR',
+      name: 'Hedera',
+      icon: <img src={hederaIcon} alt="HBAR" className="w-6 h-6" />,
       balance: balance?.balanceHbar || 0,
-      balanceNgn: balance?.balanceNgn || 0,
-      color: 'purple' as const,
     },
     {
-      id: 'usdc' as const,
-      name: 'USDC',
-      icon: usdcIcon,
+      symbol: 'USDC',
+      name: 'USD Coin',
+      icon: <img src={usdcIcon} alt="USDC" className="w-6 h-6" />,
       balance: balance?.usdcBalance || 0,
-      balanceNgn: balance?.usdcBalanceNgn || 0,
-      color: 'blue' as const,
     }
   ];
+
+  const selectedToken = tokens.find(t => 
+    t.symbol.toLowerCase() === selectedCurrency
+  ) || tokens[0];
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as "withdraw" | "fund");
@@ -211,32 +211,12 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
 
             <TabsContent value={activeTab} className="space-y-6">
               {/* Currency Selector */}
-              <div className="space-y-2">
-                <Label>Select Currency</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {currencies.map((currency) => (
-                    <Card
-                      key={currency.id}
-                      className={`p-4 cursor-pointer hover:bg-accent hover:border-primary/50 transition-all border-2 ${
-                        selectedCurrency === currency.id ? 'border-primary bg-primary/5' : ''
-                      }`}
-                      onClick={() => setSelectedCurrency(currency.id)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                          <img src={currency.icon} alt={currency.name} className="w-6 h-6" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm">{currency.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {currency.balance.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
+              <CustomTokenSelector
+                selectedToken={selectedToken}
+                label="Currency"
+                showBalance={true}
+                onClick={() => setCardState("selectCurrency")}
+              />
 
               {/* Amount Input */}
               <div className="space-y-2">
@@ -333,6 +313,39 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
               )}
             </TabsContent>
           </Tabs>
+        )}
+
+        {/* Currency Selection State */}
+        {cardState === "selectCurrency" && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold mb-2">Select Currency</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Choose the currency you want to {activeTab === "withdraw" ? "withdraw" : "fund"}
+            </p>
+            {tokens.map((token) => (
+              <Card
+                key={token.symbol}
+                className="p-4 cursor-pointer hover:bg-accent hover:border-primary/50 transition-all border-2"
+                onClick={() => {
+                  setSelectedCurrency(token.symbol.toLowerCase() as "hbar" | "usdc");
+                  setCardState("main");
+                }}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                    {token.icon}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-base">{token.symbol}</p>
+                    <p className="text-sm text-muted-foreground">{token.name}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Balance: {token.balance.toFixed(4)} {token.symbol}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
         )}
 
         {/* Method Selection State */}
