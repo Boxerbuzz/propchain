@@ -22,7 +22,7 @@ export type Database = {
           description: string
           hcs_transaction_id: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           property_id: string | null
           tokenization_id: string | null
@@ -36,7 +36,7 @@ export type Database = {
           description: string
           hcs_transaction_id?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           property_id?: string | null
           tokenization_id?: string | null
@@ -50,7 +50,7 @@ export type Database = {
           description?: string
           hcs_transaction_id?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           property_id?: string | null
           tokenization_id?: string | null
@@ -2380,7 +2380,10 @@ export type Database = {
           treasury_balance_ngn: number | null
           treasury_balance_usdc: number | null
           treasury_created_at: string | null
+          treasury_hedera_signers: string[] | null
+          treasury_signers: string[] | null
           treasury_signers_count: number | null
+          treasury_threshold: number | null
           treasury_type: string | null
           type_specific_terms: Json | null
           updated_at: string | null
@@ -2439,7 +2442,10 @@ export type Database = {
           treasury_balance_ngn?: number | null
           treasury_balance_usdc?: number | null
           treasury_created_at?: string | null
+          treasury_hedera_signers?: string[] | null
+          treasury_signers?: string[] | null
           treasury_signers_count?: number | null
+          treasury_threshold?: number | null
           treasury_type?: string | null
           type_specific_terms?: Json | null
           updated_at?: string | null
@@ -2498,7 +2504,10 @@ export type Database = {
           treasury_balance_ngn?: number | null
           treasury_balance_usdc?: number | null
           treasury_created_at?: string | null
+          treasury_hedera_signers?: string[] | null
+          treasury_signers?: string[] | null
           treasury_signers_count?: number | null
+          treasury_threshold?: number | null
           treasury_type?: string | null
           type_specific_terms?: Json | null
           updated_at?: string | null
@@ -2983,14 +2992,8 @@ export type Database = {
         }
         Returns: Json
       }
-      cleanup_expired_kyc_drafts: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_expired_token_reservations: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      cleanup_expired_kyc_drafts: { Args: never; Returns: undefined }
+      cleanup_expired_token_reservations: { Args: never; Returns: Json }
       create_chat_room_for_tokenization: {
         Args: { p_tokenization_id: string }
         Returns: string
@@ -3046,18 +3049,12 @@ export type Database = {
         Args: { p_property_id: string; p_user_id: string }
         Returns: number
       }
-      get_wallet_private_key: {
-        Args: { p_wallet_id: string }
-        Returns: string
-      }
+      get_wallet_private_key: { Args: { p_wallet_id: string }; Returns: string }
       increment_tokenization_raise: {
         Args: { p_investment_id: string }
         Returns: undefined
       }
-      migrate_private_keys_to_vault: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      migrate_private_keys_to_vault: { Args: never; Returns: Json }
       reserve_tokens_with_timeout: {
         Args: {
           p_investment_id: string
@@ -3066,10 +3063,7 @@ export type Database = {
         }
         Returns: Json
       }
-      sync_contract_balances: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      sync_contract_balances: { Args: never; Returns: Json }
       upsert_token_holdings: {
         Args: {
           p_amount_invested: number

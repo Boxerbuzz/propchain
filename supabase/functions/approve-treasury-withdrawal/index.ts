@@ -57,22 +57,29 @@ serve(async (req) => {
       );
     }
 
-    // Verify user is a signer
+    // ✅ VERIFY USER IS A SIGNER (using treasury_signers column)
     const tokenization = (transaction as any).tokenizations;
-    const isSigner = tokenization.treasury_signers?.includes(user.id);
+    
+    if (!tokenization.treasury_signers) {
+      return new Response(
+        JSON.stringify({ error: 'Treasury signers not configured' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
 
+    const isSigner = tokenization.treasury_signers.includes(user.id);
     if (!isSigner) {
       return new Response(
-        JSON.stringify({ error: 'Not authorized to approve this withdrawal' }),
+        JSON.stringify({ error: 'Unauthorized: You are not a treasury signer for this property' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
       );
     }
 
     // Check if already approved by this user
-    const approvals = (transaction.metadata as any)?.approvals || [];
-    if (approvals.includes(user.id)) {
+    const approvers = (transaction.metadata as any)?.approvers || [];
+    if (approvers.includes(user.id)) {
       return new Response(
-        JSON.stringify({ error: 'Already approved by you' }),
+        JSON.stringify({ error: 'You have already approved this withdrawal' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
@@ -90,11 +97,12 @@ serve(async (req) => {
         console.log('✅ Approval submitted to contract:', result.txHash);
 
         // Update transaction metadata with approval
-        approvals.push(user.id);
+        const updatedApprovers = [...approvers, user.id];
         const metadata = {
           ...(transaction.metadata as any || {}),
-          approvals,
-          approval_count: approvals.length,
+          approvers: updatedApprovers,
+          approvals_count: updatedApprovers.length,
+          approvals_required: tokenization.treasury_threshold,
           last_approval_at: new Date().toISOString(),
           last_approval_by: user.id,
           contract_approval_tx: result.txHash
@@ -116,7 +124,7 @@ serve(async (req) => {
           await supabase
             .from('property_treasury_transactions')
             .update({
-              status: approvals.length >= tokenization.treasury_threshold ? 'approved' : 'pending',
+              status: updatedApprovers.length >= tokenization.treasury_threshold ? 'approved' : 'pending_approval',
               metadata
             })
             .eq('id', transaction_id);
@@ -144,12 +152,13 @@ serve(async (req) => {
           property_id: tokenization.property_id,
           tokenization_id: transaction.tokenization_id,
           activity_type: 'treasury_approval',
-          description: `Withdrawal request approved (${approvals.length}/${tokenization.treasury_threshold})`,
+          description: `Withdrawal request approved (${updatedApprovers.length}/${tokenization.treasury_threshold})`,
           metadata: {
             transaction_id,
             request_id,
             amount_ngn: transaction.amount_ngn,
-            contract_tx: result.txHash
+            contract_tx: result.txHash,
+            approval_number: updatedApprovers.length
           }
         });
 
@@ -158,25 +167,29 @@ serve(async (req) => {
             success: true,
             tx_hash: result.txHash,
             executed: result.executed,
-            approval_count: approvals.length,
-            threshold: tokenization.treasury_threshold
+            approval_count: updatedApprovers.length,
+            threshold: tokenization.treasury_threshold,
+            status: result.executed ? 'executed' : (updatedApprovers.length >= tokenization.treasury_threshold ? 'approved' : 'pending')
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
 
       } catch (contractError: any) {
-        console.error('Contract approval failed:', contractError);
+        console.error('❌ Contract approval failed:', contractError);
         
         // Fall back to database-only approval
-        approvals.push(user.id);
+        const updatedApprovers = [...approvers, user.id];
         await supabase
           .from('property_treasury_transactions')
           .update({
+            status: updatedApprovers.length >= tokenization.treasury_threshold ? 'approved' : 'pending_approval',
             metadata: {
               ...(transaction.metadata as any || {}),
-              approvals,
-              approval_count: approvals.length,
-              contract_error: contractError.message
+              approvers: updatedApprovers,
+              approvals_count: updatedApprovers.length,
+              approvals_required: tokenization.treasury_threshold,
+              contract_error: contractError.message,
+              fallback_approval: true
             }
           })
           .eq('id', transaction_id);
@@ -185,24 +198,26 @@ serve(async (req) => {
           JSON.stringify({
             success: true,
             warning: 'Approved in database but contract call failed',
-            approval_count: approvals.length,
-            threshold: tokenization.treasury_threshold
+            approval_count: updatedApprovers.length,
+            threshold: tokenization.treasury_threshold,
+            error: contractError.message
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
     } else {
       // Custodial treasury - just update database
-      approvals.push(user.id);
+      const updatedApprovers = [...approvers, user.id];
       
       await supabase
         .from('property_treasury_transactions')
         .update({
-          status: approvals.length >= tokenization.treasury_threshold ? 'approved' : 'pending',
+          status: updatedApprovers.length >= tokenization.treasury_threshold ? 'approved' : 'pending_approval',
           metadata: {
             ...(transaction.metadata as any || {}),
-            approvals,
-            approval_count: approvals.length
+            approvers: updatedApprovers,
+            approvals_count: updatedApprovers.length,
+            approvals_required: tokenization.treasury_threshold
           }
         })
         .eq('id', transaction_id);
@@ -210,7 +225,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           success: true,
-          approval_count: approvals.length,
+          approval_count: updatedApprovers.length,
           threshold: tokenization.treasury_threshold
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -62,100 +62,95 @@ serve(async (req) => {
       );
     }
 
-    // Get owner's Hedera account
-    const { data: ownerProfile } = await supabase
-      .from('profiles')
+    // Get owner's Hedera wallet
+    const { data: ownerWallet } = await supabase
+      .from('wallets')
       .select('hedera_account_id')
-      .eq('id', tokenization.properties.owner_id)
+      .eq('user_id', tokenization.properties.owner_id)
       .single();
 
-    if (!ownerProfile?.hedera_account_id) {
+    if (!ownerWallet?.hedera_account_id) {
       return new Response(
-        JSON.stringify({ error: 'Property owner must have a Hedera account' }),
+        JSON.stringify({ error: 'Property owner must have a Hedera wallet. Please create one first.' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
-    // Get platform admin from settings or env
-    const platformAdminAccount = Deno.env.get('HEDERA_OPERATOR_ID') ?? '';
+    // Get platform admin from env
+    const platformAdminAccountId = Deno.env.get('HEDERA_OPERATOR_ID') ?? '';
+    if (!platformAdminAccountId) {
+      throw new Error('HEDERA_OPERATOR_ID not configured');
+    }
 
-    // Define signers (Hedera account IDs)
-    const signers = [
-      ownerProfile.hedera_account_id, // Property owner
-      platformAdminAccount, // Platform admin
+    // Define signers (Hedera account IDs) - owner + platform admin
+    const hederaSigners = [
+      ownerWallet.hedera_account_id, // Property owner
+      platformAdminAccountId, // Platform admin (2-of-2 multisig)
     ];
 
-    const threshold = 2; // 2 of 2 signers for now
+    // Map to user IDs for database storage
+    const userSigners = [
+      tokenization.properties.owner_id, // Property owner user ID
+      // TODO: Add platform admin user ID from a settings table
+    ];
 
-    console.log('🏦 Deploying MultiSig Treasury Contract...');
-    console.log('Signers:', signers);
+    const threshold = 2; // 2-of-2 multisig required
+
+    console.log('🏦 Deploying UNIQUE MultiSig Treasury Contract...');
+    console.log('Hedera Signers:', hederaSigners);
+    console.log('User Signers:', userSigners);
     console.log('Threshold:', threshold);
 
-    // Initialize Hedera client
-    const operatorId = Deno.env.get('HEDERA_OPERATOR_ID');
-    const operatorKey = Deno.env.get('HEDERA_OPERATOR_PRIVATE_KEY');
+    // ✅ REAL CONTRACT DEPLOYMENT
+    const { MultiSigDeployer } = await import('../_shared/multiSigDeployer.ts');
+    const deployer = new MultiSigDeployer();
     
-    if (!operatorId || !operatorKey) {
-      throw new Error('Hedera operator credentials not configured');
-    }
+    const deployment = await deployer.deployMultiSigTreasury({
+      signers: hederaSigners,
+      threshold,
+      propertyOwner: ownerWallet.hedera_account_id
+    });
+
+    const treasuryAddress = deployment.contractAddress;
+    const contractId = deployment.contractId;
     
-    const client = Client.forTestnet();
-    client.setOperator(
-      AccountId.fromString(operatorId),
-      PrivateKey.fromStringECDSA(operatorKey)
-    );
+    console.log('✅ NEW MultiSigTreasury deployed!');
+    console.log('Contract Address:', treasuryAddress);
+    console.log('Contract ID:', contractId);
+    console.log('Transaction ID:', deployment.transactionId);
 
-    // Get MultiSigTreasury bytecode from smart_contract_config
-    const { data: contractConfig } = await supabase
-      .from('smart_contract_config')
-      .select('*')
-      .eq('contract_name', 'multisig_treasury')
-      .eq('is_active', true)
-      .single();
-
-    if (!contractConfig) {
-      throw new Error('MultiSigTreasury contract config not found');
-    }
-
-    // Read bytecode from contract-abis.json
-    const contractABIsResponse = await fetch(
-      'https://raw.githubusercontent.com/yourusername/yourrepo/main/contracts/contract-abis.json'
-    );
-    
-    // For now, use deployed template and store reference
-    // TODO: Deploy individual instances when bytecode is accessible
-    const treasuryAddress = contractConfig.contract_address;
-    
-    console.log('✅ Using shared MultiSig Treasury contract:', treasuryAddress);
-
-    // Update tokenization with treasury details
+    // Update tokenization with REAL deployed contract details
     await supabase
       .from('tokenizations')
       .update({
         multisig_treasury_address: treasuryAddress,
-        treasury_signers: signers,
+        treasury_signers: userSigners,
+        treasury_hedera_signers: hederaSigners,
         treasury_threshold: threshold,
         treasury_type: 'multisig',
-        treasury_signers_count: signers.length,
+        treasury_signers_count: hederaSigners.length,
         updated_at: new Date().toISOString()
       })
       .eq('id', tokenization_id);
 
-    // Log contract deployment
+    // Log REAL contract deployment
     await supabase.from('smart_contract_transactions').insert({
       contract_name: 'multisig_treasury',
       contract_address: treasuryAddress,
       function_name: 'constructor',
-      transaction_hash: `0x${Date.now()}_deploy`,
+      transaction_hash: deployment.transactionId,
       transaction_status: 'confirmed',
       property_id: tokenization.property_id,
       tokenization_id,
       related_id: tokenization_id,
       related_type: 'tokenization',
       input_data: {
-        signers,
+        hedera_signers: hederaSigners,
+        user_signers: userSigners,
         threshold,
-        tokenization_id
+        tokenization_id,
+        contract_id: contractId,
+        signer_addresses: deployment.signerAddresses
       },
       confirmed_at: new Date().toISOString()
     });
@@ -165,11 +160,14 @@ serve(async (req) => {
       property_id: tokenization.property_id,
       tokenization_id,
       activity_type: 'treasury_created',
-      description: `MultiSig treasury created with ${signers.length} signers`,
+      description: `MultiSig treasury deployed: ${contractId} with ${hederaSigners.length} signers (${threshold}-of-${hederaSigners.length} required)`,
       metadata: {
         treasury_address: treasuryAddress,
-        signers_count: signers.length,
-        threshold
+        contract_id: contractId,
+        signers_count: hederaSigners.length,
+        threshold,
+        transaction_id: deployment.transactionId,
+        deployment_type: 'real_contract'
       }
     });
 
@@ -187,8 +185,13 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         treasury_address: treasuryAddress,
-        signers,
-        threshold
+        contract_id: contractId,
+        transaction_id: deployment.transactionId,
+        hedera_signers: hederaSigners,
+        user_signers: userSigners,
+        threshold,
+        deployment_type: 'real_contract',
+        explorer_url: `https://hashscan.io/testnet/contract/${treasuryAddress}`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
