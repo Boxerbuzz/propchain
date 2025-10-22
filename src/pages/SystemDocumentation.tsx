@@ -5,63 +5,96 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import FlowDiagram from "@/components/docs/FlowDiagram";
 import TechStack from "@/components/docs/TechStack";
 import DatabaseSchema from "@/components/docs/DatabaseSchema";
-import { FileText, Code, Database, Shield, ArrowLeft } from "lucide-react";
+import { FileText, Code, Database, Shield, ArrowLeft, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const SystemDocumentation = () => {
   const [activeSection, setActiveSection] = useState("overview");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
     setActiveSection(id);
+    setMobileMenuOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const menuItems = [
+    { id: "overview", label: "Overview", icon: FileText },
+    { id: "property-registration", label: "Property Registration", icon: FileText },
+    { id: "tokenization", label: "Tokenization", icon: Code },
+    { id: "investment", label: "Investment Flow", icon: Database },
+    { id: "events", label: "Property Events", icon: FileText },
+    { id: "dividends", label: "Dividends", icon: Database },
+    { id: "governance", label: "Governance", icon: Shield },
+    { id: "multisig", label: "MultiSig Treasury", icon: Shield },
+    { id: "verification", label: "Document Verification", icon: FileText },
+    { id: "database", label: "Database Schema", icon: Database },
+    { id: "tech-stack", label: "Tech Stack", icon: Code },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <Link to="/settings/profile">
               <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Profile
+                <ArrowLeft className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Back to Profile</span>
               </Button>
             </Link>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-foreground">System Documentation</h1>
-              <p className="text-sm text-muted-foreground">Complete guide to PropChain platform architecture</p>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold text-foreground truncate">System Documentation</h1>
+              <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">Complete guide to PropChain platform architecture</p>
             </div>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="lg:hidden">
+                <Button variant="outline" size="sm">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72">
+                <SheetHeader>
+                  <SheetTitle>Contents</SheetTitle>
+                </SheetHeader>
+                <ScrollArea className="h-[calc(100vh-80px)] mt-4">
+                  <div className="space-y-1">
+                    {menuItems.map((item) => (
+                      <Button
+                        key={item.id}
+                        variant={activeSection === item.id ? "default" : "ghost"}
+                        className="w-full justify-start text-left"
+                        size="sm"
+                        onClick={() => scrollToSection(item.id)}
+                      >
+                        <item.icon className="h-4 w-4 mr-2" />
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Table of Contents - Sidebar */}
-          <Card className="lg:col-span-1 h-fit sticky top-24">
+      <div className="container mx-auto px-4 py-4 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8">
+          {/* Table of Contents - Sidebar (Desktop Only) */}
+          <Card className="hidden lg:block lg:col-span-1 h-fit sticky top-24">
             <CardHeader>
               <CardTitle className="text-lg">Contents</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="h-[calc(100vh-200px)]">
                 <div className="space-y-1 p-4">
-                  {[
-                    { id: "overview", label: "Overview", icon: FileText },
-                    { id: "property-registration", label: "Property Registration", icon: FileText },
-                    { id: "tokenization", label: "Tokenization", icon: Code },
-                    { id: "investment", label: "Investment Flow", icon: Database },
-                    { id: "events", label: "Property Events", icon: FileText },
-                    { id: "dividends", label: "Dividends", icon: Database },
-                    { id: "governance", label: "Governance", icon: Shield },
-                    { id: "multisig", label: "MultiSig Treasury", icon: Shield },
-                    { id: "verification", label: "Document Verification", icon: FileText },
-                    { id: "database", label: "Database Schema", icon: Database },
-                    { id: "tech-stack", label: "Tech Stack", icon: Code },
-                  ].map((item) => (
+                  {menuItems.map((item) => (
                     <Button
                       key={item.id}
                       variant={activeSection === item.id ? "default" : "ghost"}
@@ -79,7 +112,7 @@ const SystemDocumentation = () => {
           </Card>
 
           {/* Main Content */}
-          <div className="lg:col-span-3 space-y-8">
+          <div className="lg:col-span-3 space-y-6 md:space-y-8">
             {/* Overview Section */}
             <section id="overview">
               <Card>
@@ -91,9 +124,9 @@ const SystemDocumentation = () => {
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="user" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="user">User Perspective</TabsTrigger>
-                      <TabsTrigger value="technical">Technical Perspective</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-2 h-auto">
+                      <TabsTrigger value="user" className="text-xs md:text-sm">User Perspective</TabsTrigger>
+                      <TabsTrigger value="technical" className="text-xs md:text-sm">Technical Perspective</TabsTrigger>
                     </TabsList>
                     <TabsContent value="user" className="space-y-4 pt-4">
                       <p className="text-muted-foreground">
