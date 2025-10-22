@@ -3025,6 +3025,17 @@ export type Database = {
         Args: { p_transfer_id: string }
         Returns: Json
       }
+      get_document_by_number: {
+        Args: { doc_number: string }
+        Returns: {
+          created_at: string
+          document_hash: string
+          document_type: string
+          hcs_verification_id: string
+          is_current: boolean
+          version: number
+        }[]
+      }
       get_user_voting_power: {
         Args: { p_property_id: string; p_user_id: string }
         Returns: number

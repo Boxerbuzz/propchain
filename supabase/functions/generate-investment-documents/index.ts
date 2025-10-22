@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { generateAgreementPDF, generateReceiptPDF, generateShareCertificatePDF } from "./pdf-templates.ts";
+import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -82,26 +84,38 @@ serve(async (req) => {
     const currentDate = new Date().toLocaleString();
 
     // Generate PDF content using templates
-    const agreementContent = generateAgreementPDF({
+    const agreementContent = await generateAgreementPDF({
       investment,
       kycData,
       documentNumber: agreementNumber,
       currentDate,
     });
 
-    const receiptContent = generateReceiptPDF({
+    const receiptContent = await generateReceiptPDF({
       investment,
       kycData,
       documentNumber: receiptNumber,
       currentDate,
     });
 
-    const certificateContent = generateShareCertificatePDF({
+    const certificateContent = await generateShareCertificatePDF({
       investment,
       kycData,
       documentNumber: certificateNumber,
       currentDate,
     });
+
+    // Generate document hashes for blockchain verification
+    const agreementHash = await generateDocumentHash(agreementContent);
+    const receiptHash = await generateDocumentHash(receiptContent);
+    const certificateHash = await generateDocumentHash(certificateContent);
+
+    console.log('Document hashes generated');
+
+    // Generate QR codes for verification
+    const agreementQR = await generateQRCode(`https://propchain.com/verify/${agreementNumber}`);
+    const receiptQR = await generateQRCode(`https://propchain.com/verify/${receiptNumber}`);
+    const certificateQR = await generateQRCode(`https://propchain.com/verify/${certificateNumber}`);
 
     // Upload documents to storage
     const userId = investment.investor_id;
@@ -152,6 +166,17 @@ serve(async (req) => {
 
     console.log('Documents uploaded successfully');
 
+    // Submit hashes to HCS for blockchain verification (async, don't wait)
+    submitToHCS(supabase, agreementNumber, agreementHash).catch(err => 
+      console.error('HCS submission failed for agreement:', err)
+    );
+    submitToHCS(supabase, receiptNumber, receiptHash).catch(err => 
+      console.error('HCS submission failed for receipt:', err)
+    );
+    submitToHCS(supabase, certificateNumber, certificateHash).catch(err => 
+      console.error('HCS submission failed for certificate:', err)
+    );
+
     // Create database records with versioning support
     const documents = [
       {
@@ -162,6 +187,8 @@ serve(async (req) => {
         document_type: 'agreement',
         document_url: agreementPath,
         document_number: agreementNumber,
+        document_hash: agreementHash,
+        qr_code_data: agreementQR,
         version: 1,
         version_date: new Date().toISOString(),
         is_current: true,
@@ -170,6 +197,7 @@ serve(async (req) => {
           amount_ngn: investment.amount_ngn,
           tokens_requested: investment.tokens_requested,
           tokenization_type: (investment.tokenizations as any).tokenization_type,
+          investor_name: `${investor.first_name} ${investor.last_name}`,
         }
       },
       {
@@ -180,6 +208,8 @@ serve(async (req) => {
         document_type: 'receipt',
         document_url: receiptPath,
         document_number: receiptNumber,
+        document_hash: receiptHash,
+        qr_code_data: receiptQR,
         version: 1,
         version_date: new Date().toISOString(),
         is_current: true,
@@ -187,6 +217,7 @@ serve(async (req) => {
           payment_method: investment.payment_method,
           payment_reference: investment.paystack_reference,
           amount_ngn: investment.amount_ngn,
+          investor_name: `${investor.first_name} ${investor.last_name}`,
         }
       },
       {
@@ -197,6 +228,8 @@ serve(async (req) => {
         document_type: 'certificate',
         document_url: certificatePath,
         document_number: certificateNumber,
+        document_hash: certificateHash,
+        qr_code_data: certificateQR,
         version: 1,
         version_date: new Date().toISOString(),
         is_current: true,
@@ -204,6 +237,7 @@ serve(async (req) => {
           property_title: (investment.tokenizations as any).properties?.title,
           tokens_held: investment.tokens_requested,
           ownership_percentage: ((investment.tokens_requested / (investment.tokenizations as any).total_supply) * 100).toFixed(4),
+          investor_name: `${investor.first_name} ${investor.last_name}`,
         }
       }
     ];
@@ -255,4 +289,42 @@ serve(async (req) => {
   }
 });
 
-// PDF generation functions are now imported from pdf-templates.ts
+// Helper function to generate document hash
+async function generateDocumentHash(content: Uint8Array): Promise<string> {
+  const hashBuffer = await crypto.subtle.digest("SHA-256", content);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Helper function to generate QR code (simple data URL)
+async function generateQRCode(url: string): Promise<string> {
+  // In production, use a proper QR code library
+  // For now, return the URL as placeholder
+  return `qr:${url}`;
+}
+
+// Helper function to submit hash to HCS
+async function submitToHCS(supabase: any, documentNumber: string, hash: string): Promise<void> {
+  try {
+    // Get HCS topic ID from config or create one
+    const topicId = Deno.env.get('DOCUMENTS_HCS_TOPIC_ID') || '0.0.XXXXXX';
+    
+    // Submit to HCS via edge function
+    await supabase.functions.invoke('submit-to-hcs', {
+      body: {
+        topic_id: topicId,
+        message: JSON.stringify({
+          type: 'document_hash',
+          document_number: documentNumber,
+          hash: hash,
+          timestamp: new Date().toISOString()
+        })
+      }
+    });
+    
+    console.log(`Document hash submitted to HCS: ${documentNumber}`);
+  } catch (error) {
+    console.error('Failed to submit to HCS:', error);
+    throw error;
+  }
+}

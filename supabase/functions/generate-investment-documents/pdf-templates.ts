@@ -1,4 +1,28 @@
-// PDF Template Generators using plain text (will be replaced with @react-pdf/renderer in production)
+/** @jsx h */
+import { h } from "https://esm.sh/preact@10.11.3";
+import { render } from "https://esm.sh/preact-render-to-string@5.2.6";
+import { 
+  Document, 
+  Page, 
+  Text, 
+  View, 
+  Image, 
+  StyleSheet,
+  renderToBuffer
+} from "https://esm.sh/@react-pdf/renderer@4.3.1";
+import { COMPANY_INFO } from '../_shared/company-config.ts';
+import {
+  getEquityTerms,
+  getDebtTerms,
+  getRevenueShareTerms,
+  getRightsAndObligations,
+  getRiskDisclosures,
+  getNigerianCompliance,
+  getDisputeResolution,
+  getGeneralProvisions,
+  formatNaira,
+  formatDate
+} from './legal-content.ts';
 
 interface InvestmentData {
   investment: any;
@@ -7,383 +31,492 @@ interface InvestmentData {
   currentDate: string;
 }
 
-export function generateAgreementPDF(data: InvestmentData): Uint8Array {
+// PDF Styles
+const styles = StyleSheet.create({
+  page: {
+    padding: 40,
+    fontSize: 10,
+    fontFamily: 'Helvetica',
+    backgroundColor: '#ffffff',
+    lineHeight: 1.6,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottom: '2px solid #21c45d',
+  },
+  logo: {
+    width: 50,
+    height: 50,
+  },
+  companyInfo: {
+    textAlign: 'right',
+    fontSize: 8,
+  },
+  companyName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#21c45d',
+    marginBottom: 4,
+  },
+  watermark: {
+    position: 'absolute',
+    fontSize: 70,
+    color: 'rgba(33, 196, 93, 0.08)',
+    transform: 'rotate(-45deg)',
+    top: '45%',
+    left: '15%',
+    fontWeight: 'bold',
+  },
+  documentTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 20,
+    color: '#1a1a1a',
+    textTransform: 'uppercase',
+  },
+  documentMeta: {
+    fontSize: 9,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#666666',
+  },
+  section: {
+    marginBottom: 15,
+  },
+  heading: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    marginTop: 10,
+    color: '#1a1a1a',
+  },
+  subheading: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginBottom: 6,
+    color: '#333333',
+  },
+  text: {
+    fontSize: 10,
+    marginBottom: 4,
+    color: '#1a1a1a',
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    borderBottom: '1px solid #e0e0e0',
+    paddingVertical: 6,
+  },
+  tableCell: {
+    flex: 1,
+    fontSize: 9,
+  },
+  tableCellRight: {
+    flex: 1,
+    fontSize: 9,
+    textAlign: 'right',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 40,
+    right: 40,
+    fontSize: 8,
+    color: '#666666',
+    paddingTop: 10,
+    borderTop: '1px solid #e0e0e0',
+    textAlign: 'center',
+  },
+});
+
+// Document Header Component
+const DocumentHeader = ({ documentType, documentNumber, date }: any) => (
+  <View style={styles.header}>
+    <View style={styles.companyInfo}>
+      <Text style={styles.companyName}>{COMPANY_INFO.name}</Text>
+      <Text>RC: {COMPANY_INFO.rc_number}</Text>
+      <Text>{COMPANY_INFO.address.street}</Text>
+      <Text>{COMPANY_INFO.address.city}, {COMPANY_INFO.address.state}</Text>
+      <Text>{COMPANY_INFO.contact.email}</Text>
+    </View>
+  </View>
+);
+
+// Watermark Component
+const Watermark = ({ text }: { text: string }) => (
+  <Text style={styles.watermark} fixed>{text}</Text>
+);
+
+// Footer Component
+const DocumentFooter = ({ documentId }: { documentId: string }) => (
+  <View style={styles.footer} fixed>
+    <Text>Document ID: {documentId} | {COMPANY_INFO.contact.website} | Verify at: propchain.com/verify/{documentId}</Text>
+  </View>
+);
+
+export async function generateAgreementPDF(data: InvestmentData): Promise<Uint8Array> {
   const { investment, kycData, documentNumber, currentDate } = data;
   const tokenization = investment.tokenizations;
   const property = tokenization.properties;
   const investor = investment.investor;
   
   const tokenizationType = tokenization.tokenization_type || 'equity';
-  const typeLabel = tokenizationType === 'equity' ? 'OWNERSHIP' 
-    : tokenizationType === 'debt' ? 'LENDING' 
-    : 'REVENUE SHARING';
+  const ownership = (investment.tokens_requested / tokenization.total_supply) * 100;
   
-  let typeSpecificTerms = '';
+  // Get appropriate terms based on tokenization type
+  let specificTerms = '';
   if (tokenizationType === 'equity') {
-    typeSpecificTerms = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EQUITY OWNERSHIP TERMS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-• Ownership Share: ${((investment.tokens_requested / tokenization.total_supply) * 100).toFixed(4)}%
-• Voting Rights: Proportional to token holdings
-• Profit Distribution: Proportional to ownership percentage  
-• Capital Appreciation: Shared proportionally on property sale
-• Property Management: Rights to vote on major decisions
-• Exit Strategy: Tokens are transferable subject to platform rules`;
+    specificTerms = getEquityTerms(ownership);
   } else if (tokenizationType === 'debt') {
-    typeSpecificTerms = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DEBT LENDING TERMS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-• Interest Rate: ${tokenization.interest_rate || 'N/A'}% per annum
-• Loan Term: ${tokenization.loan_term_months || 'N/A'} months
-• LTV Ratio: ${tokenization.ltv_ratio || 'N/A'}%
-• Repayment Priority: Senior debt with property collateral
-• Payment Schedule: ${tokenization.dividend_frequency || 'Monthly'}
-• No ownership or voting rights
-• Principal repayment at loan maturity`;
+    specificTerms = getDebtTerms(tokenization.interest_rate || 10, tokenization.loan_term_months || 12);
   } else {
-    typeSpecificTerms = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REVENUE SHARING TERMS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-• Revenue Share: ${tokenization.revenue_share_percentage || 'N/A'}%
-• Distribution Frequency: ${tokenization.dividend_frequency || 'Quarterly'}
-• Based on gross rental income
-• No ownership or voting rights
-• Duration: Until property sale or agreement termination`;
+    specificTerms = getRevenueShareTerms(tokenization.revenue_share_percentage || 5, 12);
   }
-  
-  const location = typeof property.location === 'string' 
-    ? JSON.parse(property.location) 
-    : property.location;
-  
-  const content = `
-╔══════════════════════════════════════════════════════════════════════╗
-║                   ${typeLabel} INVESTMENT AGREEMENT                     ║
-║                                                                      ║
-║               BAMBOO SYSTEMS TECHNOLOGY LIMITED                      ║
-║            Real Estate Tokenization Platform                         ║
-╚══════════════════════════════════════════════════════════════════════╝
 
-Document Number: ${documentNumber}
-Generated: ${currentDate}
-Investment Type: ${typeLabel}
-Document Version: 1.0
+  const MyDocument = (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <Watermark text="ORIGINAL" />
+        <DocumentHeader 
+          documentType="Investment Agreement" 
+          documentNumber={documentNumber} 
+          date={currentDate} 
+        />
+        
+        <Text style={styles.documentTitle}>INVESTMENT AGREEMENT</Text>
+        <Text style={styles.documentMeta}>
+          Document No: {documentNumber} | Date: {formatDate(currentDate)} | Type: {tokenizationType.toUpperCase()}
+        </Text>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PARTIES TO THE AGREEMENT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        <View style={styles.section}>
+          <Text style={styles.heading}>PARTIES TO THE AGREEMENT</Text>
+          <Text style={styles.bold}>BETWEEN:</Text>
+          <Text style={styles.text}>{COMPANY_INFO.name}</Text>
+          <Text style={styles.text}>RC Number: {COMPANY_INFO.rc_number}</Text>
+          <Text style={styles.text}>Address: {COMPANY_INFO.address.street}, {COMPANY_INFO.address.city}</Text>
+          <Text style={styles.text}>("The Platform" / "PropChain")</Text>
+          
+          <Text style={[styles.bold, { marginTop: 10 }]}>AND</Text>
+          <Text style={styles.text}>{investor.first_name} {investor.last_name}</Text>
+          <Text style={styles.text}>Email: {investor.email}</Text>
+          {kycData?.address && <Text style={styles.text}>Address: {kycData.address}, {kycData.city}, {kycData.state}</Text>}
+          <Text style={styles.text}>("The Investor")</Text>
+        </View>
 
-PLATFORM (Issuer):
-  Bamboo Systems Technology Limited
-  RC Number: [To be inserted]
-  Address: Lagos, Nigeria
-  
-INVESTOR (Token Holder):
-  Name: ${investor.first_name} ${investor.last_name}
-  Email: ${investor.email}
-  Phone: ${investor.phone || 'N/A'}
-  ${kycData?.address ? `Address: ${kycData.address}, ${kycData.city}, ${kycData.state} ${kycData.postal_code || ''}` : 'Address: As per KYC records'}
+        <View style={styles.section}>
+          <Text style={styles.heading}>1. PROPERTY DETAILS</Text>
+          <Text style={styles.text}>Property Title: {property.title}</Text>
+          <Text style={styles.text}>Property Type: {property.property_type}</Text>
+          <Text style={styles.text}>Estimated Value: {formatNaira(property.estimated_value)}</Text>
+          {property.rental_income_monthly && (
+            <Text style={styles.text}>Monthly Rental Income: {formatNaira(property.rental_income_monthly)}</Text>
+          )}
+        </View>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PROPERTY DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        <View style={styles.section}>
+          <Text style={styles.heading}>2. INVESTMENT TERMS</Text>
+          <Text style={styles.text}>Amount Invested: {formatNaira(investment.amount_ngn)}</Text>
+          <Text style={styles.text}>Tokens Allocated: {investment.tokens_requested.toLocaleString()}</Text>
+          <Text style={styles.text}>Token Symbol: {tokenization.token_symbol}</Text>
+          <Text style={styles.text}>Price per Token: {formatNaira(tokenization.price_per_token)}</Text>
+          <Text style={styles.text}>Ownership Percentage: {ownership.toFixed(4)}%</Text>
+          <Text style={styles.text}>Investment Date: {formatDate(investment.created_at)}</Text>
+        </View>
 
-Property Title: ${property.title}
-Location: ${location.address || 'N/A'}
-City: ${location.city || 'N/A'}, State: ${location.state || 'N/A'}
-Property Type: ${property.property_type}
-${property.property_subtype ? `Property Subtype: ${property.property_subtype}` : ''}
-Estimated Value: ₦${property.estimated_value.toLocaleString()}
-${property.rental_income_monthly ? `Monthly Rental Income: ₦${property.rental_income_monthly.toLocaleString()}` : ''}
-${property.rental_yield ? `Rental Yield: ${property.rental_yield}% per annum` : ''}
+        <View style={styles.section}>
+          <Text style={styles.heading}>{specificTerms.split('\n')[1]}</Text>
+          {specificTerms.split('\n').slice(2).map((line: string, i: number) => (
+            <Text key={i} style={styles.text}>{line}</Text>
+          ))}
+        </View>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-INVESTMENT TERMS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        <DocumentFooter documentId={documentNumber} />
+      </Page>
+      
+      <Page size="A4" style={styles.page}>
+        <Watermark text="ORIGINAL" />
+        <DocumentHeader 
+          documentType="Investment Agreement" 
+          documentNumber={documentNumber} 
+          date={currentDate} 
+        />
 
-Amount Invested: ₦${investment.amount_ngn.toLocaleString()}
-${investment.amount_usd ? `(Approximately $${investment.amount_usd.toLocaleString()} USD)` : ''}
-Tokens Allocated: ${investment.tokens_requested.toLocaleString()}
-Token Symbol: ${tokenization.token_symbol}
-Token ID (Hedera): ${tokenization.token_id || 'Pending creation'}
-Price per Token: ₦${tokenization.price_per_token.toLocaleString()}
-Expected Annual ROI: ${tokenization.expected_roi_annual}%
-Investment Date: ${new Date(investment.created_at).toLocaleDateString()}
-Payment Confirmed: ${new Date(investment.payment_confirmed_at).toLocaleDateString()}
+        <View style={styles.section}>
+          <Text style={styles.heading}>4. RIGHTS AND OBLIGATIONS</Text>
+          {getRightsAndObligations().split('\n').map((line: string, i: number) => (
+            <Text key={i} style={styles.text}>{line}</Text>
+          ))}
+        </View>
 
-${typeSpecificTerms}
+        <View style={styles.section}>
+          <Text style={styles.heading}>5. RISK DISCLOSURES</Text>
+          {getRiskDisclosures().split('\n').map((line: string, i: number) => (
+            <Text key={i} style={styles.text}>{line}</Text>
+          ))}
+        </View>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GENERAL TERMS AND CONDITIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        <DocumentFooter documentId={documentNumber} />
+      </Page>
 
-1. TOKEN REPRESENTATION
-   The tokens represent ${tokenizationType === 'equity' ? 'fractional ownership' : tokenizationType === 'debt' ? 'debt instruments' : 'revenue sharing rights'} 
-   in the property described above, recorded on the Hedera blockchain.
+      <Page size="A4" style={styles.page}>
+        <Watermark text="ORIGINAL" />
+        <DocumentHeader 
+          documentType="Investment Agreement" 
+          documentNumber={documentNumber} 
+          date={currentDate} 
+        />
 
-2. RIGHTS AND OBLIGATIONS
-   • Investor has the right to receive ${tokenizationType === 'equity' ? 'proportional dividends' : tokenizationType === 'debt' ? 'fixed interest payments' : 'revenue shares'}
-   • Platform will manage the property and distribute returns as agreed
-   ${tokenizationType === 'equity' ? '• Investor may participate in governance decisions through voting' : ''}
-   • Investor must maintain KYC compliance throughout the investment period
+        <View style={styles.section}>
+          <Text style={styles.heading}>6. REGULATORY COMPLIANCE</Text>
+          {getNigerianCompliance().split('\n').map((line: string, i: number) => (
+            <Text key={i} style={styles.text}>{line}</Text>
+          ))}
+        </View>
 
-3. DIVIDEND/PAYMENT DISTRIBUTION
-   • Frequency: ${tokenization.dividend_frequency || 'As declared'}
-   • Payment Method: Direct to investor wallet
-   • Tax withholding will be applied as per Nigerian law
+        <View style={styles.section}>
+          <Text style={styles.heading}>7. DISPUTE RESOLUTION</Text>
+          {getDisputeResolution().split('\n').map((line: string, i: number) => (
+            <Text key={i} style={styles.text}>{line}</Text>
+          ))}
+        </View>
 
-4. TRANSFERABILITY
-   • Tokens are transferable on the platform marketplace
-   • All transfers must comply with KYC/AML requirements
-   • Platform reserves right to restrict transfers if required by law
+        <View style={styles.section}>
+          <Text style={styles.heading}>8. GENERAL PROVISIONS</Text>
+          {getGeneralProvisions().split('\n').map((line: string, i: number) => (
+            <Text key={i} style={styles.text}>{line}</Text>
+          ))}
+        </View>
 
-5. RISK DISCLOSURE
-   The investor acknowledges that:
-   • Real estate investments carry market risk
-   • Returns are not guaranteed
-   • Property value may fluctuate
-   • Liquidity may be limited
-   • Regulatory changes may affect the investment
+        <View style={[styles.section, { marginTop: 30 }]}>
+          <Text style={styles.bold}>ACKNOWLEDGMENT</Text>
+          <Text style={styles.text}>By accepting this investment, the investor acknowledges that they have:</Text>
+          <Text style={styles.text}>✓ Read and understood the terms of this agreement</Text>
+          <Text style={styles.text}>✓ Reviewed the property details and risk disclosures</Text>
+          <Text style={styles.text}>✓ Completed KYC verification</Text>
+          <Text style={styles.text}>✓ Agreed to the platform's Terms of Service</Text>
+          <Text style={[styles.text, { marginTop: 10, fontSize: 8, fontStyle: 'italic' }]}>
+            This agreement was electronically signed and timestamped on the PropChain platform.
+            Electronic signatures are legally binding under Nigerian law.
+          </Text>
+        </View>
 
-6. TERMINATION AND EXIT
-   • ${tokenizationType === 'equity' ? 'Investment continues until property sale or token transfer' : ''}
-   • ${tokenizationType === 'debt' ? 'Debt matures after ' + (tokenization.loan_term_months || 'N/A') + ' months' : ''}
-   • Investor may sell tokens on secondary market (subject to availability)
+        <DocumentFooter documentId={documentNumber} />
+      </Page>
+    </Document>
+  );
 
-7. GOVERNING LAW
-   This agreement is governed by the laws of the Federal Republic of Nigeria.
-   Disputes shall be resolved through arbitration in Lagos, Nigeria.
-
-8. REGULATORY COMPLIANCE
-   This investment is made in accordance with:
-   • Securities and Exchange Commission (SEC) Nigeria regulations
-   • Nigeria Data Protection Commission (NDPC) guidelines
-   • Financial Action Task Force (FATF) recommendations
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ACKNOWLEDGMENT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-By accepting this investment, the investor acknowledges that they have:
-✓ Read and understood the terms of this agreement
-✓ Reviewed the property details and risk disclosures
-✓ Completed KYC verification
-✓ Confirmed the investment details are accurate
-✓ Agreed to the platform's Terms of Service
-
-This is a digitally generated document and does not require physical signatures.
-The investment is recorded on the blockchain with transaction ID: ${investment.id}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FOR PLATFORM USE ONLY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Document Hash: [To be computed]
-Blockchain Record: ${tokenization.hcs_topic_id || 'Pending'}
-Verification URL: https://verify.bamboo.ng/doc/${documentNumber}
-
-═══════════════════════════════════════════════════════════════════════
-                    END OF INVESTMENT AGREEMENT
-═══════════════════════════════════════════════════════════════════════
-`;
-  
-  return new TextEncoder().encode(content.trim());
+  // Render to buffer
+  const pdfBuffer = await renderToBuffer(MyDocument);
+  return new Uint8Array(pdfBuffer);
 }
 
-export function generateReceiptPDF(data: InvestmentData): Uint8Array {
+export async function generateReceiptPDF(data: InvestmentData): Promise<Uint8Array> {
   const { investment, kycData, documentNumber, currentDate } = data;
   const tokenization = investment.tokenizations;
   const property = tokenization.properties;
   const investor = investment.investor;
-  
-  const tokenizationType = tokenization.tokenization_type || 'equity';
-  const typeLabel = tokenizationType === 'equity' ? 'Ownership' 
-    : tokenizationType === 'debt' ? 'Lending' 
-    : 'Revenue Sharing';
-  
-  const content = `
-╔══════════════════════════════════════════════════════════════════════╗
-║                      INVESTMENT RECEIPT                              ║
-║                                                                      ║
-║               BAMBOO SYSTEMS TECHNOLOGY LIMITED                      ║
-║            Real Estate Tokenization Platform                         ║
-╚══════════════════════════════════════════════════════════════════════╝
 
-Receipt Number: ${documentNumber}
-Receipt Date: ${currentDate}
-Investment Type: ${typeLabel}
+  const MyDocument = (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <DocumentHeader 
+          documentType="Investment Receipt" 
+          documentNumber={documentNumber} 
+          date={currentDate} 
+        />
+        
+        <Text style={styles.documentTitle}>INVESTMENT RECEIPT</Text>
+        <Text style={styles.documentMeta}>
+          Receipt No: {documentNumber} | Date: {formatDate(currentDate)}
+        </Text>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PAYMENT DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        <View style={styles.section}>
+          <Text style={styles.heading}>PAYMENT DETAILS</Text>
+          <View style={styles.tableRow}>
+            <Text style={styles.tableCell}>Transaction Reference:</Text>
+            <Text style={styles.tableCellRight}>{investment.paystack_reference || 'WALLET-' + investment.id.substring(0, 8)}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.tableCell}>Payment Method:</Text>
+            <Text style={styles.tableCellRight}>{investment.payment_method === 'wallet' ? 'Wallet Balance' : 'Card/Bank'}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.tableCell}>Payment Status:</Text>
+            <Text style={styles.tableCellRight}>{investment.payment_status.toUpperCase()}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.tableCell}>Payment Date:</Text>
+            <Text style={styles.tableCellRight}>
+              {investment.payment_confirmed_at ? formatDate(investment.payment_confirmed_at) : 'Pending'}
+            </Text>
+          </View>
+        </View>
 
-Receipt Number: ${documentNumber}
-Transaction Reference: ${investment.paystack_reference || 'WALLET-' + investment.id.substring(0, 8)}
-Payment Method: ${investment.payment_method === 'wallet' ? 'Wallet Balance' : 'Paystack (Card/Bank)'}
-Payment Status: ${investment.payment_status.toUpperCase()}
-Payment Date: ${investment.payment_confirmed_at ? new Date(investment.payment_confirmed_at).toLocaleString() : 'Pending'}
+        <View style={styles.section}>
+          <Text style={styles.heading}>INVESTOR INFORMATION</Text>
+          <Text style={styles.text}>Name: {investor.first_name} {investor.last_name}</Text>
+          <Text style={styles.text}>Email: {investor.email}</Text>
+          {investor.phone && <Text style={styles.text}>Phone: {investor.phone}</Text>}
+        </View>
 
-Amount Paid: ₦${investment.amount_ngn.toLocaleString()}
-${investment.amount_usd ? `Amount (USD): $${investment.amount_usd.toLocaleString()}` : ''}
-${investment.exchange_rate ? `Exchange Rate: ₦${investment.exchange_rate}/USD` : ''}
+        <View style={styles.section}>
+          <Text style={styles.heading}>INVESTMENT DETAILS</Text>
+          <Text style={styles.text}>Property: {property.title}</Text>
+          <Text style={styles.text}>Tokens Allocated: {investment.tokens_requested.toLocaleString()} {tokenization.token_symbol}</Text>
+          <Text style={styles.text}>Price per Token: {formatNaira(tokenization.price_per_token)}</Text>
+          <Text style={styles.text}>Ownership: {((investment.tokens_requested / tokenization.total_supply) * 100).toFixed(4)}%</Text>
+        </View>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-INVESTOR INFORMATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        <View style={styles.section}>
+          <Text style={styles.heading}>FINANCIAL BREAKDOWN</Text>
+          <View style={styles.tableRow}>
+            <Text style={styles.tableCell}>Investment Amount:</Text>
+            <Text style={styles.tableCellRight}>{formatNaira(investment.amount_ngn)}</Text>
+          </View>
+          <View style={styles.tableRow}>
+            <Text style={styles.tableCell}>Platform Fee:</Text>
+            <Text style={styles.tableCellRight}>₦0.00</Text>
+          </View>
+          <View style={[styles.tableRow, { borderTop: '2px solid #21c45d', paddingTop: 8, fontWeight: 'bold' }]}>
+            <Text style={[styles.tableCell, styles.bold]}>TOTAL PAID:</Text>
+            <Text style={[styles.tableCellRight, styles.bold]}>{formatNaira(investment.amount_ngn)}</Text>
+          </View>
+        </View>
 
-Name: ${investor.first_name} ${investor.last_name}
-Email: ${investor.email}
-${investor.phone ? `Phone: ${investor.phone}` : ''}
-Investor ID: ${investment.investor_id.substring(0, 8).toUpperCase()}
+        <View style={[styles.section, { marginTop: 30, padding: 10, backgroundColor: '#f9f9f9', borderLeft: '4px solid #21c45d' }]}>
+          <Text style={[styles.text, { fontSize: 8, fontStyle: 'italic' }]}>
+            This receipt confirms your payment and token allocation. Tokens are recorded on the Hedera blockchain.
+            You can view your investment in your portfolio dashboard.
+          </Text>
+        </View>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-INVESTMENT DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        <DocumentFooter documentId={documentNumber} />
+      </Page>
+    </Document>
+  );
 
-Property: ${property.title}
-Investment Type: ${typeLabel}
-Tokens Allocated: ${investment.tokens_requested.toLocaleString()} ${tokenization.token_symbol}
-Token ID: ${tokenization.token_id || 'Pending creation'}
-Price per Token: ₦${tokenization.price_per_token.toLocaleString()}
-Ownership Percentage: ${((investment.tokens_requested / tokenization.total_supply) * 100).toFixed(4)}%
-
-Expected Annual Returns: ${tokenization.expected_roi_annual}%
-Distribution Frequency: ${tokenization.dividend_frequency || 'As declared'}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-BREAKDOWN
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Investment Amount:                    ₦${investment.amount_ngn.toLocaleString()}
-Platform Fee:                         ₦0.00
-Total Paid:                           ₦${investment.amount_ngn.toLocaleString()}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-IMPORTANT INFORMATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-• This receipt confirms your payment and token allocation
-• Tokens are recorded on the Hedera blockchain
-• You can view your investment in your portfolio dashboard
-• Access governance voting through the investor chat room
-• ${tokenizationType === 'equity' ? 'Dividends will be distributed according to your ownership percentage' : ''}
-• ${tokenizationType === 'debt' ? 'Interest payments will be made according to the payment schedule' : ''}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VERIFICATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Document Hash: [To be computed]
-Blockchain Record: ${investment.id}
-Verify at: https://verify.bamboo.ng/receipt/${documentNumber}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CONTACT INFORMATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Bamboo Systems Technology Limited
-Email: support@bamboo.ng
-Phone: +234 XXX XXX XXXX
-Website: https://bamboo.ng
-
-For inquiries about this investment, please quote: ${documentNumber}
-
-This is a computer-generated receipt and does not require a physical signature.
-Generated on: ${currentDate}
-
-═══════════════════════════════════════════════════════════════════════
-                         END OF RECEIPT
-═══════════════════════════════════════════════════════════════════════
-`;
-  
-  return new TextEncoder().encode(content.trim());
+  const pdfBuffer = await renderToBuffer(MyDocument);
+  return new Uint8Array(pdfBuffer);
 }
 
-export function generateShareCertificatePDF(data: InvestmentData): Uint8Array {
+export async function generateShareCertificatePDF(data: InvestmentData): Promise<Uint8Array> {
   const { investment, kycData, documentNumber, currentDate } = data;
   const tokenization = investment.tokenizations;
   const property = tokenization.properties;
   const investor = investment.investor;
-  
-  const ownershipPercentage = ((investment.tokens_requested / tokenization.total_supply) * 100).toFixed(4);
-  
-  const content = `
-╔══════════════════════════════════════════════════════════════════════╗
-║                                                                      ║
-║                    SHARE CERTIFICATE                                 ║
-║                                                                      ║
-║              BAMBOO SYSTEMS TECHNOLOGY LIMITED                       ║
-║           Real Estate Tokenization Platform                          ║
-║                                                                      ║
-╚══════════════════════════════════════════════════════════════════════╝
+  const ownership = (investment.tokens_requested / tokenization.total_supply) * 100;
 
-                    ━━━━━━━━━━━━━━━━━━━━━━
-                       OFFICIAL DOCUMENT
-                    ━━━━━━━━━━━━━━━━━━━━━━
+  const certificateStyles = StyleSheet.create({
+    ...styles,
+    certificateBorder: {
+      border: '3px double #21c45d',
+      padding: 20,
+      marginTop: 20,
+      marginBottom: 20,
+    },
+    certificateTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      color: '#21c45d',
+      marginVertical: 20,
+    },
+    certificateBody: {
+      fontSize: 11,
+      textAlign: 'center',
+      lineHeight: 1.8,
+      marginVertical: 20,
+    },
+  });
 
-Certificate Number: ${documentNumber}
-Issue Date: ${currentDate}
-Token ID (Hedera): ${tokenization.token_id || 'Pending'}
+  const MyDocument = (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <Watermark text="CERTIFIED" />
+        <DocumentHeader 
+          documentType="Share Certificate" 
+          documentNumber={documentNumber} 
+          date={currentDate} 
+        />
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        <View style={certificateStyles.certificateBorder}>
+          <Text style={certificateStyles.certificateTitle}>CERTIFICATE OF TOKEN OWNERSHIP</Text>
+          <Text style={[styles.documentMeta, { marginBottom: 30 }]}>
+            Certificate No: {documentNumber}
+          </Text>
 
-THIS IS TO CERTIFY THAT
+          <Text style={certificateStyles.certificateBody}>
+            THIS IS TO CERTIFY THAT
+          </Text>
 
-    ${investor.first_name.toUpperCase()} ${investor.last_name.toUpperCase()}
+          <Text style={[certificateStyles.certificateBody, styles.bold, { fontSize: 14 }]}>
+            {investor.first_name} {investor.last_name}
+          </Text>
 
-IS THE REGISTERED HOLDER OF
+          <Text style={certificateStyles.certificateBody}>
+            is the registered holder of
+          </Text>
 
-    ${investment.tokens_requested.toLocaleString()} TOKENS
-    (${ownershipPercentage}% ownership)
+          <Text style={[certificateStyles.certificateBody, styles.bold, { fontSize: 16, color: '#21c45d' }]}>
+            {investment.tokens_requested.toLocaleString()} Digital Tokens
+          </Text>
 
-IN THE PROPERTY KNOWN AS
+          <Text style={certificateStyles.certificateBody}>
+            Token Symbol: {tokenization.token_symbol} | Token ID: {tokenization.token_id || 'Pending'}
+          </Text>
 
-    ${property.title.toUpperCase()}
+          <Text style={certificateStyles.certificateBody}>
+            representing fractional ownership in the property located at:
+          </Text>
 
-REPRESENTED BY THE TOKEN SYMBOL
+          <Text style={[certificateStyles.certificateBody, styles.bold]}>
+            {property.title}
+          </Text>
 
-    ${tokenization.token_symbol}
+          <Text style={certificateStyles.certificateBody}>
+            Ownership Percentage: {ownership.toFixed(4)}% | Total Property Value: {formatNaira(property.estimated_value)}
+          </Text>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PROPERTY DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          <View style={{ marginTop: 30, marginBottom: 20 }}>
+            <Text style={[styles.text, { fontSize: 9 }]}>Token Holding Rights:</Text>
+            <Text style={[styles.text, { fontSize: 9 }]}>✓ Receive proportional dividends/income</Text>
+            <Text style={[styles.text, { fontSize: 9 }]}>✓ Vote on governance proposals</Text>
+            <Text style={[styles.text, { fontSize: 9 }]}>✓ Transfer tokens (subject to terms)</Text>
+            <Text style={[styles.text, { fontSize: 9 }]}>✓ Access property information and reports</Text>
+          </View>
 
-Property: ${property.title}
-Type: ${property.property_type}
-Estimated Value: ₦${property.estimated_value.toLocaleString()}
-Total Supply: ${tokenization.total_supply.toLocaleString()} tokens
+          <View style={{ marginTop: 40 }}>
+            <Text style={[styles.text, { fontSize: 8, textAlign: 'center' }]}>
+              ___________________________
+            </Text>
+            <Text style={[styles.text, { fontSize: 8, textAlign: 'center', marginTop: 5 }]}>
+              {COMPANY_INFO.name}
+            </Text>
+            <Text style={[styles.text, { fontSize: 8, textAlign: 'center' }]}>
+              Authorized Signatory
+            </Text>
+            <Text style={[styles.text, { fontSize: 8, textAlign: 'center' }]}>
+              Date: {formatDate(currentDate)}
+            </Text>
+          </View>
+        </View>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-HOLDER RIGHTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        <Text style={[styles.text, { fontSize: 8, textAlign: 'center', fontStyle: 'italic' }]}>
+          This certificate is issued on the Hedera blockchain and represents legally binding ownership rights.
+        </Text>
 
-✓ Proportional dividend rights
-✓ Voting rights on property decisions
-✓ Share in capital appreciation
-✓ Transferable subject to platform rules
-✓ Access to property information and updates
+        <DocumentFooter documentId={documentNumber} />
+      </Page>
+    </Document>
+  );
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-This certificate is issued as proof of ownership and is recorded on
-the Hedera blockchain for immutability and transparency.
-
-Issued under the authority of Bamboo Systems Technology Limited
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-[DIGITAL SIGNATURE PLACEHOLDER]
-Platform Administrator
-
-═══════════════════════════════════════════════════════════════════════
-                      END OF SHARE CERTIFICATE
-═══════════════════════════════════════════════════════════════════════
-`;
-  
-  return new TextEncoder().encode(content.trim());
+  const pdfBuffer = await renderToBuffer(MyDocument);
+  return new Uint8Array(pdfBuffer);
 }
