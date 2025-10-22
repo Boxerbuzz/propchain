@@ -23,8 +23,8 @@ export const COMPANY_INFO = {
   branding: {
     primary_color: '#21c45d',
     secondary_color: '#1a9d4a',
-    // PropChain logo - base64 encoded PNG
-    logo_base64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAACAASURBVHic7N15nBTV3e/xz6mq7p4FGBYB2QQEN0RFQdwVjRpj4hI1xmhMNJrEJTdRc2+uS4xLNPfFJGpiYuKaxMQtLhFjjEtcUNyiCAiKssgyzLL0dNc5949hYGCmu6u7q7vn/N6vl6/Y6arT53Sd0/X7nXPqVCmttUYIIYQQbUrbHYAQQggh7CcJgBBCCNEOSQIghBBCtEOSAAghh"
+    // PropChain logo - base64 encoded PNG (TODO: Add actual company logo)
+    logo_base64: ''
   }
 } as const;
 
