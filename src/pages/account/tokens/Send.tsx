@@ -7,6 +7,8 @@ import { CustomTokenSelector } from "@/components/account/CustomTokenSelector";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { toast } from "sonner";
 import { Send as SendIcon, ArrowLeft } from "lucide-react";
+import hederaIcon from "/hedera.svg";
+import usdcIcon from "/usdc.svg";
 
 type CardState = "main" | "selectToken";
 
@@ -21,13 +23,13 @@ export default function SendTokens() {
     {
       symbol: "HBAR",
       name: "Hedera",
-      icon: "ℏ",
+      icon: <img src={hederaIcon} alt="Hedera" className="w-10 h-10" />,
       balance: balance?.balanceHbar || 0,
     },
     {
       symbol: "USDC",
       name: "USD Coin",
-      icon: "💵",
+      icon: <img src={usdcIcon} alt="USDC" className="w-10 h-10" />,
       balance: balance?.usdcBalance || 0,
     },
   ];
@@ -164,7 +166,7 @@ export default function SendTokens() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                        <span className="text-2xl">{token.icon}</span>
+                        {token.icon}
                       </div>
                       <div>
                         <p className="font-semibold text-base">{token.symbol}</p>

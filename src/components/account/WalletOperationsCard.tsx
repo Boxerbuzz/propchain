@@ -5,13 +5,15 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
-import { ArrowLeft, Building2, Wallet, Coins } from "lucide-react";
+import { ArrowLeft, Building2, Wallet, Coins, Clock } from "lucide-react";
 import { CurrencyAmountInput } from "@/components/CurrencyAmountInput";
 import { CustomWithdrawalMethodSelector } from "./CustomWithdrawalMethodSelector";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import hederaIcon from "/hedera.svg";
+import usdcIcon from "/usdc.svg";
 
 type CardState = "main" | "selectMethod" | "bankDetails" | "hederaDetails";
 
@@ -83,7 +85,7 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
     {
       id: 'hbar' as const,
       name: 'HBAR',
-      icon: '/hedera.svg',
+      icon: hederaIcon,
       balance: balance?.balanceHbar || 0,
       balanceNgn: balance?.balanceNgn || 0,
       color: 'purple' as const,
@@ -91,7 +93,7 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
     {
       id: 'usdc' as const,
       name: 'USDC',
-      icon: '/usdc.svg',
+      icon: usdcIcon,
       balance: balance?.usdcBalance || 0,
       balanceNgn: balance?.usdcBalanceNgn || 0,
       color: 'blue' as const,
@@ -322,9 +324,10 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
                       </div>
                       <p className="text-sm text-muted-foreground">{method.description}</p>
                       {method.processingTime && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          ⏱️ {method.processingTime}
-                        </p>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{method.processingTime}</span>
+                        </div>
                       )}
                     </div>
                   </div>
