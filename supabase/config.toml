@@ -31,3 +31,9 @@ verify_jwt = false
 verify_jwt = true
 [functions.setup-documents-hcs-topic]
 verify_jwt = false
+[functions.create-multisig-treasury]
+verify_jwt = false
+[functions.approve-treasury-withdrawal]
+verify_jwt = true
+[functions.execute-treasury-withdrawal]
+verify_jwt = true

@@ -2380,6 +2380,8 @@ export type Database = {
           treasury_balance_ngn: number | null
           treasury_balance_usdc: number | null
           treasury_created_at: string | null
+          treasury_signers_count: number | null
+          treasury_type: string | null
           type_specific_terms: Json | null
           updated_at: string | null
           use_of_funds: Json | null
@@ -2437,6 +2439,8 @@ export type Database = {
           treasury_balance_ngn?: number | null
           treasury_balance_usdc?: number | null
           treasury_created_at?: string | null
+          treasury_signers_count?: number | null
+          treasury_type?: string | null
           type_specific_terms?: Json | null
           updated_at?: string | null
           use_of_funds?: Json | null
@@ -2494,6 +2498,8 @@ export type Database = {
           treasury_balance_ngn?: number | null
           treasury_balance_usdc?: number | null
           treasury_created_at?: string | null
+          treasury_signers_count?: number | null
+          treasury_type?: string | null
           type_specific_terms?: Json | null
           updated_at?: string | null
           use_of_funds?: Json | null

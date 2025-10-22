@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { SmartContractService } from "../_shared/contractService.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,27 +15,38 @@ serve(async (req) => {
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      throw new Error('Unauthorized');
+    // Get authenticated user
+    const authHeader = req.headers.get('Authorization')!;
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
     }
 
-    const { transaction_id } = await req.json();
+    const { transaction_id, request_id } = await req.json();
 
-    console.log('Approving treasury withdrawal:', transaction_id);
+    console.log('Approving treasury withdrawal:', { transaction_id, request_id, user_id: user.id });
 
     // Get transaction details
     const { data: transaction, error: txError } = await supabase
       .from('property_treasury_transactions')
-      .select('*, tokenizations!inner(multisig_treasury_address, treasury_signers, treasury_threshold)')
+      .select(`
+        *,
+        tokenizations!inner(
+          multisig_treasury_address,
+          treasury_signers,
+          treasury_threshold,
+          treasury_type,
+          property_id
+        )
+      `)
       .eq('id', transaction_id)
       .single();
 
@@ -45,172 +57,168 @@ serve(async (req) => {
       );
     }
 
-    // Validate user is a signer
-    if (!transaction.tokenizations.treasury_signers.includes(user.id)) {
+    // Verify user is a signer
+    const tokenization = (transaction as any).tokenizations;
+    const isSigner = tokenization.treasury_signers?.includes(user.id);
+
+    if (!isSigner) {
       return new Response(
-        JSON.stringify({ error: 'User is not authorized to approve withdrawals' }),
+        JSON.stringify({ error: 'Not authorized to approve this withdrawal' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
       );
     }
 
-    // Check if user already approved
-    const approvers = transaction.metadata?.approvers || [];
-    if (approvers.includes(user.id)) {
+    // Check if already approved by this user
+    const approvals = (transaction.metadata as any)?.approvals || [];
+    if (approvals.includes(user.id)) {
       return new Response(
-        JSON.stringify({ error: 'User has already approved this withdrawal' }),
+        JSON.stringify({ error: 'Already approved by you' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
-    // Add approval
-    const newApprovers = [...approvers, user.id];
-    const approvalsCount = newApprovers.length;
-    const threshold = transaction.tokenizations.treasury_threshold;
-
-    console.log(`Approval ${approvalsCount}/${threshold} received`);
-
-    // Update transaction
-    await supabase
-      .from('property_treasury_transactions')
-      .update({
-        metadata: {
-          ...transaction.metadata,
-          approvals_count: approvalsCount,
-          approvers: newApprovers
-        }
-      })
-      .eq('id', transaction_id);
-
-    // Check if threshold met
-    if (approvalsCount >= threshold) {
-      console.log('Threshold met - executing withdrawal...');
-
-      let executionTxHash: string;
+    if (tokenization.treasury_type === 'multisig' && tokenization.multisig_treasury_address) {
+      // Submit approval to smart contract
+      const contractService = new SmartContractService(supabase);
       
       try {
-        // Import contract service
-        const { SmartContractService } = await import('../_shared/contractService.ts');
-        const contractService = new SmartContractService(supabase);
-        
-        // Extract request ID from metadata
-        const requestIdNum = transaction.metadata?.withdrawalRequestId || 0;
-        
-        // ✅ REAL CONTRACT CALL - Approve and potentially execute
         const result = await contractService.approveTreasuryWithdrawal({
-          treasuryAddress: transaction.tokenizations.multisig_treasury_address,
-          requestId: requestIdNum
+          treasuryAddress: tokenization.multisig_treasury_address,
+          requestId: parseInt(request_id)
         });
-        
-        executionTxHash = result.txHash;
-        console.log('✅ Withdrawal approved/executed on-chain:', executionTxHash);
-      } catch (contractError: any) {
-        console.error('❌ Contract approval failed, using fallback:', contractError);
-        executionTxHash = `0x${Date.now()}_exec_${transaction_id.substring(0, 8)}`;
-      }
 
-      // Update transaction to completed
+        console.log('✅ Approval submitted to contract:', result.txHash);
+
+        // Update transaction metadata with approval
+        approvals.push(user.id);
+        const metadata = {
+          ...(transaction.metadata as any || {}),
+          approvals,
+          approval_count: approvals.length,
+          last_approval_at: new Date().toISOString(),
+          last_approval_by: user.id,
+          contract_approval_tx: result.txHash
+        };
+
+        // Check if threshold reached and auto-executed
+        if (result.executed) {
+          await supabase
+            .from('property_treasury_transactions')
+            .update({
+              status: 'completed',
+              completed_at: new Date().toISOString(),
+              metadata
+            })
+            .eq('id', transaction_id);
+
+          console.log('✅ Withdrawal auto-executed after approval');
+        } else {
+          await supabase
+            .from('property_treasury_transactions')
+            .update({
+              status: approvals.length >= tokenization.treasury_threshold ? 'approved' : 'pending',
+              metadata
+            })
+            .eq('id', transaction_id);
+        }
+
+        // Log contract transaction
+        await supabase.from('smart_contract_transactions').insert({
+          contract_name: 'multisig_treasury',
+          contract_address: tokenization.multisig_treasury_address,
+          function_name: 'approveWithdrawal',
+          transaction_hash: result.txHash,
+          transaction_status: 'confirmed',
+          property_id: tokenization.property_id,
+          tokenization_id: transaction.tokenization_id,
+          related_id: transaction_id,
+          related_type: 'treasury_transaction',
+          user_id: user.id,
+          input_data: { request_id, transaction_id },
+          confirmed_at: new Date().toISOString()
+        });
+
+        // Create activity log
+        await supabase.from('activity_logs').insert({
+          user_id: user.id,
+          property_id: tokenization.property_id,
+          tokenization_id: transaction.tokenization_id,
+          activity_type: 'treasury_approval',
+          description: `Withdrawal request approved (${approvals.length}/${tokenization.treasury_threshold})`,
+          metadata: {
+            transaction_id,
+            request_id,
+            amount_ngn: transaction.amount_ngn,
+            contract_tx: result.txHash
+          }
+        });
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            tx_hash: result.txHash,
+            executed: result.executed,
+            approval_count: approvals.length,
+            threshold: tokenization.treasury_threshold
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+
+      } catch (contractError: any) {
+        console.error('Contract approval failed:', contractError);
+        
+        // Fall back to database-only approval
+        approvals.push(user.id);
+        await supabase
+          .from('property_treasury_transactions')
+          .update({
+            metadata: {
+              ...(transaction.metadata as any || {}),
+              approvals,
+              approval_count: approvals.length,
+              contract_error: contractError.message
+            }
+          })
+          .eq('id', transaction_id);
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            warning: 'Approved in database but contract call failed',
+            approval_count: approvals.length,
+            threshold: tokenization.treasury_threshold
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      // Custodial treasury - just update database
+      approvals.push(user.id);
+      
       await supabase
         .from('property_treasury_transactions')
         .update({
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-          hedera_transaction_id: executionTxHash
+          status: approvals.length >= tokenization.treasury_threshold ? 'approved' : 'pending',
+          metadata: {
+            ...(transaction.metadata as any || {}),
+            approvals,
+            approval_count: approvals.length
+          }
         })
         .eq('id', transaction_id);
-
-      // Log execution transaction
-      await supabase.from('smart_contract_transactions').insert({
-        contract_name: 'multisig_treasury',
-        contract_address: transaction.tokenizations.multisig_treasury_address,
-        function_name: 'executeWithdrawal',
-        transaction_hash: executionTxHash,
-        transaction_status: 'confirmed',
-        user_id: user.id,
-        property_id: transaction.property_id,
-        tokenization_id: transaction.tokenization_id,
-        related_id: transaction_id,
-        related_type: 'treasury_transaction',
-        confirmed_at: new Date().toISOString()
-      });
-
-      // Notify all signers about execution
-      for (const signerId of transaction.tokenizations.treasury_signers) {
-        await supabase.from('notifications').insert({
-          user_id: signerId,
-          title: 'Withdrawal Executed',
-          message: `Treasury withdrawal of ₦${transaction.amount_ngn.toLocaleString()} has been executed.`,
-          notification_type: 'withdrawal_executed',
-          priority: 'normal',
-          action_url: `/property/${transaction.property_id}/treasury`,
-        });
-      }
-
-      // Create activity log
-      await supabase.from('activity_logs').insert({
-        property_id: transaction.property_id,
-        tokenization_id: transaction.tokenization_id,
-        activity_type: 'withdrawal_executed',
-        description: `Withdrawal of ₦${transaction.amount_ngn.toLocaleString()} executed successfully`,
-        metadata: {
-          transaction_id,
-          amount_ngn: transaction.amount_ngn,
-          execution_tx: executionTxHash
-        }
-      });
 
       return new Response(
         JSON.stringify({
           success: true,
-          executed: true,
-          execution_tx: executionTxHash,
-          message: 'Withdrawal approved and executed'
+          approval_count: approvals.length,
+          threshold: tokenization.treasury_threshold
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Just approval, not enough for execution
-    // Log approval transaction
-    await supabase.from('smart_contract_transactions').insert({
-      contract_name: 'multisig_treasury',
-      contract_address: transaction.tokenizations.multisig_treasury_address,
-      function_name: 'approveWithdrawal',
-      transaction_hash: `0x${Date.now()}_approve`,
-      transaction_status: 'confirmed',
-      user_id: user.id,
-      property_id: transaction.property_id,
-      tokenization_id: transaction.tokenization_id,
-      related_id: transaction_id,
-      related_type: 'treasury_transaction',
-      confirmed_at: new Date().toISOString()
-    });
-
-    // Create activity log
-    await supabase.from('activity_logs').insert({
-      user_id: user.id,
-      property_id: transaction.property_id,
-      tokenization_id: transaction.tokenization_id,
-      activity_type: 'withdrawal_approved',
-      description: `Withdrawal approval ${approvalsCount}/${threshold} received`,
-      metadata: {
-        transaction_id,
-        approvals_count: approvalsCount,
-        threshold
-      }
-    });
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        executed: false,
-        approvals_count: approvalsCount,
-        approvals_needed: threshold - approvalsCount,
-        message: `Approval recorded. ${threshold - approvalsCount} more approval(s) needed.`
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
   } catch (error: any) {
-    console.error('Error approving treasury withdrawal:', error);
+    console.error('Error approving withdrawal:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }

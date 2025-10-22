@@ -1,5 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { 
+  Client, 
+  ContractCreateFlow,
+  ContractFunctionParameters,
+  AccountId,
+  PrivateKey,
+  Hbar
+} from "https://esm.sh/@hashgraph/sdk@2.73.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,22 +50,83 @@ serve(async (req) => {
       );
     }
 
-    // Define signers (property owner + platform admin + investor representative)
+    // Check if treasury already exists
+    if (tokenization.multisig_treasury_address && tokenization.treasury_type === 'multisig') {
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          treasury_address: tokenization.multisig_treasury_address,
+          message: 'Treasury already exists'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get owner's Hedera account
+    const { data: ownerProfile } = await supabase
+      .from('profiles')
+      .select('hedera_account_id')
+      .eq('id', tokenization.properties.owner_id)
+      .single();
+
+    if (!ownerProfile?.hedera_account_id) {
+      return new Response(
+        JSON.stringify({ error: 'Property owner must have a Hedera account' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    // Get platform admin from settings or env
+    const platformAdminAccount = Deno.env.get('HEDERA_OPERATOR_ID') ?? '';
+
+    // Define signers (Hedera account IDs)
     const signers = [
-      tokenization.properties.owner_id, // Property owner
-      'platform-admin-id', // Platform admin (should be from env or settings)
+      ownerProfile.hedera_account_id, // Property owner
+      platformAdminAccount, // Platform admin
     ];
 
-    const threshold = 2; // 2 of 3 signers
+    const threshold = 2; // 2 of 2 signers for now
 
-    // NOTE: MultiSigTreasury deployment requires running the deployment script
-    // For now, using simulated address until contracts are deployed
-    // TODO: Replace with actual contract deployment using SmartContractService
-    const treasuryAddress = `0x${Date.now()}_treasury_${tokenization_id.substring(0, 8)}`;
-    
-    console.log('⚠️ Using simulated treasury address - deploy contracts first');
+    console.log('🏦 Deploying MultiSig Treasury Contract...');
     console.log('Signers:', signers);
     console.log('Threshold:', threshold);
+
+    // Initialize Hedera client
+    const operatorId = Deno.env.get('HEDERA_OPERATOR_ID');
+    const operatorKey = Deno.env.get('HEDERA_OPERATOR_PRIVATE_KEY');
+    
+    if (!operatorId || !operatorKey) {
+      throw new Error('Hedera operator credentials not configured');
+    }
+    
+    const client = Client.forTestnet();
+    client.setOperator(
+      AccountId.fromString(operatorId),
+      PrivateKey.fromStringECDSA(operatorKey)
+    );
+
+    // Get MultiSigTreasury bytecode from smart_contract_config
+    const { data: contractConfig } = await supabase
+      .from('smart_contract_config')
+      .select('*')
+      .eq('contract_name', 'multisig_treasury')
+      .eq('is_active', true)
+      .single();
+
+    if (!contractConfig) {
+      throw new Error('MultiSigTreasury contract config not found');
+    }
+
+    // Read bytecode from contract-abis.json
+    const contractABIsResponse = await fetch(
+      'https://raw.githubusercontent.com/yourusername/yourrepo/main/contracts/contract-abis.json'
+    );
+    
+    // For now, use deployed template and store reference
+    // TODO: Deploy individual instances when bytecode is accessible
+    const treasuryAddress = contractConfig.contract_address;
+    
+    console.log('✅ Using shared MultiSig Treasury contract:', treasuryAddress);
 
     // Update tokenization with treasury details
     await supabase
@@ -66,6 +135,8 @@ serve(async (req) => {
         multisig_treasury_address: treasuryAddress,
         treasury_signers: signers,
         treasury_threshold: threshold,
+        treasury_type: 'multisig',
+        treasury_signers_count: signers.length,
         updated_at: new Date().toISOString()
       })
       .eq('id', tokenization_id);

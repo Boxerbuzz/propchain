@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Wallet, Users, History, TrendingUp } from 'lucide-react';
+import { Loader2, Wallet, Users, History, TrendingUp, Lock, Key } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useContractBalance } from '@/hooks/useContractBalance';
@@ -90,13 +90,36 @@ export default function TreasuryDashboard() {
     );
   }
 
+  const treasuryType = (tokenization as any)?.treasury_type || 'multisig';
+  const isCustodial = treasuryType === 'custodial';
+
   return (
     <div className="container mx-auto py-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Property Treasury</h1>
-        <p className="text-muted-foreground">
-          Secure multi-signature treasury for property funds
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold">Property Treasury</h1>
+            <Badge variant={isCustodial ? "secondary" : "default"} className="flex items-center gap-1">
+              {isCustodial ? (
+                <>
+                  <Key className="w-3 h-3" />
+                  Custodial
+                </>
+              ) : (
+                <>
+                  <Lock className="w-3 h-3" />
+                  MultiSig
+                </>
+              )}
+            </Badge>
+          </div>
+          <p className="text-muted-foreground">
+            {isCustodial 
+              ? 'Platform-managed treasury with secure custody'
+              : 'Multi-signature smart contract for decentralized fund management'
+            }
+          </p>
+        </div>
       </div>
 
       {/* Treasury Balance */}
