@@ -210,37 +210,78 @@ export function WalletOperationsCard({ defaultTab = "withdraw" }: WalletOperatio
             </TabsList>
 
             <TabsContent value={activeTab} className="space-y-6">
+              {/* Currency Selector */}
+              <div className="space-y-2">
+                <Label>Select Currency</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {currencies.map((currency) => (
+                    <Card
+                      key={currency.id}
+                      className={`p-4 cursor-pointer hover:bg-accent hover:border-primary/50 transition-all border-2 ${
+                        selectedCurrency === currency.id ? 'border-primary bg-primary/5' : ''
+                      }`}
+                      onClick={() => setSelectedCurrency(currency.id)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                          <img src={currency.icon} alt={currency.name} className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm">{currency.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {currency.balance.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
               {/* Amount Input */}
               <div className="space-y-2">
                 <Label>
                   {activeTab === "withdraw" ? "Amount to withdraw" : "Amount to fund"}
                 </Label>
-                <CurrencyAmountInput
-                  currencies={currencies}
-                  selectedCurrency={selectedCurrency}
-                  onCurrencyChange={setSelectedCurrency}
-                  amount={amount}
-                  onAmountChange={setAmount}
-                  showMaxButton={true}
-                  showBalance={true}
-                  placeholder="0.00"
-                  error={parseFloat(amount) > (selectedCurrency === 'hbar' ? (balance?.balanceHbar || 0) : (balance?.usdcBalance || 0))}
-                />
-
-                {/* Quick Amount Buttons */}
-                <div className="flex gap-2 flex-wrap">
-                  {quickAmounts.map((amt) => (
-                    <Button
-                      key={amt}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setAmount(amt.toString())}
-                      className="flex-1 min-w-[60px]"
-                    >
-                      ₦{amt.toLocaleString()}
-                    </Button>
-                  ))}
+                <div className="relative">
+                  <Input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0.00"
+                    className={`h-12 text-lg pr-20 ${
+                      parseFloat(amount) > (selectedCurrency === 'hbar' ? (balance?.balanceHbar || 0) : (balance?.usdcBalance || 0))
+                        ? 'border-destructive'
+                        : ''
+                    }`}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8"
+                    onClick={() => setAmount(String(selectedCurrency === 'hbar' ? (balance?.balanceHbar || 0) : (balance?.usdcBalance || 0)))}
+                  >
+                    Max
+                  </Button>
                 </div>
+                <p className="text-sm text-muted-foreground">
+                  Available: {selectedCurrency === 'hbar' ? balance?.balanceHbar.toFixed(2) : balance?.usdcBalance.toFixed(2)} {selectedCurrency.toUpperCase()}
+                </p>
+              </div>
+
+              {/* Quick Amount Buttons */}
+              <div className="flex gap-2 flex-wrap">
+                {quickAmounts.map((amt) => (
+                  <Button
+                    key={amt}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAmount(amt.toString())}
+                    className="flex-1 min-w-[60px]"
+                  >
+                    ₦{amt.toLocaleString()}
+                  </Button>
+                ))}
               </div>
 
               {/* Method Selector */}
