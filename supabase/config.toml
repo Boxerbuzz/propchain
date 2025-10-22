@@ -21,3 +21,7 @@ verify_jwt = false
 verify_jwt = true
 [functions.create-property-treasury]
 verify_jwt = false
+[functions.auto-process-rental-dividends]
+verify_jwt = false
+[functions.process-scheduled-dividends]
+verify_jwt = false

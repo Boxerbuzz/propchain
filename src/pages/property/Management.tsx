@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { VaultMigrationButton } from "@/components/VaultMigrationButton";
+import { AutomationJobsMonitor } from "@/components/AutomationJobsMonitor";
 
 const PropertyManagement = () => {
   const { toast } = useToast();
@@ -933,6 +934,9 @@ const PropertyManagement = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Automation Jobs Monitor */}
+            <AutomationJobsMonitor />
 
             {/* Quick Actions */}
             <Card>

@@ -81,6 +81,39 @@ export type Database = {
           },
         ]
       }
+      automation_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          job_name: string
+          metadata: Json | null
+          started_at: string | null
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          job_name: string
+          metadata?: Json | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          job_name?: string
+          metadata?: Json | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           attachments: Json | null
@@ -441,6 +474,57 @@ export type Database = {
           },
           {
             foreignKeyName: "dividend_payments_tokenization_id_fkey"
+            columns: ["tokenization_id"]
+            isOneToOne: false
+            referencedRelation: "tokenizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dividend_schedules: {
+        Row: {
+          auto_distribute: boolean | null
+          created_at: string | null
+          frequency: string | null
+          id: string
+          last_distribution_date: string | null
+          next_distribution_date: string
+          property_id: string | null
+          tokenization_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_distribute?: boolean | null
+          created_at?: string | null
+          frequency?: string | null
+          id?: string
+          last_distribution_date?: string | null
+          next_distribution_date: string
+          property_id?: string | null
+          tokenization_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_distribute?: boolean | null
+          created_at?: string | null
+          frequency?: string | null
+          id?: string
+          last_distribution_date?: string | null
+          next_distribution_date?: string
+          property_id?: string | null
+          tokenization_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dividend_schedules_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dividend_schedules_tokenization_id_fkey"
             columns: ["tokenization_id"]
             isOneToOne: false
             referencedRelation: "tokenizations"
@@ -2843,6 +2927,10 @@ export type Database = {
           p_tokenization_id: string
           p_tokens_requested: number
         }
+        Returns: Json
+      }
+      sync_contract_balances: {
+        Args: Record<PropertyKey, never>
         Returns: Json
       }
       upsert_token_holdings: {
