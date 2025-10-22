@@ -1,5 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { Client, TopicCreateTransaction, PrivateKey } from 'npm:@hashgraph/sdk@^2.73.1';
+import { Client, TopicCreateTransaction, PrivateKey } from 'https://esm.sh/@hashgraph/sdk@2.73.2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
