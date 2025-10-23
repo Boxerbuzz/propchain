@@ -6,7 +6,7 @@ export const CurrencyToggle = () => {
   const { currency, setCurrency } = useCurrency();
 
   return (
-    <div className="flex items-center gap-1 bg-muted rounded-lg p-1 border border-border">
+    <div className="inline-flex items-center gap-1 bg-muted rounded-lg p-1 border border-border w-fit">
       <Button
         size="sm"
         variant={currency === "NGN" ? "default" : "ghost"}
