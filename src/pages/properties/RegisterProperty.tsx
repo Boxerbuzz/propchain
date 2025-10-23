@@ -94,12 +94,10 @@ const RegisterProperty = () => {
 
   const propertyTypes = ["residential", "commercial", "industrial", "land"];
 
-  // Load draft property ID from localStorage on mount
+  // Clear any previous draft on mount to start fresh
   useEffect(() => {
-    const draftId = localStorage.getItem('draft_property_id');
-    if (draftId) {
-      setPropertyId(draftId);
-    }
+    localStorage.removeItem('draft_property_id');
+    setPropertyId(null);
   }, []);
 
   const handleNext = async () => {
