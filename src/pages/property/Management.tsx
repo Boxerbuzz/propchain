@@ -207,7 +207,7 @@ const PropertyManagement = () => {
     const { action, propertyId } = confirmDialog;
 
     // Close dialog first to prevent overlay from blocking UI
-    setConfirmDialog({ ...confirmDialog, open: false });
+    setConfirmDialog((prev) => ({ ...prev, open: false }));
 
     // Wait for dialog animation to complete
     await new Promise(resolve => setTimeout(resolve, 200));
@@ -997,7 +997,9 @@ const PropertyManagement = () => {
       {/* Confirmation Dialog */}
       <AlertDialog
         open={confirmDialog.open}
-        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        onOpenChange={(open) =>
+          setConfirmDialog((prev) => ({ ...prev, open }))
+        }
       >
         <AlertDialogContent>
           <AlertDialogHeader>
