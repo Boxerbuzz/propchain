@@ -673,7 +673,7 @@ const TokenizeProperty = () => {
             </Button>
             <h1 className="text-3xl font-bold mb-2">Tokenize Property</h1>
             <p className="text-muted-foreground">
-              {property.title} • {property.location}
+              {property.title} • {(property.location as any)?.city}, {(property.location as any)?.state}
             </p>
           </div>
 
