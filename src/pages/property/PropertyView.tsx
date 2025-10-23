@@ -184,35 +184,6 @@ const PropertyView = () => {
                   className="w-full h-full object-cover rounded-lg"
                 />
               </AspectRatio>
-              {images.length > 1 && (
-                <div className="p-4">
-                  <div className="grid grid-cols-4 gap-2">
-                    {images.slice(1, 5).map((image, index) => (
-                      <AspectRatio key={image.id} ratio={1}>
-                        <img
-                          src={image.image_url}
-                          alt={`Property image ${index + 2}`}
-                          className="w-full h-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => {
-                            setSelectedImageIndex(index + 1);
-                            setIsImageDialogOpen(true);
-                          }}
-                        />
-                      </AspectRatio>
-                    ))}
-                  </div>
-                  {images.length > 5 && (
-                    <Button
-                      variant="outline"
-                      className="w-full mt-4"
-                      onClick={() => setIsImageDialogOpen(true)}
-                    >
-                      <Image className="w-4 h-4 mr-2" />
-                      View All {images.length} Images
-                    </Button>
-                  )}
-                </div>
-              )}
             </CardContent>
           </Card>
 
