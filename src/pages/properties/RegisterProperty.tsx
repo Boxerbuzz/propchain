@@ -45,6 +45,7 @@ const propertySchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   property_type: z.string().min(1, "Property type is required"),
+  property_subtype: z.string().optional(),
   address: z.string().min(5, "Address must be at least 5 characters"),
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),
@@ -56,6 +57,9 @@ const propertySchema = z.object({
     .number()
     .min(0, "Rental income cannot be negative")
     .optional(),
+  land_size: z.number().min(0).optional(),
+  built_up_area: z.number().min(0).optional(),
+  condition: z.string().optional(),
   bedrooms: z.number().min(0).optional(),
   bathrooms: z.number().min(0).optional(),
   year_built: z.number().min(1900).max(new Date().getFullYear()).optional(),
@@ -344,119 +348,229 @@ const RegisterProperty = () => {
     </div>
   );
 
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-4">
-          Property Valuation & Details
-        </h3>
-        <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="estimated_value"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Property Value</FormLabel>
-                <FormControl>
-                  <MoneyInput
-                    value={field.value || 0}
-                    onValueChange={field.onChange}
-                    currency="₦"
-                    placeholder="0"
-                    min={100000}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+  const renderStep3 = () => {
+    const propertyType = form.watch("property_type");
+    const isLand = propertyType === "land";
+    const isResidential = propertyType === "residential";
+    const isCommercial = propertyType === "commercial";
+    const isIndustrial = propertyType === "industrial";
 
-          <FormField
-            control={form.control}
-            name="rental_income_monthly"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Monthly Rental Income</FormLabel>
-                <FormControl>
-                  <MoneyInput
-                    value={field.value || 0}
-                    onValueChange={field.onChange}
-                    currency="₦"
-                    placeholder="0"
-                    min={0}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    const propertySubtypes = {
+      residential: ["Apartment", "House", "Villa", "Townhouse", "Duplex", "Penthouse"],
+      commercial: ["Office", "Retail", "Hotel", "Restaurant", "Shopping Complex", "Warehouse"],
+      industrial: ["Warehouse", "Factory", "Manufacturing Plant", "Storage Facility", "Distribution Center"],
+      land: ["Residential Plot", "Commercial Plot", "Agricultural Land", "Mixed Use"],
+    };
 
-          <div className={`grid gap-4 ${form.watch("property_type") === "residential" ? "md:grid-cols-3" : "md:grid-cols-1"}`}>
-            {form.watch("property_type") === "residential" && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="bedrooms"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bedrooms</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                          placeholder="0"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="bathrooms"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bathrooms</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                          placeholder="0"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            )}
-
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold mb-4">
+            Property Valuation & Details
+          </h3>
+          <div className="space-y-4">
             <FormField
               control={form.control}
-              name="year_built"
+              name="estimated_value"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Year Built</FormLabel>
+                  <FormLabel>Property Value</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      placeholder="2020"
+                    <MoneyInput
+                      value={field.value || 0}
+                      onValueChange={field.onChange}
+                      currency="₦"
+                      placeholder="0"
+                      min={100000}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {!isLand && (
+              <FormField
+                control={form.control}
+                name="rental_income_monthly"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Monthly Rental Income</FormLabel>
+                    <FormControl>
+                      <MoneyInput
+                        value={field.value || 0}
+                        onValueChange={field.onChange}
+                        currency="₦"
+                        placeholder="0"
+                        min={0}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="land_size"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Land Size (sqm)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        placeholder="e.g., 500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {!isLand && (
+                <FormField
+                  control={form.control}
+                  name="built_up_area"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Built-up Area (sqm)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          placeholder="e.g., 350"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
+            {propertyType && (
+              <FormField
+                control={form.control}
+                name="property_subtype"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Property Subtype</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select property subtype" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {propertySubtypes[propertyType as keyof typeof propertySubtypes]?.map((subtype) => (
+                          <SelectItem key={subtype} value={subtype.toLowerCase().replace(/\s+/g, "_")}>
+                            {subtype}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            <FormField
+              control={form.control}
+              name="condition"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Property Condition</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select condition" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="needs_renovation">Needs Renovation</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className={`grid gap-4 ${isResidential ? "md:grid-cols-3" : "md:grid-cols-1"}`}>
+              {isResidential && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="bedrooms"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bedrooms</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            placeholder="0"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="bathrooms"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bathrooms</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            placeholder="0"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              <FormField
+                control={form.control}
+                name="year_built"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{isLand ? "Year Acquired" : "Year Built"}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        placeholder="2020"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Fetch existing property images
   const { data: existingImages = [], refetch: refetchImages } = useQuery({
