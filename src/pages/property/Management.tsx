@@ -612,7 +612,13 @@ const PropertyManagement = () => {
                         <CardContent className="p-4 md:p-6">
                           <div className="flex flex-col md:flex-row gap-4">
                             <img
-                              src="/placeholder.svg"
+                              src={
+                                property.property_images?.find(
+                                  (img: any) => img.is_primary
+                                )?.image_url ||
+                                property.property_images?.[0]?.image_url ||
+                                "/placeholder.svg"
+                              }
                               alt={property.title}
                               className="w-full md:w-32 h-32 rounded-lg object-cover"
                             />
