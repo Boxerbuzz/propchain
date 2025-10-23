@@ -30,7 +30,8 @@ serve(async (req) => {
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { db: { schema: 'public' } }
     );
 
     // Check if user already has a Hedera account (check both users table and wallets table)
@@ -119,6 +120,8 @@ serve(async (req) => {
         p_name: `hedera_private_key_${accountResult.data.accountId}`,
         p_description: `Hedera private key for account ${accountResult.data.accountId}`
       });
+
+    console.log('Vault secret ID:', vaultSecret);
 
     if (vaultError) {
       console.error('Failed to store private key in Vault:', vaultError);

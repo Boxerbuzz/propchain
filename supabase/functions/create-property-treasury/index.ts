@@ -49,7 +49,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, { db: { schema: 'public' } });
 
     const { tokenization_id } = await req.json();
 
@@ -160,6 +160,8 @@ serve(async (req) => {
         p_description: `Treasury private key for property: ${tokenization.properties.title}`
       });
 
+    console.log('[CREATE-TREASURY] Vault secret ID:', vaultSecret);
+
     if (vaultError) {
       console.error("[CREATE-TREASURY] Vault error:", vaultError);
       throw new Error(`Failed to store private key in Vault: ${vaultError.message}`);
@@ -172,7 +174,7 @@ serve(async (req) => {
       .from("tokenizations")
       .update({
         treasury_account_id: treasuryAccountId.toString(),
-        treasury_account_private_key_vault_id: vaultSecret?.id,
+        treasury_account_private_key_vault_id: vaultSecret,
         treasury_balance_hbar: 5,
         treasury_balance_usdc: 0,
         treasury_balance_ngn: 0,
