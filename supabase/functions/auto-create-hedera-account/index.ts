@@ -33,7 +33,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Check if user already has a Hedera account
+    // Check if user already has a Hedera account (check both users table and wallets table)
     const { data: existingUser } = await supabaseClient
       .from('users')
       .select('hedera_account_id')
@@ -50,6 +50,27 @@ serve(async (req) => {
         status: 200,
       });
     }
+
+    // Double-check wallet table for more reliable check
+    const { data: existingWallet } = await supabaseClient
+      .from('wallets')
+      .select('hedera_account_id')
+      .eq('user_id', userId)
+      .eq('wallet_type', 'hedera')
+      .maybeSingle();
+
+    if (existingWallet?.hedera_account_id) {
+      return new Response(JSON.stringify({ 
+        success: true,
+        data: { accountId: existingWallet.hedera_account_id },
+        message: 'User already has a Hedera account'
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    let hederaAccountId: string | null = null;
 
     // Call create-hedera-account edge function
     const accountResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/create-hedera-account`, {
@@ -87,10 +108,14 @@ serve(async (req) => {
       });
     }
 
-    // Store private key in Vault
+    // Track account ID for cleanup if needed
+    hederaAccountId = accountResult.data.accountId;
+
+    // Store private key in Vault (FIXED: use .schema('vault').rpc instead of .rpc('vault.create_secret'))
     console.log('Storing private key in Vault for account:', accountResult.data.accountId);
     const { data: vaultSecret, error: vaultError } = await supabaseClient
-      .rpc('vault.create_secret', {
+      .schema('vault')
+      .rpc('create_secret', {
         secret: accountResult.data.privateKey,
         name: `hedera_private_key_${accountResult.data.accountId}`,
         description: `Hedera private key for account ${accountResult.data.accountId}`
@@ -98,6 +123,13 @@ serve(async (req) => {
 
     if (vaultError) {
       console.error('Failed to store private key in Vault:', vaultError);
+      // Log orphaned account for manual cleanup
+      await supabaseClient.from('activity_logs').insert({
+        user_id: userId,
+        activity_type: 'wallet_creation_error',
+        description: `Orphaned Hedera account created (Vault storage failed): ${hederaAccountId}`,
+        metadata: { account_id: hederaAccountId, error: vaultError.message }
+      });
       return new Response(JSON.stringify({ error: 'Failed to securely store wallet credentials' }), {
         status: 500,
         headers: corsHeaders,

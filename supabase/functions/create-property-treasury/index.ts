@@ -152,9 +152,10 @@ serve(async (req) => {
       console.log(`[CREATE-TREASURY] USDC token associated successfully`);
     }
 
-    // Store private key in Supabase Vault
+    // Store private key in Supabase Vault (FIXED: use .schema('vault').rpc instead of .rpc("vault.create_secret"))
     const { data: vaultSecret, error: vaultError } = await supabase
-      .rpc("vault.create_secret", {
+      .schema('vault')
+      .rpc('create_secret', {
         secret: treasuryPrivateKey.toString(),
         name: `treasury_${treasuryAccountId.toString()}`,
         description: `Treasury private key for property: ${tokenization.properties.title}`,
