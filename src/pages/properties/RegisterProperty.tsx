@@ -173,13 +173,11 @@ const RegisterProperty = () => {
   };
 
   const handleImagesUploaded = () => {
-    toast.success("Images uploaded successfully!");
-    setStep(5); // Move to documents step
+    // Upload complete - user can upload more or click Next to continue
   };
 
   const handleDocumentsUploaded = () => {
-    toast.success("Documents uploaded successfully!");
-    setStep(6); // Move to review step
+    // Upload complete - user can upload more or click Next to continue
   };
 
   const handleFinalSubmit = async () => {
