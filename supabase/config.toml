@@ -37,3 +37,5 @@ verify_jwt = false
 verify_jwt = true
 [functions.execute-treasury-withdrawal]
 verify_jwt = true
+[functions.poll-contract-events]
+verify_jwt = false
