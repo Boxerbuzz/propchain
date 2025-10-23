@@ -450,21 +450,14 @@ const Profile = () => {
                       </p>
                       <Button
                         size="sm"
-                        variant="outline"
-                        className="border-green-300 text-green-700 hover:bg-green-100"
+                        variant="default"
                         onClick={handleModificationRequest}
                         disabled={modificationRequested}
                       >
                         {modificationRequested ? (
-                          <>
-                            <MessageSquare className="w-4 h-4 mr-2" />
-                            Request Received
-                          </>
+                          <>Request Received</>
                         ) : (
-                          <>
-                            <MessageSquare className="w-4 h-4 mr-2" />
-                            Request Modification
-                          </>
+                          <>Request Modification</>
                         )}
                       </Button>
                     </div>
