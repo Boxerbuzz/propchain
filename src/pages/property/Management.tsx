@@ -206,6 +206,12 @@ const PropertyManagement = () => {
   const handleConfirmedAction = async () => {
     const { action, propertyId } = confirmDialog;
 
+    // Close dialog first to prevent overlay from blocking UI
+    setConfirmDialog({ ...confirmDialog, open: false });
+
+    // Wait for dialog animation to complete
+    await new Promise(resolve => setTimeout(resolve, 200));
+
     switch (action) {
       case "Approve":
         // Show immediate notification that verification is in progress
@@ -304,8 +310,6 @@ const PropertyManagement = () => {
         });
         break;
     }
-
-    setConfirmDialog({ ...confirmDialog, open: false });
   };
 
   const handlePropertyAction = async (action: string, propertyId: string) => {
