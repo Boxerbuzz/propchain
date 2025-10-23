@@ -39,6 +39,7 @@ import { toast } from "sonner";
 import { PropertyDocumentUpload } from "@/components/PropertyDocumentUpload";
 import { PropertyImageUpload } from "@/components/PropertyImageUpload";
 import MoneyInput from "@/components/ui/money-input";
+import { useQuery } from "@tanstack/react-query";
 
 const propertySchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -453,6 +454,16 @@ const RegisterProperty = () => {
     </div>
   );
 
+  // Fetch existing property images
+  const { data: existingImages = [], refetch: refetchImages } = useQuery({
+    queryKey: ["property-images", propertyId],
+    queryFn: async () => {
+      if (!propertyId) return [];
+      return await supabaseService.properties.getPropertyImages(propertyId);
+    },
+    enabled: !!propertyId,
+  });
+
   const renderStep4 = () => (
     <div className="space-y-6">
       <div className="text-center">
@@ -465,7 +476,11 @@ const RegisterProperty = () => {
         {propertyId && (
           <PropertyImageUpload
             propertyId={propertyId}
-            onUploadComplete={handleImagesUploaded}
+            existingImages={existingImages}
+            onUploadComplete={() => {
+              refetchImages();
+              handleImagesUploaded();
+            }}
           />
         )}
       </div>
