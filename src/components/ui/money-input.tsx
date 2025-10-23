@@ -60,18 +60,9 @@ const MoneyInput: React.FC<MoneyInputProps> = ({
     
     const numericValue = parseNumber(inputValue);
     
-    // Apply min/max constraints only if value exists
-    let constrainedValue = numericValue;
-    if (min !== undefined && constrainedValue < min && constrainedValue !== 0) {
-      constrainedValue = min;
-    }
-    if (max !== undefined && constrainedValue > max) {
-      constrainedValue = max;
-    }
-    
-    setDisplayValue(formatNumber(constrainedValue));
-    if (onChange) onChange(constrainedValue);
-    if (onValueChange) onValueChange(constrainedValue);
+    setDisplayValue(formatNumber(numericValue));
+    if (onChange) onChange(numericValue);
+    if (onValueChange) onValueChange(numericValue);
   };
 
   const handleBlur = () => {
