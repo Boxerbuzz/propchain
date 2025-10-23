@@ -111,14 +111,13 @@ serve(async (req) => {
     // Track account ID for cleanup if needed
     hederaAccountId = accountResult.data.accountId;
 
-    // Store private key in Vault (FIXED: use .schema('vault').rpc instead of .rpc('vault.create_secret'))
+    // Store private key in Vault using database function wrapper
     console.log('Storing private key in Vault for account:', accountResult.data.accountId);
     const { data: vaultSecret, error: vaultError } = await supabaseClient
-      .schema('vault')
-      .rpc('create_secret', {
-        secret: accountResult.data.privateKey,
-        name: `hedera_private_key_${accountResult.data.accountId}`,
-        description: `Hedera private key for account ${accountResult.data.accountId}`
+      .rpc('create_vault_secret', {
+        p_secret: accountResult.data.privateKey,
+        p_name: `hedera_private_key_${accountResult.data.accountId}`,
+        p_description: `Hedera private key for account ${accountResult.data.accountId}`
       });
 
     if (vaultError) {

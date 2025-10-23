@@ -3042,6 +3042,10 @@ export type Database = {
         }
         Returns: string
       }
+      create_vault_secret: {
+        Args: { p_description: string; p_name: string; p_secret: string }
+        Returns: string
+      }
       generate_transfer_documents: {
         Args: { p_transfer_id: string }
         Returns: Json
