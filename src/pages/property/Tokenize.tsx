@@ -261,6 +261,13 @@ const TokenizeProperty = () => {
     enabled: !!propertyId,
   });
 
+  // Check for existing tokenization requests
+  const { data: existingTokenizations, isLoading: tokenizationsLoading } = useQuery({
+    queryKey: ["tokenizations", propertyId],
+    queryFn: () => supabaseService.tokenizations.getByPropertyId(propertyId!),
+    enabled: !!propertyId,
+  });
+
   const form = useForm<TokenizationForm>({
     resolver: zodResolver(
       createTokenizationSchema(property?.estimated_value || 0)
@@ -577,7 +584,12 @@ const TokenizeProperty = () => {
     createTokenizationMutation.mutate(data);
   };
 
-  if (propertyLoading) {
+  // Check if there's a pending tokenization request
+  const pendingTokenization = existingTokenizations?.find(
+    (t) => t.status === "draft" || t.status === "upcoming" || t.status === "minting"
+  );
+
+  if (propertyLoading || tokenizationsLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -600,6 +612,158 @@ const TokenizeProperty = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Properties
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show pending tokenization status if there's an active request
+  if (pendingTokenization) {
+    const getStatusInfo = (status: string) => {
+      switch (status) {
+        case "draft":
+          return {
+            title: "Tokenization Request Submitted",
+            description: "Your tokenization request has been submitted and is under review.",
+            icon: <AlertTriangle className="h-8 w-8 text-blue-500" />,
+            color: "blue",
+            estimatedTime: "1-2 business days"
+          };
+        case "upcoming":
+          return {
+            title: "Tokenization Approved",
+            description: "Your tokenization has been approved and is being prepared for launch.",
+            icon: <TrendingUp className="h-8 w-8 text-green-500" />,
+            color: "green",
+            estimatedTime: "2-3 business days"
+          };
+        case "minting":
+          return {
+            title: "Creating Hedera Token",
+            description: "Your Hedera token is being created on the blockchain.",
+            icon: <Banknote className="h-8 w-8 text-purple-500" />,
+            color: "purple",
+            estimatedTime: "A few minutes"
+          };
+        default:
+          return {
+            title: "Tokenization In Progress",
+            description: "Your tokenization request is being processed.",
+            icon: <AlertTriangle className="h-8 w-8 text-yellow-500" />,
+            color: "yellow",
+            estimatedTime: "1-3 business days"
+          };
+      }
+    };
+
+    const statusInfo = getStatusInfo(pendingTokenization.status);
+
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/property/management")}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Properties
+            </Button>
+            <h1 className="text-3xl font-bold mb-2">Tokenize Property</h1>
+            <p className="text-muted-foreground">
+              {property.title} • {property.location}
+            </p>
+          </div>
+
+          {/* Pending Status Card */}
+          <Card className="border-2 border-dashed">
+            <CardContent className="p-8 text-center">
+              <div className="flex justify-center mb-6">
+                {statusInfo.icon}
+              </div>
+              
+              <h2 className="text-2xl font-bold mb-4">{statusInfo.title}</h2>
+              
+              <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
+                {statusInfo.description}
+              </p>
+
+              {/* Status Details */}
+              <div className="bg-muted/50 rounded-lg p-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <p className="font-semibold text-muted-foreground">Status</p>
+                    <Badge variant="outline" className="mt-1">
+                      {pendingTokenization.status.charAt(0).toUpperCase() + pendingTokenization.status.slice(1)}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-muted-foreground">Estimated Time</p>
+                    <p className="mt-1">{statusInfo.estimatedTime}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-muted-foreground">Submitted</p>
+                    <p className="mt-1">
+                      {new Date(pendingTokenization.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Token Details (if available) */}
+              {pendingTokenization.token_name && (
+                <div className="bg-muted/30 rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold mb-2">Token Details</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Token Name</p>
+                      <p className="font-medium">{pendingTokenization.token_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Token Symbol</p>
+                      <p className="font-medium">{pendingTokenization.token_symbol}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Total Supply</p>
+                      <p className="font-medium">{pendingTokenization.total_supply?.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Price per Token</p>
+                      <p className="font-medium">₦{pendingTokenization.price_per_token?.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/property/management")}
+                >
+                  <Building className="h-4 w-4 mr-2" />
+                  Back to Properties
+                </Button>
+                <Button
+                  onClick={() => window.location.reload()}
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Check Status
+                </Button>
+              </div>
+
+              {/* Info Alert */}
+              <Alert className="mt-6">
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  You'll receive an email notification when your tokenization is ready. 
+                  You can also check back here for updates.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
