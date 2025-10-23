@@ -27,7 +27,7 @@ import Review from "./pages/kyc/Review";
 import KYCStatus from "./pages/kyc/Status";
 import Dashboard from "./pages/Dashboard";
 import WalletSetup from "./pages/wallet/WalletSetup";
-import WalletDashboard from "./pages/wallet/Dashboard";
+import WalletDashboard from "./pages/account/dashboard";
 import WithdrawPage from "./pages/wallet/Withdraw";
 import WalletSettings from "./pages/wallet/Settings";
 import Account from "./pages/account/Account";

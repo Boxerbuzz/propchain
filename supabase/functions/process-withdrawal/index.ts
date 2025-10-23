@@ -130,7 +130,7 @@ serve(async (req) => {
           message: `Your withdrawal of ₦${withdrawal.amount_ngn.toLocaleString()} has been processed successfully.`,
           notification_type: 'withdrawal_completed',
           priority: 'normal',
-          action_url: '/wallet/dashboard',
+          action_url: '/account/dashboard',
         });
 
         console.log('Withdrawal processed successfully:', withdrawal_id);
@@ -164,7 +164,7 @@ serve(async (req) => {
         message: `Your withdrawal request for ₦${withdrawal.amount_ngn.toLocaleString()} failed. Please try again or contact support.`,
         notification_type: 'withdrawal_failed',
         priority: 'high',
-        action_url: '/wallet/dashboard',
+        action_url: '/account/dashboard',
       });
 
       throw processingError;

@@ -108,7 +108,7 @@ Transform the platform from a centralized HTS-based system to a hybrid architect
 
 - **src/pages/InvestmentFlow.tsx** - Add escrow status and contract transaction display
 - **src/pages/PortfolioDetail.tsx** - Show contract interactions and HashScan links
-- **src/pages/wallet/Dashboard.tsx** - Add escrow state to investment progress
+- **src/pages/account/dashboard.tsx** - Add escrow state to investment progress
 
 ### 4.3 Hooks to Update
 

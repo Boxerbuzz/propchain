@@ -89,7 +89,7 @@ export default function FundWalletModal({
             payment_type:
               selectedCurrency === "hbar" ? "hbar_funding" : "usdc_funding",
             currency_type: selectedCurrency,
-            redirect_url: `${window.location.origin}/wallet/dashboard`,
+            redirect_url: `${window.location.origin}/account/dashboard`,
           },
         }
       );

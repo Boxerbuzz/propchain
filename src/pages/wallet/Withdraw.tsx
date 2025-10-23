@@ -115,7 +115,7 @@ export default function WithdrawPage() {
       if (error) throw error;
 
       toast.success("Withdrawal request submitted successfully");
-      navigate("/wallet/dashboard");
+      navigate("/account/dashboard");
     } catch (error: any) {
       console.error("Withdrawal error:", error);
       toast.error(error.message || "Failed to submit withdrawal request");
@@ -130,7 +130,7 @@ export default function WithdrawPage() {
         <div className="mb-6">
           <Button
             variant="outline"
-            onClick={() => navigate("/wallet/dashboard")}
+            onClick={() => navigate("/account/dashboard")}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -433,7 +433,7 @@ export default function WithdrawPage() {
               type="button"
               variant="outline"
               className="flex-1 h-12"
-              onClick={() => navigate("/wallet/dashboard")}
+              onClick={() => navigate("/account/dashboard")}
               disabled={loading}
             >
               Cancel

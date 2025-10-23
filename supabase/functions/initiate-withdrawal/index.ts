@@ -137,7 +137,7 @@ serve(async (req) => {
       message: `Your withdrawal request for ₦${amount_ngn.toLocaleString()} has been created and is pending approval.`,
       notification_type: 'withdrawal_created',
       priority: 'normal',
-      action_url: '/wallet/dashboard',
+      action_url: '/account/dashboard',
     });
 
     console.log('Withdrawal request created:', withdrawal.id);

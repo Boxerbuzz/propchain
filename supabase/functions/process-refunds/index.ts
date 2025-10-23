@@ -121,7 +121,7 @@ serve(async (req) => {
           message: `Your investment of ₦${investment.amount_ngn.toLocaleString()} in ${investment.tokenization?.property?.title || 'property'} has been refunded to your wallet.`,
           notification_type: 'refund_processed',
           priority: 'high',
-          action_url: '/wallet/dashboard',
+          action_url: '/account/dashboard',
           action_data: {
             investment_id: investment.id,
             refund_amount: investment.amount_ngn,

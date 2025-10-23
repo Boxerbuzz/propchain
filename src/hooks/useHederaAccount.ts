@@ -45,7 +45,7 @@ export const useHederaAccount = () => {
       
       // Redirect to wallet dashboard after successful creation
       setTimeout(() => {
-        window.location.href = '/wallet/dashboard';
+        window.location.href = '/account/dashboard';
       }, 1500);
     },
     onError: (error: any) => {

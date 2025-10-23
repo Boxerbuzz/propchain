@@ -158,7 +158,7 @@ serve(async (req) => {
         notification_type: 'hedera_account_created',
         title: 'Blockchain Wallet Created',
         message: `Your Hedera account has been created successfully. Account ID: ${accountResult.data.accountId}`,
-        action_url: '/wallet/dashboard',
+        action_url: '/account/dashboard',
       });
 
     console.log(`Hedera account created for user ${userId}: ${accountResult.data.accountId}`);

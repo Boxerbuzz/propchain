@@ -65,7 +65,7 @@ serve(async (req) => {
       message: `Your withdrawal request for ₦${withdrawal.amount_ngn.toLocaleString()} has been cancelled.`,
       notification_type: 'withdrawal_cancelled',
       priority: 'normal',
-      action_url: '/wallet/dashboard',
+      action_url: '/account/dashboard',
     });
 
     console.log('Withdrawal cancelled:', withdrawal_id);

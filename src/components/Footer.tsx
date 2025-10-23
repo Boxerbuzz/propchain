@@ -15,7 +15,7 @@ export default function Footer() {
     { name: "Browse Properties", href: "/browse" },
     { name: "Dashboard", href: "/dashboard" },
     { name: "Portfolio", href: "/portfolio" },
-    { name: "Wallet", href: "/wallet/dashboard" },
+    { name: "Wallet", href: "/account/dashboard" },
   ];
 
   const companyLinks = [
