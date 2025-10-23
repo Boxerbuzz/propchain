@@ -38,6 +38,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { PropertyDocumentUpload } from "@/components/PropertyDocumentUpload";
 import { PropertyImageUpload } from "@/components/PropertyImageUpload";
+import MoneyInput from "@/components/ui/money-input";
 
 const propertySchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -316,13 +317,14 @@ const RegisterProperty = () => {
             name="estimated_value"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Property Value (₦)</FormLabel>
+                <FormLabel>Property Value</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                    placeholder="e.g., 500000000"
+                  <MoneyInput
+                    value={field.value || 0}
+                    onValueChange={field.onChange}
+                    currency="₦"
+                    placeholder="0"
+                    min={100000}
                   />
                 </FormControl>
                 <FormMessage />
@@ -335,13 +337,14 @@ const RegisterProperty = () => {
             name="rental_income_monthly"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Monthly Rental Income (₦)</FormLabel>
+                <FormLabel>Monthly Rental Income</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                    placeholder="e.g., 2500000"
+                  <MoneyInput
+                    value={field.value || 0}
+                    onValueChange={field.onChange}
+                    currency="₦"
+                    placeholder="0"
+                    min={0}
                   />
                 </FormControl>
                 <FormMessage />
