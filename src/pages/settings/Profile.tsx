@@ -20,7 +20,6 @@ import {
   Verified,
   Edit,
   Info,
-  MessageSquare,
   MessageCircle,
   FileText,
 } from "lucide-react";
