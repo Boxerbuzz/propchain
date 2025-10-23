@@ -319,10 +319,14 @@ export type Database = {
           distribution_period: string | null
           expiry_date: string | null
           failed_payments: number | null
+          gross_amount_ngn: number | null
           hcs_record_id: string | null
           id: string
+          included_rental_ids: Json | null
+          management_fee_amount: number | null
           payment_status: string | null
           per_token_amount: number
+          platform_fee_amount: number | null
           property_id: string | null
           snapshot_block_number: number | null
           successful_payments: number | null
@@ -344,10 +348,14 @@ export type Database = {
           distribution_period?: string | null
           expiry_date?: string | null
           failed_payments?: number | null
+          gross_amount_ngn?: number | null
           hcs_record_id?: string | null
           id?: string
+          included_rental_ids?: Json | null
+          management_fee_amount?: number | null
           payment_status?: string | null
           per_token_amount: number
+          platform_fee_amount?: number | null
           property_id?: string | null
           snapshot_block_number?: number | null
           successful_payments?: number | null
@@ -369,10 +377,14 @@ export type Database = {
           distribution_period?: string | null
           expiry_date?: string | null
           failed_payments?: number | null
+          gross_amount_ngn?: number | null
           hcs_record_id?: string | null
           id?: string
+          included_rental_ids?: Json | null
+          management_fee_amount?: number | null
           payment_status?: string | null
           per_token_amount?: number
+          platform_fee_amount?: number | null
           property_id?: string | null
           snapshot_block_number?: number | null
           successful_payments?: number | null

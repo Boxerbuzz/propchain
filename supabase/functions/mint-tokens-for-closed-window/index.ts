@@ -212,6 +212,48 @@ serve(async (req) => {
             },
           });
 
+        // Create dividend schedule based on tokenization frequency
+        console.log(`[MINT-TOKENS] 📅 Creating dividend schedule`);
+        const frequency = tokenization.dividend_frequency || 'monthly';
+        const mintedDate = new Date();
+
+        // Calculate next_distribution_date from minted_at
+        let nextDistributionDate: Date;
+        if (frequency === 'monthly') {
+          // End of next month from minted_at
+          nextDistributionDate = new Date(mintedDate.getFullYear(), mintedDate.getMonth() + 2, 0);
+        } else if (frequency === 'quarterly') {
+          // End of next quarter
+          const currentQuarter = Math.floor(mintedDate.getMonth() / 3);
+          const nextQuarter = currentQuarter + 1;
+          nextDistributionDate = new Date(mintedDate.getFullYear(), (nextQuarter + 1) * 3, 0);
+        } else {
+          // 'annually' - End of next year
+          nextDistributionDate = new Date(mintedDate.getFullYear() + 1, 11, 31);
+        }
+
+        const { error: scheduleError } = await supabaseClient
+          .from('dividend_schedules')
+          .upsert({
+            property_id: tokenization.property_id,
+            tokenization_id: tokenization.id,
+            frequency: frequency,
+            next_distribution_date: nextDistributionDate.toISOString().split('T')[0],
+            last_distribution_date: null,
+            auto_distribute: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'tokenization_id'
+          });
+
+        if (scheduleError) {
+          console.error(`[MINT-TOKENS] ⚠️ Failed to create dividend schedule:`, scheduleError);
+          // Non-critical, continue
+        } else {
+          console.log(`[MINT-TOKENS] ✅ Dividend schedule created - Next distribution: ${nextDistributionDate.toISOString().split('T')[0]}`);
+        }
+
         // Get associated chat room for this tokenization
         const { data: chatRoom } = await supabaseClient
           .from('chat_rooms')

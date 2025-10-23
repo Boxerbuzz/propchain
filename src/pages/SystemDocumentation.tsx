@@ -5,63 +5,96 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import FlowDiagram from "@/components/docs/FlowDiagram";
 import TechStack from "@/components/docs/TechStack";
 import DatabaseSchema from "@/components/docs/DatabaseSchema";
-import { FileText, Code, Database, Shield, ArrowLeft } from "lucide-react";
+import { FileText, Code, Database, Shield, ArrowLeft, Menu, User, Monitor } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const SystemDocumentation = () => {
   const [activeSection, setActiveSection] = useState("overview");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
     setActiveSection(id);
+    setMobileMenuOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const menuItems = [
+    { id: "overview", label: "Overview", icon: FileText },
+    { id: "property-registration", label: "Property Registration", icon: FileText },
+    { id: "tokenization", label: "Tokenization", icon: Code },
+    { id: "investment", label: "Investment Flow", icon: Database },
+    { id: "events", label: "Property Events", icon: FileText },
+    { id: "dividends", label: "Dividends", icon: Database },
+    { id: "governance", label: "Governance", icon: Shield },
+    { id: "multisig", label: "MultiSig Treasury", icon: Shield },
+    { id: "verification", label: "Document Verification", icon: FileText },
+    { id: "database", label: "Database Schema", icon: Database },
+    { id: "tech-stack", label: "Tech Stack", icon: Code },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <Link to="/settings/profile">
               <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Profile
+                <ArrowLeft className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Back to Profile</span>
               </Button>
             </Link>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-foreground">System Documentation</h1>
-              <p className="text-sm text-muted-foreground">Complete guide to PropChain platform architecture</p>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold text-foreground truncate">System Documentation</h1>
+              <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">Complete guide to PropChain platform architecture</p>
             </div>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="lg:hidden">
+                <Button variant="outline" size="sm">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72">
+                <SheetHeader>
+                  <SheetTitle>Contents</SheetTitle>
+                </SheetHeader>
+                <ScrollArea className="h-[calc(100vh-80px)] mt-4">
+                  <div className="space-y-1">
+                    {menuItems.map((item) => (
+                      <Button
+                        key={item.id}
+                        variant={activeSection === item.id ? "default" : "ghost"}
+                        className="w-full justify-start text-left"
+                        size="sm"
+                        onClick={() => scrollToSection(item.id)}
+                      >
+                        <item.icon className="h-4 w-4 mr-2" />
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Table of Contents - Sidebar */}
-          <Card className="lg:col-span-1 h-fit sticky top-24">
+      <div className="container mx-auto px-4 py-4 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8">
+          {/* Table of Contents - Sidebar (Desktop Only) */}
+          <Card className="hidden lg:block lg:col-span-1 h-fit sticky top-24">
             <CardHeader>
               <CardTitle className="text-lg">Contents</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="h-[calc(100vh-200px)]">
                 <div className="space-y-1 p-4">
-                  {[
-                    { id: "overview", label: "Overview", icon: FileText },
-                    { id: "property-registration", label: "Property Registration", icon: FileText },
-                    { id: "tokenization", label: "Tokenization", icon: Code },
-                    { id: "investment", label: "Investment Flow", icon: Database },
-                    { id: "events", label: "Property Events", icon: FileText },
-                    { id: "dividends", label: "Dividends", icon: Database },
-                    { id: "governance", label: "Governance", icon: Shield },
-                    { id: "multisig", label: "MultiSig Treasury", icon: Shield },
-                    { id: "verification", label: "Document Verification", icon: FileText },
-                    { id: "database", label: "Database Schema", icon: Database },
-                    { id: "tech-stack", label: "Tech Stack", icon: Code },
-                  ].map((item) => (
+                  {menuItems.map((item) => (
                     <Button
                       key={item.id}
                       variant={activeSection === item.id ? "default" : "ghost"}
@@ -79,7 +112,7 @@ const SystemDocumentation = () => {
           </Card>
 
           {/* Main Content */}
-          <div className="lg:col-span-3 space-y-8">
+          <div className="lg:col-span-3 space-y-6 md:space-y-8">
             {/* Overview Section */}
             <section id="overview">
               <Card>
@@ -91,9 +124,15 @@ const SystemDocumentation = () => {
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="user" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="user">User Perspective</TabsTrigger>
-                      <TabsTrigger value="technical">Technical Perspective</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-2 h-auto">
+                      <TabsTrigger value="user" className="text-xs md:text-sm gap-2">
+                        <User className="h-4 w-4" />
+                        User Perspective
+                      </TabsTrigger>
+                      <TabsTrigger value="technical" className="text-xs md:text-sm gap-2">
+                        <Monitor className="h-4 w-4" />
+                        Technical Perspective
+                      </TabsTrigger>
                     </TabsList>
                     <TabsContent value="user" className="space-y-4 pt-4">
                       <p className="text-muted-foreground">
@@ -155,18 +194,18 @@ const SystemDocumentation = () => {
                 title="1. Property Registration & Verification"
                 description="How property owners submit their properties for tokenization"
                 mermaidCode={`graph TD
-    A[👤 Owner: Fill Property Form] --> B[📤 Upload Documents]
-    B --> C[🖼️ Upload Property Images]
-    C --> D[✅ Submit for Review]
-    D --> E{🔐 HCS Topic Creation}
-    E --> F[📂 Upload Documents to HFS]
-    F --> G[🔐 Calculate SHA-256 Hash]
-    G --> H[⛓️ Submit Metadata to HCS]
-    H --> I[💾 Store in Database]
-    I --> J{👨‍💼 Admin Review}
-    J -->|Approved| K[✅ Property Status: Approved]
-    J -->|Rejected| L[❌ Property Status: Rejected]
-    K --> M[📋 Property Listed - Ready for Tokenization]
+    A[Owner: Fill Property Form] --> B[Upload Documents]
+    B --> C[Upload Property Images]
+    C --> D[Submit for Review]
+    D --> E{HCS Topic Creation}
+    E --> F[Upload Documents to HFS]
+    F --> G[Calculate SHA-256 Hash]
+    G --> H[Submit Metadata to HCS]
+    H --> I[Store in Database]
+    I --> J{Admin Review}
+    J -->|Approved| K[Property Status: Approved]
+    J -->|Rejected| L[Property Status: Rejected]
+    K --> M[Property Listed - Ready for Tokenization]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style M fill:#10b981,stroke:#059669,color:#fff
@@ -206,24 +245,24 @@ const SystemDocumentation = () => {
                 title="2. Tokenization Setup"
                 description="How properties are converted into blockchain tokens"
                 mermaidCode={`graph TD
-    A[👤 Owner: Click Tokenize Property] --> B{💼 Choose Tokenization Type}
-    B -->|Equity| C[🏢 Equity: Ownership Shares]
-    B -->|Debt| D[💰 Debt: Fixed Returns]
-    B -->|Revenue| E[📈 Revenue: Profit Sharing]
-    C --> F[⚙️ Configure Token Parameters]
+    A[Owner: Click Tokenize Property] --> B{Choose Tokenization Type}
+    B -->|Equity| C[Equity: Ownership Shares]
+    B -->|Debt| D[Debt: Fixed Returns]
+    B -->|Revenue| E[Revenue: Profit Sharing]
+    C --> F[Configure Token Parameters]
     D --> F
     E --> F
-    F --> G[💵 Define Use of Funds]
-    G --> H[📜 Accept Legal Terms]
-    H --> I[✅ Submit for Approval]
-    I --> J{👨‍💼 Admin Review}
-    J -->|Approved| K[🪙 Create Hedera Token HTS]
-    J -->|Rejected| Z[❌ Tokenization Rejected]
-    K --> L[🔐 Deploy MultiSig Treasury Contract]
-    L --> M[💼 Create Property Treasury Wallet]
-    M --> N[🔗 Associate USDC Token]
-    N --> O[✅ Investment Window Opens]
-    O --> P[📱 Notify Investors]
+    F --> G[Define Use of Funds]
+    G --> H[Accept Legal Terms]
+    H --> I[Submit for Approval]
+    I --> J{Admin Review}
+    J -->|Approved| K[Create Hedera Token HTS]
+    J -->|Rejected| Z[Tokenization Rejected]
+    K --> L[Deploy MultiSig Treasury Contract]
+    L --> M[Create Property Treasury Wallet]
+    M --> N[Associate USDC Token]
+    N --> O[Investment Window Opens]
+    O --> P[Notify Investors]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style K fill:#3b82f6,stroke:#2563eb,color:#fff
@@ -269,29 +308,29 @@ const SystemDocumentation = () => {
                 title="3. Investment Flow"
                 description="Complete journey from browsing to token ownership"
                 mermaidCode={`graph TD
-    A[👤 Investor: Browse Properties] --> B[🔍 View Property Details]
-    B --> C[💰 Click Invest]
-    C --> D{✅ KYC Verified?}
-    D -->|No| E[🔐 Complete KYC Process]
-    E --> F[📋 Return to Investment]
+    A[Investor: Browse Properties] --> B[View Property Details]
+    B --> C[Click Invest]
+    C --> D{KYC Verified?}
+    D -->|No| E[Complete KYC Process]
+    E --> F[Return to Investment]
     D -->|Yes| F
-    F --> G[💵 Enter Investment Amount]
-    G --> H{💳 Choose Payment Method}
-    H -->|Paystack| I[💳 Pay with NGN]
-    H -->|Wallet| J[💼 Pay with HBAR/USDC]
-    I --> K[🔄 Paystack Redirect]
-    K --> L[✅ Payment Confirmed]
+    F --> G[Enter Investment Amount]
+    G --> H{Choose Payment Method}
+    H -->|Paystack| I[Pay with NGN]
+    H -->|Wallet| J[Pay with HBAR/USDC]
+    I --> K[Paystack Redirect]
+    K --> L[Payment Confirmed]
     J --> L
-    L --> M[🎫 Tokens Reserved]
-    M --> N{⏰ Investment Window Closed?}
-    N -->|Yes| O[🪙 Mint Tokens to Treasury]
-    N -->|No| P[⏳ Wait for Window Close]
+    L --> M[Tokens Reserved]
+    M --> N{Investment Window Closed?}
+    N -->|Yes| O[Mint Tokens to Treasury]
+    N -->|No| P[Wait for Window Close]
     P --> O
-    O --> Q[📤 Distribute Tokens to KYC Users]
-    Q --> R[📄 Generate Investment Documents]
-    R --> S[🔗 Submit to HCS]
-    S --> T[✅ Tokens in Investor Wallet]
-    T --> U[📧 Email Confirmation + Certificate]
+    O --> Q[Distribute Tokens to KYC Users]
+    Q --> R[Generate Investment Documents]
+    R --> S[Submit to HCS]
+    S --> T[Tokens in Investor Wallet]
+    T --> U[Email Confirmation + Certificate]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style L fill:#3b82f6,stroke:#2563eb,color:#fff
@@ -352,25 +391,25 @@ const SystemDocumentation = () => {
                 title="4. Property Events"
                 description="Recording rental, inspection, maintenance, and purchase events on blockchain"
                 mermaidCode={`graph TD
-    A[👤 Owner: Go to Event Simulator] --> B{📋 Select Event Type}
-    B -->|Rental| C[🏠 Rental Event Form]
-    B -->|Inspection| D[🔍 Inspection Event Form]
-    B -->|Maintenance| E[🔧 Maintenance Event Form]
-    B -->|Purchase| F[🏡 Purchase Event Form]
-    C --> G[📝 Fill Event Details]
+    A[Owner: Go to Event Simulator] --> B{Select Event Type}
+    B -->|Rental| C[Rental Event Form]
+    B -->|Inspection| D[Inspection Event Form]
+    B -->|Maintenance| E[Maintenance Event Form]
+    B -->|Purchase| F[Purchase Event Form]
+    C --> G[Fill Event Details]
     D --> G
     E --> G
     F --> G
-    G --> H[📸 Upload Event Photos]
-    H --> I[✅ Submit Event]
-    I --> J[💾 Create Event Record in DB]
-    J --> K[⛓️ Submit to HCS Topic]
-    K --> L[💬 Notify Investors in Chat]
-    L --> M[📊 Update Activity Logs]
+    G --> H[Upload Event Photos]
+    H --> I[Submit Event]
+    I --> J[Create Event Record in DB]
+    J --> K[Submit to HCS Topic]
+    K --> L[Notify Investors in Chat]
+    L --> M[Update Activity Logs]
     M --> N{Is Rental Event?}
-    N -->|Yes| O[💰 Auto-Create Dividend Distribution]
-    N -->|No| P[✅ Event Recorded]
-    O --> Q[🔄 Process Rental Dividend]
+    N -->|Yes| O[Auto-Create Dividend Distribution]
+    N -->|No| P[Event Recorded]
+    O --> Q[Process Rental Dividend]
     Q --> P
     
     style A fill:#10b981,stroke:#059669,color:#fff
@@ -419,66 +458,81 @@ const SystemDocumentation = () => {
             <section id="dividends">
               <FlowDiagram
                 title="5. Dividend Distribution"
-                description="How investors receive returns from their investments"
+                description="Automated scheduled distribution of rental income to token holders"
                 mermaidCode={`graph TD
-    A[👤 Owner: Create Dividend Distribution] --> B[💵 Set Amount Per Token]
-    B --> C[📅 Set Distribution Date]
-    C --> D[✅ Submit Distribution]
-    D --> E[💾 Create Distribution Record]
-    E --> F{📜 Smart Contract Enabled?}
-    F -->|Yes| G[🔗 Register on DividendDistributor.sol]
-    F -->|No| H[🔍 Calculate Recipients]
-    G --> H
-    H --> I[👥 Query Token Holders KYC-Verified]
-    I --> J[💰 Calculate: amount × tokens_held]
-    J --> K[💾 Create Payment Records]
-    K --> L{⚙️ Distribution Method}
-    L -->|Manual Claim| M[⏳ Wait for User Claim]
-    L -->|Auto-Distribute| N[💸 Transfer Funds via Hedera]
-    M --> O[👤 User: Click Claim Button]
-    O --> N
-    N --> P[✅ Update Payment Status: Completed]
-    P --> Q[📧 Send Notification]
-    Q --> R[✅ Dividend Received in Wallet]
+    A[Tokens Minted: minted_at timestamp] --> B[Create Dividend Schedule]
+    B --> C[Set frequency: monthly/quarterly/annually]
+    C --> D[Calculate next_distribution_date from minted_at]
+    D --> E[Rental Income Accumulates]
+    E --> F{Schedule Due?}
+    F -->|No| E
+    F -->|Yes| G[process-scheduled-dividends runs]
+    G --> H[Query confirmed rentals since last distribution]
+    H --> I[Aggregate total rental income]
+    I --> J[Calculate fees: platform_fee + management_fee]
+    J --> K[Calculate distributable = gross - fees]
+    K --> L[Query token holders balance > 0]
+    L --> M[Calculate per_token_amount]
+    M --> N[Create single distribution record]
+    N --> O[Create dividend_payments for each holder]
+    O --> P{Smart Contract Enabled?}
+    P -->|Yes| Q[Register on DividendDistributor.sol]
+    P -->|No| R[Transfer funds to holders]
+    Q --> R
+    R --> S[Update rentals: distribution_status = 'completed']
+    S --> T[Update schedule: next_distribution_date]
+    T --> U[Send notifications to holders]
+    U --> V[Funds deposited to wallets]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style G fill:#8b5cf6,stroke:#7c3aed,color:#fff
-    style R fill:#10b981,stroke:#059669,color:#fff`}
+    style V fill:#10b981,stroke:#059669,color:#fff`}
                 userPerspective={
                   <div className="space-y-2 text-sm">
-                    <p><strong>Step 1:</strong> Owner creates dividend distribution</p>
-                    <p><strong>Step 2:</strong> Sets amount per token (e.g., ₦100 per token)</p>
-                    <p><strong>Step 3:</strong> System calculates total distribution</p>
-                    <p><strong>Step 4:</strong> Distribution is created (pending status)</p>
-                    <p><strong>Step 5:</strong> Investors receive notification</p>
-                    <p><strong>Step 6:</strong> Investors click "Claim" button or auto-distributed</p>
-                    <p><strong>Step 7:</strong> Funds transferred to investor's wallet</p>
-                    <p><strong>Step 8:</strong> 10% WHT (Withholding Tax) is automatically deducted</p>
+                    <p><strong>Step 1:</strong> Dividend schedule created when tokens are minted</p>
+                    <p><strong>Step 2:</strong> Frequency set during tokenization (monthly/quarterly/annually)</p>
+                    <p><strong>Step 3:</strong> Rental income accumulates between distribution dates</p>
+                    <p><strong>Step 4:</strong> On schedule date, system automatically aggregates all confirmed rentals</p>
+                    <p><strong>Step 5:</strong> Platform fee (1%) and management fee (2.5%) are deducted</p>
+                    <p><strong>Step 6:</strong> Remaining amount distributed proportionally to token holders</p>
+                    <p><strong>Step 7:</strong> Investors receive notification of dividend payment</p>
+                    <p><strong>Step 8:</strong> Funds automatically deposited to investor wallets</p>
+                    <p><strong>Note:</strong> No manual distribution - fully automated on schedule</p>
                   </div>
                 }
                 technicalPerspective={
                   <div className="space-y-2 text-sm font-mono">
-                    <p><strong>Component:</strong> <code>DividendDistributionModal.tsx</code></p>
-                    <p><strong>Edge Function:</strong> <code>create-dividend-distribution</code></p>
-                    <p className="ml-4">→ INSERT: <code>dividend_distributions</code> table</p>
-                    <p className="ml-4">→ payment_status: pending</p>
+                    <p><strong>Schedule Creation:</strong> <code>mint-tokens-for-closed-window</code></p>
+                    <p className="ml-4">→ After: <code>minted_at</code> timestamp set</p>
+                    <p className="ml-4">→ INSERT: <code>dividend_schedules</code></p>
+                    <p className="ml-4">→ frequency: from <code>tokenization.dividend_frequency</code></p>
+                    <p className="ml-4">→ next_distribution_date: calculated from <code>minted_at</code></p>
+                    <p><strong>Scheduled Job:</strong> <code>process-scheduled-dividends</code></p>
+                    <p className="ml-4">→ Runs daily via cron</p>
+                    <p className="ml-4">→ Query: schedules WHERE next_distribution_date {'<'}= today</p>
+                    <p><strong>Rental Aggregation:</strong></p>
+                    <p className="ml-4">→ Query: <code>property_rentals</code></p>
+                    <p className="ml-4">→ WHERE: payment_status = 'confirmed'</p>
+                    <p className="ml-4">→ AND: distribution_status IN (null, 'pending')</p>
+                    <p className="ml-4">→ AND: start_date BETWEEN last_distribution_date AND next_distribution_date</p>
+                    <p className="ml-4">→ SUM: total rental income</p>
+                    <p><strong>Fee Calculation:</strong></p>
+                    <p className="ml-4">→ platform_fee_amount = gross × (platform_fee_percentage / 100)</p>
+                    <p className="ml-4">→ management_fee_amount = gross × (management_fee_percentage / 100)</p>
+                    <p className="ml-4">→ distributable = gross - platform_fee - management_fee</p>
+                    <p><strong>Distribution Record:</strong></p>
+                    <p className="ml-4">→ INSERT: <code>dividend_distributions</code></p>
+                    <p className="ml-4">→ included_rental_ids: JSON array of aggregated rentals</p>
+                    <p className="ml-4">→ gross_amount_ngn, platform_fee_amount, management_fee_amount</p>
+                    <p className="ml-4">→ per_token_amount: distributable / total_tokens</p>
+                    <p><strong>Payment Processing:</strong></p>
+                    <p className="ml-4">→ INSERT: <code>dividend_payments</code> for each holder</p>
+                    <p className="ml-4">→ Call: <code>distribute-dividends</code> edge function</p>
+                    <p className="ml-4">→ UPDATE: <code>property_rentals</code> distribution_status</p>
+                    <p className="ml-4">→ UPDATE: <code>dividend_schedules</code> dates</p>
                     <p><strong>Smart Contract (Optional):</strong></p>
-                    <p className="ml-4">→ <code>contractService.createDistributionOnChain()</code></p>
                     <p className="ml-4">→ <code>DividendDistributor.sol</code></p>
                     <p className="ml-4">→ Returns: contract_distribution_id, tx_hash</p>
-                    <p><strong>Recipients Calculation:</strong></p>
-                    <p className="ml-4">→ Query: <code>token_holdings</code> WHERE balance {'>'} 0</p>
-                    <p className="ml-4">→ Filter: Only KYC-verified users</p>
-                    <p className="ml-4">→ Calculate: per_token_amount × tokens_held</p>
-                    <p><strong>Payment Records:</strong></p>
-                    <p className="ml-4">→ INSERT: <code>dividend_payments</code> for each holder</p>
-                    <p className="ml-4">→ Calculate: tax_withheld (10% WHT)</p>
-                    <p className="ml-4">→ net_amount = amount - tax</p>
-                    <p><strong>Claiming:</strong></p>
-                    <p className="ml-4">→ <code>claim-dividend</code> edge function</p>
-                    <p className="ml-4">→ Verify: user owns tokens, payment not claimed</p>
-                    <p className="ml-4">→ Hedera: <code>TransferTransaction</code></p>
-                    <p className="ml-4">→ UPDATE: payment_status: completed</p>
                   </div>
                 }
               />
@@ -490,28 +544,28 @@ const SystemDocumentation = () => {
                 title="6. Governance & Voting"
                 description="Token-weighted voting for property decisions"
                 mermaidCode={`graph TD
-    A[👤 Token Holder: Create Proposal] --> B[📋 Select Proposal Type]
-    B --> C[📝 Fill Proposal Details]
-    C --> D[💰 Specify Required Funds]
-    D --> E[📅 Set Voting Period]
-    E --> F[✅ Submit Proposal]
-    F --> G[🔗 Register on GovernanceExecutor.sol]
-    G --> H[📢 Notify All Token Holders]
-    H --> I{🗳️ Voting Process}
-    I --> J[👥 Token Holders Vote]
-    J --> K[💪 Voting Weight = Token Balance]
-    K --> L{⏰ Voting Period Ended?}
+    A[Token Holder: Create Proposal] --> B[Select Proposal Type]
+    B --> C[Fill Proposal Details]
+    C --> D[Specify Required Funds]
+    D --> E[Set Voting Period]
+    E --> F[Submit Proposal]
+    F --> G[Register on GovernanceExecutor.sol]
+    G --> H[Notify All Token Holders]
+    H --> I{Voting Process}
+    I --> J[Token Holders Vote]
+    J --> K[Voting Weight = Token Balance]
+    K --> L{Voting Period Ended?}
     L -->|No| J
-    L -->|Yes| M{📊 Check Results}
-    M --> N{✅ Quorum Met? 50%+}
-    N -->|No| O[❌ Proposal Rejected]
-    N -->|Yes| P{✅ Approval Met? 60%+}
+    L -->|Yes| M{Check Results}
+    M --> N{Quorum Met? 50%+}
+    N -->|No| O[Proposal Rejected]
+    N -->|Yes| P{Approval Met? 60%+}
     P -->|No| O
-    P -->|Yes| Q[✅ Proposal Approved]
-    Q --> R[🔒 Lock Funds in Contract]
-    R --> S[⚙️ Execute Action]
-    S --> T[💸 Release Funds to Recipient]
-    T --> U[📝 Update Execution Status]
+    P -->|Yes| Q[Proposal Approved]
+    Q --> R[Lock Funds in Contract]
+    R --> S[Execute Action]
+    S --> T[Release Funds to Recipient]
+    T --> U[Update Execution Status]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style G fill:#8b5cf6,stroke:#7c3aed,color:#fff
@@ -567,32 +621,32 @@ const SystemDocumentation = () => {
                 title="7. MultiSig Treasury Withdrawal"
                 description="Secure multi-signature approval for treasury withdrawals"
                 mermaidCode={`graph TD
-    A[👤 Property Owner: Submit Withdrawal] --> B[💵 Enter Amount & Reason]
-    B --> C[✅ Submit Request]
-    C --> D{🔐 Verify: Is User a Signer?}
-    D -->|No| E[❌ Unauthorized]
-    D -->|Yes| F[💾 Create Transaction Record]
-    F --> G[🔗 Submit to MultiSigTreasury.sol]
-    G --> H[📧 Notify All Signers]
-    H --> I{✅ First Signer Approval}
-    I --> J[👨‍💼 Signer 1 Reviews]
-    J --> K{✅ Approve or Reject?}
-    K -->|Reject| L[❌ Request Cancelled]
-    K -->|Approve| M[🔗 Call approveWithdrawal]
-    M --> N[📊 Update Approvers List]
-    N --> O{🔢 Check Threshold: 2-of-2}
-    O -->|Not Met| P[⏳ Wait for Second Approval]
-    P --> Q{✅ Second Signer Approval}
-    Q --> R[👨‍💼 Signer 2 Reviews]
-    R --> S{✅ Approve?}
+    A[Property Owner: Submit Withdrawal] --> B[Enter Amount & Reason]
+    B --> C[Submit Request]
+    C --> D{Verify: Is User a Signer?}
+    D -->|No| E[Unauthorized]
+    D -->|Yes| F[Create Transaction Record]
+    F --> G[Submit to MultiSigTreasury.sol]
+    G --> H[Notify All Signers]
+    H --> I{First Signer Approval}
+    I --> J[Signer 1 Reviews]
+    J --> K{Approve or Reject?}
+    K -->|Reject| L[Request Cancelled]
+    K -->|Approve| M[Call approveWithdrawal]
+    M --> N[Update Approvers List]
+    N --> O{Check Threshold: 2-of-2}
+    O -->|Not Met| P[Wait for Second Approval]
+    P --> Q{Second Signer Approval}
+    Q --> R[Signer 2 Reviews]
+    R --> S{Approve?}
     S -->|No| L
-    S -->|Yes| T[🔗 Call approveWithdrawal]
-    T --> U[✅ Threshold Met: 2/2 Approvals]
-    U --> V[⚙️ Auto-Execute Withdrawal]
-    V --> W[🔗 executeWithdrawal on Contract]
-    W --> X[💸 Transfer Funds to Recipient]
-    X --> Y[✅ Status: Completed]
-    Y --> Z[📝 Create Activity Logs]
+    S -->|Yes| T[Call approveWithdrawal]
+    T --> U[Threshold Met: 2/2 Approvals]
+    U --> V[Auto-Execute Withdrawal]
+    V --> W[executeWithdrawal on Contract]
+    W --> X[Transfer Funds to Recipient]
+    X --> Y[Status: Completed]
+    Y --> Z[Create Activity Logs]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style G fill:#8b5cf6,stroke:#7c3aed,color:#fff

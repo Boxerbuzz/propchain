@@ -19,19 +19,34 @@ import {
   Monitor,
   MapPin,
   Globe,
-  DollarSign
+  DollarSign,
+  Check,
+  ChevronsUpDown
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/context/CurrencyContext";
+import { CurrencyToggle } from "@/components/CurrencyToggle";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const Security = () => {
   const { toast } = useToast();
-  const { currency, setCurrency } = useCurrency();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
   const [loginAlerts, setLoginAlerts] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [languagePopoverOpen, setLanguagePopoverOpen] = useState(false);
+
+  // Language options - easily extendable
+  const languages = [
+    { code: "en", label: "English", flag: "🇬🇧", enabled: true },
+    { code: "yo", label: "Yoruba", flag: "🇳🇬", enabled: false },
+    { code: "ha", label: "Hausa", flag: "🇳🇬", enabled: false },
+    { code: "ig", label: "Igbo", flag: "🇳🇬", enabled: false },
+    // Easy to add more languages here
+  ];
   
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -212,6 +227,95 @@ const Security = () => {
                     <p className="font-medium">{securityStatus.lastLogin}</p>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Preferences - Moved to top for better accessibility */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Preferences
+              </CardTitle>
+              <CardDescription>
+                Manage your display and regional settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Currency Selection */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  <DollarSign className="h-4 w-4" />
+                  Currency
+                </Label>
+                <CurrencyToggle />
+                <p className="text-xs text-muted-foreground">
+                  Select your preferred currency for displaying prices and balances
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* Language Selection */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  <Globe className="h-4 w-4" />
+                  Language
+                </Label>
+                <Popover open={languagePopoverOpen} onOpenChange={setLanguagePopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={languagePopoverOpen}
+                      className="w-full justify-between"
+                    >
+                      {selectedLanguage
+                        ? languages.find((lang) => lang.code === selectedLanguage)?.flag + " " +
+                          languages.find((lang) => lang.code === selectedLanguage)?.label
+                        : "Select language..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search language..." />
+                      <CommandEmpty>No language found.</CommandEmpty>
+                      <CommandGroup className="max-h-64 overflow-auto">
+                        {languages.map((language) => (
+                          <CommandItem
+                            key={language.code}
+                            value={language.code}
+                            disabled={!language.enabled}
+                            onSelect={(currentValue) => {
+                              if (language.enabled) {
+                                setSelectedLanguage(currentValue);
+                                setLanguagePopoverOpen(false);
+                                toast({
+                                  title: "Language Updated",
+                                  description: `Display language set to ${language.label}`,
+                                });
+                              }
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedLanguage === language.code ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {language.flag} {language.label}
+                            {!language.enabled && " (Coming Soon)"}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <p className="text-xs text-muted-foreground">
+                  Choose your preferred language for the interface
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -437,119 +541,6 @@ const Security = () => {
                     </Badge>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Preferences */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
-                Preferences
-              </CardTitle>
-              <CardDescription>
-                Manage your display and regional settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Currency Selection */}
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Currency
-                </Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant={currency === "NGN" ? "default" : "outline"}
-                    onClick={() => setCurrency("NGN")}
-                    className="justify-start"
-                  >
-                    <img src="/ngn.svg" alt="NGN" className="w-5 h-5 mr-2" />
-                    NGN (₦)
-                  </Button>
-                  <Button
-                    variant={currency === "USD" ? "default" : "outline"}
-                    onClick={() => setCurrency("USD")}
-                    className="justify-start"
-                  >
-                    <img src="/usd.svg" alt="USD" className="w-5 h-5 mr-2" />
-                    USD ($)
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Select your preferred currency for displaying prices and balances
-                </p>
-              </div>
-
-              <Separator />
-
-              {/* Language Selection */}
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
-                  Language
-                </Label>
-                <div className="grid grid-cols-1 gap-3">
-                  <Button
-                    variant={selectedLanguage === "en" ? "default" : "outline"}
-                    onClick={() => {
-                      setSelectedLanguage("en");
-                      toast({
-                        title: "Language Updated",
-                        description: "Display language set to English",
-                      });
-                    }}
-                    className="justify-start"
-                  >
-                    🇬🇧 English
-                  </Button>
-                  <Button
-                    variant={selectedLanguage === "yo" ? "default" : "outline"}
-                    onClick={() => {
-                      setSelectedLanguage("yo");
-                      toast({
-                        title: "Language Updated",
-                        description: "Display language set to Yoruba (Coming Soon)",
-                      });
-                    }}
-                    className="justify-start"
-                    disabled
-                  >
-                    🇳🇬 Yoruba (Coming Soon)
-                  </Button>
-                  <Button
-                    variant={selectedLanguage === "ha" ? "default" : "outline"}
-                    onClick={() => {
-                      setSelectedLanguage("ha");
-                      toast({
-                        title: "Language Updated",
-                        description: "Display language set to Hausa (Coming Soon)",
-                      });
-                    }}
-                    className="justify-start"
-                    disabled
-                  >
-                    🇳🇬 Hausa (Coming Soon)
-                  </Button>
-                  <Button
-                    variant={selectedLanguage === "ig" ? "default" : "outline"}
-                    onClick={() => {
-                      setSelectedLanguage("ig");
-                      toast({
-                        title: "Language Updated",
-                        description: "Display language set to Igbo (Coming Soon)",
-                      });
-                    }}
-                    className="justify-start"
-                    disabled
-                  >
-                    🇳🇬 Igbo (Coming Soon)
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Choose your preferred language for the interface
-                </p>
               </div>
             </CardContent>
           </Card>
