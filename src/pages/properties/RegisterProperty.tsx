@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,6 +89,14 @@ const RegisterProperty = () => {
 
   const propertyTypes = ["residential", "commercial", "industrial", "land"];
 
+  // Load draft property ID from localStorage on mount
+  useEffect(() => {
+    const draftId = localStorage.getItem('draft_property_id');
+    if (draftId) {
+      setPropertyId(draftId);
+    }
+  }, []);
+
   const handleNext = async () => {
     if (step === 1) {
       const isValid = await form.trigger([
@@ -105,6 +113,11 @@ const RegisterProperty = () => {
     if (step === 3) {
       const isValid = await form.trigger(["estimated_value"]);
       if (!isValid) return;
+      
+      // Create property here if not already created
+      if (!propertyId) {
+        await createProperty();
+      }
     }
 
     if (step < 6) setStep(step + 1);
@@ -114,7 +127,7 @@ const RegisterProperty = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = async (data: PropertyFormData) => {
+  const createProperty = async () => {
     if (!user) {
       toast.error("Please log in to register a property");
       return;
@@ -122,6 +135,7 @@ const RegisterProperty = () => {
 
     setIsSubmitting(true);
     try {
+      const data = form.getValues();
       const propertyData = {
         ...data,
         location: {
@@ -143,10 +157,13 @@ const RegisterProperty = () => {
         user.id
       );
       setPropertyId(property.id);
+      // Persist to localStorage in case user navigates away
+      localStorage.setItem('draft_property_id', property.id);
+      
       toast.success("Property details saved successfully!");
-      setStep(4); // Move to image upload step
     } catch (error: any) {
       toast.error(error.message || "Failed to create property");
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -162,9 +179,30 @@ const RegisterProperty = () => {
     setStep(6); // Move to review step
   };
 
-  const handleFinalSubmit = () => {
-    toast.success("Property submitted for review successfully!");
-    navigate("/property/management");
+  const handleFinalSubmit = async () => {
+    if (!propertyId) {
+      toast.error("Property not found. Please go back and save details.");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      // Update property status to submitted for review
+      await supabaseService.properties.updateProperty(propertyId, {
+        listing_status: 'pending_review',
+        approval_status: 'pending'
+      });
+      
+      // Clear draft from localStorage
+      localStorage.removeItem('draft_property_id');
+      
+      toast.success("Property submitted for review successfully!");
+      navigate("/property/management");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to submit property");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getStepProgress = () => ((step - 1) / 5) * 100;
@@ -591,7 +629,7 @@ const RegisterProperty = () => {
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmit)}>
+                <form onSubmit={(e) => e.preventDefault()}>
                   {step === 1 && renderStep1()}
                   {step === 2 && renderStep2()}
                   {step === 3 && renderStep3()}
@@ -609,25 +647,21 @@ const RegisterProperty = () => {
                       Previous
                     </Button>
 
-                    {step < 3 ? (
-                      <Button type="button" onClick={handleNext}>
-                        Next
-                      </Button>
-                    ) : step === 3 ? (
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? "Saving..." : "Save & Continue"}
-                      </Button>
-                    ) : step < 6 ? (
-                      <Button
-                        type="button"
+                    {step < 6 ? (
+                      <Button 
+                        type="button" 
                         onClick={handleNext}
-                        disabled={!propertyId}
+                        disabled={isSubmitting || (step > 3 && !propertyId)}
                       >
-                        Continue
+                        {isSubmitting && step === 3 ? "Saving..." : "Next"}
                       </Button>
                     ) : (
-                      <Button type="button" onClick={handleFinalSubmit}>
-                        Submit for Review
+                      <Button 
+                        type="button" 
+                        onClick={handleFinalSubmit}
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? "Submitting..." : "Submit for Review"}
                       </Button>
                     )}
                   </div>
