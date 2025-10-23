@@ -1146,6 +1146,9 @@ const TokenizeProperty = () => {
                                   </SelectItem>
                                 </SelectContent>
                               </Select>
+                              <FormDescription>
+                                First distribution will be calculated from token minting date
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}

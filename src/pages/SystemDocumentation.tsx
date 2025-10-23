@@ -458,66 +458,81 @@ const SystemDocumentation = () => {
             <section id="dividends">
               <FlowDiagram
                 title="5. Dividend Distribution"
-                description="How investors receive returns from their investments"
+                description="Automated scheduled distribution of rental income to token holders"
                 mermaidCode={`graph TD
-    A[Owner: Create Dividend Distribution] --> B[Set Amount Per Token]
-    B --> C[Set Distribution Date]
-    C --> D[Submit Distribution]
-    D --> E[Create Distribution Record]
-    E --> F{Smart Contract Enabled?}
-    F -->|Yes| G[Register on DividendDistributor.sol]
-    F -->|No| H[Calculate Recipients]
-    G --> H
-    H --> I[Query Token Holders KYC-Verified]
-    I --> J[Calculate: amount × tokens_held]
-    J --> K[Create Payment Records]
-    K --> L{Distribution Method}
-    L -->|Manual Claim| M[Wait for User Claim]
-    L -->|Auto-Distribute| N[Transfer Funds via Hedera]
-    M --> O[User: Click Claim Button]
-    O --> N
-    N --> P[Update Payment Status: Completed]
-    P --> Q[Send Notification]
-    Q --> R[Dividend Received in Wallet]
+    A[Tokens Minted: minted_at timestamp] --> B[Create Dividend Schedule]
+    B --> C[Set frequency: monthly/quarterly/annually]
+    C --> D[Calculate next_distribution_date from minted_at]
+    D --> E[Rental Income Accumulates]
+    E --> F{Schedule Due?}
+    F -->|No| E
+    F -->|Yes| G[process-scheduled-dividends runs]
+    G --> H[Query confirmed rentals since last distribution]
+    H --> I[Aggregate total rental income]
+    I --> J[Calculate fees: platform_fee + management_fee]
+    J --> K[Calculate distributable = gross - fees]
+    K --> L[Query token holders balance > 0]
+    L --> M[Calculate per_token_amount]
+    M --> N[Create single distribution record]
+    N --> O[Create dividend_payments for each holder]
+    O --> P{Smart Contract Enabled?}
+    P -->|Yes| Q[Register on DividendDistributor.sol]
+    P -->|No| R[Transfer funds to holders]
+    Q --> R
+    R --> S[Update rentals: distribution_status = 'completed']
+    S --> T[Update schedule: next_distribution_date]
+    T --> U[Send notifications to holders]
+    U --> V[Funds deposited to wallets]
     
     style A fill:#10b981,stroke:#059669,color:#fff
     style G fill:#8b5cf6,stroke:#7c3aed,color:#fff
-    style R fill:#10b981,stroke:#059669,color:#fff`}
+    style V fill:#10b981,stroke:#059669,color:#fff`}
                 userPerspective={
                   <div className="space-y-2 text-sm">
-                    <p><strong>Step 1:</strong> Owner creates dividend distribution</p>
-                    <p><strong>Step 2:</strong> Sets amount per token (e.g., ₦100 per token)</p>
-                    <p><strong>Step 3:</strong> System calculates total distribution</p>
-                    <p><strong>Step 4:</strong> Distribution is created (pending status)</p>
-                    <p><strong>Step 5:</strong> Investors receive notification</p>
-                    <p><strong>Step 6:</strong> Investors click "Claim" button or auto-distributed</p>
-                    <p><strong>Step 7:</strong> Funds transferred to investor's wallet</p>
-                    <p><strong>Step 8:</strong> 10% WHT (Withholding Tax) is automatically deducted</p>
+                    <p><strong>Step 1:</strong> Dividend schedule created when tokens are minted</p>
+                    <p><strong>Step 2:</strong> Frequency set during tokenization (monthly/quarterly/annually)</p>
+                    <p><strong>Step 3:</strong> Rental income accumulates between distribution dates</p>
+                    <p><strong>Step 4:</strong> On schedule date, system automatically aggregates all confirmed rentals</p>
+                    <p><strong>Step 5:</strong> Platform fee (1%) and management fee (2.5%) are deducted</p>
+                    <p><strong>Step 6:</strong> Remaining amount distributed proportionally to token holders</p>
+                    <p><strong>Step 7:</strong> Investors receive notification of dividend payment</p>
+                    <p><strong>Step 8:</strong> Funds automatically deposited to investor wallets</p>
+                    <p><strong>Note:</strong> No manual distribution - fully automated on schedule</p>
                   </div>
                 }
                 technicalPerspective={
                   <div className="space-y-2 text-sm font-mono">
-                    <p><strong>Component:</strong> <code>DividendDistributionModal.tsx</code></p>
-                    <p><strong>Edge Function:</strong> <code>create-dividend-distribution</code></p>
-                    <p className="ml-4">→ INSERT: <code>dividend_distributions</code> table</p>
-                    <p className="ml-4">→ payment_status: pending</p>
+                    <p><strong>Schedule Creation:</strong> <code>mint-tokens-for-closed-window</code></p>
+                    <p className="ml-4">→ After: <code>minted_at</code> timestamp set</p>
+                    <p className="ml-4">→ INSERT: <code>dividend_schedules</code></p>
+                    <p className="ml-4">→ frequency: from <code>tokenization.dividend_frequency</code></p>
+                    <p className="ml-4">→ next_distribution_date: calculated from <code>minted_at</code></p>
+                    <p><strong>Scheduled Job:</strong> <code>process-scheduled-dividends</code></p>
+                    <p className="ml-4">→ Runs daily via cron</p>
+                    <p className="ml-4">→ Query: schedules WHERE next_distribution_date {'<'}= today</p>
+                    <p><strong>Rental Aggregation:</strong></p>
+                    <p className="ml-4">→ Query: <code>property_rentals</code></p>
+                    <p className="ml-4">→ WHERE: payment_status = 'confirmed'</p>
+                    <p className="ml-4">→ AND: distribution_status IN (null, 'pending')</p>
+                    <p className="ml-4">→ AND: start_date BETWEEN last_distribution_date AND next_distribution_date</p>
+                    <p className="ml-4">→ SUM: total rental income</p>
+                    <p><strong>Fee Calculation:</strong></p>
+                    <p className="ml-4">→ platform_fee_amount = gross × (platform_fee_percentage / 100)</p>
+                    <p className="ml-4">→ management_fee_amount = gross × (management_fee_percentage / 100)</p>
+                    <p className="ml-4">→ distributable = gross - platform_fee - management_fee</p>
+                    <p><strong>Distribution Record:</strong></p>
+                    <p className="ml-4">→ INSERT: <code>dividend_distributions</code></p>
+                    <p className="ml-4">→ included_rental_ids: JSON array of aggregated rentals</p>
+                    <p className="ml-4">→ gross_amount_ngn, platform_fee_amount, management_fee_amount</p>
+                    <p className="ml-4">→ per_token_amount: distributable / total_tokens</p>
+                    <p><strong>Payment Processing:</strong></p>
+                    <p className="ml-4">→ INSERT: <code>dividend_payments</code> for each holder</p>
+                    <p className="ml-4">→ Call: <code>distribute-dividends</code> edge function</p>
+                    <p className="ml-4">→ UPDATE: <code>property_rentals</code> distribution_status</p>
+                    <p className="ml-4">→ UPDATE: <code>dividend_schedules</code> dates</p>
                     <p><strong>Smart Contract (Optional):</strong></p>
-                    <p className="ml-4">→ <code>contractService.createDistributionOnChain()</code></p>
                     <p className="ml-4">→ <code>DividendDistributor.sol</code></p>
                     <p className="ml-4">→ Returns: contract_distribution_id, tx_hash</p>
-                    <p><strong>Recipients Calculation:</strong></p>
-                    <p className="ml-4">→ Query: <code>token_holdings</code> WHERE balance {'>'} 0</p>
-                    <p className="ml-4">→ Filter: Only KYC-verified users</p>
-                    <p className="ml-4">→ Calculate: per_token_amount × tokens_held</p>
-                    <p><strong>Payment Records:</strong></p>
-                    <p className="ml-4">→ INSERT: <code>dividend_payments</code> for each holder</p>
-                    <p className="ml-4">→ Calculate: tax_withheld (10% WHT)</p>
-                    <p className="ml-4">→ net_amount = amount - tax</p>
-                    <p><strong>Claiming:</strong></p>
-                    <p className="ml-4">→ <code>claim-dividend</code> edge function</p>
-                    <p className="ml-4">→ Verify: user owns tokens, payment not claimed</p>
-                    <p className="ml-4">→ Hedera: <code>TransferTransaction</code></p>
-                    <p className="ml-4">→ UPDATE: payment_status: completed</p>
                   </div>
                 }
               />

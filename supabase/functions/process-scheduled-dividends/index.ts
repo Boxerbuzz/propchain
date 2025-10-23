@@ -44,7 +44,9 @@ Deno.serve(async (req) => {
         tokenizations (
           id,
           token_name,
-          token_symbol
+          token_symbol,
+          fees,
+          minted_at
         )
       `)
       .eq('auto_distribute', true)
@@ -83,61 +85,158 @@ Deno.serve(async (req) => {
       try {
         console.log(`[SCHEDULED-DIVIDENDS] Processing schedule ${schedule.id}`);
 
-        // Find accumulated rental income since last distribution
+        const tokenization = schedule.tokenizations;
+        
+        // Get fee percentages from tokenization, fallback to defaults
+        const platformFeePercentage = tokenization.fees?.platform_fee_percentage || 1.0;
+        const managementFeePercentage = tokenization.fees?.management_fee_percentage || 2.5;
+
+        // Determine period start date
+        const periodStart = schedule.last_distribution_date || tokenization.minted_at;
+        const periodEnd = schedule.next_distribution_date;
+
+        console.log(`[SCHEDULED-DIVIDENDS] Period: ${periodStart} to ${periodEnd}`);
+
+        // Fetch confirmed rentals in period
         const { data: rentals, error: rentalError } = await supabase
           .from('property_rentals')
-          .select('*')
+          .select('id, amount_paid_ngn, monthly_rent_ngn')
           .eq('property_id', schedule.property_id)
           .eq('payment_status', 'confirmed')
-          .or(`distribution_status.eq.pending,distribution_status.is.null`);
+          .in('distribution_status', ['pending'])
+          .or(`distribution_status.is.null`)
+          .gte('start_date', periodStart)
+          .lte('start_date', periodEnd);
 
         if (rentalError) throw rentalError;
 
         if (!rentals || rentals.length === 0) {
           console.log(`[SCHEDULED-DIVIDENDS] No accumulated rental income for schedule ${schedule.id}`);
+          
+          // Still update schedule to next date
+          const nextDate = calculateNextDate(schedule.frequency, new Date(schedule.next_distribution_date));
+          await supabase
+            .from('dividend_schedules')
+            .update({
+              last_distribution_date: today,
+              next_distribution_date: nextDate,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', schedule.id);
+
           results.push({
             schedule_id: schedule.id,
             success: true,
             skipped: true,
             reason: 'No rental income to distribute'
           });
+          successCount++;
           continue;
         }
 
-        console.log(`[SCHEDULED-DIVIDENDS] Found ${rentals.length} rentals to process`);
+        console.log(`[SCHEDULED-DIVIDENDS] Found ${rentals.length} rentals to aggregate`);
 
-        // Process each rental
-        for (const rental of rentals) {
-          // Create dividend distribution
-          const { data: createResult, error: createError } = await supabase.functions.invoke(
-            'create-dividend-distribution',
-            {
-              body: {
-                rental_id: rental.id,
-                property_id: rental.property_id,
-                tokenization_id: schedule.tokenization_id
-              }
-            }
-          );
+        // Aggregate rental income
+        const grossAmount = rentals.reduce((sum, r) => 
+          sum + (r.amount_paid_ngn || r.monthly_rent_ngn), 0);
 
-          if (createError) throw createError;
-          if (!createResult?.success) throw new Error(createResult?.error || 'Failed to create distribution');
+        console.log(`[SCHEDULED-DIVIDENDS] Gross amount: ₦${grossAmount.toLocaleString()}`);
 
-          const distributionId = createResult.data.distribution_id;
+        // Calculate fees
+        const platformFeeAmount = grossAmount * (platformFeePercentage / 100);
+        const managementFeeAmount = grossAmount * (managementFeePercentage / 100);
+        const totalDistributable = grossAmount - platformFeeAmount - managementFeeAmount;
 
-          // Execute distribution
-          const { data: distributeResult, error: distributeError } = await supabase.functions.invoke(
-            'distribute-dividends',
-            {
-              body: {
-                distribution_id: distributionId
-              }
-            }
-          );
+        console.log(`[SCHEDULED-DIVIDENDS] Platform fee: ₦${platformFeeAmount.toFixed(2)}`);
+        console.log(`[SCHEDULED-DIVIDENDS] Management fee: ₦${managementFeeAmount.toFixed(2)}`);
+        console.log(`[SCHEDULED-DIVIDENDS] Distributable: ₦${totalDistributable.toFixed(2)}`);
 
-          if (distributeError) throw distributeError;
-          if (!distributeResult?.success) throw new Error(distributeResult?.error || 'Failed to distribute dividends');
+        // Get token holders with balance > 0
+        const { data: holders, error: holdersError } = await supabase
+          .from('token_holdings')
+          .select('user_id, balance')
+          .eq('tokenization_id', schedule.tokenization_id)
+          .gt('balance', 0);
+
+        if (holdersError) throw holdersError;
+
+        if (!holders || holders.length === 0) {
+          throw new Error('No token holders found');
         }
+
+        const totalTokens = holders.reduce((sum, h) => sum + h.balance, 0);
+        const perTokenAmount = totalDistributable / totalTokens;
+
+        console.log(`[SCHEDULED-DIVIDENDS] ${holders.length} holders, ${totalTokens} total tokens`);
+        console.log(`[SCHEDULED-DIVIDENDS] Per token: ₦${perTokenAmount.toFixed(4)}`);
+
+        // Create distribution record
+        const { data: distribution, error: distributionError } = await supabase
+          .from('dividend_distributions')
+          .insert({
+            property_id: schedule.property_id,
+            tokenization_id: schedule.tokenization_id,
+            distribution_date: new Date().toISOString().split('T')[0],
+            total_amount_ngn: totalDistributable,
+            per_token_amount: perTokenAmount,
+            total_recipients: holders.length,
+            payment_status: 'pending',
+            distribution_period: formatPeriod(schedule.frequency, periodEnd),
+            included_rental_ids: JSON.stringify(rentals.map(r => r.id)),
+            gross_amount_ngn: grossAmount,
+            platform_fee_amount: platformFeeAmount,
+            management_fee_amount: managementFeeAmount,
+            created_by: null
+          })
+          .select()
+          .single();
+
+        if (distributionError) throw distributionError;
+
+        console.log(`[SCHEDULED-DIVIDENDS] Created distribution ${distribution.id}`);
+
+        // Create dividend_payments for each holder
+        const payments = holders.map(holder => ({
+          distribution_id: distribution.id,
+          recipient_id: holder.user_id,
+          tokenization_id: schedule.tokenization_id,
+          tokens_held: holder.balance,
+          amount_ngn: perTokenAmount * holder.balance,
+          payment_status: 'pending'
+        }));
+
+        const { error: paymentsError } = await supabase
+          .from('dividend_payments')
+          .insert(payments);
+
+        if (paymentsError) throw paymentsError;
+
+        console.log(`[SCHEDULED-DIVIDENDS] Created ${payments.length} dividend payments`);
+
+        // Update rentals
+        const { error: updateRentalsError } = await supabase
+          .from('property_rentals')
+          .update({
+            distribution_status: 'processing',
+            distribution_id: distribution.id
+          })
+          .in('id', rentals.map(r => r.id));
+
+        if (updateRentalsError) throw updateRentalsError;
+
+        // Invoke distribute-dividends (existing function)
+        console.log(`[SCHEDULED-DIVIDENDS] Invoking distribute-dividends`);
+        const { data: distributeResult, error: distributeError } = await supabase.functions.invoke(
+          'distribute-dividends',
+          {
+            body: { distribution_id: distribution.id }
+          }
+        );
+
+        if (distributeError) throw distributeError;
+        if (!distributeResult?.success) throw new Error(distributeResult?.error || 'Failed to distribute dividends');
+
+        console.log(`[SCHEDULED-DIVIDENDS] Distribution executed successfully`);
 
         // Update schedule for next distribution
         const nextDate = calculateNextDate(schedule.frequency, new Date(schedule.next_distribution_date));
@@ -152,11 +251,15 @@ Deno.serve(async (req) => {
           .eq('id', schedule.id);
 
         console.log(`[SCHEDULED-DIVIDENDS] ✅ Successfully processed schedule ${schedule.id}`);
+        console.log(`[SCHEDULED-DIVIDENDS] Next distribution: ${nextDate}`);
         
         results.push({
           schedule_id: schedule.id,
           property_id: schedule.property_id,
-          rentals_processed: rentals.length,
+          rentals_aggregated: rentals.length,
+          gross_amount: grossAmount,
+          distributable_amount: totalDistributable,
+          distribution_id: distribution.id,
           next_distribution_date: nextDate,
           success: true
         });
@@ -238,4 +341,20 @@ function calculateNextDate(frequency: string, lastDate: Date): string {
   }
   
   return next.toISOString().split('T')[0];
+}
+
+// Helper function to format period label
+function formatPeriod(frequency: string, endDate: string): string {
+  const date = new Date(endDate);
+  const year = date.getFullYear();
+  const month = date.toLocaleString('default', { month: 'long' });
+  
+  if (frequency === 'monthly') {
+    return `${month} ${year}`;
+  } else if (frequency === 'quarterly') {
+    const quarter = Math.floor(date.getMonth() / 3) + 1;
+    return `Q${quarter} ${year}`;
+  } else {
+    return `${year}`;
+  }
 }
