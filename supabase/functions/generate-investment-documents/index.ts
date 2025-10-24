@@ -197,7 +197,7 @@ serve(async (req) => {
           amount_ngn: investment.amount_ngn,
           tokens_requested: investment.tokens_requested,
           tokenization_type: (investment.tokenizations as any).tokenization_type,
-          investor_name: `${investor.first_name} ${investor.last_name}`,
+          investor_name: `${investment.investor.first_name} ${investment.investor.last_name}`,
         }
       },
       {
@@ -217,7 +217,7 @@ serve(async (req) => {
           payment_method: investment.payment_method,
           payment_reference: investment.paystack_reference,
           amount_ngn: investment.amount_ngn,
-          investor_name: `${investor.first_name} ${investor.last_name}`,
+          investor_name: `${investment.investor.first_name} ${investment.investor.last_name}`,
         }
       },
       {
@@ -237,7 +237,7 @@ serve(async (req) => {
           property_title: (investment.tokenizations as any).properties?.title,
           tokens_held: investment.tokens_requested,
           ownership_percentage: ((investment.tokens_requested / (investment.tokenizations as any).total_supply) * 100).toFixed(4),
-          investor_name: `${investor.first_name} ${investor.last_name}`,
+          investor_name: `${investment.investor.first_name} ${investment.investor.last_name}`,
         }
       }
     ];
@@ -296,16 +296,27 @@ async function generateDocumentHash(content: Uint8Array): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Generate QR code using qrcode library
+// Generate QR code using external API service (works in Deno)
 async function generateQRCode(url: string): Promise<string> {
   try {
-    const QRCode = (await import('https://esm.sh/qrcode@1.5.4')).default;
-    return await QRCode.toDataURL(url, {
-      errorCorrectionLevel: 'H',
-      margin: 1,
-      width: 200,
-      color: { dark: '#000000', light: '#FFFFFF' }
-    });
+    // Use qrserver.com API to generate QR code as PNG
+    const encodedUrl = encodeURIComponent(url);
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedUrl}&format=png&ecc=H&margin=10`;
+    
+    console.log('Generating QR code for URL:', url);
+    
+    // Fetch the QR code image and convert to base64 data URL
+    const response = await fetch(qrUrl);
+    if (!response.ok) {
+      throw new Error(`QR API returned ${response.status}`);
+    }
+    
+    const buffer = await response.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+    const dataUrl = `data:image/png;base64,${base64}`;
+    
+    console.log('QR code generated successfully');
+    return dataUrl;
   } catch (error) {
     console.error('QR code generation failed:', error);
     throw error;

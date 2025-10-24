@@ -13,6 +13,7 @@ interface ModernInvestmentInputProps {
   minInvestment: number;
   maxInvestment?: number;
   walletBalance?: number;
+  availableTokens?: number;
   onAmountChange: (amount: number) => void;
   onTokenCountChange: (tokenCount: number) => void;
   onBlur?: () => void;
@@ -252,6 +253,7 @@ export default function ModernInvestmentInput({
   minInvestment,
   maxInvestment,
   walletBalance = 0,
+  availableTokens,
   onAmountChange,
   onTokenCountChange,
   onBlur,
@@ -308,6 +310,14 @@ export default function ModernInvestmentInput({
       if (maxInvestment && finalAmount > maxInvestment) {
         finalAmount = maxInvestment;
       }
+      
+      // Check available tokens constraint
+      if (availableTokens) {
+        const requestedTokens = calculateTokens(finalAmount);
+        if (requestedTokens > availableTokens) {
+          finalAmount = availableTokens * pricePerToken;
+        }
+      }
 
       // Only update if constraints were applied
       if (finalAmount !== amount) {
@@ -316,7 +326,13 @@ export default function ModernInvestmentInput({
       }
     } else {
       // For tokens, ensure it's a whole number
-      const finalTokens = Math.floor(tokenCount);
+      let finalTokens = Math.floor(tokenCount);
+      
+      // Check available tokens constraint
+      if (availableTokens && finalTokens > availableTokens) {
+        finalTokens = availableTokens;
+      }
+      
       if (finalTokens !== tokenCount) {
         onTokenCountChange(finalTokens);
         onAmountChange(calculateAmount(finalTokens));
@@ -331,6 +347,8 @@ export default function ModernInvestmentInput({
     tokenCount,
     minInvestment,
     maxInvestment,
+    availableTokens,
+    pricePerToken,
     onAmountChange,
     onTokenCountChange,
     onBlur,

@@ -259,8 +259,12 @@ BEGIN
         NOW()
       );
       
-      -- Delete the expired investment
-      DELETE FROM investments WHERE id = expired_investment.id;
+      -- Mark investment as expired instead of deleting
+      UPDATE investments
+      SET
+        reservation_status = 'expired',
+        updated_at = NOW()
+      WHERE id = expired_investment.id;
       
       -- Update counters
       cleanup_count := cleanup_count + 1;
