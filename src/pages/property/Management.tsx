@@ -20,6 +20,7 @@ import {
   Check,
   Pause,
   Trash2,
+  Wallet,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -211,12 +212,12 @@ const PropertyManagement = () => {
 
     try {
       setIsProcessingAction(true);
-      
+
       // Close dialog first to prevent overlay from blocking UI
       setConfirmDialog((prev) => ({ ...prev, open: false }));
 
       // Wait for dialog animation to complete
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       switch (action) {
         case "Approve":
@@ -240,7 +241,8 @@ const PropertyManagement = () => {
               onSuccess: () => {
                 toast({
                   title: "Property Approved",
-                  description: "The property has been approved and is now available for investment.",
+                  description:
+                    "The property has been approved and is now available for investment.",
                 });
                 refetch();
               },
@@ -307,7 +309,8 @@ const PropertyManagement = () => {
                 console.error("Error reactivating property:", error);
                 toast({
                   title: "Reactivation Failed",
-                  description: error.message || "Failed to reactivate property.",
+                  description:
+                    error.message || "Failed to reactivate property.",
                   variant: "destructive",
                 });
               },
@@ -319,7 +322,8 @@ const PropertyManagement = () => {
           // Find the tokenization that needs approval
           const property = managedProperties.find((p) => p.id === propertyId);
           const tokenization = property?.tokenizations?.find(
-            (token: any) => token.status === "pending" || token.status === "draft"
+            (token: any) =>
+              token.status === "pending" || token.status === "draft"
           );
 
           if (tokenization) {
@@ -890,44 +894,6 @@ const PropertyManagement = () => {
                                   <Edit className="h-4 w-4 mr-1" />
                                   <span className="hidden sm:inline">Edit</span>
                                 </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={async () => {
-                                    try {
-                                      setIsProcessingAction(true);
-                                      toast({
-                                        title: "Retrying Treasury Creation",
-                                        description: "Checking for missing treasury accounts...",
-                                      });
-
-                                      const { data, error } = await supabase.functions.invoke(
-                                        'retry-treasury-creation'
-                                      );
-
-                                      if (error) throw error;
-
-                                      if (data.success) {
-                                        toast({
-                                          title: "Treasury Retry Complete",
-                                          description: `Fixed ${data.summary.successfully_fixed} treasuries, ${data.summary.failed} failed`,
-                                        });
-                                      }
-                                    } catch (error: any) {
-                                      toast({
-                                        title: "Treasury Retry Failed",
-                                        description: error.message,
-                                        variant: "destructive",
-                                      });
-                                    } finally {
-                                      setIsProcessingAction(false);
-                                    }
-                                  }}
-                                  disabled={isProcessingAction}
-                                >
-                                  <DollarSign className="h-4 w-4 mr-1" />
-                                  <span className="hidden sm:inline">Retry Treasury</span>
-                                </Button>
 
                                 {/* More Actions Dropdown - Only show if there are additional actions */}
                                 {getDropdownActions(property).length > 0 && (
@@ -1093,6 +1059,47 @@ const PropertyManagement = () => {
                   Generate Report
                 </Button>
                 <VaultMigrationButton />
+                <Button
+                  variant="outline"
+                  className="w-full justify-start hidden"
+                  onClick={async () => {
+                    try {
+                      setIsProcessingAction(true);
+                      toast({
+                        title: "Retrying Treasury Creation",
+                        description:
+                          "Checking for missing treasury accounts...",
+                      });
+
+                      const { data, error } = await supabase.functions.invoke(
+                        "retry-treasury-creation"
+                      );
+
+                      if (error) throw error;
+
+                      if (data.success) {
+                        toast({
+                          title: "Treasury Retry Complete",
+                          description: `Fixed ${data.summary.successfully_fixed} treasuries, ${data.summary.failed} failed`,
+                        });
+                      }
+                    } catch (error: any) {
+                      toast({
+                        title: "Treasury Retry Failed",
+                        description: error.message,
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setIsProcessingAction(false);
+                    }
+                  }}
+                  disabled={isProcessingAction}
+                >
+                  <Wallet className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">
+                    Retry Missing Treasury
+                  </span>
+                </Button>
               </CardContent>
             </Card>
 
@@ -1119,9 +1126,7 @@ const PropertyManagement = () => {
       {/* Confirmation Dialog */}
       <AlertDialog
         open={confirmDialog.open}
-        onOpenChange={(open) =>
-          setConfirmDialog((prev) => ({ ...prev, open }))
-        }
+        onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
