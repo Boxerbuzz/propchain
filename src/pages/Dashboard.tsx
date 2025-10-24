@@ -489,9 +489,9 @@ export default function Dashboard() {
                     ))}
                     {activities.length > 8 && (
                       <div className="text-center pt-4">
-                        <Link to="/portfolio">
+                        <Link to="/activities">
                           <Button variant="ghost" size="sm">
-                            View All Activity
+                            View All Activities
                           </Button>
                         </Link>
                       </div>

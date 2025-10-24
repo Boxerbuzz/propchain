@@ -254,7 +254,7 @@ export default function Header() {
                   )}
                 </div>
                 <div className="p-3 border-t border-border/10 flex justify-between">
-                  <Link to="/settings/notifications" className="flex-1">
+                  <Link to="/notifications" className="flex-1">
                     <Button
                       variant="ghost"
                       size="sm"

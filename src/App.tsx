@@ -66,6 +66,8 @@ import AboutUs from "./pages/AboutUs";
 import SecurityPage from "./pages/Security";
 import VerifyDocument from "./pages/VerifyDocument";
 import PitchDeck from "./pages/pitch/PitchDeck";
+import AllNotifications from "./pages/AllNotifications";
+import AllActivities from "./pages/AllActivities";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import RouteGuard from "./components/auth/RouteGuard";
@@ -123,6 +125,8 @@ const App = () => (
                   element={<PortfolioDetail />}
                 />
                 <Route path="/favorites" element={<Favorites />} />
+                <Route path="/notifications" element={<AllNotifications />} />
+                <Route path="/activities" element={<AllActivities />} />
                 <Route path="/wallet/setup" element={<WalletSetup />} />
                 <Route path="/wallet/withdraw" element={<WithdrawPage />} />
                 <Route path="/wallet/settings" element={<WalletSettings />} />
