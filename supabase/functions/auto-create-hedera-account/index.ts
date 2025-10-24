@@ -145,6 +145,7 @@ serve(async (req) => {
         user_id: userId,
         wallet_type: 'hedera',
         hedera_account_id: accountResult.data.accountId,
+        public_key: accountResult.data.publicKey,
         vault_secret_id: vaultSecret,
         is_primary: true,
         created_at: new Date().toISOString(),

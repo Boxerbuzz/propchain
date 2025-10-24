@@ -73,6 +73,7 @@ serve(async (req) => {
         data: {
           accountId: newAccountId,
           privateKey: newAccountPrivateKey.toString(),
+          publicKey: newAccountPublicKey.toString(),
         },
         message: "Hedera account created and funded successfully.",
       }),
