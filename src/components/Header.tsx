@@ -36,6 +36,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useHederaAccount } from "@/hooks/useHederaAccount";
 import logo from "@/assets/logo.png";
 
 export default function Header() {
@@ -44,6 +45,7 @@ export default function Header() {
   const { isAuthenticated, logout, user } = useAuth();
   const { notifications, markAllAsRead, clearReadNotifications } =
     useNotifications();
+  const { hasAccount } = useHederaAccount();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -99,7 +101,7 @@ export default function Header() {
   const userMenuItems = [
     { name: "Profile", href: "/settings/profile", icon: User },
     { name: "Favorites", href: "/favorites", icon: Heart },
-    { name: "Account", href: "/account/dashboard", icon: Coins },
+    { name: "Account", href: hasAccount ? "/account/dashboard" : "/wallet/setup", icon: Coins },
     { name: "Settings", href: "/settings/security", icon: Settings },
     { name: "Logout", href: "#", icon: LogOut },
   ];

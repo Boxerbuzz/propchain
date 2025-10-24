@@ -18,6 +18,7 @@ import {
   Clock,
   X as XIcon,
   ArrowLeftRight,
+  Settings,
 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -390,21 +391,36 @@ export default function AccountDashboard() {
                               </p>
                             </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowBalances(!showBalances);
-                            }}
-                            className="text-white hover:bg-white/20"
-                          >
-                            {showBalances ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowBalances(!showBalances);
+                              }}
+                              className="text-white hover:bg-white/20"
+                            >
+                              {showBalances ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                            {card.id === "hbar" && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate("/wallet/settings");
+                                }}
+                                className="text-white hover:bg-white/20"
+                              >
+                                <Settings className="h-4 w-4" />
+                              </Button>
                             )}
-                          </Button>
+                          </div>
                         </div>
                       </CardHeader>
                       <CardContent className="pt-0">
