@@ -24,6 +24,62 @@ const PRIMARY_COLOR = rgb(0.13, 0.77, 0.36); // #21c45d
 const GRAY = rgb(0.4, 0.4, 0.4);
 const BLACK = rgb(0, 0, 0);
 
+/**
+ * Sanitizes text for WinAnsi encoding used by pdf-lib standard fonts.
+ * Replaces common Unicode characters with ASCII equivalents to prevent encoding errors.
+ * 
+ * @param text - The text to sanitize
+ * @returns ASCII-safe text that can be rendered in PDFs
+ */
+function sanitizeForPDF(text: string): string {
+  if (!text) return '';
+  
+  return text
+    // Checkmarks and symbols
+    .replace(/✓|✔|☑/g, '*')           // Checkmarks → asterisk
+    .replace(/✗|✘|☒/g, 'x')           // X marks → x
+    .replace(/•/g, '*')                // Bullet → asterisk
+    .replace(/→/g, '->')               // Arrow → ASCII arrow
+    .replace(/←/g, '<-')
+    
+    // Smart quotes and apostrophes
+    .replace(/[""]/g, '"')             // Smart double quotes → regular
+    .replace(/['']/g, "'")             // Smart single quotes → regular
+    
+    // Dashes
+    .replace(/—/g, '-')                // Em dash → hyphen
+    .replace(/–/g, '-')                // En dash → hyphen
+    
+    // Ellipsis
+    .replace(/…/g, '...')              // Ellipsis → three dots
+    
+    // Currency symbols (keep common ones, remove others)
+    .replace(/[€]/g, 'EUR')            // Euro → EUR
+    .replace(/[£]/g, 'GBP')            // Pound → GBP
+    .replace(/[¥]/g, 'JPY')            // Yen → JPY
+    
+    // Accented characters (common in Nigerian names)
+    .replace(/[àáâãäå]/gi, 'a')
+    .replace(/[èéêë]/gi, 'e')
+    .replace(/[ìíîï]/gi, 'i')
+    .replace(/[òóôõö]/gi, 'o')
+    .replace(/[ùúûü]/gi, 'u')
+    .replace(/[ñ]/gi, 'n')
+    .replace(/[ç]/gi, 'c')
+    
+    // Emojis and special symbols - remove completely
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')  // Emojis
+    .replace(/[\u{2600}-\u{26FF}]/gu, '')    // Miscellaneous symbols
+    .replace(/[\u{2700}-\u{27BF}]/gu, '')    // Dingbats
+    
+    // Final safety: remove ANY remaining non-ASCII characters
+    .replace(/[^\x00-\x7F]/g, '')
+    
+    // Clean up multiple spaces and trim
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export async function generateAgreementPDF(data: InvestmentData): Promise<Uint8Array> {
   const { investment, kycData, documentNumber, currentDate } = data;
   const tokenization = investment.tokenizations;
@@ -148,7 +204,7 @@ export async function generateAgreementPDF(data: InvestmentData): Promise<Uint8A
         color: BLACK,
       });
     } else {
-      page.drawText(line, {
+      page.drawText(sanitizeForPDF(line), {
         x: 50,
         y: yPosition,
         size: 9,
@@ -180,7 +236,7 @@ export async function generateAgreementPDF(data: InvestmentData): Promise<Uint8A
   ].filter(Boolean);
 
   for (const line of propertyLines) {
-    page.drawText(line, {
+    page.drawText(sanitizeForPDF(line), {
       x: 50,
       y: yPosition,
       size: 9,
@@ -239,7 +295,7 @@ export async function generateAgreementPDF(data: InvestmentData): Promise<Uint8A
   const termsLines = specificTerms.split('\n').slice(0, 15);
   for (const line of termsLines) {
     if (yPosition < 100) break;
-    page.drawText(line.substring(0, 80), {
+    page.drawText(sanitizeForPDF(line.substring(0, 80)), {
       x: 50,
       y: yPosition,
       size: 8,
@@ -302,7 +358,7 @@ export async function generateAgreementPDF(data: InvestmentData): Promise<Uint8A
   for (const line of riskLines) {
     if (yPosition < 100) break;
     const trimmedLine = line.trim().substring(0, 90);
-    page.drawText(trimmedLine, {
+    page.drawText(sanitizeForPDF(trimmedLine), {
       x: 50,
       y: yPosition,
       size: 8,
@@ -408,7 +464,7 @@ export async function generateReceiptPDF(data: InvestmentData): Promise<Uint8Arr
   ];
 
   for (const line of paymentLines) {
-    page.drawText(line, {
+    page.drawText(sanitizeForPDF(line), {
       x: 50,
       y: yPosition,
       size: 9,
@@ -439,7 +495,7 @@ export async function generateReceiptPDF(data: InvestmentData): Promise<Uint8Arr
   ];
 
   for (const line of detailLines) {
-    page.drawText(line, {
+    page.drawText(sanitizeForPDF(line), {
       x: 50,
       y: yPosition,
       size: 9,
@@ -598,7 +654,7 @@ export async function generateShareCertificatePDF(data: InvestmentData): Promise
   yPosition -= 30;
 
   // Investor name
-  const investorName = `${investor.first_name} ${investor.last_name}`;
+  const investorName = sanitizeForPDF(`${investor.first_name} ${investor.last_name}`);
   const nameWidth = timesRomanBold.widthOfTextAtSize(investorName, 16);
   page.drawText(investorName, {
     x: (595 - nameWidth) / 2,
@@ -659,9 +715,9 @@ export async function generateShareCertificatePDF(data: InvestmentData): Promise
 
   yPosition -= 25;
 
-  const propTitle = property.title;
-  const propWidth = timesRomanBold.widthOfTextAtSize(propTitle.substring(0, 50), 12);
-  page.drawText(propTitle.substring(0, 50), {
+  const propTitle = sanitizeForPDF(property.title.substring(0, 50));
+  const propWidth = timesRomanBold.widthOfTextAtSize(propTitle, 12);
+  page.drawText(propTitle, {
     x: (595 - propWidth) / 2,
     y: yPosition,
     size: 12,
@@ -695,10 +751,10 @@ export async function generateShareCertificatePDF(data: InvestmentData): Promise
   yPosition -= 15;
 
   const rights = [
-    '✓ Receive proportional dividends/income',
-    '✓ Vote on governance proposals',
-    '✓ Transfer tokens (subject to terms)',
-    '✓ Access property information',
+    '* Receive proportional dividends/income',
+    '* Vote on governance proposals',
+    '* Transfer tokens (subject to terms)',
+    '* Access property information',
   ];
 
   for (const right of rights) {
