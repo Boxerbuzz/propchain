@@ -51,7 +51,7 @@ serve(async (req) => {
         .eq("contract_name", contract.contract_name)
         .order("block_number", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       const fromBlock = lastTx?.block_number || 0;
 
