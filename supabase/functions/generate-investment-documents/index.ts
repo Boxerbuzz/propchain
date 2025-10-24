@@ -197,7 +197,7 @@ serve(async (req) => {
           amount_ngn: investment.amount_ngn,
           tokens_requested: investment.tokens_requested,
           tokenization_type: (investment.tokenizations as any).tokenization_type,
-          investor_name: `${investor.first_name} ${investor.last_name}`,
+          investor_name: `${investment.investor.first_name} ${investment.investor.last_name}`,
         }
       },
       {
@@ -217,7 +217,7 @@ serve(async (req) => {
           payment_method: investment.payment_method,
           payment_reference: investment.paystack_reference,
           amount_ngn: investment.amount_ngn,
-          investor_name: `${investor.first_name} ${investor.last_name}`,
+          investor_name: `${investment.investor.first_name} ${investment.investor.last_name}`,
         }
       },
       {
@@ -237,7 +237,7 @@ serve(async (req) => {
           property_title: (investment.tokenizations as any).properties?.title,
           tokens_held: investment.tokens_requested,
           ownership_percentage: ((investment.tokens_requested / (investment.tokenizations as any).total_supply) * 100).toFixed(4),
-          investor_name: `${investor.first_name} ${investor.last_name}`,
+          investor_name: `${investment.investor.first_name} ${investment.investor.last_name}`,
         }
       }
     ];
