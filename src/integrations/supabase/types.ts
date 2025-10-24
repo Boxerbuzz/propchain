@@ -3004,6 +3004,7 @@ export type Database = {
         }
         Returns: Json
       }
+      check_and_execute_proposals: { Args: never; Returns: Json }
       cleanup_expired_kyc_drafts: { Args: never; Returns: undefined }
       cleanup_expired_token_reservations: { Args: never; Returns: Json }
       create_chat_room_for_tokenization: {
