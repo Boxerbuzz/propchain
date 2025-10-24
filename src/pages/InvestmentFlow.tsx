@@ -144,6 +144,16 @@ const InvestmentFlow = () => {
         );
         return;
       }
+      
+      // Validate available tokens
+      const availableTokens = tokenization.total_supply - tokenization.tokens_sold;
+      if (tokenCount > availableTokens) {
+        toast.error(
+          `Only ${availableTokens.toLocaleString()} tokens available. Please reduce your investment amount.`
+        );
+        return;
+      }
+      
       setStep(2);
     } else if (step === 2) {
       if (!paymentMethod) {
@@ -278,9 +288,21 @@ const InvestmentFlow = () => {
                       minInvestment={tokenization.min_investment}
                       maxInvestment={tokenization.max_investment}
                       walletBalance={walletBalance?.balanceNgn || 0}
+                      availableTokens={tokenization.total_supply - tokenization.tokens_sold}
                       onAmountChange={setInvestmentAmount}
                       onTokenCountChange={setTokenCount}
                     />
+                    
+                    {tokenCount > (tokenization.total_supply - tokenization.tokens_sold) && (
+                      <Alert variant="destructive">
+                        <Info className="h-4 w-4" />
+                        <AlertTitle>Insufficient Token Supply</AlertTitle>
+                        <AlertDescription>
+                          Only {(tokenization.total_supply - tokenization.tokens_sold).toLocaleString()} tokens available.
+                          Please reduce your investment amount.
+                        </AlertDescription>
+                      </Alert>
+                    )}
 
                     {investmentAmount > 0 && (
                       <div className="bg-muted/50 p-4 rounded-lg">
