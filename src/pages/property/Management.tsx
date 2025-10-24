@@ -62,6 +62,7 @@ const PropertyManagement = () => {
     propertyId: "",
     variant: "default" as "default" | "destructive",
   });
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
 
   const {
     data: managedProperties = [],
@@ -206,109 +207,192 @@ const PropertyManagement = () => {
   const handleConfirmedAction = async () => {
     const { action, propertyId } = confirmDialog;
 
-    // Close dialog first to prevent overlay from blocking UI
-    setConfirmDialog((prev) => ({ ...prev, open: false }));
+    if (isProcessingAction) return; // Prevent multiple clicks
 
-    // Wait for dialog animation to complete
-    await new Promise(resolve => setTimeout(resolve, 200));
+    try {
+      setIsProcessingAction(true);
+      
+      // Close dialog first to prevent overlay from blocking UI
+      setConfirmDialog((prev) => ({ ...prev, open: false }));
 
-    switch (action) {
-      case "Approve":
-        // Show immediate notification that verification is in progress
-        toast({
-          title: "Property Verification Started",
-          description:
-            "Your property verification is being processed. This may take a few moments while we upload documents to the blockchain.",
-          duration: 8000,
-        });
+      // Wait for dialog animation to complete
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-        updatePropertyMutation.mutate({
-          id: propertyId,
-          data: {
-            approval_status: "approved",
-            listing_status: "active",
-          },
-        });
-        break;
-      case "Delist":
-        updatePropertyMutation.mutate({
-          id: propertyId,
-          data: {
-            listing_status: "suspended",
-          },
-        });
-        toast({
-          title: "Property Delisted",
-          description:
-            "The property has been delisted and removed from active listings.",
-        });
-        break;
-      case "Reactivate":
-        updatePropertyMutation.mutate({
-          id: propertyId,
-          data: {
-            approval_status: "approved",
-            listing_status: "active",
-          },
-        });
-        toast({
-          title: "Property Relisted",
-          description:
-            "The property has been relisted and is now available for investment.",
-        });
-        break;
-      case "ApproveToken":
-        // Find the tokenization that needs approval
-        const property = managedProperties.find((p) => p.id === propertyId);
-        const tokenization = property?.tokenizations?.find(
-          (token: any) => token.status === "pending" || token.status === "draft"
-        );
+      switch (action) {
+        case "Approve":
+          // Show immediate notification that verification is in progress
+          toast({
+            title: "Property Verification Started",
+            description:
+              "Your property verification is being processed. This may take a few moments while we upload documents to the blockchain.",
+            duration: 8000,
+          });
 
-        if (tokenization) {
-          // Update tokenization status to approved
-          try {
-            const { error } = await supabase
-              .from("tokenizations")
-              .update({
-                status: "active",
-                approved_at: new Date().toISOString(),
-                approved_by: (await supabase.auth.getUser()).data.user?.id,
-              })
-              .eq("id", tokenization.id);
-
-            if (error) {
-              throw error;
+          updatePropertyMutation.mutate(
+            {
+              id: propertyId,
+              data: {
+                approval_status: "approved",
+                listing_status: "active",
+              },
+            },
+            {
+              onSuccess: () => {
+                toast({
+                  title: "Property Approved",
+                  description: "The property has been approved and is now available for investment.",
+                });
+                refetch();
+              },
+              onError: (error: any) => {
+                console.error("Error approving property:", error);
+                toast({
+                  title: "Approval Failed",
+                  description: error.message || "Failed to approve property.",
+                  variant: "destructive",
+                });
+              },
             }
+          );
+          break;
 
-            toast({
-              title: "Token Approved",
-              description:
-                "The tokenization has been approved and is now available for investment.",
-            });
+        case "Delist":
+          updatePropertyMutation.mutate(
+            {
+              id: propertyId,
+              data: {
+                listing_status: "suspended",
+              },
+            },
+            {
+              onSuccess: () => {
+                toast({
+                  title: "Property Delisted",
+                  description:
+                    "The property has been delisted and removed from active listings.",
+                });
+                refetch();
+              },
+              onError: (error: any) => {
+                console.error("Error delisting property:", error);
+                toast({
+                  title: "Delisting Failed",
+                  description: error.message || "Failed to delist property.",
+                  variant: "destructive",
+                });
+              },
+            }
+          );
+          break;
 
-            // Refresh the properties list
-            refetch();
-          } catch (error: any) {
-            console.error("Error approving token:", error);
-            toast({
-              title: "Approval Failed",
-              description: error.message || "Failed to approve tokenization.",
-              variant: "destructive",
-            });
+        case "Reactivate":
+          updatePropertyMutation.mutate(
+            {
+              id: propertyId,
+              data: {
+                approval_status: "approved",
+                listing_status: "active",
+              },
+            },
+            {
+              onSuccess: () => {
+                toast({
+                  title: "Property Relisted",
+                  description:
+                    "The property has been relisted and is now available for investment.",
+                });
+                refetch();
+              },
+              onError: (error: any) => {
+                console.error("Error reactivating property:", error);
+                toast({
+                  title: "Reactivation Failed",
+                  description: error.message || "Failed to reactivate property.",
+                  variant: "destructive",
+                });
+              },
+            }
+          );
+          break;
+
+        case "ApproveToken":
+          // Find the tokenization that needs approval
+          const property = managedProperties.find((p) => p.id === propertyId);
+          const tokenization = property?.tokenizations?.find(
+            (token: any) => token.status === "pending" || token.status === "draft"
+          );
+
+          if (tokenization) {
+            // Update tokenization status to approved
+            try {
+              const { error } = await supabase
+                .from("tokenizations")
+                .update({
+                  status: "active",
+                  approved_at: new Date().toISOString(),
+                  approved_by: (await supabase.auth.getUser()).data.user?.id,
+                })
+                .eq("id", tokenization.id);
+
+              if (error) {
+                throw error;
+              }
+
+              toast({
+                title: "Token Approved",
+                description:
+                  "The tokenization has been approved and is now available for investment.",
+              });
+
+              // Refresh the properties list
+              refetch();
+            } catch (error: any) {
+              console.error("Error approving token:", error);
+              toast({
+                title: "Approval Failed",
+                description: error.message || "Failed to approve tokenization.",
+                variant: "destructive",
+              });
+            }
           }
-        }
-        break;
-      case "Delete":
-        updatePropertyMutation.mutate({
-          id: propertyId,
-          data: { listing_status: "deleted" },
-        });
-        toast({
-          title: "Property Deleted",
-          description: "The property has been deleted.",
-          variant: "destructive",
-        });
-        break;
+          break;
+
+        case "Delete":
+          updatePropertyMutation.mutate(
+            {
+              id: propertyId,
+              data: { listing_status: "deleted" },
+            },
+            {
+              onSuccess: () => {
+                toast({
+                  title: "Property Deleted",
+                  description: "The property has been deleted.",
+                  variant: "destructive",
+                });
+                refetch();
+              },
+              onError: (error: any) => {
+                console.error("Error deleting property:", error);
+                toast({
+                  title: "Deletion Failed",
+                  description: error.message || "Failed to delete property.",
+                  variant: "destructive",
+                });
+              },
+            }
+          );
+          break;
+      }
+    } catch (error: any) {
+      console.error("Error in handleConfirmedAction:", error);
+      toast({
+        title: "Action Failed",
+        description: error.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessingAction(false);
     }
   };
 
@@ -1012,13 +1096,14 @@ const PropertyManagement = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmedAction}
+              disabled={isProcessingAction}
               className={
                 confirmDialog.variant === "destructive"
                   ? "bg-destructive text-white hover:bg-destructive/90"
                   : ""
               }
             >
-              Confirm
+              {isProcessingAction ? "Processing..." : "Confirm"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

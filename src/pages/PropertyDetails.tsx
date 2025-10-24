@@ -205,7 +205,7 @@ export default function PropertyDetails() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             <Link to="/browse">
-              <Button variant="ghost" className="flex items-center">
+              <Button variant="outline" className="flex items-center">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Properties
               </Button>

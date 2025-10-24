@@ -41,9 +41,9 @@ export default function PropertyCard({
     if (!tokenizationType) return null;
     
     const typeConfig = {
-      equity: { label: "Ownership", className: "bg-primary/10 text-primary border border-primary/20" },
-      debt: { label: "Lending", className: "bg-secondary/10 text-secondary border border-secondary/20" },
-      revenue: { label: "Revenue", className: "bg-accent/10 text-accent border border-accent/20" },
+      equity: { label: "Ownership", className: "bg-green-500 text-white border-green-500 dark:bg-green-600 dark:text-white dark:border-green-600" },
+      debt: { label: "Lending", className: "bg-blue-500 text-white border-blue-500 dark:bg-blue-600 dark:text-white dark:border-blue-600" },
+      revenue: { label: "Revenue", className: "bg-purple-500 text-white border-purple-500 dark:bg-purple-600 dark:text-white dark:border-purple-600" },
     };
     
     const config = typeConfig[tokenizationType];
@@ -93,7 +93,7 @@ export default function PropertyCard({
       {/* Property Info */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+          <h3 className="text-lg font-semibold text-foreground truncate">{title}</h3>
           <div className="flex items-center text-muted-foreground text-sm mt-1">
             <MapPin className="h-4 w-4 mr-1" />
             {location}
