@@ -890,6 +890,44 @@ const PropertyManagement = () => {
                                   <Edit className="h-4 w-4 mr-1" />
                                   <span className="hidden sm:inline">Edit</span>
                                 </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={async () => {
+                                    try {
+                                      setIsProcessingAction(true);
+                                      toast({
+                                        title: "Retrying Treasury Creation",
+                                        description: "Checking for missing treasury accounts...",
+                                      });
+
+                                      const { data, error } = await supabase.functions.invoke(
+                                        'retry-treasury-creation'
+                                      );
+
+                                      if (error) throw error;
+
+                                      if (data.success) {
+                                        toast({
+                                          title: "Treasury Retry Complete",
+                                          description: `Fixed ${data.summary.successfully_fixed} treasuries, ${data.summary.failed} failed`,
+                                        });
+                                      }
+                                    } catch (error: any) {
+                                      toast({
+                                        title: "Treasury Retry Failed",
+                                        description: error.message,
+                                        variant: "destructive",
+                                      });
+                                    } finally {
+                                      setIsProcessingAction(false);
+                                    }
+                                  }}
+                                  disabled={isProcessingAction}
+                                >
+                                  <DollarSign className="h-4 w-4 mr-1" />
+                                  <span className="hidden sm:inline">Retry Treasury</span>
+                                </Button>
 
                                 {/* More Actions Dropdown - Only show if there are additional actions */}
                                 {getDropdownActions(property).length > 0 && (
