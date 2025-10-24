@@ -296,16 +296,27 @@ async function generateDocumentHash(content: Uint8Array): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Generate QR code using qrcode library
+// Generate QR code using external API service (works in Deno)
 async function generateQRCode(url: string): Promise<string> {
   try {
-    const QRCode = (await import('https://esm.sh/qrcode@1.5.4')).default;
-    return await QRCode.toDataURL(url, {
-      errorCorrectionLevel: 'H',
-      margin: 1,
-      width: 200,
-      color: { dark: '#000000', light: '#FFFFFF' }
-    });
+    // Use qrserver.com API to generate QR code as PNG
+    const encodedUrl = encodeURIComponent(url);
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedUrl}&format=png&ecc=H&margin=10`;
+    
+    console.log('Generating QR code for URL:', url);
+    
+    // Fetch the QR code image and convert to base64 data URL
+    const response = await fetch(qrUrl);
+    if (!response.ok) {
+      throw new Error(`QR API returned ${response.status}`);
+    }
+    
+    const buffer = await response.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+    const dataUrl = `data:image/png;base64,${base64}`;
+    
+    console.log('QR code generated successfully');
+    return dataUrl;
   } catch (error) {
     console.error('QR code generation failed:', error);
     throw error;
