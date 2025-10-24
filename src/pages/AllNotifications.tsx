@@ -39,24 +39,26 @@ const AllNotifications = () => {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'dividend':
-        return DollarSign;
-      case 'investment':
+      case 'investment_success':
         return TrendingUp;
-      case 'property':
+      case 'treasury_created':
         return Building2;
-      case 'governance':
-        return Users;
-      case 'security':
-        return Shield;
-      case 'reminder':
-        return Calendar;
-      case 'alert':
-        return AlertTriangle;
-      case 'info':
-        return Info;
-      case 'success':
+      case 'tokenization_approved':
         return CheckCircle;
+      case 'usdc_associated':
+        return DollarSign;
+      case 'hedera_account_created':
+        return CheckCircle;
+      case 'reservation_expired':
+        return Calendar;
+      case 'system_summary':
+        return Info;
+      case 'dividend_distributed':
+        return DollarSign;
+      case 'proposal_created':
+        return Users;
+      case 'security_alert':
+        return Shield;
       default:
         return Bell;
     }
@@ -64,24 +66,26 @@ const AllNotifications = () => {
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'dividend':
+      case 'investment_success':
         return 'text-green-600 bg-green-50';
-      case 'investment':
-        return 'text-blue-600 bg-blue-50';
-      case 'property':
+      case 'treasury_created':
         return 'text-purple-600 bg-purple-50';
-      case 'governance':
-        return 'text-orange-600 bg-orange-50';
-      case 'security':
-        return 'text-red-600 bg-red-50';
-      case 'reminder':
-        return 'text-yellow-600 bg-yellow-50';
-      case 'alert':
-        return 'text-red-600 bg-red-50';
-      case 'info':
+      case 'tokenization_approved':
         return 'text-blue-600 bg-blue-50';
-      case 'success':
+      case 'usdc_associated':
         return 'text-green-600 bg-green-50';
+      case 'hedera_account_created':
+        return 'text-blue-600 bg-blue-50';
+      case 'reservation_expired':
+        return 'text-orange-600 bg-orange-50';
+      case 'system_summary':
+        return 'text-gray-600 bg-gray-50';
+      case 'dividend_distributed':
+        return 'text-green-600 bg-green-50';
+      case 'proposal_created':
+        return 'text-orange-600 bg-orange-50';
+      case 'security_alert':
+        return 'text-red-600 bg-red-50';
       default:
         return 'text-gray-600 bg-gray-50';
     }
@@ -124,14 +128,16 @@ const AllNotifications = () => {
 
   const notificationTypes = [
     { value: 'all', label: 'All Types' },
-    { value: 'dividend', label: 'Dividends' },
-    { value: 'investment', label: 'Investments' },
-    { value: 'property', label: 'Properties' },
-    { value: 'governance', label: 'Governance' },
-    { value: 'security', label: 'Security' },
-    { value: 'reminder', label: 'Reminders' },
-    { value: 'alert', label: 'Alerts' },
-    { value: 'info', label: 'Information' },
+    { value: 'investment_success', label: 'Investment Success' },
+    { value: 'treasury_created', label: 'Treasury Created' },
+    { value: 'tokenization_approved', label: 'Tokenization Approved' },
+    { value: 'usdc_associated', label: 'USDC Associated' },
+    { value: 'hedera_account_created', label: 'Account Created' },
+    { value: 'reservation_expired', label: 'Reservation Expired' },
+    { value: 'system_summary', label: 'System Summary' },
+    { value: 'dividend_distributed', label: 'Dividend Distributed' },
+    { value: 'proposal_created', label: 'Proposal Created' },
+    { value: 'security_alert', label: 'Security Alert' },
   ];
 
   return (
