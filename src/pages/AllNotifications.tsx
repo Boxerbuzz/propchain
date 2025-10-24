@@ -31,7 +31,7 @@ import { formatDistanceToNow } from 'date-fns';
 const AllNotifications = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { notifications, isLoading, markAllAsRead, clearReadNotifications } = useNotifications();
+  const { notifications, isLoading, markAllAsRead, clearReadNotifications } = useNotifications(true);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');

@@ -1,16 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabaseService } from "@/services/supabaseService";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Notification } from "../types";
 
-export const useNotifications = () => {
+export const useNotifications = (showAll = false) => {
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
   const notificationsQuery = useQuery({
-    queryKey: ['notifications', user?.id],
+    queryKey: ['notifications', user?.id, showAll],
     queryFn: async () => {
       if (!isAuthenticated || !user?.id) return [];
+      
+      if (showAll) {
+        // Fetch all notifications (read and unread)
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        return data as unknown as Notification[];
+      }
+      
       return await supabaseService.notifications.listUnreadByUser(user.id) as unknown as Notification[];
     },
     enabled: !!user?.id && isAuthenticated,
