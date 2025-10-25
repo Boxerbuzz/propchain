@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { VaultMigrationButton } from "@/components/VaultMigrationButton";
+import { TokenDistributionButton } from "@/components/TokenDistributionButton";
 import { AutomationJobsMonitor } from "@/components/AutomationJobsMonitor";
 
 const PropertyManagement = () => {
@@ -1059,6 +1060,7 @@ const PropertyManagement = () => {
                   Generate Report
                 </Button>
                 <VaultMigrationButton />
+                <TokenDistributionButton />
                 <Button
                   variant="outline"
                   className="w-full justify-start hidden"
