@@ -25,6 +25,8 @@ import { motion } from "framer-motion";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useWalletTransactions } from "@/hooks/useWalletTransactions";
+import { useTokenHoldings } from "@/hooks/useTokenHoldings";
+import { Separator } from "@/components/ui/separator";
 
 export default function AccountDashboard() {
   const navigate = useNavigate();
@@ -33,6 +35,7 @@ export default function AccountDashboard() {
   const { balance: hederaBalance, syncBalance, isSyncing } = useWalletBalance();
   const { currency, formatAmount } = useCurrency();
   const { transactions: allTransactions } = useWalletTransactions();
+  const { data: tokenHoldings, isLoading: isLoadingTokens } = useTokenHoldings();
 
   const totalValueNgn =
     (hederaBalance?.balanceNgn || 0) + (hederaBalance?.usdcBalanceNgn || 0);
@@ -658,6 +661,77 @@ export default function AccountDashboard() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Property Tokens Section */}
+                  {!isLoadingTokens && tokenHoldings && tokenHoldings.length > 0 && (
+                    <>
+                      <Separator className="my-0" />
+                      <div className="p-4 bg-muted/30">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-sm">Property Tokens</h3>
+                            <Badge variant="secondary" className="text-xs">
+                              {tokenHoldings.length}
+                            </Badge>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate("/portfolio")}
+                            className="text-xs"
+                          >
+                            View All →
+                          </Button>
+                        </div>
+                        <div className="space-y-3">
+                          {tokenHoldings.map((token) => (
+                            <div
+                              key={token.id}
+                              onClick={() => navigate(`/portfolio/${token.tokenization_id}`)}
+                              className="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-3 bg-card rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
+                            >
+                              {/* Column 1: Icon */}
+                              <div className="relative">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20">
+                                  <span className="text-sm font-bold text-primary">
+                                    {token.token_symbol.substring(0, 2)}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Column 2: Token Info */}
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className="font-semibold text-sm truncate">
+                                    {token.token_symbol}
+                                  </p>
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-xs h-5 capitalize"
+                                  >
+                                    {token.tokenization_type}
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {token.property_title}
+                                </p>
+                              </div>
+
+                              {/* Column 3: Balance & Action */}
+                              <div className="text-right">
+                                <p className="font-semibold text-sm">
+                                  {token.balance.toLocaleString()}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  tokens
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>

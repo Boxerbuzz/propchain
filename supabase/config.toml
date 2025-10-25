@@ -3,6 +3,8 @@ project_id = "zjtqptljuggbymcoovey"
 verify_jwt = false
 [functions.paystack-webhook]
 verify_jwt = false
+[functions.process-refunds]
+verify_jwt = false
 [functions.fund-wallet-paystack]
 verify_jwt = true
 [functions.withdraw-to-bank]
