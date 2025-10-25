@@ -63,14 +63,14 @@ serve(async (req) => {
       .from('investments')
       .select(`
         *,
-        users!inner (
+        investor:users!inner (
           id,
           hedera_account_id,
-          kyc_status
-        ),
-        kyc_verifications (
-          status,
-          kyc_level
+          kyc_status,
+          kyc_verifications (
+            status,
+            kyc_level
+          )
         )
       `)
       .eq('tokenization_id', tokenization_id)
@@ -107,8 +107,8 @@ serve(async (req) => {
     for (const investment of investments) {
       console.log(`[DISTRIBUTE-TOKENS] Processing investment: ${investment.id}`);
 
-      const user = investment.users;
-      const kyc = investment.kyc_verifications?.[0];
+      const user = investment.investor;
+      const kyc = investment.investor?.kyc_verifications?.[0];
 
       // Check if user has KYC verification and Hedera account
       const isKycVerified = user.kyc_status === 'verified' || kyc?.status === 'verified';
