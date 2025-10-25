@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Activity, 
-  Search, 
-  Filter, 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Activity,
+  Search,
   ArrowLeft,
   DollarSign,
   TrendingUp,
@@ -26,16 +31,16 @@ import {
   Wallet,
   CreditCard,
   Banknote,
-  Coins
-} from 'lucide-react';
-import { useUnifiedActivityFeed } from '@/hooks/useUnifiedActivityFeed';
-import { useWalletTransactions } from '@/hooks/useWalletTransactions';
-import { useActivityFeed } from '@/hooks/useActivityFeed';
-import { formatDistanceToNow } from 'date-fns';
+  Coins,
+} from "lucide-react";
+import { useUnifiedActivityFeed } from "@/hooks/useUnifiedActivityFeed";
+import { useWalletTransactions } from "@/hooks/useWalletTransactions";
+import { useActivityFeed } from "@/hooks/useActivityFeed";
+import { formatDistanceToNow } from "date-fns";
 
 const AllActivities = () => {
   const navigate = useNavigate();
-  
+
   // Format number utility function
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -45,44 +50,47 @@ const AllActivities = () => {
       maximumFractionDigits: 0,
     }).format(num);
   };
-  const { activities: unifiedActivities, isLoading: unifiedLoading } = useUnifiedActivityFeed(50);
-  const { transactions, isLoading: transactionsLoading } = useWalletTransactions();
-  const { activities: activityLogs, isLoading: activityLoading } = useActivityFeed(50);
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterTimeframe, setFilterTimeframe] = useState('all');
+  const { activities: unifiedActivities, isLoading: unifiedLoading } =
+    useUnifiedActivityFeed(50);
+  const { transactions, isLoading: transactionsLoading } =
+    useWalletTransactions();
+  const { activities: activityLogs, isLoading: activityLoading } =
+    useActivityFeed(50);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterTimeframe, setFilterTimeframe] = useState("all");
 
   const getActivityIcon = (type: string, status?: string) => {
     switch (type) {
-      case 'investment':
+      case "investment":
         return TrendingUp;
-      case 'dividend':
+      case "dividend":
         return DollarSign;
-      case 'property_event':
+      case "property_event":
         return Building2;
-      case 'governance':
+      case "governance":
         return Users;
-      case 'security':
+      case "security":
         return Shield;
-      case 'transaction':
+      case "transaction":
         return ArrowUpDown;
-      case 'wallet':
+      case "wallet":
         return Wallet;
-      case 'payment':
+      case "payment":
         return CreditCard;
-      case 'deposit':
+      case "deposit":
         return Banknote;
-      case 'withdrawal':
+      case "withdrawal":
         return Coins;
-      case 'reminder':
+      case "reminder":
         return Calendar;
-      case 'alert':
+      case "alert":
         return AlertTriangle;
-      case 'info':
+      case "info":
         return Info;
-      case 'success':
+      case "success":
         return CheckCircle;
       default:
         return Activity;
@@ -91,13 +99,13 @@ const AllActivities = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
-      case 'success':
+      case "completed":
+      case "success":
         return CheckCircle2;
-      case 'pending':
+      case "pending":
         return Clock;
-      case 'failed':
-      case 'error':
+      case "failed":
+      case "error":
         return XCircle;
       default:
         return Info;
@@ -106,139 +114,158 @@ const AllActivities = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-      case 'success':
-        return 'text-green-600 bg-green-50';
-      case 'pending':
-        return 'text-yellow-600 bg-yellow-50';
-      case 'failed':
-      case 'error':
-        return 'text-red-600 bg-red-50';
+      case "completed":
+      case "success":
+        return "text-green-600 bg-green-50";
+      case "pending":
+        return "text-yellow-600 bg-yellow-50";
+      case "failed":
+      case "error":
+        return "text-red-600 bg-red-50";
       default:
-        return 'text-blue-600 bg-blue-50';
+        return "text-blue-600 bg-blue-50";
     }
   };
 
   const getActivityTypeColor = (type: string) => {
     switch (type) {
-      case 'investment':
-        return 'text-blue-600 bg-blue-50';
-      case 'dividend':
-        return 'text-green-600 bg-green-50';
-      case 'property_event':
-        return 'text-purple-600 bg-purple-50';
-      case 'governance':
-        return 'text-orange-600 bg-orange-50';
-      case 'security':
-        return 'text-red-600 bg-red-50';
-      case 'transaction':
-        return 'text-gray-600 bg-gray-50';
-      case 'wallet':
-        return 'text-indigo-600 bg-indigo-50';
-      case 'payment':
-        return 'text-pink-600 bg-pink-50';
+      case "investment":
+        return "text-blue-600 bg-blue-50";
+      case "dividend":
+        return "text-green-600 bg-green-50";
+      case "property_event":
+        return "text-purple-600 bg-purple-50";
+      case "governance":
+        return "text-orange-600 bg-orange-50";
+      case "security":
+        return "text-red-600 bg-red-50";
+      case "transaction":
+        return "text-gray-600 bg-gray-50";
+      case "wallet":
+        return "text-indigo-600 bg-indigo-50";
+      case "payment":
+        return "text-pink-600 bg-pink-50";
       default:
-        return 'text-gray-600 bg-gray-50';
+        return "text-gray-600 bg-gray-50";
     }
   };
 
   // Combine all activities
   const allActivities = [
-    ...unifiedActivities.map(activity => ({
+    ...unifiedActivities.map((activity) => ({
       ...activity,
-      source: 'unified'
+      source: "unified",
     })),
-    ...transactions.map(tx => ({
+    ...transactions.map((tx) => ({
       id: `tx-${tx.id}`,
-      type: 'transaction',
-      title: tx.type === 'investment' ? 'Investment' : 
-             tx.type === 'dividend' ? 'Dividend Payment' :
-             tx.type === 'withdrawal' ? 'Withdrawal' :
-             tx.type === 'deposit' ? 'Deposit' : 'Transaction',
+      type: "transaction",
+      title:
+        tx.type === "investment"
+          ? "Investment"
+          : tx.type === "dividend"
+          ? "Dividend Payment"
+          : tx.type === "withdrawal"
+          ? "Withdrawal"
+          : tx.type === "deposit"
+          ? "Deposit"
+          : "Transaction",
       description: tx.description || `${tx.type} transaction`,
-      status: tx.status === 'completed' ? 'completed' : 
-              tx.status === 'failed' ? 'failed' : 'pending',
+      status:
+        tx.status === "completed"
+          ? "completed"
+          : tx.status === "failed"
+          ? "failed"
+          : "pending",
       timestamp: tx.timestamp,
       amount: tx.amount,
       currency: tx.currency,
-      source: 'transaction'
+      source: "transaction",
     })),
-    ...activityLogs.map(activity => ({
+    ...activityLogs.map((activity) => ({
       id: `log-${activity.id}`,
-      type: activity.activity_type?.includes('investment') ? 'investment' : 'property_event',
-      title: activity.activity_type?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Activity',
-      description: activity.description || '',
-      status: 'info',
+      type: activity.activity_type?.includes("investment")
+        ? "investment"
+        : "property_event",
+      title:
+        activity.activity_type
+          ?.replace(/_/g, " ")
+          .replace(/\b\w/g, (l: string) => l.toUpperCase()) || "Activity",
+      description: activity.description || "",
+      status: "info",
       timestamp: activity.created_at,
-      source: 'activity_log'
-    }))
-  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      source: "activity_log",
+    })),
+  ].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
 
-  const filteredActivities = allActivities.filter(activity => {
-    const matchesSearch = activity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         activity.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || activity.type === filterType;
-    const matchesStatus = filterStatus === 'all' || activity.status === filterStatus;
-    
+  const filteredActivities = allActivities.filter((activity) => {
+    const matchesSearch =
+      activity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      activity.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = filterType === "all" || activity.type === filterType;
+    const matchesStatus =
+      filterStatus === "all" || activity.status === filterStatus;
+
     // Timeframe filter
     let matchesTimeframe = true;
-    if (filterTimeframe !== 'all') {
+    if (filterTimeframe !== "all") {
       const now = new Date();
       const activityDate = new Date(activity.timestamp);
-      
+
       switch (filterTimeframe) {
-        case 'today':
+        case "today":
           matchesTimeframe = activityDate.toDateString() === now.toDateString();
           break;
-        case 'week':
+        case "week":
           const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
           matchesTimeframe = activityDate >= weekAgo;
           break;
-        case 'month':
+        case "month":
           const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
           matchesTimeframe = activityDate >= monthAgo;
           break;
       }
     }
-    
+
     return matchesSearch && matchesType && matchesStatus && matchesTimeframe;
   });
 
   const handleActivityClick = (activity: any) => {
     // Navigate to relevant page based on activity type
-    if (activity.type === 'investment' || activity.type === 'property_event') {
-      navigate('/portfolio');
-    } else if (activity.type === 'transaction') {
-      navigate('/account/transactions');
-    } else if (activity.type === 'governance') {
-      navigate('/portfolio');
+    if (activity.type === "investment" || activity.type === "property_event") {
+      navigate("/portfolio");
+    } else if (activity.type === "transaction") {
+      navigate("/account/transactions");
+    } else if (activity.type === "governance") {
+      navigate("/portfolio");
     }
   };
 
   const activityTypes = [
-    { value: 'all', label: 'All Types' },
-    { value: 'investment', label: 'Investments' },
-    { value: 'dividend', label: 'Dividends' },
-    { value: 'property_event', label: 'Property Events' },
-    { value: 'governance', label: 'Governance' },
-    { value: 'transaction', label: 'Transactions' },
-    { value: 'wallet', label: 'Wallet' },
-    { value: 'security', label: 'Security' },
+    { value: "all", label: "All Types" },
+    { value: "investment", label: "Investments" },
+    { value: "dividend", label: "Dividends" },
+    { value: "property_event", label: "Property Events" },
+    { value: "governance", label: "Governance" },
+    { value: "transaction", label: "Transactions" },
+    { value: "wallet", label: "Wallet" },
+    { value: "security", label: "Security" },
   ];
 
   const statusTypes = [
-    { value: 'all', label: 'All Status' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'failed', label: 'Failed' },
-    { value: 'info', label: 'Information' },
+    { value: "all", label: "All Status" },
+    { value: "completed", label: "Completed" },
+    { value: "pending", label: "Pending" },
+    { value: "failed", label: "Failed" },
+    { value: "info", label: "Information" },
   ];
 
   const timeframes = [
-    { value: 'all', label: 'All Time' },
-    { value: 'today', label: 'Today' },
-    { value: 'week', label: 'This Week' },
-    { value: 'month', label: 'This Month' },
+    { value: "all", label: "All Time" },
+    { value: "today", label: "Today" },
+    { value: "week", label: "This Week" },
+    { value: "month", label: "This Month" },
   ];
 
   const isLoading = unifiedLoading || transactionsLoading || activityLoading;
@@ -331,10 +358,12 @@ const AllActivities = () => {
             <span>Activities ({filteredActivities.length})</span>
             <div className="flex gap-2">
               <Badge variant="outline">
-                {allActivities.filter(a => a.status === 'completed').length} completed
+                {allActivities.filter((a) => a.status === "completed").length}{" "}
+                completed
               </Badge>
               <Badge variant="outline">
-                {allActivities.filter(a => a.status === 'pending').length} pending
+                {allActivities.filter((a) => a.status === "pending").length}{" "}
+                pending
               </Badge>
             </div>
           </CardTitle>
@@ -359,21 +388,29 @@ const AllActivities = () => {
           ) : filteredActivities.length === 0 ? (
             <div className="p-6 text-center">
               <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No activities found</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                No activities found
+              </h3>
               <p className="text-muted-foreground">
-                {searchTerm || filterType !== 'all' || filterStatus !== 'all' || filterTimeframe !== 'all'
-                  ? 'Try adjusting your filters to see more activities.'
-                  : 'You have no activities at the moment.'}
+                {searchTerm ||
+                filterType !== "all" ||
+                filterStatus !== "all" ||
+                filterTimeframe !== "all"
+                  ? "Try adjusting your filters to see more activities."
+                  : "You have no activities at the moment."}
               </p>
             </div>
           ) : (
             <div className="divide-y divide-border">
               {filteredActivities.map((activity) => {
-                const ActivityIcon = getActivityIcon(activity.type, activity.status);
+                const ActivityIcon = getActivityIcon(
+                  activity.type,
+                  activity.status
+                );
                 const StatusIcon = getStatusIcon(activity.status);
                 const typeColorClasses = getActivityTypeColor(activity.type);
                 const statusColorClasses = getStatusColor(activity.status);
-                
+
                 return (
                   <div
                     key={activity.id}
@@ -390,13 +427,21 @@ const AllActivities = () => {
                             {activity.title}
                           </h4>
                           <div className="flex items-center gap-2">
-                            {'amount' in activity && activity.amount && (
+                            {"amount" in activity && activity.amount && (
                               <span className="text-sm font-semibold text-foreground">
-                                {'currency' in activity && activity.currency === 'NGN' ? formatNumber(activity.amount as number) : `$${(activity.amount as number).toLocaleString()}`}
+                                {"currency" in activity &&
+                                activity.currency === "NGN"
+                                  ? formatNumber(activity.amount as number)
+                                  : `$${(
+                                      activity.amount as number
+                                    ).toLocaleString()}`}
                               </span>
                             )}
                             <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+                              {formatDistanceToNow(
+                                new Date(activity.timestamp),
+                                { addSuffix: true }
+                              )}
                             </span>
                           </div>
                         </div>
@@ -405,9 +450,11 @@ const AllActivities = () => {
                         </p>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">
-                            {activity.type.replace('_', ' ')}
+                            {activity.type.replace("_", " ")}
                           </Badge>
-                          <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${statusColorClasses}`}>
+                          <div
+                            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${statusColorClasses}`}
+                          >
                             <StatusIcon className="h-3 w-3" />
                             {activity.status}
                           </div>
