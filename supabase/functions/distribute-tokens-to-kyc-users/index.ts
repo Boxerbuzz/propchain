@@ -67,7 +67,7 @@ serve(async (req) => {
           id,
           hedera_account_id,
           kyc_status,
-          kyc_verifications (
+          kyc_verifications!kyc_verifications_user_id_fkey (
             status,
             kyc_level
           )
