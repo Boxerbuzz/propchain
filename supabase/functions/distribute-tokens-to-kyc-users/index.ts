@@ -6,6 +6,7 @@ import {
   AccountId,
   TokenId,
   TokenAssociateTransaction,
+  TokenGrantKycTransaction,
   TransferTransaction,
   Status
 } from "https://esm.sh/@hashgraph/sdk@2.73.1";
@@ -256,10 +257,11 @@ serve(async (req) => {
       console.log(`[DISTRIBUTE-TOKENS] Retrieved private key from Vault for user ${user.id}`);
 
       let associationTxId: string | undefined;
+      let grantKycTxId: string | undefined;
       let transferTxId: string | undefined;
 
       try {
-        // Associate token with user's account
+        // Step 1: Associate token with user's account
         console.log(`[DISTRIBUTE-TOKENS] Associating token ${tokenization.token_id} with account ${wallet.hedera_account_id}`);
         
         const userPrivKey = PrivateKey.fromStringDer(userPrivateKey);
@@ -285,7 +287,29 @@ serve(async (req) => {
           throw new Error(`Token association failed with status: ${associateReceipt.status}`);
         }
 
-        // Transfer tokens from operator (treasury) to user
+        // Step 2: Grant KYC to the user's account
+        console.log(`[DISTRIBUTE-TOKENS] Granting KYC for account ${wallet.hedera_account_id}`);
+        
+        const operatorPrivKey = PrivateKey.fromStringECDSA(operatorKey);
+
+        const grantKycTx = new TokenGrantKycTransaction()
+          .setAccountId(userAccountId)
+          .setTokenId(tokenIdObj)
+          .freezeWith(client);
+
+        const grantKycSignedTx = await grantKycTx.sign(operatorPrivKey);
+        const grantKycSubmit = await grantKycSignedTx.execute(client);
+        const grantKycReceipt = await grantKycSubmit.getReceipt(client);
+
+        grantKycTxId = grantKycSubmit.transactionId.toString();
+
+        if (grantKycReceipt.status !== Status.Success) {
+          throw new Error(`KYC grant failed with status: ${grantKycReceipt.status}`);
+        }
+
+        console.log(`[DISTRIBUTE-TOKENS] KYC granted successfully for ${wallet.hedera_account_id}. Tx ID: ${grantKycTxId}`);
+
+        // Step 3: Transfer tokens from operator (treasury) to user
         console.log(`[DISTRIBUTE-TOKENS] Transferring ${investment.tokens_requested} tokens to ${wallet.hedera_account_id}`);
         
         const operatorAccountId = AccountId.fromString(operatorId);
@@ -330,6 +354,7 @@ serve(async (req) => {
           status: 'failed',
           reason: errorMessage,
           association_tx: associationTxId,
+          grant_kyc_tx: grantKycTxId,
           transfer_tx: transferTxId
         });
         continue;
@@ -370,6 +395,7 @@ serve(async (req) => {
             token_id: tokenization.token_id,
             tokens_received: investment.tokens_requested,
             association_tx: associationTxId,
+            grant_kyc_tx: grantKycTxId,
             transfer_tx: transferTxId
           }
         });
@@ -388,6 +414,7 @@ serve(async (req) => {
             token_id: tokenization.token_id,
             tokens_received: investment.tokens_requested,
             association_tx: associationTxId,
+            grant_kyc_tx: grantKycTxId,
             transfer_tx: transferTxId
           }
         });
@@ -399,6 +426,7 @@ serve(async (req) => {
         status: 'distributed',
         tokens: investment.tokens_requested,
         association_tx: associationTxId,
+        grant_kyc_tx: grantKycTxId,
         transfer_tx: transferTxId
       });
 
