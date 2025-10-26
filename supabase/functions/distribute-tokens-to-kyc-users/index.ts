@@ -1,5 +1,14 @@
 import { serve } from "https://deno.land/std@0.178.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  Client,
+  PrivateKey,
+  AccountId,
+  TokenId,
+  TokenAssociateTransaction,
+  TransferTransaction,
+  Status
+} from "https://esm.sh/@hashgraph/sdk@2.73.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,6 +34,20 @@ serve(async (req) => {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Initialize Hedera client with operator credentials
+    const operatorId = Deno.env.get('HEDERA_OPERATOR_ID');
+    const operatorKey = Deno.env.get('HEDERA_OPERATOR_PRIVATE_KEY');
+
+    if (!operatorId || !operatorKey) {
+      throw new Error('Missing HEDERA_OPERATOR_ID or HEDERA_OPERATOR_PRIVATE_KEY');
+    }
+
+    const client = Client.forTestnet();
+    client.setOperator(
+      AccountId.fromString(operatorId),
+      PrivateKey.fromStringECDSA(operatorKey)
     );
 
     console.log(`[DISTRIBUTE-TOKENS] Starting token distribution for tokenization: ${tokenization_id}`);
@@ -172,63 +195,142 @@ serve(async (req) => {
         continue;
       }
 
-      // Associate user's account with the token first
-      console.log(`[DISTRIBUTE-TOKENS] Associating token with user account`);
-      const associateResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/associate-hedera-token`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tokenId: tokenization.token_id,
-          accountId: user.hedera_account_id,
-        }),
-      });
+      // Get user's wallet details from database
+      console.log(`[DISTRIBUTE-TOKENS] Loading wallet for user ${user.id}`);
+      const { data: wallet, error: walletError } = await supabase
+        .from('wallets')
+        .select('id, hedera_account_id, wallet_type, vault_secret_id')
+        .eq('user_id', user.id)
+        .eq('wallet_type', 'hedera')
+        .single();
 
-      const associateResult = await associateResponse.json();
-
-      if (!associateResult.success) {
-        console.error(`[DISTRIBUTE-TOKENS] Token association failed for user ${user.id}:`, associateResult.error);
+      if (walletError || !wallet || !wallet.vault_secret_id) {
+        console.log(`[DISTRIBUTE-TOKENS] Skipping user ${user.id} - No custodial wallet or vault secret`);
         
-        results.failed++;
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: user.id,
+            title: 'External Wallet Token Association Required',
+            message: `Your investment in "${tokenization.properties.title}" is ready, but you're using an external wallet. Please associate token ${tokenization.token_id} in your wallet to receive ${investment.tokens_requested} tokens.`,
+            notification_type: 'external_wallet_association_required',
+            action_data: {
+              investment_id: investment.id,
+              tokenization_id: tokenization_id,
+              token_id: tokenization.token_id,
+              tokens_pending: investment.tokens_requested
+            }
+          });
+
+        results.skipped++;
         results.details.push({
           user_id: user.id,
           investment_id: investment.id,
-          status: 'failed',
-          reason: `Token association failed: ${associateResult.error}`
+          status: 'skipped',
+          reason: 'External wallet - manual token association required'
         });
         continue;
       }
 
-      // Transfer tokens to user
-      console.log(`[DISTRIBUTE-TOKENS] Transferring ${investment.tokens_requested} tokens to user ${user.id}`);
-      const transferResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/transfer-hedera-tokens`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tokenId: tokenization.token_id,
-          fromAccountId: Deno.env.get("HEDERA_OPERATOR_ID"),
-          toAccountId: user.hedera_account_id,
-          amount: investment.tokens_requested,
-          memo: `Token distribution for investment in ${tokenization.properties.title}`,
-        }),
-      });
+      console.log(`[DISTRIBUTE-TOKENS] Wallet found for user ${user.id}: ${wallet.hedera_account_id}`);
 
-      const transferResult = await transferResponse.json();
+      // Get user's private key from Vault
+      const { data: userPrivateKey, error: vaultError } = await supabase.rpc(
+        'get_wallet_private_key',
+        { p_wallet_id: wallet.id }
+      );
 
-      if (!transferResult.success) {
-        console.error(`[DISTRIBUTE-TOKENS] Token transfer failed for user ${user.id}:`, transferResult.error);
+      if (vaultError || !userPrivateKey) {
+        console.error(`[DISTRIBUTE-TOKENS] Failed to retrieve private key for user ${user.id}:`, vaultError);
         
         results.failed++;
         results.details.push({
           user_id: user.id,
           investment_id: investment.id,
           status: 'failed',
-          reason: `Token transfer failed: ${transferResult.error}`
+          reason: 'Failed to retrieve wallet private key from Vault'
+        });
+        continue;
+      }
+
+      console.log(`[DISTRIBUTE-TOKENS] Retrieved private key from Vault for user ${user.id}`);
+
+      let associationTxId: string | undefined;
+      let transferTxId: string | undefined;
+
+      try {
+        // Associate token with user's account
+        console.log(`[DISTRIBUTE-TOKENS] Associating token ${tokenization.token_id} with account ${wallet.hedera_account_id}`);
+        
+        const userPrivKey = PrivateKey.fromStringDer(userPrivateKey);
+        const tokenIdObj = TokenId.fromString(tokenization.token_id);
+        const userAccountId = AccountId.fromString(wallet.hedera_account_id);
+
+        const associateTx = new TokenAssociateTransaction()
+          .setAccountId(userAccountId)
+          .setTokenIds([tokenIdObj])
+          .freezeWith(client);
+
+        const associateSignedTx = await associateTx.sign(userPrivKey);
+        const associateSubmit = await associateSignedTx.execute(client);
+        const associateReceipt = await associateSubmit.getReceipt(client);
+
+        associationTxId = associateSubmit.transactionId.toString();
+
+        // TOKEN_ALREADY_ASSOCIATED is not an error - treat as success
+        if (associateReceipt.status === Status.Success || 
+            associateReceipt.status === Status.TokenAlreadyAssociatedToAccount) {
+          console.log(`[DISTRIBUTE-TOKENS] Token association successful (status: ${associateReceipt.status})`);
+        } else {
+          throw new Error(`Token association failed with status: ${associateReceipt.status}`);
+        }
+
+        // Transfer tokens from operator (treasury) to user
+        console.log(`[DISTRIBUTE-TOKENS] Transferring ${investment.tokens_requested} tokens to ${wallet.hedera_account_id}`);
+        
+        const operatorAccountId = AccountId.fromString(operatorId);
+        const operatorPrivKey = PrivateKey.fromStringECDSA(operatorKey);
+
+        const transferTx = new TransferTransaction()
+          .addTokenTransfer(tokenIdObj, operatorAccountId, -investment.tokens_requested)
+          .addTokenTransfer(tokenIdObj, userAccountId, investment.tokens_requested)
+          .setTransactionMemo(`Token distribution for ${tokenization.properties.title}`)
+          .freezeWith(client);
+
+        const transferSignedTx = await transferTx.sign(operatorPrivKey);
+        const transferSubmit = await transferSignedTx.execute(client);
+        const transferReceipt = await transferSubmit.getReceipt(client);
+
+        transferTxId = transferSubmit.transactionId.toString();
+
+        if (transferReceipt.status !== Status.Success) {
+          throw new Error(`Token transfer failed with status: ${transferReceipt.status}`);
+        }
+
+        console.log(`[DISTRIBUTE-TOKENS] Token transfer successful. Transaction ID: ${transferTxId}`);
+
+      } catch (hederaError: any) {
+        console.error(`[DISTRIBUTE-TOKENS] Hedera operation failed for user ${user.id}:`, hederaError);
+        
+        let errorMessage = hederaError.message || 'Unknown Hedera error';
+        
+        // Map common Hedera error codes to user-friendly messages
+        if (errorMessage.includes('INSUFFICIENT_ACCOUNT_BALANCE')) {
+          errorMessage = 'Insufficient HBAR balance for transaction fees';
+        } else if (errorMessage.includes('INVALID_SIGNATURE')) {
+          errorMessage = 'Invalid signature - wallet key mismatch';
+        } else if (errorMessage.includes('TOKEN_NOT_ASSOCIATED')) {
+          errorMessage = 'Token not associated with account';
+        }
+
+        results.failed++;
+        results.details.push({
+          user_id: user.id,
+          investment_id: investment.id,
+          status: 'failed',
+          reason: errorMessage,
+          association_tx: associationTxId,
+          transfer_tx: transferTxId
         });
         continue;
       }
@@ -267,7 +369,8 @@ serve(async (req) => {
             tokenization_id: tokenization_id,
             token_id: tokenization.token_id,
             tokens_received: investment.tokens_requested,
-            transaction_id: transferResult.data?.transactionId
+            association_tx: associationTxId,
+            transfer_tx: transferTxId
           }
         });
 
@@ -284,7 +387,8 @@ serve(async (req) => {
             investment_id: investment.id,
             token_id: tokenization.token_id,
             tokens_received: investment.tokens_requested,
-            transaction_id: transferResult.data?.transactionId
+            association_tx: associationTxId,
+            transfer_tx: transferTxId
           }
         });
 
@@ -294,7 +398,8 @@ serve(async (req) => {
         investment_id: investment.id,
         status: 'distributed',
         tokens: investment.tokens_requested,
-        transaction_id: transferResult.data?.transactionId
+        association_tx: associationTxId,
+        transfer_tx: transferTxId
       });
 
       console.log(`[DISTRIBUTE-TOKENS] Successfully distributed tokens to user ${user.id}`);
