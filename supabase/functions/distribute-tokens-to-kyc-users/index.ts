@@ -268,23 +268,26 @@ serve(async (req) => {
         const tokenIdObj = TokenId.fromString(tokenization.token_id);
         const userAccountId = AccountId.fromString(wallet.hedera_account_id);
 
-        const associateTx = new TokenAssociateTransaction()
-          .setAccountId(userAccountId)
-          .setTokenIds([tokenIdObj])
-          .freezeWith(client);
+        try {
+          const associateTx = new TokenAssociateTransaction()
+            .setAccountId(userAccountId)
+            .setTokenIds([tokenIdObj])
+            .freezeWith(client);
 
-        const associateSignedTx = await associateTx.sign(userPrivKey);
-        const associateSubmit = await associateSignedTx.execute(client);
-        const associateReceipt = await associateSubmit.getReceipt(client);
+          const associateSignedTx = await associateTx.sign(userPrivKey);
+          const associateSubmit = await associateSignedTx.execute(client);
+          const associateReceipt = await associateSubmit.getReceipt(client);
 
-        associationTxId = associateSubmit.transactionId.toString();
-
-        // TOKEN_ALREADY_ASSOCIATED is not an error - treat as success
-        if (associateReceipt.status === Status.Success || 
-            associateReceipt.status === Status.TokenAlreadyAssociatedToAccount) {
+          associationTxId = associateSubmit.transactionId.toString();
           console.log(`[DISTRIBUTE-TOKENS] Token association successful (status: ${associateReceipt.status})`);
-        } else {
-          throw new Error(`Token association failed with status: ${associateReceipt.status}`);
+        } catch (associateError: any) {
+          // TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT (code 194) is not an error - treat as success
+          if (associateError.status?._code === 194) {
+            console.log(`[DISTRIBUTE-TOKENS] Token already associated - continuing with distribution`);
+            associationTxId = associateError.transactionId?.toString() || 'already-associated';
+          } else {
+            throw associateError;
+          }
         }
 
         // Step 2: Grant KYC to the user's account
