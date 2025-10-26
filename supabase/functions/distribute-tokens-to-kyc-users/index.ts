@@ -313,7 +313,7 @@ serve(async (req) => {
         console.log(`[DISTRIBUTE-TOKENS] Transferring ${investment.tokens_requested} tokens to ${wallet.hedera_account_id}`);
         
         const operatorAccountId = AccountId.fromString(operatorId);
-        const operatorPrivKey = PrivateKey.fromStringECDSA(operatorKey);
+        // operatorPrivKey already declared above for KYC grant (line 293)
 
         const transferTx = new TransferTransaction()
           .addTokenTransfer(tokenIdObj, operatorAccountId, -investment.tokens_requested)
