@@ -8,6 +8,8 @@ import {
   TokenAssociateTransaction,
   TokenGrantKycTransaction,
   TransferTransaction,
+  AccountInfoQuery,
+  AccountBalanceQuery,
   Status
 } from "https://esm.sh/@hashgraph/sdk@2.73.1";
 
@@ -261,80 +263,166 @@ serve(async (req) => {
       let transferTxId: string | undefined;
 
       try {
-        // Step 1: Associate token with user's account
-        console.log(`[DISTRIBUTE-TOKENS] Associating token ${tokenization.token_id} with account ${wallet.hedera_account_id}`);
-        
         const userPrivKey = PrivateKey.fromStringDer(userPrivateKey);
         const tokenIdObj = TokenId.fromString(tokenization.token_id);
         const userAccountId = AccountId.fromString(wallet.hedera_account_id);
+        const operatorAccountId = AccountId.fromString(operatorId);
 
+        // Pre-check account state to determine what actions are needed
+        let isAssociated = false;
+        let kycGranted = false;
+        let tokenRelationship: any = undefined;
+
+        console.log(`[DISTRIBUTE-TOKENS] Checking account state for ${wallet.hedera_account_id}`);
         try {
-          const associateTx = new TokenAssociateTransaction()
+          const accountInfo = await new AccountInfoQuery()
             .setAccountId(userAccountId)
-            .setTokenIds([tokenIdObj])
+            .execute(client);
+          
+          tokenRelationship = accountInfo.tokenRelationships?.get(tokenIdObj);
+          if (tokenRelationship) {
+            isAssociated = true;
+            // Check KYC status from token relationship
+            const kycStatus = tokenRelationship.kycStatus;
+            if (kycStatus && (kycStatus.toString() === 'KycGranted' || kycStatus._code === 1)) {
+              kycGranted = true;
+            }
+            console.log(`[DISTRIBUTE-TOKENS] Token ${isAssociated ? 'IS' : 'NOT'} associated, KYC ${kycGranted ? 'IS' : 'NOT'} granted`);
+          }
+        } catch (queryError: any) {
+          console.warn('[DISTRIBUTE-TOKENS] AccountInfoQuery failed, will proceed with transactions:', queryError.message);
+        }
+
+        // Step 1: Associate token if needed
+        if (!isAssociated) {
+          console.log(`[DISTRIBUTE-TOKENS] Associating token ${tokenization.token_id} with account ${wallet.hedera_account_id}`);
+          
+          try {
+            const associateTx = new TokenAssociateTransaction()
+              .setAccountId(userAccountId)
+              .setTokenIds([tokenIdObj])
+              .freezeWith(client);
+
+            const associateSignedTx = await associateTx.sign(userPrivKey);
+            const associateSubmit = await associateSignedTx.execute(client);
+            const associateReceipt = await associateSubmit.getReceipt(client);
+
+            associationTxId = associateSubmit.transactionId.toString();
+            console.log(`[DISTRIBUTE-TOKENS] Token association successful (status: ${associateReceipt.status})`);
+          } catch (associateError: any) {
+            // TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT (code 194) is not an error
+            if (associateError.status?._code === 194) {
+              console.log(`[DISTRIBUTE-TOKENS] Token already associated (race condition) - continuing`);
+              associationTxId = associateError.transactionId?.toString() || 'already-associated';
+            } else {
+              throw associateError;
+            }
+          }
+        } else {
+          console.log(`[DISTRIBUTE-TOKENS] Token already associated - skipping association step`);
+          associationTxId = 'pre-associated';
+        }
+
+        // Step 2: Grant KYC if needed
+        if (!kycGranted) {
+          console.log(`[DISTRIBUTE-TOKENS] Granting KYC for account ${wallet.hedera_account_id}`);
+          
+          try {
+            const grantKycTx = new TokenGrantKycTransaction()
+              .setAccountId(userAccountId)
+              .setTokenId(tokenIdObj)
+              .freezeWith(client);
+
+            const grantKycSignedTx = await grantKycTx.sign(opPrivKey);
+            const grantKycSubmit = await grantKycSignedTx.execute(client);
+            const grantKycReceipt = await grantKycSubmit.getReceipt(client);
+
+            grantKycTxId = grantKycSubmit.transactionId.toString();
+            
+            if (grantKycReceipt.status !== Status.Success) {
+              throw new Error(`KYC grant failed with status: ${grantKycReceipt.status}`);
+            }
+
+            console.log(`[DISTRIBUTE-TOKENS] KYC granted successfully. Tx ID: ${grantKycTxId}`);
+          } catch (kycError: any) {
+            const errorMsg = kycError.message || '';
+            // These are acceptable states - not actual errors
+            if (errorMsg.includes('ACCOUNT_KYC_ALREADY_GRANTED') || 
+                errorMsg.includes('TOKEN_HAS_NO_KYC_KEY') ||
+                kycError.status?._code === 222) { // ACCOUNT_KYC_ALREADY_GRANTED_FOR_TOKEN
+              console.log(`[DISTRIBUTE-TOKENS] KYC already granted or token has no KYC - continuing`);
+              grantKycTxId = kycError.transactionId?.toString() || 'already-granted';
+            } else {
+              throw kycError;
+            }
+          }
+        } else {
+          console.log(`[DISTRIBUTE-TOKENS] KYC already granted - skipping KYC grant step`);
+          grantKycTxId = 'pre-granted';
+        }
+
+        // Step 3: Idempotent transfer - only send the delta
+        console.log(`[DISTRIBUTE-TOKENS] Checking current token balance for ${wallet.hedera_account_id}`);
+        
+        let currentBalance = 0n;
+        try {
+          const balance = await new AccountBalanceQuery()
+            .setAccountId(userAccountId)
+            .execute(client);
+          
+          // Get balance for this specific token
+          const tokenBalance = balance.tokens.get(tokenIdObj);
+          if (tokenBalance) {
+            currentBalance = BigInt(tokenBalance.toString());
+            console.log(`[DISTRIBUTE-TOKENS] Current on-chain balance: ${currentBalance} tokens`);
+          }
+        } catch (balanceError: any) {
+          console.warn('[DISTRIBUTE-TOKENS] Balance query failed, will attempt full transfer:', balanceError.message);
+        }
+
+        // Get expected balance from database
+        const { data: holding } = await supabase
+          .from('token_holdings')
+          .select('balance')
+          .eq('user_id', user.id)
+          .eq('tokenization_id', tokenization_id)
+          .maybeSingle();
+
+        const priorHoldings = BigInt(String(holding?.balance ?? 0));
+        const tokensRequested = BigInt(String(investment.tokens_requested));
+        const expectedTotalBalance = priorHoldings + tokensRequested;
+
+        console.log(`[DISTRIBUTE-TOKENS] Prior holdings: ${priorHoldings}, Requested: ${tokensRequested}, Expected total: ${expectedTotalBalance}, Current on-chain: ${currentBalance}`);
+
+        let tokensToTransfer = 0n;
+        if (expectedTotalBalance > currentBalance) {
+          tokensToTransfer = expectedTotalBalance - currentBalance;
+        }
+
+        if (tokensToTransfer > 0n) {
+          console.log(`[DISTRIBUTE-TOKENS] Transferring ${tokensToTransfer} tokens to ${wallet.hedera_account_id}`);
+          
+          const transferTx = new TransferTransaction()
+            .addTokenTransfer(tokenIdObj, operatorAccountId, -Number(tokensToTransfer))
+            .addTokenTransfer(tokenIdObj, userAccountId, Number(tokensToTransfer))
+            .setTransactionMemo(`Token distribution for ${tokenization.properties.title}`)
             .freezeWith(client);
 
-          const associateSignedTx = await associateTx.sign(userPrivKey);
-          const associateSubmit = await associateSignedTx.execute(client);
-          const associateReceipt = await associateSubmit.getReceipt(client);
+          const transferSignedTx = await transferTx.sign(opPrivKey);
+          const transferSubmit = await transferSignedTx.execute(client);
+          const transferReceipt = await transferSubmit.getReceipt(client);
 
-          associationTxId = associateSubmit.transactionId.toString();
-          console.log(`[DISTRIBUTE-TOKENS] Token association successful (status: ${associateReceipt.status})`);
-        } catch (associateError: any) {
-          // TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT (code 194) is not an error - treat as success
-          if (associateError.status?._code === 194) {
-            console.log(`[DISTRIBUTE-TOKENS] Token already associated - continuing with distribution`);
-            associationTxId = associateError.transactionId?.toString() || 'already-associated';
-          } else {
-            throw associateError;
+          transferTxId = transferSubmit.transactionId.toString();
+
+          if (transferReceipt.status !== Status.Success) {
+            throw new Error(`Token transfer failed with status: ${transferReceipt.status}`);
           }
+
+          console.log(`[DISTRIBUTE-TOKENS] Token transfer successful. Transaction ID: ${transferTxId}`);
+        } else {
+          console.log(`[DISTRIBUTE-TOKENS] No transfer needed - account already has sufficient tokens (idempotent retry)`);
+          transferTxId = 'no-transfer-needed';
         }
-
-        // Step 2: Grant KYC to the user's account
-        console.log(`[DISTRIBUTE-TOKENS] Granting KYC for account ${wallet.hedera_account_id}`);
-        
-        // operatorPrivKey declared once above after client setup
-
-        const grantKycTx = new TokenGrantKycTransaction()
-          .setAccountId(userAccountId)
-          .setTokenId(tokenIdObj)
-          .freezeWith(client);
-
-        const grantKycSignedTx = await grantKycTx.sign(opPrivKey);
-        const grantKycSubmit = await grantKycSignedTx.execute(client);
-        const grantKycReceipt = await grantKycSubmit.getReceipt(client);
-
-        grantKycTxId = grantKycSubmit.transactionId.toString();
-
-        if (grantKycReceipt.status !== Status.Success) {
-          throw new Error(`KYC grant failed with status: ${grantKycReceipt.status}`);
-        }
-
-        console.log(`[DISTRIBUTE-TOKENS] KYC granted successfully for ${wallet.hedera_account_id}. Tx ID: ${grantKycTxId}`);
-
-        // Step 3: Transfer tokens from operator (treasury) to user
-        console.log(`[DISTRIBUTE-TOKENS] Transferring ${investment.tokens_requested} tokens to ${wallet.hedera_account_id}`);
-        
-        const operatorAccountId = AccountId.fromString(operatorId);
-        // operatorPrivKey already declared above for KYC grant (line 293)
-
-        const transferTx = new TransferTransaction()
-          .addTokenTransfer(tokenIdObj, operatorAccountId, -investment.tokens_requested)
-          .addTokenTransfer(tokenIdObj, userAccountId, investment.tokens_requested)
-          .setTransactionMemo(`Token distribution for ${tokenization.properties.title}`)
-          .freezeWith(client);
-
-        const transferSignedTx = await transferTx.sign(opPrivKey);
-        const transferSubmit = await transferSignedTx.execute(client);
-        const transferReceipt = await transferSubmit.getReceipt(client);
-
-        transferTxId = transferSubmit.transactionId.toString();
-
-        if (transferReceipt.status !== Status.Success) {
-          throw new Error(`Token transfer failed with status: ${transferReceipt.status}`);
-        }
-
-        console.log(`[DISTRIBUTE-TOKENS] Token transfer successful. Transaction ID: ${transferTxId}`);
 
       } catch (hederaError: any) {
         console.error(`[DISTRIBUTE-TOKENS] Hedera operation failed for user ${user.id}:`, hederaError);
@@ -455,13 +543,8 @@ serve(async (req) => {
 
       // Send AI system message to chat
       if (chatRoom) {
-        await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-chat-system-message`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        await supabase.functions.invoke('send-chat-system-message', {
+          body: {
             room_id: chatRoom.id,
             message_text: `✅ Token distribution complete! ${results.distributed} investor${results.distributed > 1 ? 's' : ''} received their ${tokenization.token_symbol} tokens. You can now create governance proposals and participate in property decisions.`,
             message_type: 'system',
@@ -472,7 +555,7 @@ serve(async (req) => {
               investors_count: results.distributed,
               token_symbol: tokenization.token_symbol
             }
-          }),
+          }
         });
       }
     }
