@@ -50,7 +50,7 @@ serve(async (req) => {
       AccountId.fromString(operatorId),
       PrivateKey.fromStringECDSA(operatorKey)
     );
-
+    const opPrivKey = PrivateKey.fromStringECDSA(operatorKey);
     console.log(`[DISTRIBUTE-TOKENS] Starting token distribution for tokenization: ${tokenization_id}`);
 
     // Get tokenization details
@@ -290,14 +290,14 @@ serve(async (req) => {
         // Step 2: Grant KYC to the user's account
         console.log(`[DISTRIBUTE-TOKENS] Granting KYC for account ${wallet.hedera_account_id}`);
         
-        const operatorPrivKey = PrivateKey.fromStringECDSA(operatorKey);
+        // operatorPrivKey declared once above after client setup
 
         const grantKycTx = new TokenGrantKycTransaction()
           .setAccountId(userAccountId)
           .setTokenId(tokenIdObj)
           .freezeWith(client);
 
-        const grantKycSignedTx = await grantKycTx.sign(operatorPrivKey);
+        const grantKycSignedTx = await grantKycTx.sign(opPrivKey);
         const grantKycSubmit = await grantKycSignedTx.execute(client);
         const grantKycReceipt = await grantKycSubmit.getReceipt(client);
 
@@ -321,7 +321,7 @@ serve(async (req) => {
           .setTransactionMemo(`Token distribution for ${tokenization.properties.title}`)
           .freezeWith(client);
 
-        const transferSignedTx = await transferTx.sign(operatorPrivKey);
+        const transferSignedTx = await transferTx.sign(opPrivKey);
         const transferSubmit = await transferSignedTx.execute(client);
         const transferReceipt = await transferSubmit.getReceipt(client);
 
