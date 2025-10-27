@@ -232,7 +232,6 @@ const AllActivities = () => {
   });
 
   const handleActivityClick = (activity: any) => {
-    // Navigate to relevant page based on activity type
     if (activity.type === "investment" || activity.type === "property_event") {
       navigate("/portfolio");
     } else if (activity.type === "transaction") {
@@ -272,18 +271,17 @@ const AllActivities = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
-      {/* Header */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => navigate(-1)}
+        className="gap-2 mb-6"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="hidden sm:inline">Back to Dashboard</span>
+      </Button>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Activity className="h-8 w-8 text-primary" />
@@ -296,7 +294,6 @@ const AllActivities = () => {
         </div>
       </div>
 
-      {/* Filters */}
       <Card className="mb-6">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -350,8 +347,6 @@ const AllActivities = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Activities List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">

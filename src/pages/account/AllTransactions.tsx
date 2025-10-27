@@ -1,6 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWalletTransactions } from "@/hooks/useWalletTransactions";
-import { ArrowUpRight, ArrowDownLeft, CheckCircle, Clock, XCircle } from "lucide-react";
+import {
+  ArrowUpRight,
+  ArrowDownLeft,
+  CheckCircle,
+  Clock,
+  XCircle,
+  ArrowLeftIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -41,13 +48,22 @@ export default function AllTransactions() {
   const displayTransactions = (allTransactions || [])
     .map((tx) => {
       let simpleType: "send" | "receive";
-      if (tx.type === "investment" || tx.type === "withdrawal" || tx.type === "token_withdrawal") {
+      if (
+        tx.type === "investment" ||
+        tx.type === "withdrawal" ||
+        tx.type === "token_withdrawal"
+      ) {
         simpleType = "send";
       } else {
         simpleType = "receive";
       }
 
-      const status = tx.status === "completed" ? "completed" : tx.status === "failed" ? "failed" : "pending";
+      const status =
+        tx.status === "completed"
+          ? "completed"
+          : tx.status === "failed"
+          ? "failed"
+          : "pending";
 
       let details = "";
       if (tx.type === "investment") {
@@ -74,7 +90,10 @@ export default function AllTransactions() {
         hash: tx.hash || tx.reference || tx.explorerUrl || "",
       };
     })
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    .sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
 
   if (isLoading) {
     return (
@@ -82,7 +101,8 @@ export default function AllTransactions() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
             <Button variant="ghost" onClick={() => navigate(-1)}>
-              ← Back
+              <ArrowLeftIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Back to Dashboard</span>
             </Button>
           </div>
           <Card>
@@ -99,8 +119,14 @@ export default function AllTransactions() {
     <div className="p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <Button variant="ghost" onClick={() => navigate(-1)}>
-            ← Back
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2 mb-6"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Back to Dashboard</span>
           </Button>
         </div>
 
@@ -120,7 +146,10 @@ export default function AllTransactions() {
                     key={tx.id}
                     onClick={() => {
                       if (tx.hash) {
-                        window.open(`https://hashscan.io/testnet/transaction/${tx.hash}`, "_blank");
+                        window.open(
+                          `https://hashscan.io/testnet/transaction/${tx.hash}`,
+                          "_blank"
+                        );
                       }
                     }}
                     className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_140px_180px] items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
@@ -129,7 +158,7 @@ export default function AllTransactions() {
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full flex items-center justify-center border border-blue-200 dark:border-blue-700">
                         {getTransactionIcon(tx.type)}
                       </div>
-                      <div className="absolute -bottom-0.5 -right-0.5">
+                      <div className="absolute -bottom-0.5 -right-0.5  dark:bg-white bg-gray-800 rounded-full">
                         {getStatusBadge(tx.status)}
                       </div>
                     </div>
