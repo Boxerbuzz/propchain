@@ -21,6 +21,8 @@ export interface Transaction {
   explorerUrl?: string;
   description?: string;
   reference?: string;
+  from?: string; // Account ID that sent the transaction
+  to?: string;   // Account ID that received the transaction
 }
 
 export const useWalletTransactions = () => {

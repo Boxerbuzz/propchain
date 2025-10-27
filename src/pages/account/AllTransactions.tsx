@@ -16,8 +16,8 @@ export default function AllTransactions() {
       status: tx.status === "completed" ? "completed" : tx.status === "failed" ? "failed" : "pending",
       token: tx.currency || "HBAR",
       amount: tx.amount || 0,
-      to: tx.displayType === "send" ? tx.description || "Sent" : undefined,
-      from: tx.displayType === "receive" ? tx.description || "Received" : undefined,
+      to: tx.to || (tx.displayType === "send" ? "Sent" : undefined),
+      from: tx.from || (tx.displayType === "receive" ? "Received" : undefined),
       timestamp: tx.timestamp,
       hash: tx.hash || tx.reference || tx.explorerUrl || "",
     }))
@@ -85,11 +85,11 @@ export default function AllTransactions() {
                     </div>
 
                     <div className="min-w-0">
-                      <p className="font-medium capitalize">{tx.type}</p>
+                      <p className="font-medium capitalize">{tx.originalType.replace('_', ' ')}</p>
                       <p className="text-xs text-muted-foreground truncate">
                         {tx.type === "send"
-                          ? `To: ${tx.to}`
-                          : `From: ${tx.from}`}
+                          ? tx.to && tx.to !== "Sent" ? `To: ${tx.to.slice(0, 4)}...${tx.to.slice(-4)}` : 'Sent'
+                          : tx.from && tx.from !== "Received" ? `From: ${tx.from.slice(0, 4)}...${tx.from.slice(-4)}` : 'Received'}
                       </p>
                     </div>
 
@@ -118,9 +118,6 @@ export default function AllTransactions() {
                       >
                         {tx.type === "receive" ? "+" : "-"}
                         {tx.amount} {tx.token}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {tx.token}
                       </p>
                     </div>
                   </div>
