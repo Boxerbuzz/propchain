@@ -7,6 +7,7 @@ export interface Transaction {
   id: string;
   hash?: string;
   type: 'investment' | 'dividend' | 'deposit' | 'withdrawal' | 'token_deposit' | 'token_withdrawal' | 'sync';
+  displayType: 'send' | 'receive' | 'swap' | 'internal';
   amount: number;
   currency: string;
   amountUsd?: number;
@@ -48,6 +49,7 @@ export const useWalletTransactions = () => {
       return (data || []).map(investment => ({
         id: `inv-${investment.id}`,
         type: 'investment' as const,
+        displayType: 'send' as const,
         amount: investment.amount_ngn,
         currency: 'NGN',
         status: investment.payment_status === 'confirmed' ? 'completed' as const : 
@@ -88,6 +90,7 @@ export const useWalletTransactions = () => {
       return (data || []).map(dividend => ({
         id: `div-${dividend.id}`,
         type: 'dividend' as const,
+        displayType: 'receive' as const,
         amount: dividend.net_amount || dividend.amount_ngn,
         currency: 'NGN',
         status: dividend.payment_status === 'completed' ? 'completed' as const : 
@@ -138,6 +141,7 @@ export const useWalletTransactions = () => {
       return (data || []).map((withdrawal: any) => ({
         id: `wdr-${withdrawal.id}`,
         type: 'withdrawal' as const,
+        displayType: 'send' as const,
         amount: withdrawal.amount_ngn || withdrawal.amount_usd || 0,
         currency: withdrawal.currency?.toUpperCase() || 'NGN',
         amountNgn: withdrawal.amount_ngn,
