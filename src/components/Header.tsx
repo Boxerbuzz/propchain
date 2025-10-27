@@ -31,21 +31,25 @@ import {
   AlertTriangle,
   ArrowRight,
   Coins,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useHederaAccount } from "@/hooks/useHederaAccount";
+import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [walletCopied, setWalletCopied] = useState(false);
   const location = useLocation();
   const { isAuthenticated, logout, user } = useAuth();
   const { notifications, markAllAsRead, clearReadNotifications } =
     useNotifications();
-  const { hasAccount } = useHederaAccount();
+  const { hasAccount, hederaAccount } = useHederaAccount();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -110,6 +114,25 @@ export default function Header() {
     if (path === "/" && location.pathname === "/") return true;
     if (path !== "/" && location.pathname.startsWith(path)) return true;
     return false;
+  };
+
+  const formatAddress = (address: string) => {
+    if (!address || address.length < 10) return address;
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  const handleCopyWallet = async () => {
+    if (!hederaAccount) return;
+    
+    try {
+      await navigator.clipboard.writeText(hederaAccount);
+      setWalletCopied(true);
+      toast.success("Wallet address copied to clipboard");
+      setTimeout(() => setWalletCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      toast.error("Failed to copy wallet address");
+    }
   };
 
   return (
@@ -317,6 +340,30 @@ export default function Header() {
                       </div>
                     </div>
                   </DropdownMenuLabel>
+                  {hederaAccount && (
+                    <div className="p-3 border-b border-border bg-muted/30">
+                      <div 
+                        onClick={handleCopyWallet}
+                        className="flex items-center gap-2 p-2 rounded-lg bg-background border border-border cursor-pointer hover:border-primary/50 transition-colors group"
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <div className="w-4 h-4 rounded-full bg-primary group-hover:scale-110 transition-transform"></div>
+                          </div>
+                          <span className="text-xs font-medium font-mono text-muted-foreground group-hover:text-foreground transition-colors truncate">
+                            {formatAddress(hederaAccount)}
+                          </span>
+                        </div>
+                        <div className="flex-shrink-0">
+                          {walletCopied ? (
+                            <Check className="h-3.5 w-3.5 text-green-600" />
+                          ) : (
+                            <Copy className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="p-2">
                     {userMenuItems.slice(0, -1).map((item) => (
                       <DropdownMenuItem
