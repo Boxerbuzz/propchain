@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWalletTransactions } from "@/hooks/useWalletTransactions";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { getActivityIcon, renderStatusBadge } from "@/lib/activityIcons";
+import { getActivityIcon, getStatusIcon } from "@/lib/activityIcons";
 import { ArrowLeftIcon } from "lucide-react";
 
 export default function AllTransactions() {
@@ -14,7 +14,12 @@ export default function AllTransactions() {
       id: tx.id,
       type: tx.displayType,
       originalType: tx.type,
-      status: tx.status === "completed" ? "completed" : tx.status === "failed" ? "failed" : "pending",
+      status:
+        tx.status === "completed"
+          ? "completed"
+          : tx.status === "failed"
+          ? "failed"
+          : "pending",
       token: tx.currency || "HBAR",
       amount: tx.amount || 0,
       to: tx.to || (tx.displayType === "send" ? "Sent" : undefined),
@@ -22,7 +27,10 @@ export default function AllTransactions() {
       timestamp: tx.timestamp,
       hash: tx.hash || tx.reference || tx.explorerUrl || "",
     }))
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    .sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
 
   if (isLoading) {
     return (
@@ -91,16 +99,37 @@ export default function AllTransactions() {
                         })()}
                       </div>
                       <div className="absolute -bottom-0.5 -right-0.5">
-                        {renderStatusBadge(tx.status)}
+                        {(() => {
+                          const StatusIcon = getStatusIcon(tx.status);
+                          return (
+                            <div className={`w-4 h-4 rounded-full flex items-center justify-center border-2 border-background ${
+                              tx.status === 'completed' 
+                                ? 'bg-green-500' 
+                                : tx.status === 'pending' 
+                                ? 'bg-amber-500' 
+                                : 'bg-red-500'
+                            }`}>
+                              <StatusIcon className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
 
                     <div className="min-w-0">
-                      <p className="font-medium capitalize">{tx.originalType.replace('_', ' ')}</p>
+                      <p className="font-medium capitalize">
+                        {tx.originalType.replace("_", " ")}
+                      </p>
                       <p className="text-xs text-muted-foreground truncate">
                         {tx.type === "send"
-                          ? tx.to && tx.to !== "Sent" ? `To: ${tx.to.slice(0, 4)}...${tx.to.slice(-4)}` : 'Sent'
-                          : tx.from && tx.from !== "Received" ? `From: ${tx.from.slice(0, 4)}...${tx.from.slice(-4)}` : 'Received'}
+                          ? tx.to && tx.to !== "Sent"
+                            ? `To: ${tx.to.slice(0, 4)}...${tx.to.slice(-4)}`
+                            : "Sent"
+                          : tx.from && tx.from !== "Received"
+                          ? `From: ${tx.from.slice(0, 4)}...${tx.from.slice(
+                              -4
+                            )}`
+                          : "Received"}
                       </p>
                     </div>
 
