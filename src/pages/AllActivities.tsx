@@ -34,9 +34,8 @@ import {
   Coins,
 } from "lucide-react";
 import { useUnifiedActivityFeed } from "@/hooks/useUnifiedActivityFeed";
-import { useWalletTransactions } from "@/hooks/useWalletTransactions";
-import { useActivityFeed } from "@/hooks/useActivityFeed";
 import { formatDistanceToNow } from "date-fns";
+import { getActivityIcon, getStatusIcon, getActivityTypeColor, getStatusBadgeVariant } from "@/lib/activityIcons";
 
 const AllActivities = () => {
   const navigate = useNavigate();
@@ -50,156 +49,19 @@ const AllActivities = () => {
       maximumFractionDigits: 0,
     }).format(num);
   };
-  const { activities: unifiedActivities, isLoading: unifiedLoading } =
-    useUnifiedActivityFeed(50);
-  const { transactions, isLoading: transactionsLoading } =
-    useWalletTransactions();
-  const { activities: activityLogs, isLoading: activityLoading } =
-    useActivityFeed(50);
+  const { activities: allActivities, isLoading } = useUnifiedActivityFeed(100);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterTimeframe, setFilterTimeframe] = useState("all");
 
-  const getActivityIcon = (type: string, status?: string) => {
-    switch (type) {
-      case "investment":
-        return TrendingUp;
-      case "dividend":
-        return DollarSign;
-      case "property_event":
-        return Building2;
-      case "governance":
-        return Users;
-      case "security":
-        return Shield;
-      case "transaction":
-        return ArrowUpDown;
-      case "wallet":
-        return Wallet;
-      case "payment":
-        return CreditCard;
-      case "deposit":
-        return Banknote;
-      case "withdrawal":
-        return Coins;
-      case "reminder":
-        return Calendar;
-      case "alert":
-        return AlertTriangle;
-      case "info":
-        return Info;
-      case "success":
-        return CheckCircle;
-      default:
-        return Activity;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-      case "success":
-        return CheckCircle2;
-      case "pending":
-        return Clock;
-      case "failed":
-      case "error":
-        return XCircle;
-      default:
-        return Info;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-      case "success":
-        return "text-green-600 bg-green-50";
-      case "pending":
-        return "text-yellow-600 bg-yellow-50";
-      case "failed":
-      case "error":
-        return "text-red-600 bg-red-50";
-      default:
-        return "text-blue-600 bg-blue-50";
-    }
-  };
-
-  const getActivityTypeColor = (type: string) => {
-    switch (type) {
-      case "investment":
-        return "text-blue-600 bg-blue-50";
-      case "dividend":
-        return "text-green-600 bg-green-50";
-      case "property_event":
-        return "text-purple-600 bg-purple-50";
-      case "governance":
-        return "text-orange-600 bg-orange-50";
-      case "security":
-        return "text-red-600 bg-red-50";
-      case "transaction":
-        return "text-gray-600 bg-gray-50";
-      case "wallet":
-        return "text-indigo-600 bg-indigo-50";
-      case "payment":
-        return "text-pink-600 bg-pink-50";
-      default:
-        return "text-gray-600 bg-gray-50";
-    }
-  };
-
-  // Combine all activities
-  const allActivities = [
-    ...unifiedActivities.map((activity) => ({
-      ...activity,
-      source: "unified",
-    })),
-    ...transactions.map((tx) => ({
-      id: `tx-${tx.id}`,
-      type: "transaction",
-      title:
-        tx.type === "investment"
-          ? "Investment"
-          : tx.type === "dividend"
-          ? "Dividend Payment"
-          : tx.type === "withdrawal"
-          ? "Withdrawal"
-          : tx.type === "deposit"
-          ? "Deposit"
-          : "Transaction",
-      description: tx.description || `${tx.type} transaction`,
-      status:
-        tx.status === "completed"
-          ? "completed"
-          : tx.status === "failed"
-          ? "failed"
-          : "pending",
-      timestamp: tx.timestamp,
-      amount: tx.amount,
-      currency: tx.currency,
-      source: "transaction",
-    })),
-    ...activityLogs.map((activity) => ({
-      id: `log-${activity.id}`,
-      type: activity.activity_type?.includes("investment")
-        ? "investment"
-        : "property_event",
-      title:
-        activity.activity_type
-          ?.replace(/_/g, " ")
-          .replace(/\b\w/g, (l: string) => l.toUpperCase()) || "Activity",
-      description: activity.description || "",
-      status: "info",
-      timestamp: activity.created_at,
-      source: "activity_log",
-    })),
-  ].sort(
+  // Filter and sort activities
+  const sortedActivities = [...allActivities].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
-  const filteredActivities = allActivities.filter((activity) => {
+  const filteredActivities = sortedActivities.filter((activity) => {
     const matchesSearch =
       activity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       activity.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -267,7 +129,7 @@ const AllActivities = () => {
     { value: "month", label: "This Month" },
   ];
 
-  const isLoading = unifiedLoading || transactionsLoading || activityLoading;
+  
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
@@ -398,13 +260,10 @@ const AllActivities = () => {
           ) : (
             <div className="divide-y divide-border">
               {filteredActivities.map((activity) => {
-                const ActivityIcon = getActivityIcon(
-                  activity.type,
-                  activity.status
-                );
+                const ActivityIcon = getActivityIcon(activity.type);
                 const StatusIcon = getStatusIcon(activity.status);
                 const typeColorClasses = getActivityTypeColor(activity.type);
-                const statusColorClasses = getStatusColor(activity.status);
+                const statusBadge = getStatusBadgeVariant(activity.status);
 
                 return (
                   <div
@@ -448,16 +307,11 @@ const AllActivities = () => {
                             {activity.type.replace("_", " ")}
                           </Badge>
                           <div
-                            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${statusColorClasses}`}
+                            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${statusBadge.className}`}
                           >
                             <StatusIcon className="h-3 w-3" />
                             {activity.status}
                           </div>
-                          {activity.source && (
-                            <Badge variant="secondary" className="text-xs">
-                              {activity.source}
-                            </Badge>
-                          )}
                         </div>
                       </div>
                     </div>

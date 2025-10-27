@@ -27,6 +27,7 @@ import { useUnifiedActivityFeed } from "../hooks/useUnifiedActivityFeed";
 import { supabase } from "@/integrations/supabase/client";
 import { supabaseService } from "@/services/supabaseService";
 import { toast } from "sonner";
+import { getActivityIconWithCircle, renderStatusBadge } from "@/lib/activityIcons";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -61,90 +62,7 @@ export default function Dashboard() {
     return user.first_name || user.email?.split("@")[0] || "User";
   };
 
-  const getActivityIcon = (type: string, status: string) => {
-    const getIconWithCircle = (
-      icon: React.ReactNode,
-      bgColor: string,
-      iconColor: string
-    ) => (
-      <div
-        className={`flex items-center justify-center w-8 h-8 rounded-full ${bgColor}`}
-      >
-        <div className={`${iconColor}`}>{icon}</div>
-      </div>
-    );
 
-    switch (type) {
-      case "investment":
-        return status === "completed" || status === "confirmed"
-          ? getIconWithCircle(
-              <CheckCircle className="w-4 h-4" />,
-              "bg-green-100 dark:bg-green-900/20",
-              "text-green-600 dark:text-green-400"
-            )
-          : status === "pending"
-          ? getIconWithCircle(
-              <Clock className="w-4 h-4" />,
-              "bg-amber-100 dark:bg-amber-900/20",
-              "text-amber-600 dark:text-amber-400"
-            )
-          : getIconWithCircle(
-              <XCircle className="w-4 h-4" />,
-              "bg-red-100 dark:bg-red-900/20",
-              "text-red-600 dark:text-red-400"
-            );
-      case "dividend":
-        return getIconWithCircle(
-          <ArrowDownLeft className="w-4 h-4" />,
-          "bg-green-100 dark:bg-green-900/20",
-          "text-green-600 dark:text-green-400"
-        );
-      case "deposit":
-      case "token_deposit":
-        return getIconWithCircle(
-          <TrendingUp className="w-4 h-4" />,
-          "bg-green-100 dark:bg-green-900/20",
-          "text-green-600 dark:text-green-400"
-        );
-      case "withdrawal":
-      case "token_withdrawal":
-        return getIconWithCircle(
-          <TrendingDown className="w-4 h-4" />,
-          "bg-red-100 dark:bg-red-900/20",
-          "text-red-600 dark:text-red-400"
-        );
-      case "property_event":
-        return getIconWithCircle(
-          <Building className="w-4 h-4" />,
-          "bg-blue-100 dark:bg-blue-900/20",
-          "text-blue-600 dark:text-blue-400"
-        );
-      default:
-        return getIconWithCircle(
-          <Activity className="w-4 h-4" />,
-          "bg-gray-100 dark:bg-gray-900/20",
-          "text-gray-600 dark:text-gray-400"
-        );
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "completed":
-      case "confirmed":
-      case "paid":
-      case "success":
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
-      case "pending":
-        return <Badge className="bg-amber-100 text-amber-800">Pending</Badge>;
-      case "failed":
-        return <Badge className="bg-red-100 text-red-800">Failed</Badge>;
-      case "info":
-        return <Badge variant="secondary">Info</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
 
   const handleActivityClick = async (activity: any) => {
     setSelectedActivity(activity);
@@ -449,7 +367,7 @@ export default function Dashboard() {
                           onClick={() => handleActivityClick(activity)}
                         >
                           <div className="flex-shrink-0 mt-1">
-                            {getActivityIcon(activity.type, activity.status)}
+                            {getActivityIconWithCircle(activity.type, activity.status)}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
@@ -463,7 +381,7 @@ export default function Dashboard() {
                                       {formatNumber(activity.amount)}
                                     </span>
                                   )}
-                                {getStatusBadge(activity.status)}
+                                {renderStatusBadge(activity.status)}
                               </div>
                             </div>
                             <p className="text-sm text-muted-foreground mt-1">
@@ -689,7 +607,7 @@ export default function Dashboard() {
             <div className="mt-6 space-y-4">
               {/* Activity Icon and Title */}
               <div className="flex items-center space-x-3">
-                {getActivityIcon(selectedActivity.type, selectedActivity.status)}
+                {getActivityIconWithCircle(selectedActivity.type, selectedActivity.status)}
                 <div className="flex-1">
                   <h3 className="font-semibold text-foreground">{selectedActivity.title}</h3>
                   <p className="text-sm text-muted-foreground">{selectedActivity.description}</p>
@@ -700,7 +618,7 @@ export default function Dashboard() {
               <div className="space-y-3 pt-4 border-t">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Status</span>
-                  {getStatusBadge(selectedActivity.status)}
+                  {renderStatusBadge(selectedActivity.status)}
                 </div>
                 
                 {selectedActivity.amount && selectedActivity.currency === "NGN" && (
