@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import {
   TrendingUp,
   TrendingDown,
@@ -13,10 +19,6 @@ import {
   Activity,
   Wallet,
   Bell,
-  ArrowDownLeft,
-  Clock,
-  CheckCircle,
-  XCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -27,7 +29,10 @@ import { useUnifiedActivityFeed } from "../hooks/useUnifiedActivityFeed";
 import { supabase } from "@/integrations/supabase/client";
 import { supabaseService } from "@/services/supabaseService";
 import { toast } from "sonner";
-import { getActivityIconWithCircle, renderStatusBadge } from "@/lib/activityIcons";
+import {
+  getActivityIconWithCircle,
+  renderStatusBadge,
+} from "@/lib/activityIcons";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -62,20 +67,19 @@ export default function Dashboard() {
     return user.first_name || user.email?.split("@")[0] || "User";
   };
 
-
-
   const handleActivityClick = async (activity: any) => {
     setSelectedActivity(activity);
     setSheetOpen(true);
 
-    if (activity.type === 'investment' && activity.id?.startsWith('inv-')) {
-      const investmentId = activity.id.replace('inv-', '');
+    if (activity.type === "investment" && activity.id?.startsWith("inv-")) {
+      const investmentId = activity.id.replace("inv-", "");
       setLoadingDetail(true);
-      
+
       try {
         const { data, error } = await supabase
-          .from('investments')
-          .select(`
+          .from("investments")
+          .select(
+            `
             *,
             tokenizations!inner(
               id,
@@ -85,15 +89,16 @@ export default function Dashboard() {
                 title
               )
             )
-          `)
-          .eq('id', investmentId)
+          `
+          )
+          .eq("id", investmentId)
           .maybeSingle();
 
         if (error) throw error;
         setInvestmentDetail(data);
       } catch (error) {
-        console.error('Error fetching investment detail:', error);
-        toast.error('Failed to load investment details');
+        console.error("Error fetching investment detail:", error);
+        toast.error("Failed to load investment details");
       } finally {
         setLoadingDetail(false);
       }
@@ -102,7 +107,7 @@ export default function Dashboard() {
 
   const handleContinuePayment = async () => {
     if (!investmentDetail || !user?.email) {
-      toast.error('Missing required information');
+      toast.error("Missing required information");
       return;
     }
 
@@ -119,24 +124,24 @@ export default function Dashboard() {
 
       const url = result?.data?.authorization_url || result?.authorization_url;
       if (!url) {
-        throw new Error('Authorization URL not returned');
+        throw new Error("Authorization URL not returned");
       }
 
       window.location.href = url;
     } catch (error: any) {
-      console.error('Error resuming payment:', error);
-      toast.error(error.message || 'Failed to resume payment');
+      console.error("Error resuming payment:", error);
+      toast.error(error.message || "Failed to resume payment");
       setResumingPayment(false);
     }
   };
 
   const canContinuePayment = () => {
     if (!investmentDetail) return false;
-    
+
     return (
-      investmentDetail.payment_method === 'paystack' &&
-      investmentDetail.payment_status === 'pending' &&
-      investmentDetail.reservation_status === 'active' &&
+      investmentDetail.payment_method === "paystack" &&
+      investmentDetail.payment_status === "pending" &&
+      investmentDetail.reservation_status === "active" &&
       investmentDetail.reservation_expires_at &&
       new Date(investmentDetail.reservation_expires_at) > new Date()
     );
@@ -338,7 +343,6 @@ export default function Dashboard() {
             <Card className="border-border">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <Activity className="w-5 h-5 mr-2" />
                   Recent Activity
                 </CardTitle>
               </CardHeader>
@@ -362,12 +366,15 @@ export default function Dashboard() {
                   <div className="space-y-4">
                     {activities.slice(0, 8).map((activity, index) => (
                       <div key={activity.id}>
-                        <div 
+                        <div
                           className="flex items-start space-x-3 py-2 cursor-pointer hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors"
                           onClick={() => handleActivityClick(activity)}
                         >
                           <div className="flex-shrink-0 mt-1">
-                            {getActivityIconWithCircle(activity.type, activity.status)}
+                            {getActivityIconWithCircle(
+                              activity.type,
+                              activity.status
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
@@ -498,7 +505,6 @@ export default function Dashboard() {
             <Card className="border-border">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b border-border/50">
                 <CardTitle className="flex items-center">
-                  <Bell className="w-4 h-4 mr-2" />
                   Notifications
                   {notifications.filter((n) => !n.read_at).length > 0 && (
                     <Badge variant="secondary" className="ml-2 text-xs">
@@ -607,10 +613,17 @@ export default function Dashboard() {
             <div className="mt-6 space-y-4">
               {/* Activity Icon and Title */}
               <div className="flex items-center space-x-3">
-                {getActivityIconWithCircle(selectedActivity.type, selectedActivity.status)}
+                {getActivityIconWithCircle(
+                  selectedActivity.type,
+                  selectedActivity.status
+                )}
                 <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">{selectedActivity.title}</h3>
-                  <p className="text-sm text-muted-foreground">{selectedActivity.description}</p>
+                  <h3 className="font-semibold text-foreground">
+                    {selectedActivity.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedActivity.description}
+                  </p>
                 </div>
               </div>
 
@@ -620,30 +633,38 @@ export default function Dashboard() {
                   <span className="text-sm text-muted-foreground">Status</span>
                   {renderStatusBadge(selectedActivity.status)}
                 </div>
-                
-                {selectedActivity.amount && selectedActivity.currency === "NGN" && (
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Amount</span>
-                    <span className="text-sm font-semibold">{formatNumber(selectedActivity.amount)}</span>
-                  </div>
-                )}
+
+                {selectedActivity.amount &&
+                  selectedActivity.currency === "NGN" && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Amount
+                      </span>
+                      <span className="text-sm font-semibold">
+                        {formatNumber(selectedActivity.amount)}
+                      </span>
+                    </div>
+                  )}
 
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Date</span>
                   <span className="text-sm">
-                    {new Date(selectedActivity.timestamp).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {new Date(selectedActivity.timestamp).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}
                   </span>
                 </div>
               </div>
 
               {/* Investment Details */}
-              {selectedActivity.type === 'investment' && (
+              {selectedActivity.type === "investment" && (
                 <div className="space-y-3 pt-4 border-t">
                   {loadingDetail ? (
                     <div className="space-y-2">
@@ -653,31 +674,43 @@ export default function Dashboard() {
                   ) : investmentDetail ? (
                     <>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Property</span>
+                        <span className="text-sm text-muted-foreground">
+                          Property
+                        </span>
                         <span className="text-sm font-medium text-right max-w-[200px]">
-                          {investmentDetail.tokenizations?.properties?.title || 'N/A'}
+                          {investmentDetail.tokenizations?.properties?.title ||
+                            "N/A"}
                         </span>
                       </div>
 
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Tokens Requested</span>
+                        <span className="text-sm text-muted-foreground">
+                          Tokens Requested
+                        </span>
                         <span className="text-sm font-medium">
-                          {investmentDetail.tokens_requested?.toLocaleString() || 0}
+                          {investmentDetail.tokens_requested?.toLocaleString() ||
+                            0}
                         </span>
                       </div>
 
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Payment Method</span>
+                        <span className="text-sm text-muted-foreground">
+                          Payment Method
+                        </span>
                         <span className="text-sm font-medium capitalize">
-                          {investmentDetail.payment_method || 'N/A'}
+                          {investmentDetail.payment_method || "N/A"}
                         </span>
                       </div>
 
                       {investmentDetail.reservation_expires_at && (
                         <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Reservation Expires</span>
+                          <span className="text-sm text-muted-foreground">
+                            Reservation Expires
+                          </span>
                           <span className="text-sm font-medium">
-                            {new Date(investmentDetail.reservation_expires_at).toLocaleString("en-US", {
+                            {new Date(
+                              investmentDetail.reservation_expires_at
+                            ).toLocaleString("en-US", {
                               month: "short",
                               day: "numeric",
                               hour: "2-digit",
@@ -689,8 +722,16 @@ export default function Dashboard() {
 
                       {investmentDetail.reservation_status && (
                         <div className="flex justify-between">
-                          <span className="text-sm text-muted-foreground">Reservation Status</span>
-                          <Badge variant={investmentDetail.reservation_status === 'active' ? 'default' : 'secondary'}>
+                          <span className="text-sm text-muted-foreground">
+                            Reservation Status
+                          </span>
+                          <Badge
+                            variant={
+                              investmentDetail.reservation_status === "active"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
                             {investmentDetail.reservation_status}
                           </Badge>
                         </div>
@@ -703,7 +744,7 @@ export default function Dashboard() {
           )}
 
           {/* Action Buttons */}
-          {selectedActivity?.type === 'investment' && investmentDetail && (
+          {selectedActivity?.type === "investment" && investmentDetail && (
             <SheetFooter className="mt-6 pt-6 border-t">
               {canContinuePayment() ? (
                 <Button
@@ -711,12 +752,13 @@ export default function Dashboard() {
                   onClick={handleContinuePayment}
                   disabled={resumingPayment}
                 >
-                  {resumingPayment ? 'Processing...' : 'Continue Payment'}
+                  {resumingPayment ? "Processing..." : "Continue Payment"}
                 </Button>
-              ) : investmentDetail.reservation_status === 'expired' ? (
+              ) : investmentDetail.reservation_status === "expired" ? (
                 <div className="w-full text-center p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">
-                    Reservation expired. Start a new investment from the property page.
+                    Reservation expired. Start a new investment from the
+                    property page.
                   </p>
                 </div>
               ) : null}

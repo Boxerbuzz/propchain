@@ -968,7 +968,6 @@ const PropertyManagement = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Wrench className="h-5 w-5" />
                       Maintenance Requests
                     </CardTitle>
                   </CardHeader>
@@ -1013,7 +1012,6 @@ const PropertyManagement = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
                   Recent Activity
                 </CardTitle>
               </CardHeader>
@@ -1109,7 +1107,6 @@ const PropertyManagement = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-orange-600" />
                   Urgent Issues
                 </CardTitle>
               </CardHeader>

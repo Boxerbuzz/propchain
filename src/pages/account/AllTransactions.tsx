@@ -102,14 +102,19 @@ export default function AllTransactions() {
                         {(() => {
                           const StatusIcon = getStatusIcon(tx.status);
                           return (
-                            <div className={`w-4 h-4 rounded-full flex items-center justify-center border-2 border-background ${
-                              tx.status === 'completed' 
-                                ? 'bg-green-500' 
-                                : tx.status === 'pending' 
-                                ? 'bg-amber-500' 
-                                : 'bg-red-500'
-                            }`}>
-                              <StatusIcon className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
+                            <div
+                              className={`w-4 h-4 rounded-full flex items-center justify-center border-2 border-background ${
+                                tx.status === "completed"
+                                  ? "bg-green-500"
+                                  : tx.status === "pending"
+                                  ? "bg-amber-500"
+                                  : "bg-red-500"
+                              }`}
+                            >
+                              <StatusIcon
+                                className="h-2.5 w-2.5 text-white"
+                                strokeWidth={2.5}
+                              />
                             </div>
                           );
                         })()}

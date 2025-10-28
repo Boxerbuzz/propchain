@@ -16,7 +16,6 @@ import {
   DollarSign,
   Building2,
   Calendar,
-  BarChart3,
   Eye,
   Filter,
   Download,
@@ -32,37 +31,42 @@ const Portfolio = () => {
 
   // Fetch real portfolio data
   const { data: portfolioData, isLoading, error } = usePortfolio();
-  const { portfolioStats, investments, tokenHoldings, dividendPayments } = portfolioData || {
-    portfolioStats: {
-      totalInvested: 0,
-      currentValue: 0,
-      totalReturns: 0,
-      totalDividends: 0,
-      activeInvestments: 0,
-      performancePercentage: 0,
-    },
-    investments: [],
-    tokenHoldings: [],
-    dividendPayments: [],
-  };
+  const { portfolioStats, investments, tokenHoldings, dividendPayments } =
+    portfolioData || {
+      portfolioStats: {
+        totalInvested: 0,
+        currentValue: 0,
+        totalReturns: 0,
+        totalDividends: 0,
+        activeInvestments: 0,
+        performancePercentage: 0,
+      },
+      investments: [],
+      tokenHoldings: [],
+      dividendPayments: [],
+    };
 
   // Transform investments data for display
   const displayInvestments = tokenHoldings.map((holding: any) => {
     const property = holding.tokenizations?.properties;
     const tokenization = holding.tokenizations;
-    const primaryImage = property?.property_images?.find((img: any) => img.is_primary) 
-      || property?.property_images?.[0];
-    
+    const primaryImage =
+      property?.property_images?.find((img: any) => img.is_primary) ||
+      property?.property_images?.[0];
+
     return {
       id: holding.id,
       tokenizationId: holding.tokenization_id,
       propertyTitle: property?.title || "Property Investment",
-      location: property?.location ? 
-        `${property.location.city || ''}${property.location.state ? ', ' + property.location.state : ''}` :
-        "Location not specified",
+      location: property?.location
+        ? `${property.location.city || ""}${
+            property.location.state ? ", " + property.location.state : ""
+          }`
+        : "Location not specified",
       invested: holding.total_invested_ngn || 0,
       currentValue:
-        (holding.total_invested_ngn || 0) + (holding.unrealized_returns_ngn || 0),
+        (holding.total_invested_ngn || 0) +
+        (holding.unrealized_returns_ngn || 0),
       return:
         (holding.unrealized_returns_ngn || 0) +
         (holding.realized_returns_ngn || 0),
@@ -76,9 +80,9 @@ const Portfolio = () => {
       tokens: holding.balance || 0,
       totalTokens: tokenization?.total_supply || 0,
       status: holding.balance > 0 ? "active" : "inactive",
-      expectedReturn: tokenization?.expected_roi_annual ? 
-        `${tokenization.expected_roi_annual}%` : 
-        "N/A",
+      expectedReturn: tokenization?.expected_roi_annual
+        ? `${tokenization.expected_roi_annual}%`
+        : "N/A",
       imageUrl: primaryImage?.image_url || "/placeholder.svg",
     };
   });
@@ -89,11 +93,13 @@ const Portfolio = () => {
   });
 
   const upcomingDividends = (dividendPayments || [])
-    .filter((payment: any) => payment.payment_status === 'pending')
+    .filter((payment: any) => payment.payment_status === "pending")
     .map((payment: any) => ({
       property: payment.tokenization_id || "Property",
       amount: payment.amount_ngn || 0,
-      date: payment.distribution?.distribution_date || new Date().toISOString().split('T')[0],
+      date:
+        payment.distribution?.distribution_date ||
+        new Date().toISOString().split("T")[0],
     }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 3);
@@ -309,7 +315,7 @@ const Portfolio = () => {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                           </div>
-                          
+
                           {/* Property Title Overlay */}
                           <div className="absolute bottom-0 left-0 right-0 p-6">
                             <h3 className="font-bold text-xl text-foreground mb-1 drop-shadow-md">
@@ -402,7 +408,8 @@ const Portfolio = () => {
                             <div className="relative">
                               <Progress
                                 value={
-                                  (investment.tokens / investment.totalTokens) * 100
+                                  (investment.tokens / investment.totalTokens) *
+                                  100
                                 }
                                 className="h-3 bg-muted"
                               />
@@ -436,7 +443,6 @@ const Portfolio = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
                   Performance Overview
                 </CardTitle>
               </CardHeader>
@@ -464,7 +470,6 @@ const Portfolio = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
                   Upcoming Dividends
                 </CardTitle>
                 <CardDescription>Next dividend payments</CardDescription>

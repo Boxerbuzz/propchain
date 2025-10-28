@@ -11,31 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Activity,
-  Search,
-  ArrowLeft,
-  DollarSign,
-  TrendingUp,
-  Building2,
-  Users,
-  Shield,
-  Calendar,
-  AlertTriangle,
-  Info,
-  CheckCircle,
-  Clock,
-  XCircle,
-  CheckCircle2,
-  ArrowUpDown,
-  Wallet,
-  CreditCard,
-  Banknote,
-  Coins,
-} from "lucide-react";
+import { Activity, Search, ArrowLeft } from "lucide-react";
 import { useUnifiedActivityFeed } from "@/hooks/useUnifiedActivityFeed";
 import { formatDistanceToNow } from "date-fns";
-import { getActivityIcon, getStatusIcon, getActivityTypeColor, getStatusBadgeVariant } from "@/lib/activityIcons";
+import {
+  getActivityIcon,
+  getStatusIcon,
+  getActivityTypeColor,
+  getStatusBadgeVariant,
+} from "@/lib/activityIcons";
 
 const AllActivities = () => {
   const navigate = useNavigate();
@@ -129,8 +113,6 @@ const AllActivities = () => {
     { value: "month", label: "This Month" },
   ];
 
-  
-
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
       <Button
@@ -146,7 +128,6 @@ const AllActivities = () => {
         <div className="flex items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Activity className="h-8 w-8 text-primary" />
               All Activities
             </h1>
             <p className="text-muted-foreground">

@@ -38,7 +38,6 @@ export const AutomationJobsMonitor = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
             Automation Jobs
           </CardTitle>
         </CardHeader>
@@ -79,7 +78,6 @@ export const AutomationJobsMonitor = () => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Activity className="h-5 w-5" />
           Automation Jobs
         </CardTitle>
       </CardHeader>
