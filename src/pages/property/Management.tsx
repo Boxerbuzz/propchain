@@ -214,11 +214,11 @@ const PropertyManagement = () => {
     try {
       setIsProcessingAction(true);
 
-      // Close dialog first to prevent overlay from blocking UI
-      setConfirmDialog((prev) => ({ ...prev, open: false }));
+      // TEMPORARILY REMOVED: Close dialog first to prevent overlay from blocking UI
+      // setConfirmDialog((prev) => ({ ...prev, open: false }));
 
-      // Wait for dialog animation to complete
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      // TEMPORARILY REMOVED: Wait for dialog animation to complete
+      // await new Promise((resolve) => setTimeout(resolve, 200));
 
       switch (action) {
         case "Approve":
@@ -257,6 +257,7 @@ const PropertyManagement = () => {
               },
             }
           );
+          setIsProcessingAction(false);
           break;
 
         case "Delist":
@@ -286,6 +287,7 @@ const PropertyManagement = () => {
               },
             }
           );
+          setIsProcessingAction(false);
           break;
 
         case "Reactivate":
@@ -317,6 +319,7 @@ const PropertyManagement = () => {
               },
             }
           );
+          setIsProcessingAction(false);
           break;
 
         case "ApproveToken":
@@ -360,6 +363,7 @@ const PropertyManagement = () => {
               });
             }
           }
+          setIsProcessingAction(false);
           break;
 
         case "Delete":
@@ -387,6 +391,7 @@ const PropertyManagement = () => {
               },
             }
           );
+          setIsProcessingAction(false);
           break;
       }
     } catch (error: any) {
@@ -426,48 +431,32 @@ const PropertyManagement = () => {
           return;
         }
 
-        showConfirmDialog(
-          action,
-          propertyId,
-          "Approve Property",
-          "Are you sure you want to approve this property? It will be made available for investment."
-        );
+        // TEMPORARILY: Execute action directly without dialog
+        setConfirmDialog((prev) => ({ ...prev, action, propertyId }));
+        handleConfirmedAction();
         break;
       case "Delist":
-        showConfirmDialog(
-          action,
-          propertyId,
-          "Delist Property",
-          "Are you sure you want to delist this property? It will be removed from active listings."
-        );
+        // TEMPORARILY: Execute action directly without dialog
+        setConfirmDialog((prev) => ({ ...prev, action, propertyId }));
+        handleConfirmedAction();
         break;
       case "Reactivate":
-        showConfirmDialog(
-          action,
-          propertyId,
-          "Relist Property",
-          "Are you sure you want to relist this property? It will be made available for investment again."
-        );
+        // TEMPORARILY: Execute action directly without dialog
+        setConfirmDialog((prev) => ({ ...prev, action, propertyId }));
+        handleConfirmedAction();
         break;
       case "Tokenize":
         navigate(`/property/${propertyId}/tokenize`);
         break;
       case "ApproveToken":
-        showConfirmDialog(
-          action,
-          propertyId,
-          "Approve Token",
-          "Are you sure you want to approve this tokenization? It will be made available for investment."
-        );
+        // TEMPORARILY: Execute action directly without dialog
+        setConfirmDialog((prev) => ({ ...prev, action, propertyId }));
+        handleConfirmedAction();
         break;
       case "Delete":
-        showConfirmDialog(
-          action,
-          propertyId,
-          "Delete Property",
-          "Are you sure you want to delete this property? This action cannot be undone.",
-          "destructive"
-        );
+        // TEMPORARILY: Execute action directly without dialog
+        setConfirmDialog((prev) => ({ ...prev, action, propertyId }));
+        handleConfirmedAction();
         break;
       default:
         toast({
@@ -1122,8 +1111,8 @@ const PropertyManagement = () => {
         </div>
       </div>
 
-      {/* Confirmation Dialog */}
-      <AlertDialog
+      {/* Confirmation Dialog - TEMPORARILY REMOVED FOR TESTING */}
+      {/* <AlertDialog
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
       >
@@ -1149,7 +1138,7 @@ const PropertyManagement = () => {
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog> */}
     </div>
   );
 };
