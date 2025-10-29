@@ -355,10 +355,13 @@ const InvestmentFlow = () => {
                           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                             <CreditCard className="h-5 w-5 text-primary" />
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <h4 className="font-medium">Paystack Payment</h4>
                             <p className="text-sm text-muted-foreground">
                               Pay with debit card or bank transfer
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Refunds are processed back to your card/bank within 5-7 business days
                             </p>
                           </div>
                         </div>
@@ -377,16 +380,22 @@ const InvestmentFlow = () => {
                             <Wallet className="h-5 w-5" />
                           </div>
 
-                          <div>
+                          <div className="flex-1">
                             <h4 className="font-medium">Wallet Balance</h4>
-                            <div className="flex items-center justify-between">
-                              <p className="text-sm text-muted-foreground">
-                                Use your account balance
+                            <p className="text-sm text-muted-foreground">
+                              Pay with HBAR from your wallet
+                            </p>
+                            {investmentAmount > 0 && walletBalance?.exchangeRates && (
+                              <p className="text-xs text-primary mt-1">
+                                ≈ {(investmentAmount / (walletBalance.exchangeRates.usdToNgn || 1600) / (walletBalance.exchangeRates.hbarToUsd || 0.05)).toFixed(2)} HBAR will be transferred
                               </p>
-                            </div>
+                            )}
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Refunds are returned instantly to your wallet as HBAR
+                            </p>
                           </div>
 
-                          <div className="text-right ml-4 flex-1">
+                          <div className="text-right ml-4">
                             {isLoadingBalance ? (
                               <p className="text-sm text-muted-foreground">
                                 Loading...
@@ -413,6 +422,17 @@ const InvestmentFlow = () => {
                         </div>
                       </div>
                     </div>
+
+                    {paymentMethod === "wallet" && (
+                      <Alert>
+                        <Info className="h-4 w-4" />
+                        <AlertTitle>Crypto Transfer Confirmation</AlertTitle>
+                        <AlertDescription>
+                          By proceeding, you authorize the transfer of HBAR from your wallet to complete this investment. 
+                          The exact amount will be calculated at current exchange rates.
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </div>
                 )}
 

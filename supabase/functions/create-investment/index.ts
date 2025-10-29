@@ -220,49 +220,46 @@ serve(async (req) => {
       );
 
     } else if (payment_method === 'wallet') {
-      // Process wallet payment immediately
-      console.log('[CREATE-INVESTMENT] Processing wallet payment');
-      const { data: walletData, error: walletError } = await supabase.functions.invoke(
-        'deduct-wallet-balance',
+      // Process wallet payment with actual crypto transfer
+      console.log('[CREATE-INVESTMENT] Processing wallet payment with crypto transfer');
+      
+      const { data: walletPayment, error: walletError } = await supabase.functions.invoke(
+        'execute-wallet-payment',
         {
           body: {
-            userId: investor_id,
-            amount: amount_ngn,
-            reference: investment_id
+            investment_id,
+            user_id: investor_id,
+            amount_ngn
           }
         }
       );
 
-      if (walletError || !walletData?.success) {
-        console.error('[CREATE-INVESTMENT] Wallet payment failed:', walletError);
+      if (walletError || !walletPayment?.success) {
+        console.error('[CREATE-INVESTMENT] Wallet payment failed:', walletError || walletPayment);
+        
+        // Rollback token reservation
+        await supabase
+          .from('investments')
+          .delete()
+          .eq('id', investment_id);
+        
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: walletData?.error || 'Insufficient wallet balance or payment failed'
+            error: walletPayment?.error || 'Wallet payment failed'
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Update investment status
-      await supabase
-        .from('investments')
-        .update({ 
-          payment_method: 'wallet',
-          payment_status: 'confirmed',
-          payment_confirmed_at: new Date().toISOString()
-        })
-        .eq('id', investment_id);
-
-      // Trigger post-payment processing
-      await supabase.functions.invoke('process-investment-completion', {
-        body: { investment_id }
-      });
+      console.log('[CREATE-INVESTMENT] Wallet payment successful:', walletPayment.transaction_id);
 
       return new Response(
         JSON.stringify({
           success: true,
           investment_id,
+          transaction_id: walletPayment.transaction_id,
+          hbar_amount: walletPayment.hbar_amount,
           message: 'Investment completed successfully'
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
