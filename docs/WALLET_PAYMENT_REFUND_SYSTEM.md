@@ -121,17 +121,23 @@ WHERE payment_method IS NULL;
 
 ## Platform Treasury Account Setup
 
-**CRITICAL:** The system requires a dedicated Hedera treasury account to receive wallet payments and process refunds.
+**CURRENT CONFIGURATION:** The system is using the Hedera operator account as the treasury.
 
-### Current Configuration
-- Treasury account is currently using the operator account: `HEDERA_OPERATOR_ID`
+### Active Setup (Phase 4 - COMPLETED)
+- Treasury account: `HEDERA_OPERATOR_ID` (Hedera operator account)
 - Private key: `HEDERA_OPERATOR_PRIVATE_KEY`
+- This account receives all wallet-based investment payments
+- This account processes all wallet-based refunds
+- Functions using treasury:
+  - `execute-wallet-payment` (line 98)
+  - `process-smart-refunds` (line 186)
 
-### Production Setup (TODO)
-1. Create a dedicated Hedera account for treasury operations
-2. Store account ID in environment variable: `HEDERA_TREASURY_ACCOUNT_ID`
-3. Store private key in Vault
-4. Update `execute-wallet-payment` and `process-smart-refunds` to use treasury account
+### Future Production Upgrade (Optional)
+For enhanced security and accounting separation, consider:
+1. Creating a dedicated Hedera account specifically for treasury operations
+2. Storing account ID in new environment variable: `HEDERA_TREASURY_ACCOUNT_ID`
+3. Storing private key in Vault
+4. Updating edge functions to reference the dedicated treasury account
 
 ## Security Considerations
 
@@ -152,13 +158,34 @@ WHERE payment_method IS NULL;
 
 ## Testing Checklist
 
-- [ ] User funds wallet via Paystack → HBAR transferred and balance synced
-- [ ] User invests via wallet → HBAR deducted on Hedera, tx_id recorded
-- [ ] Investment fails (Paystack) → Paystack API refund processed
-- [ ] Investment fails (Wallet) → HBAR returned to user's account
-- [ ] sync-wallet-balance doesn't overwrite legitimate wallet payments
-- [ ] Notifications sent correctly for each refund type
-- [ ] Activity logs created for all payment/refund events
+### Phase 1-3: Core Functionality ✅
+- [x] User funds wallet via Paystack → HBAR transferred and balance synced
+- [x] User invests via wallet → HBAR deducted on Hedera, tx_id recorded
+- [x] Investment fails (Paystack) → Paystack API refund processed
+- [x] Investment fails (Wallet) → HBAR returned to user's account
+- [x] sync-wallet-balance doesn't overwrite legitimate wallet payments
+- [x] Notifications sent correctly for each refund type
+- [x] Activity logs created for all payment/refund events
+
+### Phase 4: Treasury Setup ✅
+- [x] Treasury account configured (using HEDERA_OPERATOR_ID)
+- [x] execute-wallet-payment transfers to treasury
+- [x] process-smart-refunds transfers from treasury
+
+### Phase 6: UI/UX Updates ✅
+- [x] Investment flow shows HBAR estimate for wallet payments
+- [x] Payment method selection shows refund policy for each method
+- [x] Wallet funding info clarifies crypto transfer behavior
+- [x] Confirmation screen displays payment method and terms
+
+### Recommended User Acceptance Testing
+- [ ] Test complete investment flow with Paystack payment
+- [ ] Test complete investment flow with wallet payment
+- [ ] Test failed investment refund (Paystack method)
+- [ ] Test failed investment refund (Wallet method)
+- [ ] Verify HBAR amount calculations are accurate
+- [ ] Verify refund notifications display correct messaging
+- [ ] Monitor Hedera Mirror Node for transaction confirmations
 
 ## Known Limitations
 
