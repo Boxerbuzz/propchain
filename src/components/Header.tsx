@@ -105,7 +105,11 @@ export default function Header() {
   const userMenuItems = [
     { name: "Profile", href: "/settings/profile", icon: User },
     { name: "Favorites", href: "/favorites", icon: Heart },
-    { name: "Account", href: hasAccount ? "/account/dashboard" : "/wallet/setup", icon: Coins },
+    {
+      name: "Account",
+      href: hasAccount ? "/account/dashboard" : "/wallet/setup",
+      icon: Coins,
+    },
     { name: "Settings", href: "/settings/security", icon: Settings },
     { name: "Logout", href: "#", icon: LogOut },
   ];
@@ -123,14 +127,14 @@ export default function Header() {
 
   const handleCopyWallet = async () => {
     if (!hederaAccount) return;
-    
+
     try {
       await navigator.clipboard.writeText(hederaAccount);
       setWalletCopied(true);
       toast.success("Wallet address copied to clipboard");
       setTimeout(() => setWalletCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
       toast.error("Failed to copy wallet address");
     }
   };
@@ -342,7 +346,7 @@ export default function Header() {
                   </DropdownMenuLabel>
                   {hederaAccount && (
                     <div className="p-3 border-b border-border bg-muted/30">
-                      <div 
+                      <div
                         onClick={handleCopyWallet}
                         className="flex items-center gap-2 p-2 rounded-lg bg-background border border-border cursor-pointer hover:border-primary/50 transition-colors group"
                       >
