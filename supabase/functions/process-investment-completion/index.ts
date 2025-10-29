@@ -89,7 +89,7 @@ serve(async (req) => {
       .select("id, balance")
       .eq("user_id", investment.investor_id)
       .eq("tokenization_id", investment.tokenization_id)
-      .single();
+      .maybeSingle();
 
     const isRecurringInvestor = !!existingHoldings && existingHoldings.balance > 0;
     console.log(`[PROCESS-COMPLETION] Recurring investor: ${isRecurringInvestor}`);
