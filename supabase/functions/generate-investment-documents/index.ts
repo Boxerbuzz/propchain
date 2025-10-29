@@ -326,7 +326,11 @@ async function generateQRCode(url: string): Promise<string> {
 // Helper function to submit hash to HCS
 async function submitToHCS(supabase: any, documentNumber: string, hash: string): Promise<void> {
   try {
-    const topicId = Deno.env.get('DOCUMENTS_HCS_TOPIC_ID') || '0.0.5260491';
+    const topicId = Deno.env.get('DOCUMENTS_HCS_TOPIC_ID');
+    if (!topicId) {
+      console.warn('[SUBMIT-TO-HCS] ⚠️ DOCUMENTS_HCS_TOPIC_ID not set, skipping HCS submission');
+      return;
+    }
     
     await supabase.functions.invoke('submit-to-hcs', {
       body: {

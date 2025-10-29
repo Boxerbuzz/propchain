@@ -27,4 +27,12 @@ export const COMPANY_INFO = {
   }
 } as const;
 
-export const DOCUMENTS_HCS_TOPIC_ID = '0.0.5260491'; // HCS topic for document verification
+// HCS topic for document verification - MUST be set in environment variables
+// Created via setup-documents-hcs-topic function: 0.0.7154376
+export const getDocumentsHCSTopicId = (): string => {
+  const topicId = Deno.env.get('DOCUMENTS_HCS_TOPIC_ID');
+  if (!topicId) {
+    throw new Error('DOCUMENTS_HCS_TOPIC_ID environment variable is not set. Run setup-documents-hcs-topic function.');
+  }
+  return topicId;
+};
