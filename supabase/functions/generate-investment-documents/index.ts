@@ -68,6 +68,12 @@ serve(async (req) => {
 
     console.log('Investment data fetched successfully');
 
+    // Extract property-specific HCS topic ID
+    const propertyTopicId = (investment.tokenizations as any)?.properties?.hcs_topic_id;
+    if (!propertyTopicId) {
+      console.warn('[GENERATE-DOCS] ⚠️ Property has no HCS topic ID, documents will not be submitted to HCS');
+    }
+
     // Fetch KYC data for investor address
     const { data: kycData } = await supabase
       .from('kyc_verifications')
@@ -167,13 +173,13 @@ serve(async (req) => {
     console.log('Documents uploaded successfully');
 
     // Submit hashes to HCS for blockchain verification (async, don't wait)
-    submitToHCS(supabase, agreementNumber, agreementHash).catch(err => 
+    submitToHCS(supabase, propertyTopicId, agreementNumber, agreementHash).catch(err => 
       console.error('HCS submission failed for agreement:', err)
     );
-    submitToHCS(supabase, receiptNumber, receiptHash).catch(err => 
+    submitToHCS(supabase, propertyTopicId, receiptNumber, receiptHash).catch(err => 
       console.error('HCS submission failed for receipt:', err)
     );
-    submitToHCS(supabase, certificateNumber, certificateHash).catch(err => 
+    submitToHCS(supabase, propertyTopicId, certificateNumber, certificateHash).catch(err => 
       console.error('HCS submission failed for certificate:', err)
     );
 
@@ -324,11 +330,10 @@ async function generateQRCode(url: string): Promise<string> {
 }
 
 // Helper function to submit hash to HCS
-async function submitToHCS(supabase: any, documentNumber: string, hash: string): Promise<void> {
+async function submitToHCS(supabase: any, topicId: string | null, documentNumber: string, hash: string): Promise<void> {
   try {
-    const topicId = Deno.env.get('DOCUMENTS_HCS_TOPIC_ID');
     if (!topicId) {
-      console.warn('[SUBMIT-TO-HCS] ⚠️ DOCUMENTS_HCS_TOPIC_ID not set, skipping HCS submission');
+      console.warn('[SUBMIT-TO-HCS] ⚠️ No HCS topicId provided for', documentNumber);
       return;
     }
     
