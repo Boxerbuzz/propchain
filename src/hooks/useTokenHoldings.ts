@@ -35,7 +35,7 @@ export const useTokenHoldings = () => {
           tokenizations!inner (
             token_name,
             token_symbol,
-            hedera_token_id,
+            token_id,
             tokenization_type
           ),
           properties!inner (
@@ -57,7 +57,7 @@ export const useTokenHoldings = () => {
         property_id: holding.property_id,
         token_name: holding.tokenizations.token_name,
         token_symbol: holding.tokenizations.token_symbol,
-        hedera_token_id: holding.tokenizations.hedera_token_id,
+        hedera_token_id: holding.tokenizations.token_id ?? null,
         tokenization_type: holding.tokenizations.tokenization_type,
         property_title: holding.properties.title,
       }));
