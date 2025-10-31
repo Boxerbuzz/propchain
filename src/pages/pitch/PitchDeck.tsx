@@ -1,29 +1,39 @@
 import {
-  ArrowUpRight as ArrowUpRightIcon,
-  ChartBar as ChartBarIcon,
-  Briefcase as BriefcaseIcon,
-  ChartLine as ChartLineIcon,
-  CheckCircle as CheckCircleIcon,
-  Coins as CoinsIcon,
-  DeviceMobile as DeviceMobileIcon,
-  FileText as FileTextIcon,
-  FlagBanner as FlagBannerIcon,
-  Gavel as GavelIcon,
-  GlobeHemisphereWest as GlobeHemisphereWestIcon,
-  HouseLine as HouseLineIcon,
-  IdentificationBadge as IdentificationBadgeIcon,
-  Lightning as LightningIcon,
-  LightbulbFilament as LightbulbFilamentIcon,
-  LockSimple as LockSimpleIcon,
-  MapTrifold as MapTrifoldIcon,
-  Megaphone as MegaphoneIcon,
-  PresentationChart as PresentationChartIcon,
-  RocketLaunch as RocketLaunchIcon,
-  Scales as ScalesIcon,
-  ShieldCheck as ShieldCheckIcon,
-  SunHorizon as SunHorizonIcon,
-  TrendUp as TrendUpIcon,
-  UsersThree as UsersThreeIcon,
+  ArrowUpRightIcon,
+  ChatsCircleIcon,
+  ChartBarIcon,
+  BriefcaseIcon,
+  ChartLineIcon,
+  CheckCircleIcon,
+  CoinsIcon,
+  DeviceMobileIcon,
+  FileTextIcon,
+  FlagBannerIcon,
+  GlobeIcon,
+  GavelIcon,
+  GlobeHemisphereWestIcon,
+  HouseLineIcon,
+  IdentificationBadgeIcon,
+  LightningIcon,
+  LightbulbFilamentIcon,
+  LockSimpleIcon,
+  MapTrifoldIcon,
+  NetworkIcon,
+  MegaphoneIcon,
+  ShieldStarIcon,
+  PresentationChartIcon,
+  RocketLaunchIcon,
+  ScalesIcon,
+  ShieldCheckIcon,
+  StackIcon,
+  TargetIcon,
+  SunHorizonIcon,
+  TrendUpIcon,
+  UsersIcon,
+  UsersThreeIcon,
+  WhatsappLogoIcon,
+  LinkedinLogoIcon,
+  TwitterLogoIcon,
 } from "@phosphor-icons/react";
 import {
   Area,
@@ -50,27 +60,27 @@ const PitchDeck = () => {
   const businessModel = [
     {
       label: "Transaction Fees",
-      description: "On every property investment",
+      description: "Primary & secondary property investments",
       fee: "1–3%",
     },
     {
       label: "Management Fees",
-      description: "Annual fee on property value or rent",
+      description: "Annual fee on property value/rental income",
       fee: "0.5–1%",
     },
     {
       label: "Origination Fees",
-      description: "Charged to property developers",
+      description: "Developers listing and onboarding projects",
       fee: "2%",
     },
     {
       label: "Secondary Trades",
-      description: "Peer-to-peer token trading",
+      description: "Marketplace peer-to-peer token trades",
       fee: "1%",
     },
     {
       label: "Premium Services",
-      description: "Analytics, white-label licensing",
+      description: "Advanced analytics & white-label partnerships",
       fee: "Variable",
     },
   ];
@@ -95,44 +105,92 @@ const PitchDeck = () => {
       users: "50,000",
       investments: "$20M",
       revenue: "$500K",
-      ebitda: "$50K",
+      ebitda: "+$50K",
     },
     {
       year: "2028",
       users: "120,000",
       investments: "$50M",
       revenue: "$1.3M",
-      ebitda: "$400K",
+      ebitda: "+$400K",
     },
     {
       year: "2029",
       users: "250,000",
       investments: "$120M",
       revenue: "$3M",
-      ebitda: "$1.5M",
+      ebitda: "+$1.5M",
     },
   ];
 
-  const team = [
+  const team: TeamMember[] = [
     {
-      name: "Adebola Ogunleye",
+      name: "Timothy Ofie",
       role: "CEO",
-      bio: "Real estate finance veteran ($50M+ deals, ex-Pension Fund Manager).",
+      bio: "Blockchain and real estate expert with over 10 years of experience in the industry.",
+      socials: [
+        {
+          icon: LinkedinLogoIcon,
+          href: "https://linkedin.com",
+          label: "LinkedIn",
+        },
+        {
+          icon: TwitterLogoIcon,
+          href: "https://twitter.com",
+          label: "Twitter",
+        },
+      ],
     },
     {
       name: "Chinedu Okafor",
       role: "CTO",
-      bio: "Blockchain engineer (ex-Fintech), 8 years building smart contract systems.",
+      bio: "Blockchain engineer architecting PropChain’s Hedera DLT infrastructure (ex-fintech, 8 yrs).",
+      socials: [
+        {
+          icon: LinkedinLogoIcon,
+          href: "https://linkedin.com",
+          label: "LinkedIn",
+        },
+        {
+          icon: TwitterLogoIcon,
+          href: "https://twitter.com",
+          label: "Twitter",
+        },
+      ],
     },
     {
       name: "Fatima Bello",
       role: "COO & Legal",
-      bio: "Corporate lawyer, former Aluko & Oyebode, SEC regulation expert.",
+      bio: "Former Aluko & Oyebode counsel; led SEC crowdfunding compliance teams.",
+      socials: [
+        {
+          icon: LinkedinLogoIcon,
+          href: "https://linkedin.com",
+          label: "LinkedIn",
+        },
+        {
+          icon: WhatsappLogoIcon,
+          href: "https://wa.me/2340000000000",
+          label: "WhatsApp",
+        },
+      ],
     },
     {
       name: "Temi Adeoye",
       role: "CMO",
       bio: "Growth marketer (ex-Digital Bank), scaled users 100x via viral campaigns.",
+      socials: [
+        {
+          icon: LinkedinLogoIcon,
+          href: "https://linkedin.com",
+          label: "LinkedIn",
+        },
+        {
+          icon: TwitterLogoIcon,
+          href: "https://twitter.com",
+          label: "Twitter",
+        },
+      ],
     },
   ];
 
@@ -146,24 +204,24 @@ const PitchDeck = () => {
     {
       year: "2026",
       milestones: [
-        "SEC licensing",
-        "Launch iOS/Android apps",
-        "₦1B cumulative investments",
+        "Secure SEC crowdfunding licensing",
+        "Launch PropChain mobile apps (iOS/Android)",
+        "List 10+ properties; hit ₦1B cumulative investments",
       ],
     },
     {
       year: "2027",
       milestones: [
-        "Launch secondary marketplace",
-        "₦5B+ invested; profitability milestone",
+        "Launch PropChain Marketplace & Governance 2.0",
+        "Reach ₦5B+ AUM and break-even profitability",
       ],
     },
     {
       year: "2028",
       milestones: [
-        "Cross-border investments (diaspora)",
-        "Pan-African expansion – Ghana, Kenya",
-        "250,000+ users and $3M+ annual revenue",
+        "Expand cross-border (diaspora, pan-African)",
+        "Onboard institutions (pension, REICO)",
+        "Launch PropChain Index Fund",
       ],
     },
   ];
@@ -177,12 +235,12 @@ const PitchDeck = () => {
 
   const financialChartData = financials.map((item) => {
     const investmentsValue = parseFloat(item.investments.replace(/[$M]/g, ""));
-    const revenueValue = parseFloat(
-      item.revenue.replace(/[$MK]/g, ""),
-    ) / (item.revenue.includes("K") ? 1000 : 1);
-    const ebitdaValue = parseFloat(
-      item.ebitda.replace(/[$MK-]/g, ""),
-    ) / (item.ebitda.includes("K") ? 1000 : 1);
+    const revenueValue =
+      parseFloat(item.revenue.replace(/[$MK+]/g, "")) /
+      (item.revenue.includes("K") ? 1000 : 1);
+    const ebitdaValue =
+      parseFloat(item.ebitda.replace(/[$MK\-+]/g, "")) /
+      (item.ebitda.includes("K") ? 1000 : 1);
     const ebitdaSign = item.ebitda.startsWith("-") ? -1 : 1;
 
     return {
@@ -208,7 +266,7 @@ const PitchDeck = () => {
   const financialTooltipFormatter = (
     value: number,
     name: string,
-    props: any,
+    props: any
   ): [string, string] => {
     const labels: Record<string, string> = {
       Investments: props.payload.investmentsLabel,
@@ -220,7 +278,7 @@ const PitchDeck = () => {
 
   const tractionTooltipFormatter = (
     value: number,
-    name: string,
+    name: string
   ): [string, string] => {
     if (name === "Investments") {
       return [`₦${value.toLocaleString()}M`, name];
@@ -244,8 +302,9 @@ const PitchDeck = () => {
                 PropChain
               </h1>
               <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
-                Fractional real estate for Nigerians and the diaspora — “Own a
-                piece of property, one token at a time.”
+                Community-powered fractional real estate investment for
+                Nigerians and the diaspora — “Own a piece of property, one token
+                at a time.”
               </p>
               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                 <HouseLineIcon
@@ -254,8 +313,8 @@ const PitchDeck = () => {
                   className="text-primary"
                 />
                 <span>
-                  Democratizing access to property investment with
-                  blockchain-backed digital tokens.
+                  Enabling co-ownership, rental yield, and community-led
+                  decisions via Hedera DLT.
                 </span>
               </div>
             </div>
@@ -284,7 +343,7 @@ const PitchDeck = () => {
         <Section
           icon={LightbulbFilamentIcon}
           title="The Problem"
-          subtitle="High Barriers to Real Estate Ownership in Nigeria"
+          subtitle="Nigeria’s real estate is locked away from the majority"
         >
           <ul className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
             <li className="flex gap-2">
@@ -294,8 +353,8 @@ const PitchDeck = () => {
                 className="text-destructive"
               />
               <span>
-                Average Lagos/Abuja home costs ₦50M+ — out of reach for 90% of
-                earners.
+                Homes cost ₦50–80M in major cities; 90% of citizens can’t clear
+                the entry bar.
               </span>
             </li>
             <li className="flex gap-2">
@@ -305,8 +364,8 @@ const PitchDeck = () => {
                 className="text-destructive"
               />
               <span>
-                Mortgage crisis: &lt;1% of Nigerians have mortgages; interest
-                rates exceed 18%.
+                Mortgage bottleneck: &lt;1% approval; borrowing rates north of
+                18%.
               </span>
             </li>
             <li className="flex gap-2">
@@ -316,8 +375,8 @@ const PitchDeck = () => {
                 className="text-destructive"
               />
               <span>
-                22M+ housing deficit with costs rising annually; informal deals
-                remain risky.
+                22M+ housing deficit; prices outpace wages while informal deals
+                remain opaque and risky.
               </span>
             </li>
             <li className="flex gap-2">
@@ -327,8 +386,8 @@ const PitchDeck = () => {
                 className="text-destructive"
               />
               <span>
-                Middle-class Nigerians are locked out of wealth-building assets;
-                savings horizon &gt;20 years.
+                No liquidity: investors must offload entire assets; average
+                Nigerian needs 20+ years of savings.
               </span>
             </li>
           </ul>
@@ -337,55 +396,61 @@ const PitchDeck = () => {
         <Section
           icon={TrendUpIcon}
           title="The Solution"
-          subtitle="PropChain – Tokenized Fractional Ownership"
+          subtitle="Fractional ownership meets digital transparency"
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <FeatureCard
               icon={CoinsIcon}
               title="Invest From ₦50k"
-              description="Buy fractions of vetted properties instead of full assets."
+              description="Own verified property tokens — small, tradable units on Hedera."
             />
             <FeatureCard
               icon={ShieldCheckIcon}
-              title="Blockchain Trust"
-              description="Smart contracts automate rent payouts, compliance, and ownership tracking."
+              title="Automated Yields"
+              description="Earn rent automatically; compliance and reporting handled by smart contracts."
             />
             <FeatureCard
               icon={LockSimpleIcon}
               title="Secure Escrow"
-              description="Funds held until projects are fully subscribed; capital protected."
+              description="Capital sits in trust until funding completes; investor first by design."
             />
             <FeatureCard
               icon={ChartLineIcon}
-              title="Liquidity Built-In"
-              description="Trade or exit positions on the PropChain marketplace."
+              title="Liquidity & Governance"
+              description="Trade tokens peer-to-peer and vote on property decisions as a community."
             />
           </div>
         </Section>
 
         <Section
           icon={DeviceMobileIcon}
-          title="Product (MVP)"
-          subtitle="Live MVP — Real Users, Real Investments"
+          title="Product (MVP Snapshot)"
+          subtitle="Live platform • Real users • Real returns"
         >
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-3 text-sm text-muted-foreground">
               <p>
-                Web platform for browsing verified properties, viewing projected
-                yields, and checking token prices.
+                Q4 2025 web MVP delivers fractional purchases, escrow-backed
+                transactions, and PropChain custody wallets.
               </p>
               <p>
-                KYC and wallet onboarding completed in minutes with secure
-                custody.
+                1,200+ users and ₦80M transacted across pilot properties — Lekki
+                Apartments (₦50M, 100% funded, 180 investors) and Abuja Retail
+                Space (₦30M, 80% funded).
               </p>
               <p className="font-medium text-foreground">Pilot properties:</p>
               <ul className="space-y-2">
-                <li>• Lekki 4-unit apartment – ₦50M funded (100% goal).</li>
-                <li>• Abuja retail space – ₦30M funded (80% goal).</li>
+                <li>
+                  • Lekki Apartments — 10–12% rental yield already distributed.
+                </li>
+                <li>
+                  • Abuja Retail Space — onboarding investors with escrow
+                  protection.
+                </li>
               </ul>
               <p>
-                Dashboard tracks portfolio performance, rental income, and token
-                holdings in real time.
+                SEC-aligned SPV/Trust structure, governance boards, and
+                real-time dashboards keep investors informed.
               </p>
             </div>
             <Card className="border-dashed bg-muted/20">
@@ -418,6 +483,198 @@ const PitchDeck = () => {
         </Section>
 
         <Section
+          icon={ShieldCheckIcon}
+          title="Technology & Security"
+          subtitle="Compliance-first stack built on Hedera"
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="border border-border/60 bg-card/40">
+              <CardContent className="space-y-4 p-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                  <ShieldStarIcon
+                    size={20}
+                    weight="fill"
+                    className="text-primary"
+                  />
+                  Bank-grade safeguards
+                </div>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <LockSimpleIcon
+                      size={16}
+                      weight="bold"
+                      className="mt-0.5 text-primary"
+                    />
+                    <span>
+                      NDIC-insured escrow accounts and licensed trustees protect
+                      capital until each project closes.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <TargetIcon
+                      size={16}
+                      weight="bold"
+                      className="mt-0.5 text-primary"
+                    />
+                    <span>
+                      Smart contracts automate rent payouts, compliance, and
+                      investor reporting end-to-end.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <GlobeIcon
+                      size={16}
+                      weight="bold"
+                      className="mt-0.5 text-primary"
+                    />
+                    <span>
+                      Mirror-node audit trails provide regulators and partners
+                      with real-time transparency.
+                    </span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+            <Card className="border border-border/60 bg-card/40">
+              <CardContent className="space-y-4 p-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                  <UsersIcon size={20} weight="bold" className="text-primary" />
+                  Trusted experience
+                </div>
+                <ul className="space-y-3">
+                  <li>
+                    • Instant digital onboarding with PropChain custody and
+                    role-based permissions.
+                  </li>
+                  <li>
+                    • Continuous monitoring, anomaly detection, and SOC-aligned
+                    controls mitigate fraud.
+                  </li>
+                  <li>
+                    • Regular audits by ChainSecure Inc. alongside legal reviews
+                    ensure institutional readiness.
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </Section>
+
+        <Section
+          icon={ChatsCircleIcon}
+          title="Community Governance Layer"
+          subtitle="From investing to belonging"
+        >
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p>
+                Every funded property graduates into a PropChain Circle — a
+                dedicated investor community.
+              </p>
+              <ul className="space-y-2">
+                <li>
+                  • Automatic access to group chat/forums for property-specific
+                  collaboration.
+                </li>
+                <li>
+                  • Quarterly financials and proposals streamed via Hedera
+                  Consensus Service.
+                </li>
+                <li>
+                  • Members vote on maintenance, upgrades, or exit events with
+                  tamper-proof audit trails.
+                </li>
+                <li>
+                  • Grow networks with fellow co-owners and shape long-term
+                  value together.
+                </li>
+              </ul>
+              <p className="italic text-primary">
+                “Imagine being part of the landlord community for your building
+                — not just an investor.”
+              </p>
+            </div>
+            <Card className="border border-border/60 bg-card/40">
+              <CardContent className="space-y-3 p-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                  <NetworkIcon
+                    size={20}
+                    weight="bold"
+                    className="text-primary"
+                  />
+                  Powered by Hedera Consensus Service
+                </div>
+                <p>
+                  Ensures transparent, immutable community decisions and
+                  investor communications.
+                </p>
+                <ul className="space-y-2">
+                  <li>• Time-stamped governance events</li>
+                  <li>• Immutable decision logs</li>
+                  <li>• Regulator-friendly auditability</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </Section>
+
+        <Section
+          icon={NetworkIcon}
+          title="Why Hedera?"
+          subtitle="Enterprise-grade DLT for trust, compliance, and scale"
+        >
+          <div className="overflow-hidden rounded-xl border border-border/60 bg-card/40">
+            <div className="grid grid-cols-3 bg-muted px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <span>Use Case</span>
+              <span>Hedera Service</span>
+              <span>Purpose</span>
+            </div>
+            <div className="divide-y divide-border/60 text-sm">
+              {[
+                {
+                  useCase: "Fractional Tokens",
+                  service: "HTS (Token Service)",
+                  purpose: "Mint & manage property-backed tokens",
+                },
+                {
+                  useCase: "Investor Governance",
+                  service: "HCS (Consensus Service)",
+                  purpose: "Transparent voting & investor updates",
+                },
+                {
+                  useCase: "Document Storage",
+                  service: "HFS (File Service)",
+                  purpose: "Immutable proof of title docs & valuations",
+                },
+                {
+                  useCase: "Compliance & Audit",
+                  service: "Mirror Nodes",
+                  purpose: "Regulatory data feeds & transaction history",
+                },
+              ].map((row) => (
+                <div
+                  key={row.useCase}
+                  className="grid grid-cols-3 items-start gap-2 px-4 py-3"
+                >
+                  <span className="font-medium">{row.useCase}</span>
+                  <span className="text-muted-foreground">{row.service}</span>
+                  <span className="text-muted-foreground">{row.purpose}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
+            <p>• 3–5 sec finality, &lt;$0.001 average transaction cost</p>
+            <p>• Carbon-negative, ABFT-secure network built for real assets</p>
+            <p>• Mirror node transparency supports regulatory reporting</p>
+            <p>
+              • Ideal for Nigeria’s SEC framework and future cross-border
+              expansion
+            </p>
+          </div>
+        </Section>
+
+        <Section
           icon={GlobeHemisphereWestIcon}
           title="Market Opportunity"
           subtitle="Nigeria’s $2+ Trillion Real Estate Market"
@@ -428,9 +685,43 @@ const PitchDeck = () => {
             <li>• $20.9B diaspora remittances — 30–40% flows into property.</li>
             <li>• PropTech funding at $9M+ (2022) and rising.</li>
             <li>
-              • Capturing 0.01% of market unlocks $200M revenue opportunity.
+              • Capturing 0.05% of market unlocks $1.3B+ in transactional
+              volume.
+            </li>
+            <li>
+              • Target segments: middle-class professionals, diaspora investors,
+              investment clubs/cooperatives.
             </li>
           </ul>
+          <div className="mt-6 flex flex-col items-center gap-6 text-sm text-muted-foreground lg:flex-row">
+            <div className="relative h-48 w-48">
+              <div className="absolute inset-0 flex flex-col items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary">
+                <span className="text-sm font-semibold">TAM</span>
+                <span className="text-base font-bold">$2.6T</span>
+              </div>
+              <div className="absolute inset-6 flex flex-col items-center justify-center rounded-full border border-emerald-300/60 bg-emerald-100/40 text-emerald-600">
+                <span className="text-xs font-semibold">SAM</span>
+                <span className="text-sm font-bold">$12.5B</span>
+              </div>
+              <div className="absolute inset-14 flex flex-col items-center justify-center rounded-full border border-amber-300/70 bg-amber-100/60 text-amber-700">
+                <span className="text-[11px] font-semibold">SOM</span>
+                <span className="text-sm font-bold">$1.3B</span>
+              </div>
+            </div>
+            <div className="space-y-2 lg:max-w-sm">
+              <p>
+                <strong>TAM:</strong> Entire Nigerian real estate value ($2.6T).
+              </p>
+              <p>
+                <strong>SAM:</strong> Urban fractional investment opportunity
+                across Lagos/Abuja/PH + diaspora inflows ($12.5B).
+              </p>
+              <p>
+                <strong>SOM:</strong> Initial focus capturing 0.05% via 100
+                communities and diaspora channels ($1.3B).
+              </p>
+            </div>
+          </div>
         </Section>
 
         <Section
@@ -456,8 +747,29 @@ const PitchDeck = () => {
                   </span>
                   <span className="text-right text-foreground">{item.fee}</span>
                 </div>
-          ))}
-        </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4 grid gap-4 text-sm text-muted-foreground md:grid-cols-2">
+            <div className="rounded-xl border border-border/60 bg-card/40 p-4">
+              <p className="font-semibold text-foreground">
+                Unit Economics (Pilot Data)
+              </p>
+              <ul className="mt-3 space-y-2">
+                <li>• Average investment ticket: ₦270k</li>
+                <li>• Platform take rate: 2.5%</li>
+                <li>• Revenue per user (LTV): ₦11,250 (~$15)</li>
+                <li>• CAC: ₦3,000 (~$4) → LTV:CAC = 4:1</li>
+                <li>• Payback period: less than 3 months</li>
+              </ul>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-card/40 p-4">
+              <p>
+                Asset-light, high-margin model tied directly to assets under
+                management. Monetisation happens at fundraising, through ongoing
+                management, and at liquidity events.
+              </p>
+            </div>
           </div>
         </Section>
 
@@ -490,34 +802,56 @@ const PitchDeck = () => {
         <Section
           icon={RocketLaunchIcon}
           title="Go-to-Market Strategy"
-          subtitle="Focused growth from Lagos & Abuja outward"
+          subtitle="Phase-by-phase rollout from education to expansion"
         >
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p>
-                Target Users: Middle-class professionals, diaspora Nigerians,
-                investment clubs.
+          <div className="space-y-4 text-sm text-muted-foreground">
+            <div>
+              <p className="font-semibold text-foreground">
+                Phase 1 – Awareness & Education (Q1 2026)
               </p>
-              <p>
-                Expansion: Lagos & Abuja → Port Harcourt, Enugu, diaspora hubs
-                (UK, US, Canada).
-              </p>
-            </div>
-            <div className="grid gap-2 text-sm text-muted-foreground">
-              <p>Acquisition Channels:</p>
-              <ul className="space-y-1">
-                <li>• Investor education (webinars, workshops).</li>
-                <li>• Referral bonuses via token rewards.</li>
+              <ul className="mt-2 space-y-1">
                 <li>
-                  • Developer & bank partnerships for listings and financing.
+                  • Free masterclasses, webinars, and influencer collaborations
                 </li>
-                <li>• Influencer-led personal finance content.</li>
+                <li>
+                  • Referral program with bonus tokens to ignite word-of-mouth
+                </li>
+                <li>
+                  • Partnerships with trusted developers for flagship listings
+                </li>
               </ul>
-              <p className="font-medium text-foreground">
-                Goal: 10,000+ users and ₦1B+ investments in first full year
-                post-launch.
-              </p>
             </div>
+            <div>
+              <p className="font-semibold text-foreground">
+                Phase 2 – Distribution (Q2–Q4 2026)
+              </p>
+              <ul className="mt-2 space-y-1">
+                <li>• Integrations with fintech apps and digital banks</li>
+                <li>
+                  • Employer investment programs (salary deductions → property
+                  tokens)
+                </li>
+                <li>
+                  • Community investment clubs and cooperatives onboarding
+                </li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">
+                Phase 3 – Expansion (2027–2028)
+              </p>
+              <ul className="mt-2 space-y-1">
+                <li>• Diaspora channels in the UK, US, and Canada</li>
+                <li>
+                  • Institutional participation & secondary market liquidity
+                </li>
+                <li>• Target: 100 communities → 1 million co-owners</li>
+              </ul>
+            </div>
+            <p className="font-medium text-foreground">
+              Goal: 10,000+ users and ₦1B+ total investments in the first full
+              year post-launch.
+            </p>
           </div>
         </Section>
 
@@ -536,12 +870,12 @@ const PitchDeck = () => {
               {[
                 {
                   factor: "Ownership Transparency",
-                  others: "Low",
+                  others: "Opaque",
                   propchain: "Blockchain verified",
                 },
                 {
                   factor: "Liquidity",
-                  others: "Locked",
+                  others: "Locked-up",
                   propchain: "Secondary trading",
                 },
                 {
@@ -553,6 +887,16 @@ const PitchDeck = () => {
                   factor: "Regulatory Compliance",
                   others: "Often uncertain",
                   propchain: "SEC-aligned & licensed",
+                },
+                {
+                  factor: "Investor Governance",
+                  others: "Not offered",
+                  propchain: "On-chain voting",
+                },
+                {
+                  factor: "Community Engagement",
+                  others: "Transaction-only",
+                  propchain: "PropChain Circles",
                 },
                 {
                   factor: "User Education",
@@ -582,16 +926,20 @@ const PitchDeck = () => {
         >
           <ul className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
             <li>
-              • Operating under SEC’s 2021 crowdfunding rules with SPV-backed
-              structures.
+              • Structured under SEC’s 2021 crowdfunding rules with SPV-backed
+              estates.
             </li>
-            <li>• NDIC-insured escrow accounts protect investor deposits.</li>
+            <li>
+              • Investor funds held in NDIC-insured escrow accounts with
+              licensed trustees.
+            </li>
             <li>
               • Active engagement with SEC Nigeria for digital asset sandbox
               participation.
             </li>
             <li>
-              • Full compliance with Land Use Act, NDPR, and Tax regulations.
+              • NDPR-aligned data handling and Finance Act-ready digital asset
+              taxation.
             </li>
           </ul>
         </Section>
@@ -612,35 +960,65 @@ const PitchDeck = () => {
               <li>
                 • Selected for Lagos PropTech Incubator 2025 ($20K grant).
               </li>
+              <li>• Average rental yield to investors: 10–12%.</li>
             </ul>
             <Card className="border border-border/60 bg-card/40">
               <CardContent className="space-y-3 p-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2 text-base font-semibold text-foreground">
-                  <FlagBannerIcon size={20} weight="fill" className="text-primary" />
+                  <FlagBannerIcon
+                    size={20}
+                    weight="fill"
+                    className="text-primary"
+                  />
                   MVP launched with real tenants and payout history
                 </div>
                 <p>
-                  Users manage holdings via dashboards, receive rent distributions, and access audited documents.
+                  Users manage holdings via dashboards, receive rent
+                  distributions, and access audited documents.
+                </p>
+                <p className="text-xs italic text-primary">
+                  “I never thought ₦50k could make me a landlord. PropChain made
+                  it possible.” – Olamide, 27, Lagos
                 </p>
                 <div className="h-56">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={tractionChartData} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+                    <ComposedChart
+                      data={tractionChartData}
+                      margin={{ top: 8, right: 16, bottom: 0, left: 0 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis dataKey="stage" tick={{ fontSize: 12 }} />
                       <YAxis
                         yAxisId="left"
                         tick={{ fontSize: 12 }}
-                        label={{ value: "Users", angle: -90, position: "insideLeft", offset: -4, style: { fontSize: 11, fill: "#6b7280" } }}
+                        label={{
+                          value: "Users",
+                          angle: -90,
+                          position: "insideLeft",
+                          offset: -4,
+                          style: { fontSize: 11, fill: "#6b7280" },
+                        }}
                       />
                       <YAxis
                         yAxisId="right"
                         orientation="right"
                         tick={{ fontSize: 12 }}
                         tickFormatter={(value) => `₦${value}M`}
-                        label={{ value: "Investments (₦M)", angle: 90, position: "insideRight", offset: -4, style: { fontSize: 11, fill: "#6b7280" } }}
+                        label={{
+                          value: "Investments (₦M)",
+                          angle: 90,
+                          position: "insideRight",
+                          offset: -4,
+                          style: { fontSize: 11, fill: "#6b7280" },
+                        }}
                       />
                       <RechartsTooltip formatter={tractionTooltipFormatter} />
-                      <Legend verticalAlign="top" height={28} iconType="circle" iconSize={8} />
+                      <Legend
+                        verticalAlign="top"
+                        height={28}
+                        iconType="circle"
+                        iconSize={8}
+                      />
                       <Area
                         yAxisId="right"
                         type="monotone"
@@ -689,8 +1067,8 @@ const PitchDeck = () => {
                       <li key={milestone}>• {milestone}</li>
                     ))}
                   </ul>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </Section>
@@ -704,19 +1082,51 @@ const PitchDeck = () => {
             <Card className="border border-border/60 bg-card/40 lg:col-span-3">
               <CardContent className="h-72 p-0">
                 <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={financialChartData} margin={{ top: 16, right: 24, bottom: 0, left: -10 }}>
+                  <ComposedChart
+                    data={financialChartData}
+                    margin={{ top: 16, right: 24, bottom: 0, left: -10 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="year" tick={{ fontSize: 12 }} />
                     <YAxis
                       tick={{ fontSize: 12 }}
                       tickFormatter={(value) => `${value}`}
-                      label={{ value: "USD (Millions)", angle: -90, position: "insideLeft", offset: -4, style: { fontSize: 11, fill: "#6b7280" } }}
+                      label={{
+                        value: "USD (Millions)",
+                        angle: -90,
+                        position: "insideLeft",
+                        offset: -4,
+                        style: { fontSize: 11, fill: "#6b7280" },
+                      }}
                     />
                     <RechartsTooltip formatter={financialTooltipFormatter} />
-                    <Legend verticalAlign="top" height={32} iconType="circle" iconSize={8} />
-                    <Bar dataKey="investments" name="Investments" fill="#7c3aed" radius={[6, 6, 0, 0]} />
-                    <Line dataKey="revenue" name="Revenue" stroke="#22c55e" strokeWidth={3} dot={{ r: 4 }} />
-                    <Line dataKey="ebitda" name="EBITDA" stroke="#f97316" strokeDasharray="5 4" strokeWidth={3} dot={{ r: 4 }} />
+                    <Legend
+                      verticalAlign="top"
+                      height={32}
+                      iconType="circle"
+                      iconSize={8}
+                    />
+                    <Bar
+                      dataKey="investments"
+                      name="Investments"
+                      fill="#7c3aed"
+                      radius={[6, 6, 0, 0]}
+                    />
+                    <Line
+                      dataKey="revenue"
+                      name="Revenue"
+                      stroke="#22c55e"
+                      strokeWidth={3}
+                      dot={{ r: 4 }}
+                    />
+                    <Line
+                      dataKey="ebitda"
+                      name="EBITDA"
+                      stroke="#f97316"
+                      strokeDasharray="5 4"
+                      strokeWidth={3}
+                      dot={{ r: 4 }}
+                    />
                   </ComposedChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -731,19 +1141,25 @@ const PitchDeck = () => {
               </div>
               <div className="divide-y divide-border/60 text-sm">
                 {financials.map((item) => (
-                  <div key={item.year} className="grid grid-cols-5 items-center px-4 py-3">
+                  <div
+                    key={item.year}
+                    className="grid grid-cols-5 items-center px-4 py-3"
+                  >
                     <span className="font-medium">{item.year}</span>
                     <span className="text-muted-foreground">{item.users}</span>
                     <span>{item.investments}</span>
                     <span>{item.revenue}</span>
-                    <span className="text-primary font-medium">{item.ebitda}</span>
+                    <span className="text-primary font-medium">
+                      {item.ebitda}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            Investments, revenue, and EBITDA displayed in USD (millions) for comparability across years.
+            Investments, revenue, and EBITDA expressed in USD (millions) for
+            comparability. Digital model tracks &gt;70% gross margins by 2027.
           </p>
         </Section>
 
@@ -755,7 +1171,7 @@ const PitchDeck = () => {
           <div className="grid gap-4 md:grid-cols-2">
             {team.map((member) => (
               <Card key={member.name} className="border-border/50 bg-card/40">
-                <CardContent className="space-y-2 p-5">
+                <CardContent className="space-y-3 p-6">
                   <div className="flex items-center gap-2 text-lg font-semibold">
                     <IdentificationBadgeIcon
                       size={20}
@@ -768,6 +1184,24 @@ const PitchDeck = () => {
                     {member.role}
                   </p>
                   <p className="text-sm text-muted-foreground">{member.bio}</p>
+                  {member.socials ? (
+                    <div className="flex items-center gap-3 pt-1">
+                      {member.socials.map(
+                        ({ icon: SocialIcon, href, label }, index) => (
+                          <a
+                            key={`${member.name}-social-${index}`}
+                            href={href}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            aria-label={`${member.name} on ${label}`}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/80 text-muted-foreground transition hover:border-primary hover:text-primary"
+                          >
+                            <SocialIcon size={16} weight="fill" />
+                          </a>
+                        )
+                      )}
+                    </div>
+                  ) : null}
                 </CardContent>
               </Card>
             ))}
@@ -822,13 +1256,19 @@ const PitchDeck = () => {
                         <Cell key={entry.name} fill={fundingColors[index]} />
                       ))}
                     </Pie>
-                    <Legend verticalAlign="bottom" iconType="circle" iconSize={10} />
-                    <RechartsTooltip formatter={(value: number) => [`${value}%`, "Allocation"]} />
+                    <Legend
+                      verticalAlign="bottom"
+                      iconType="circle"
+                      iconSize={10}
+                    />
+                    <RechartsTooltip
+                      formatter={(value: number) => [`${value}%`, "Allocation"]}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-        </div>
+          </div>
         </Section>
 
         <Section
@@ -838,13 +1278,14 @@ const PitchDeck = () => {
         >
           <div className="space-y-4 text-sm text-muted-foreground">
             <p className="text-lg font-medium text-foreground">
-              “We’re not just selling tokens — we’re giving Nigerians the power
-              to own their future.”
+              “We’re not just building a platform — we’re building a
+              people-powered property revolution.”
             </p>
             <p>
-              PropChain’s vision is to make real estate ownership accessible to
-              every Nigerian, turning ₦50k investors into property co-owners —
-              one token at a time.
+              PropChain’s vision is to make real estate ownership as accessible
+              as savings. By turning physical assets into digital communities,
+              we empower millions to build wealth, transparency, and connection
+              — one property token at a time.
             </p>
             <Card className="border-dashed bg-muted/20">
               <CardContent className="space-y-3 p-5 text-sm">
@@ -862,7 +1303,7 @@ const PitchDeck = () => {
                 </div>
               </CardContent>
             </Card>
-      </div>
+          </div>
         </Section>
       </main>
     </div>
@@ -873,6 +1314,13 @@ export default PitchDeck;
 
 type IconComponent = ComponentType<ComponentProps<typeof HouseLineIcon>>;
 
+type TeamMember = {
+  name: string;
+  role: string;
+  bio: string;
+  socials?: { icon: IconComponent; href: string; label: string }[];
+};
+
 type SectionProps = {
   icon: IconComponent;
   title: string;
@@ -881,12 +1329,12 @@ type SectionProps = {
 };
 
 const Section = ({ icon: Icon, title, subtitle, children }: SectionProps) => (
-  <section className="space-y-5 rounded-2xl border border-border/60 bg-background/80 p-6 shadow-sm">
-    <div className="flex flex-wrap items-start gap-3">
-      <div className="rounded-full bg-primary/10 p-2 text-primary">
+  <section className="space-y-6 rounded-2xl border border-border/60 bg-background/80 p-7 shadow-sm">
+    <div className="flex flex-wrap items-start gap-4">
+      <div className="rounded-full bg-primary/10 p-3 text-primary">
         <Icon size={22} weight="bold" />
       </div>
-      <div className="space-y-1">
+      <div className="space-y-2">
         <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
         {subtitle ? (
           <p className="text-sm text-muted-foreground">{subtitle}</p>
