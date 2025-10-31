@@ -17,6 +17,7 @@ Hedera network, enabling fractional ownership, automated dividend
 - [Smart Contract Integration](#smart-contract-integration)
 - [Testing](#testing)
 - [Architecture Diagrams](#architecture-diagrams)
+- [Pitch Deck & Certifications](#pitch-deck-certifications)
 
 <a id="project-overview"></a>
 
@@ -941,16 +942,19 @@ sequenceDiagram
     DB-->>UI: Realtime Update
 ```
 
+<a id="additional-documentation"></a>
+
 ## 📚 Additional Documentation
 
-- [Smart Contract Integration Guide](docs/SMART_CONTRACT_INTEGRATION.md) -
-Detailed contract integration patterns
-- [Smart Contract Deployment Guide](docs/SMART_CONTRACT_DEPLOYMENT.md) -
-Step-by-step deployment instructions
-- [Smart Contract Addresses](docs/SMART_CONTRACT_ADDRESSES.md) -
-Current deployed contract addresses
-- [Smart Contract Plan](.cursor/plans/smart-contract-integration-558e0044.plan.md)
-- Original integration plan
+<a id="pitch-deck-certifications"></a>
+
+## 📎 Pitch Deck & Certifications
+
+- [Pitch Deck](https://propchain-visuals.vercel.app/pitch) — overview of PropChain vision, traction, and roadmap
+- [Hedera Certification](https://drive.google.com/file/d/1X-s1-udqsh5bbc7gDyNpcp_s416Jmw1w/view?usp=drive_link )
+— official Hedera network certification credentials
+
+<a id="security-considerations"></a>
 
 ## 🔐 Security Considerations
 
