@@ -1,6 +1,10 @@
 # Real Estate Tokenization Platform
 
-A comprehensive platform for tokenizing real estate assets on the Hedera network, enabling fractional ownership, automated dividend distributions, and decentralized governance.
+A comprehensive platform for tokenizing real estate assets on the
+Hedera network, enabling fractional ownership, automated dividend
+ distributions, and decentralized governance.
+
+<a id="table-of-contents"></a>
 
 ## 📋 Table of Contents
 
@@ -14,24 +18,34 @@ A comprehensive platform for tokenizing real estate assets on the Hedera network
 - [Testing](#testing)
 - [Architecture Diagrams](#architecture-diagrams)
 
+<a id="project-overview"></a>
+
 ## 🏢 Project Overview
 
-This platform enables property owners to tokenize their real estate assets and investors to purchase fractional ownership through blockchain-based tokens. The system handles the complete lifecycle from property registration to token distribution, dividend payments, and governance voting.
+This platform enables property owners to tokenize their real estate
+assets and investors to purchase fractional ownership through
+blockchain-based tokens. The system handles the complete lifecycle
+from property registration to token distribution, dividend payments,
+and governance voting.
 
 ### Core Capabilities
 
 - **Property Tokenization**: Convert real estate assets into fungible tokens on Hedera
-- **Fractional Investment**: Enable investors to purchase property fractions starting from small amounts
+- **Fractional Investment**: Enable investors to purchase property fractions
+starting from small amounts
 - **Automated Dividends**: Distribute rental income and other returns to token holders
-- **Decentralized Governance**: Token holders vote on property decisions (maintenance, sales, etc.)
+- **Decentralized Governance**: Token holders vote on property decisions
+(maintenance, sales, etc.)
 - **Multi-Signature Treasury**: Secure fund management with approval workflows
 - **KYC Compliance**: Tiered verification system with investment limits
 - **Payment Processing**: Support for NGN payments via Paystack
-- **Activity Logging**: Complete audit trail recorded on Hedera Consensus Service (HCS)
+- **Activity Logging**: Complete audit trail recorded on Hedera Consensus
+Service (HCS)
 
 ### Technology Stack
 
 **Frontend:**
+
 - React 18 with TypeScript
 - Vite for build tooling
 - TailwindCSS + shadcn/ui for styling
@@ -39,25 +53,29 @@ This platform enables property owners to tokenize their real estate assets and i
 - React Router for navigation
 
 **Backend:**
+
 - Supabase (PostgreSQL database + Edge Functions)
 - Hedera SDK for blockchain interactions
 - Smart contracts (Solidity) deployed on Hedera
 
 **Blockchain:**
+
 - Hedera Hashgraph Network
 - Hedera Token Service (HTS) for tokenization
 - Hedera Consensus Service (HCS) for activity logging
 - Hedera File Service (HFS) for document storage
 
+<a id="system-architecture"></a>
+
 ## 🏗️ System Architecture
 
-<lov-mermaid>
+```mermaid
 graph TB
     subgraph "Frontend Layer"
         UI[React Application]
         WC[WalletConnect]
     end
-    
+
     subgraph "Backend Layer"
         EF[Supabase Edge Functions]
         DB[(PostgreSQL Database)]
@@ -89,18 +107,20 @@ graph TB
     DB -->|Notify| RT
     RT -->|Updates| UI
     SC -->|Events| EF
-</lov-mermaid>
+```
 
 ### Component Responsibilities
 
-**Frontend (React)**
+### Frontend (React)
+
 - User interface and interaction
 - Form validation and user input
 - Real-time data display
 - Wallet connection via WalletConnect
 - Route-based access control
 
-**Edge Functions (Supabase)**
+### Edge Functions (Supabase)
+
 - Business logic execution
 - Hedera blockchain interactions
 - Smart contract calls
@@ -108,7 +128,8 @@ graph TB
 - KYC verification workflows
 - Activity logging to HCS
 
-**Database (PostgreSQL)**
+### Database (PostgreSQL)
+
 - User accounts and profiles
 - Property listings and tokenizations
 - Investment records and holdings
@@ -116,17 +137,21 @@ graph TB
 - Smart contract configuration
 - Activity logs
 
-**Smart Contracts (Solidity)**
+### Smart Contracts (Solidity)
+
 - Governance proposal execution
 - Dividend distribution management
 - Multi-signature treasury operations
 - Platform escrow for investments
+
+<a id="how-the-system-works"></a>
 
 ## 🔄 How The System Works
 
 ### For Investors
 
 #### 1. **Account Creation & KYC**
+
 ```mermaid
 sequenceDiagram
     actor Investor
@@ -146,7 +171,7 @@ sequenceDiagram
     EF->>DB: Update KYC Status
     DB-->>UI: Real-time Update
     UI->>Investor: KYC Approved
-</lov-mermaid>
+```
 
 - User creates account with email/password
 - Submits KYC documents (ID, address proof, selfie)
@@ -157,6 +182,7 @@ sequenceDiagram
   - **Tier 3**: Unlimited investment
 
 #### 2. **Wallet Setup**
+
 ```mermaid
 sequenceDiagram
     actor Investor
@@ -174,7 +200,7 @@ sequenceDiagram
     EF->>DB: Update Token Associations
     DB-->>UI: Wallet Ready
     UI->>Investor: Show Wallet Address
-</lov-mermaid>
+```
 
 - Automatic Hedera account creation
 - USDC token association for payments
@@ -182,6 +208,7 @@ sequenceDiagram
 - Wallet balance tracking
 
 #### 3. **Investment Flow**
+
 ```mermaid
 sequenceDiagram
     actor Investor
@@ -211,9 +238,10 @@ sequenceDiagram
     Hedera-->>EF: Transaction Receipt
     EF->>DB: Update Token Holdings
     DB-->>UI: Investment Confirmed
-</lov-mermaid>
+```
 
 **Steps:**
+
 1. Browse properties and view tokenization details
 2. Enter investment amount (respecting KYC limits)
 3. Review terms and accept tokenization agreement
@@ -224,6 +252,7 @@ sequenceDiagram
 8. Investment confirmation and document generation
 
 #### 4. **Portfolio Management**
+
 - View all property holdings
 - Track token balances per property
 - Monitor unrealized returns
@@ -231,6 +260,7 @@ sequenceDiagram
 - View transaction history
 
 #### 5. **Dividend Claiming**
+
 ```mermaid
 sequenceDiagram
     actor Investor
@@ -255,7 +285,7 @@ sequenceDiagram
     EF->>DB: Record Payment
     DB-->>UI: Update Balance
     UI->>Investor: Dividend Received
-</lov-mermaid>
+```
 
 - Property owners record rental income
 - System creates dividend distribution
@@ -264,6 +294,7 @@ sequenceDiagram
 - Automatic USDC transfer to wallet
 
 #### 6. **Governance Voting**
+
 - View active proposals (maintenance, sales, major decisions)
 - Cast votes weighted by token holdings
 - Track proposal status and outcomes
@@ -272,6 +303,7 @@ sequenceDiagram
 ### For Property Owners
 
 #### 1. **Property Registration**
+
 ```mermaid
 sequenceDiagram
     actor Owner
@@ -298,9 +330,10 @@ sequenceDiagram
     EF->>DB: Store Property Record
     DB-->>UI: Property Created
     UI->>Owner: Pending Approval
-</lov-mermaid>
+```
 
 **Steps:**
+
 1. Enter property details (location, size, type, value)
 2. Upload property images
 3. Upload legal documents (title deed, survey, permits)
@@ -309,6 +342,7 @@ sequenceDiagram
 6. Receives approval notification
 
 #### 2. **Tokenization Setup**
+
 ```mermaid
 sequenceDiagram
     actor Owner
@@ -334,9 +368,10 @@ sequenceDiagram
     UI->>EF: Update Tokenization
     EF->>DB: Save Window Dates
     DB-->>UI: Tokenization Active
-</lov-mermaid>
+```
 
 **Configuration:**
+
 - Token symbol and decimals
 - Total token supply
 - Token price (NGN/USD per token)
@@ -346,11 +381,13 @@ sequenceDiagram
 - Use of funds documentation
 
 **Multi-sig Treasury Setup:**
+
 - Define signers (owner + co-signers)
 - Set approval threshold (e.g., 2 of 3)
 - Configure withdrawal limits
 
 #### 3. **Investment Window Management**
+
 - Monitor investment progress in real-time
 - View reserved vs. allocated tokens
 - Track total funds raised
@@ -362,6 +399,7 @@ sequenceDiagram
 Property owners record various events that affect token holders:
 
 **Rental Income:**
+
 ```mermaid
 sequenceDiagram
     actor Owner
@@ -378,9 +416,10 @@ sequenceDiagram
     EF->>DB: Create Treasury Transaction
     EF->>EF: Trigger Dividend Distribution
     DB-->>UI: Event Recorded
-</lov-mermaid>
+```
 
 **Maintenance Events:**
+
 - Create maintenance proposal
 - Token holders vote on approval
 - Execute maintenance with contractor details
@@ -388,17 +427,20 @@ sequenceDiagram
 - Update property condition status
 
 **Inspection Reports:**
+
 - Schedule property inspection
 - Upload inspection photos and reports
 - Record condition assessments
 - Update property valuation
 
 **Purchase/Sale Transactions:**
+
 - Record partial or full property sales
 - Update token holder ownership
 - Distribute sale proceeds
 
 #### 5. **Treasury Management**
+
 ```mermaid
 sequenceDiagram
     actor Owner
@@ -427,9 +469,10 @@ sequenceDiagram
         SC-->>EF: Approval Recorded
         EF->>DB: Update Approvals
     end
-</lov-mermaid>
+```
 
 **Features:**
+
 - Submit withdrawal requests with justification
 - Multi-signature approval workflow
 - Spending limits and controls
@@ -439,7 +482,9 @@ sequenceDiagram
 ### Smart Contract Integration
 
 #### Governance Flow
-The platform uses the **GovernanceExecutor** smart contract for on-chain proposal management:
+
+The platform uses the **GovernanceExecutor** smart contract for on-chain
+proposal management:
 
 1. **Proposal Creation**: Token holders create proposals (maintenance, major decisions)
 2. **On-chain Registration**: Proposal registered to smart contract with voting parameters
@@ -448,6 +493,7 @@ The platform uses the **GovernanceExecutor** smart contract for on-chain proposa
 5. **Completion**: Upon completion, funds are released to executor
 
 #### Dividend Distribution Flow
+
 The **DividendDistributor** smart contract manages automated dividend payouts:
 
 1. **Distribution Creation**: Property owner records income and creates distribution
@@ -457,6 +503,7 @@ The **DividendDistributor** smart contract manages automated dividend payouts:
 5. **Expiry**: Unclaimed dividends after expiry period return to treasury
 
 #### Multi-sig Treasury Flow
+
 The **MultiSigTreasury** contract provides secure fund management:
 
 1. **Withdrawal Request**: Property owner submits withdrawal with details
@@ -466,7 +513,9 @@ The **MultiSigTreasury** contract provides secure fund management:
 5. **Audit Trail**: All actions recorded on blockchain
 
 #### Platform Escrow Flow
-The **PlatformEscrowManager** holds investment funds until tokenization goals are met:
+
+The **PlatformEscrowManager** holds investment funds until tokenization goals
+are met:
 
 1. **Investment**: Funds deposited to escrow contract during investment window
 2. **Target Check**: Contract monitors if funding target reached
@@ -474,9 +523,12 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 4. **Failure**: Automatic refunds to investors if target not met
 5. **Protection**: Investor funds protected until successful tokenization
 
+<a id="key-features"></a>
+
 ## 🚀 Key Features
 
 ### KYC System
+
 - **Tiered Verification**: Three levels with increasing investment limits
 - **Document Upload**: ID cards, proof of address, selfie verification
 - **Provider Integration**: Automated verification through KYC providers
@@ -484,6 +536,7 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 - **Status Tracking**: Real-time verification status updates
 
 ### Hedera Integration
+
 - **Token Creation**: Automated HTS token creation for each property
 - **Account Management**: Seamless Hedera account creation for users
 - **Token Association**: Automatic token association workflows
@@ -492,6 +545,7 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 - **Mirror Node Queries**: Transaction history and balance lookups
 
 ### Payment Processing
+
 - **Paystack Integration**: Support for Nigerian bank transfers and cards
 - **Multi-currency**: Handle NGN and USD conversions
 - **Webhook Handling**: Automatic payment confirmation
@@ -499,73 +553,88 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 - **Payment History**: Complete transaction audit trail
 
 ### Real-time Updates
+
 - **Supabase Realtime**: Live updates to investment status
 - **Portfolio Sync**: Automatic balance and holding updates
 - **Notification System**: In-app and email notifications
 - **Activity Feed**: Real-time property event updates
 
 ### Chat & Collaboration
+
 - **Property Chat Rooms**: Dedicated channels for each tokenized property
 - **Investor Discussions**: Token holders communicate about property decisions
 - **Event Announcements**: Automatic system messages for key events
 - **Voting Discussions**: Deliberation on governance proposals
 
 ### Activity Logging
+
 - **HCS Integration**: All events recorded to Hedera Consensus Service
 - **Audit Trail**: Complete history of property events
 - **Verifiable Records**: Cryptographically secured event logs
 - **Compliance**: Regulatory compliance through comprehensive logging
 
+<a id="database-schema"></a>
+
 ## 📊 Database Schema
 
 ### Core Tables
 
-**Users & Authentication**
+### Users & Authentication
+
 - `auth.users` - Supabase auth users
 - `kyc_verifications` - KYC status and documents
 - `kyc_drafts` - Draft KYC submissions
 
-**Properties**
+### Properties
+
 - `properties` - Property listings
 - `property_images` - Property photos
 - `property_documents` - Legal documents
 - `tokenizations` - Token configuration per property
 
-**Investments**
+### Investments
+
 - `investments` - Investment records
 - `token_holdings` - Current token balances per user
 - `investment_documents` - Generated investment certificates
 
-**Events**
+### Events
+
 - `property_events` - Parent event records
 - `property_rentals` - Rental income events
 - `property_maintenance` - Maintenance events
 - `property_inspections` - Inspection reports
 - `property_purchases` - Sale transactions
 
-**Dividends**
+### Dividends
+
 - `dividend_distributions` - Distribution periods
 - `dividend_payments` - Individual payments to investors
 
-**Governance**
+### Governance
+
 - `governance_proposals` - Proposals for voting
 - `proposal_votes` - Individual votes cast
 
-**Treasury**
+### Treasury
+
 - `property_treasury_transactions` - All treasury movements
 - `treasury_withdrawal_requests` - Multi-sig withdrawal requests
 - `treasury_withdrawal_approvals` - Approval records
 
-**Smart Contracts**
+### Smart Contracts
+
 - `smart_contract_config` - Deployed contract addresses and ABIs
 - `smart_contract_transactions` - Contract interaction logs
 
-**Communication**
+### Communication
+
 - `chat_rooms` - Property discussion channels
 - `chat_participants` - Room membership
 - `chat_messages` - Messages and announcements
 
-**System**
+### System
+
 - `notifications` - User notifications
 - `activity_logs` - General activity tracking
 - `system_settings` - Platform configuration
@@ -591,7 +660,9 @@ erDiagram
     chat_rooms ||--o{ chat_participants : contains
     chat_participants }o--|| users : includes
     users ||--o| kyc_verifications : verified_by
-</lov-mermaid>
+```
+
+<a id="getting-started"></a>
 
 ## 🛠️ Getting Started
 
@@ -656,6 +727,7 @@ The application will be available at `http://localhost:5173`
 See `docs/SMART_CONTRACT_DEPLOYMENT.md` for detailed deployment instructions.
 
 Quick start:
+
 ```bash
 cd contracts
 npm install
@@ -664,6 +736,8 @@ npx hardhat run deployment/deploy-testnet.ts --network testnet
 ```
 
 Deployed contract addresses can be found in `docs/SMART_CONTRACT_ADDRESSES.md`
+
+<a id="smart-contract-integration"></a>
 
 ## 📝 Smart Contract Integration
 
@@ -692,6 +766,7 @@ const result = await smartContractService.createDistributionOnChain({
 ```
 
 The service handles:
+
 - Fetching contract configuration from database
 - Initializing Hedera client
 - Executing contract function calls
@@ -703,9 +778,11 @@ The service handles:
 The system monitors smart contract events in two ways:
 
 1. **Webhook**: Receives real-time events from Hedera (when configured)
-2. **Polling**: `poll-contract-events` edge function queries Mirror Node every 5 minutes
+2. **Polling**: `poll-contract-events` edge function queries Mirror Node
+every 5 minutes
 
 Supported events:
+
 - `ProposalRegistered`
 - `ProposalExecuted`
 - `DistributionCreated`
@@ -715,6 +792,8 @@ Supported events:
 - `WithdrawalExecuted`
 
 See `docs/SMART_CONTRACT_INTEGRATION.md` for detailed API documentation.
+
+<a id="testing"></a>
 
 ## 🧪 Testing
 
@@ -769,19 +848,24 @@ npx hardhat test
 ### Manual Testing Scenarios
 
 1. **Complete Investment Flow**
-   - Create account → Complete KYC → Setup wallet → Invest in property → Verify tokens received
+   - Create account → Complete KYC → Setup wallet → Invest in property → Verify
+   tokens received
 
 2. **Dividend Distribution**
    - Record rental income → Create distribution → Claim dividend → Verify USDC received
 
 3. **Governance Proposal**
-   - Create maintenance proposal → Vote on proposal → Execute if approved → Verify funds locked
+   - Create maintenance proposal → Vote on proposal → Execute if approved →
+   Verify funds locked
 
 4. **Multi-sig Withdrawal**
    - Submit withdrawal request → Collect approvals → Verify automatic execution
 
 5. **Property Event Recording**
-   - Record inspection → Upload documents → Verify HCS submission → Check activity feed
+   - Record inspection → Upload documents → Verify HCS submission →
+   Check activity feed
+
+<a id="architecture-diagrams"></a>
 
 ## 📖 Architecture Diagrams
 
@@ -810,7 +894,7 @@ graph LR
     R --> J
     Q --> S[Create Proposals]
     S --> K
-</lov-mermaid>
+```
 
 ### Investment Window Lifecycle
 
@@ -827,7 +911,7 @@ stateDiagram-v2
     Refunding --> Closed
     Distributed --> [*]
     Closed --> [*]
-</lov-mermaid>
+```
 
 ### Smart Contract Interaction Flow
 
@@ -855,14 +939,18 @@ sequenceDiagram
     Hedera->>EF: Webhook/Polling
     EF->>DB: Process Event
     DB-->>UI: Realtime Update
-</lov-mermaid>
+```
 
 ## 📚 Additional Documentation
 
-- [Smart Contract Integration Guide](docs/SMART_CONTRACT_INTEGRATION.md) - Detailed contract integration patterns
-- [Smart Contract Deployment Guide](docs/SMART_CONTRACT_DEPLOYMENT.md) - Step-by-step deployment instructions
-- [Smart Contract Addresses](docs/SMART_CONTRACT_ADDRESSES.md) - Current deployed contract addresses
-- [Smart Contract Plan](.cursor/plans/smart-contract-integration-558e0044.plan.md) - Original integration plan
+- [Smart Contract Integration Guide](docs/SMART_CONTRACT_INTEGRATION.md) -
+Detailed contract integration patterns
+- [Smart Contract Deployment Guide](docs/SMART_CONTRACT_DEPLOYMENT.md) -
+Step-by-step deployment instructions
+- [Smart Contract Addresses](docs/SMART_CONTRACT_ADDRESSES.md) -
+Current deployed contract addresses
+- [Smart Contract Plan](.cursor/plans/smart-contract-integration-558e0044.plan.md)
+- Original integration plan
 
 ## 🔐 Security Considerations
 
@@ -925,6 +1013,7 @@ Proprietary - All rights reserved
 ## 🆘 Support
 
 For technical support or questions:
+
 - Review the documentation in `docs/`
 - Check Supabase logs for edge function errors
 - Review Hedera Mirror Node for transaction history
@@ -932,6 +1021,6 @@ For technical support or questions:
 
 ---
 
-**Project URL**: https://lovable.dev/projects/810b53d8-4fb9-404b-8e36-1a6266da937b
+**Project URL**: propchain-visuals.vercel.app
 
 Built with ❤️ using React, Supabase, and Hedera Hashgraph

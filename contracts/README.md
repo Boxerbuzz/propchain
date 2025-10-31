@@ -1,6 +1,7 @@
 # Smart Contracts for Governance & Fund Management
 
-This directory contains Solidity smart contracts for trustless governance, dividend distribution, and multi-signature treasury management on Hedera.
+This directory contains Solidity smart contracts for trustless governance,
+dividend distribution, and multi-signature treasury management on Hedera.
 
 ## 📁 Directory Structure
 
@@ -22,7 +23,8 @@ contracts/
 
 ### 1. GovernanceExecutor
 
-**Purpose:** Executes approved governance proposals with automatic fund locking and release.
+**Purpose:** Executes approved governance proposals with automatic fund locking
+and release.
 
 **Key Features:**
 
@@ -159,7 +161,8 @@ INSERT INTO smart_contract_config (
 2. **Reentrancy Protection:** Use checks-effects-interactions pattern
 3. **Integer Overflow:** Using Solidity 0.8+ with built-in overflow checks
 4. **Front-running:** Consider using commit-reveal for sensitive operations
-5. **Upgrade Strategy:** Deploy new versions and migrate data (contracts are not upgradeable)
+5. **Upgrade Strategy:** Deploy new versions and migrate data
+(contracts are not upgradeable)
 
 ### Recommended Security Audits
 

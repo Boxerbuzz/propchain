@@ -67,6 +67,7 @@ export default function Login() {
               placeholder="Enter your email"
               className="mt-1"
               {...form.register("email")}
+              autoComplete="username"
             />
             {form.formState.errors.email && (
               <p className="text-red-500 text-xs mt-1">
@@ -85,6 +86,7 @@ export default function Login() {
                 placeholder="Enter your password"
                 className="pr-10"
                 {...form.register("password")}
+                autoComplete="current-password"
               />
               <button
                 type="button"
