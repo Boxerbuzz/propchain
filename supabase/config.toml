@@ -41,3 +41,7 @@ verify_jwt = true
 verify_jwt = true
 [functions.poll-contract-events]
 verify_jwt = false
+[functions.reconcile-token-distributions]
+verify_jwt = false
+[functions.remediate-rcct-distribution]
+verify_jwt = false

@@ -2205,6 +2205,113 @@ export type Database = {
           },
         ]
       }
+      token_distribution_events: {
+        Row: {
+          association_tx_id: string | null
+          attempt_number: number
+          attempted_at: string
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          hedera_account_id: string | null
+          id: string
+          investment_id: string | null
+          kyc_grant_tx_id: string | null
+          metadata: Json | null
+          skip_reason: string | null
+          status: string
+          tokenization_id: string
+          tokens_requested: number
+          tokens_transferred: number
+          transfer_tx_id: string | null
+          user_id: string
+        }
+        Insert: {
+          association_tx_id?: string | null
+          attempt_number?: number
+          attempted_at?: string
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          hedera_account_id?: string | null
+          id?: string
+          investment_id?: string | null
+          kyc_grant_tx_id?: string | null
+          metadata?: Json | null
+          skip_reason?: string | null
+          status: string
+          tokenization_id: string
+          tokens_requested: number
+          tokens_transferred?: number
+          transfer_tx_id?: string | null
+          user_id: string
+        }
+        Update: {
+          association_tx_id?: string | null
+          attempt_number?: number
+          attempted_at?: string
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          hedera_account_id?: string | null
+          id?: string
+          investment_id?: string | null
+          kyc_grant_tx_id?: string | null
+          metadata?: Json | null
+          skip_reason?: string | null
+          status?: string
+          tokenization_id?: string
+          tokens_requested?: number
+          tokens_transferred?: number
+          transfer_tx_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_distribution_events_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "token_distribution_events_tokenization_id_fkey"
+            columns: ["tokenization_id"]
+            isOneToOne: false
+            referencedRelation: "tokenizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      token_distribution_locks: {
+        Row: {
+          expires_at: string
+          locked_at: string
+          locked_by: string
+          tokenization_id: string
+        }
+        Insert: {
+          expires_at?: string
+          locked_at?: string
+          locked_by: string
+          tokenization_id: string
+        }
+        Update: {
+          expires_at?: string
+          locked_at?: string
+          locked_by?: string
+          tokenization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_distribution_locks_tokenization_id_fkey"
+            columns: ["tokenization_id"]
+            isOneToOne: true
+            referencedRelation: "tokenizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       token_holdings: {
         Row: {
           acquisition_date: string | null
