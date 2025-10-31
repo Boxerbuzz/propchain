@@ -966,14 +966,6 @@ Current deployed contract addresses
 
 ### Frontend Deployment
 
-The project is configured for deployment on Lovable:
-
-```bash
-# Simply visit Lovable and click Share -> Publish
-```
-
-Or deploy to other platforms:
-
 ```bash
 # Build for production
 npm run build
@@ -1006,15 +998,10 @@ This is a private project. For authorized contributors:
 3. Test thoroughly
 4. Submit a pull request
 
-## 📄 License
-
-Proprietary - All rights reserved
-
 ## 🆘 Support
 
 For technical support or questions:
 
-- Review the documentation in `docs/`
 - Check Supabase logs for edge function errors
 - Review Hedera Mirror Node for transaction history
 - Contact the development team
