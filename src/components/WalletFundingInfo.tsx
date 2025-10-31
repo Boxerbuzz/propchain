@@ -33,10 +33,11 @@ export const WalletFundingInfo = () => {
         <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
         <div className="flex-1">
           <AlertDescription className="text-amber-900 dark:text-amber-100">
-            <span className="font-semibold">Important:</span> Only fund your wallet with{" "}
-            <span className="font-semibold">HBAR</span> or{" "}
-            <span className="font-semibold">USDC</span>. Other tokens are not currently supported
-            and may result in loss of funds.
+            <span className="font-semibold">Wallet Payment Notice:</span> When investing with your wallet balance, 
+            actual HBAR will be transferred from your Hedera account. Only{" "}
+            <span className="font-semibold">HBAR</span> and{" "}
+            <span className="font-semibold">USDC</span> are supported. 
+            Refunds (if applicable) are returned instantly to your wallet.
           </AlertDescription>
         </div>
         <Button

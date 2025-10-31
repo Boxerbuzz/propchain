@@ -152,18 +152,19 @@ async function handleWalletFunding(event: any, supabaseClient: any) {
     }
   }
 
-  // Update wallet balance
-  const { error: balanceError } = await supabaseClient
-    .from('wallets')
-    .update({
-      balance_ngn: (parseFloat(wallet.balance_ngn || '0') + amount).toString(),
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', wallet.id);
+  // Sync wallet balance from Hedera instead of manual update
+  console.log('[WALLET-FUNDING] Triggering wallet balance sync...');
+  
+  const { error: syncError } = await supabaseClient.functions.invoke(
+    'sync-wallet-balance',
+    {
+      body: { hederaAccountId: wallet.hedera_account_id }
+    }
+  );
 
-  if (balanceError) {
-    console.error('[WALLET-FUNDING] Failed to update wallet balance:', balanceError);
-    return { success: false, error: 'Failed to update wallet balance' };
+  if (syncError) {
+    console.error('[WALLET-FUNDING] Failed to sync wallet balance:', syncError);
+    // Continue anyway since HBAR transfer succeeded
   }
 
   // Log the funding activity

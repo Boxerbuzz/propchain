@@ -25,6 +25,9 @@ import { motion } from "framer-motion";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useWalletTransactions } from "@/hooks/useWalletTransactions";
+import { useTokenHoldings } from "@/hooks/useTokenHoldings";
+import { Separator } from "@/components/ui/separator";
+import { getActivityIcon } from "@/lib/activityIcons";
 
 export default function AccountDashboard() {
   const navigate = useNavigate();
@@ -33,6 +36,7 @@ export default function AccountDashboard() {
   const { balance: hederaBalance, syncBalance, isSyncing } = useWalletBalance();
   const { currency, formatAmount } = useCurrency();
   const { transactions: allTransactions } = useWalletTransactions();
+  const { data: tokenHoldings, isLoading: isLoadingTokens } = useTokenHoldings();
 
   const totalValueNgn =
     (hederaBalance?.balanceNgn || 0) + (hederaBalance?.usdcBalanceNgn || 0);
@@ -150,36 +154,23 @@ export default function AccountDashboard() {
     }
   };
 
-  const getTransactionIcon = (type: string) => {
-    switch (type) {
-      case "send":
-        return <Send className="h-4 w-4" />;
-      case "receive":
-        return <Download className="h-4 w-4" />;
-      case "swap":
-        return <ArrowLeftRight className="h-4 w-4" />;
-      default:
-        return <ArrowUpDown className="h-4 w-4" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
+  const renderStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
         return (
-          <div className="w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-green-500 shadow-sm">
+          <div className="w-4 h-4 rounded-full bg-background flex items-center justify-center border-2 border-green-500 shadow-sm">
             <Check className="h-2.5 w-2.5 text-green-600 dark:text-green-400" />
           </div>
         );
       case "pending":
         return (
-          <div className="w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-yellow-500 shadow-sm">
+          <div className="w-4 h-4 rounded-full bg-background flex items-center justify-center border-2 border-yellow-500 shadow-sm">
             <Clock className="h-2.5 w-2.5 text-yellow-600 dark:text-yellow-400" />
           </div>
         );
       case "failed":
         return (
-          <div className="w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-red-500 shadow-sm">
+          <div className="w-4 h-4 rounded-full bg-background flex items-center justify-center border-2 border-red-500 shadow-sm">
             <XIcon className="h-2.5 w-2.5 text-red-600 dark:text-red-400" />
           </div>
         );
@@ -238,43 +229,20 @@ export default function AccountDashboard() {
     },
   ];
 
-  // Map all real transactions to simple display format
+  // Use the displayType from transactions
   const displayTransactions = (allTransactions || [])
-    .map((tx) => {
-      let simpleType: "send" | "receive";
-      if (tx.type === "investment" || tx.type === "withdrawal" || tx.type === "token_withdrawal") {
-        simpleType = "send";
-      } else {
-        simpleType = "receive";
-      }
-
-      const status = tx.status === "completed" ? "completed" : tx.status === "failed" ? "failed" : "pending";
-
-      let details = "";
-      if (tx.type === "investment") {
-        details = tx.description || "Investment";
-      } else if (tx.type === "dividend") {
-        details = tx.description || "Dividend";
-      } else if (tx.type === "withdrawal") {
-        details = tx.description || "Bank account";
-      } else if (tx.type === "deposit" || tx.type === "token_deposit") {
-        details = tx.description || "Received";
-      } else {
-        details = tx.description || "";
-      }
-
-      return {
-        id: tx.id,
-        type: simpleType,
-        status,
-        token: tx.currency || "HBAR",
-        amount: tx.amount || 0,
-        to: simpleType === "send" ? details : undefined,
-        from: simpleType === "receive" ? details : undefined,
-        timestamp: tx.timestamp,
-        hash: tx.hash || tx.reference || tx.explorerUrl || "",
-      };
-    })
+    .map((tx) => ({
+      id: tx.id,
+      type: tx.displayType,
+      originalType: tx.type,
+      status: tx.status === "completed" ? "completed" : tx.status === "failed" ? "failed" : "pending",
+      token: tx.currency || "HBAR",
+      amount: tx.amount || 0,
+      to: tx.displayType === "send" ? tx.description || "Sent" : undefined,
+      from: tx.displayType === "receive" ? tx.description || "Received" : undefined,
+      timestamp: tx.timestamp,
+      hash: tx.hash || tx.reference || tx.explorerUrl || "",
+    }))
     .sort(
       (a, b) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -658,6 +626,77 @@ export default function AccountDashboard() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Property Tokens Section */}
+                  {!isLoadingTokens && tokenHoldings && tokenHoldings.length > 0 && (
+                    <>
+                      <Separator className="my-0" />
+                      <div className="p-4 bg-muted/30">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-sm">Property Tokens</h3>
+                            <Badge variant="secondary" className="text-xs">
+                              {tokenHoldings.length}
+                            </Badge>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate("/portfolio")}
+                            className="text-xs"
+                          >
+                            View All →
+                          </Button>
+                        </div>
+                        <div className="space-y-3">
+                          {tokenHoldings.map((token) => (
+                            <div
+                              key={token.id}
+                              onClick={() => navigate(`/portfolio/${token.tokenization_id}`)}
+                              className="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-3 bg-card rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
+                            >
+                              {/* Column 1: Icon */}
+                              <div className="relative">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20">
+                                  <span className="text-sm font-bold text-primary">
+                                    {token.token_symbol.substring(0, 2)}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Column 2: Token Info */}
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className="font-semibold text-sm truncate">
+                                    {token.token_symbol}
+                                  </p>
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-xs h-5 capitalize"
+                                  >
+                                    {token.tokenization_type}
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {token.property_title}
+                                </p>
+                              </div>
+
+                              {/* Column 3: Balance & Action */}
+                              <div className="text-right">
+                                <p className="font-semibold text-sm">
+                                  {token.balance.toLocaleString()}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  tokens
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -741,10 +780,13 @@ export default function AccountDashboard() {
                       {/* Column 1: Icon with Status Badge */}
                       <div className="relative flex-shrink-0">
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full flex items-center justify-center border border-blue-200 dark:border-blue-700">
-                          {getTransactionIcon(tx.type)}
+                          {(() => {
+                            const Icon = getActivityIcon(tx.type);
+                            return <Icon className="h-4 w-4" />;
+                          })()}
                         </div>
                         <div className="absolute -bottom-0.5 -right-0.5">
-                          {getStatusBadge(tx.status)}
+                          {renderStatusBadge(tx.status)}
                         </div>
                       </div>
 

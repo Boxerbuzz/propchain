@@ -1,63 +1,66 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Bell, 
-  Search, 
-  Filter, 
-  Check, 
-  CheckCheck, 
-  Trash2, 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Bell,
+  Search,
+  CheckCheck,
+  Trash2,
   ArrowLeft,
-  Mail,
   DollarSign,
   TrendingUp,
   Building2,
   Users,
   Shield,
   Calendar,
-  AlertTriangle,
   Info,
-  CheckCircle
-} from 'lucide-react';
-import { useNotifications } from '@/hooks/useNotifications';
-import { useToast } from '@/hooks/use-toast';
-import { formatDistanceToNow } from 'date-fns';
+  CheckCircle,
+} from "lucide-react";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useToast } from "@/hooks/use-toast";
+import { formatDistanceToNow } from "date-fns";
 
 const AllNotifications = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { notifications, isLoading, markAllAsRead, clearReadNotifications } = useNotifications(true);
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const { notifications, isLoading, markAllAsRead, clearReadNotifications } =
+    useNotifications(true);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'investment_success':
+      case "investment_success":
         return TrendingUp;
-      case 'treasury_created':
+      case "treasury_created":
         return Building2;
-      case 'tokenization_approved':
+      case "tokenization_approved":
         return CheckCircle;
-      case 'usdc_associated':
+      case "usdc_associated":
         return DollarSign;
-      case 'hedera_account_created':
+      case "hedera_account_created":
         return CheckCircle;
-      case 'reservation_expired':
+      case "reservation_expired":
         return Calendar;
-      case 'system_summary':
+      case "system_summary":
         return Info;
-      case 'dividend_distributed':
+      case "dividend_distributed":
         return DollarSign;
-      case 'proposal_created':
+      case "proposal_created":
         return Users;
-      case 'security_alert':
+      case "security_alert":
         return Shield;
       default:
         return Bell;
@@ -66,39 +69,42 @@ const AllNotifications = () => {
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'investment_success':
-        return 'text-green-600 bg-green-50';
-      case 'treasury_created':
-        return 'text-purple-600 bg-purple-50';
-      case 'tokenization_approved':
-        return 'text-blue-600 bg-blue-50';
-      case 'usdc_associated':
-        return 'text-green-600 bg-green-50';
-      case 'hedera_account_created':
-        return 'text-blue-600 bg-blue-50';
-      case 'reservation_expired':
-        return 'text-orange-600 bg-orange-50';
-      case 'system_summary':
-        return 'text-gray-600 bg-gray-50';
-      case 'dividend_distributed':
-        return 'text-green-600 bg-green-50';
-      case 'proposal_created':
-        return 'text-orange-600 bg-orange-50';
-      case 'security_alert':
-        return 'text-red-600 bg-red-50';
+      case "investment_success":
+        return "text-green-600 bg-green-50";
+      case "treasury_created":
+        return "text-purple-600 bg-purple-50";
+      case "tokenization_approved":
+        return "text-blue-600 bg-blue-50";
+      case "usdc_associated":
+        return "text-green-600 bg-green-50";
+      case "hedera_account_created":
+        return "text-blue-600 bg-blue-50";
+      case "reservation_expired":
+        return "text-orange-600 bg-orange-50";
+      case "system_summary":
+        return "text-gray-600 bg-gray-50";
+      case "dividend_distributed":
+        return "text-green-600 bg-green-50";
+      case "proposal_created":
+        return "text-orange-600 bg-orange-50";
+      case "security_alert":
+        return "text-red-600 bg-red-50";
       default:
-        return 'text-gray-600 bg-gray-50';
+        return "text-gray-600 bg-gray-50";
     }
   };
 
-  const filteredNotifications = notifications.filter(notification => {
-    const matchesSearch = notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         notification.message.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || notification.notification_type === filterType;
-    const matchesStatus = filterStatus === 'all' || 
-                         (filterStatus === 'read' && notification.read_at) ||
-                         (filterStatus === 'unread' && !notification.read_at);
-    
+  const filteredNotifications = notifications.filter((notification) => {
+    const matchesSearch =
+      notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      notification.message.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType =
+      filterType === "all" || notification.notification_type === filterType;
+    const matchesStatus =
+      filterStatus === "all" ||
+      (filterStatus === "read" && notification.read_at) ||
+      (filterStatus === "unread" && !notification.read_at);
+
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -127,36 +133,34 @@ const AllNotifications = () => {
   };
 
   const notificationTypes = [
-    { value: 'all', label: 'All Types' },
-    { value: 'investment_success', label: 'Investment Success' },
-    { value: 'treasury_created', label: 'Treasury Created' },
-    { value: 'tokenization_approved', label: 'Tokenization Approved' },
-    { value: 'usdc_associated', label: 'USDC Associated' },
-    { value: 'hedera_account_created', label: 'Account Created' },
-    { value: 'reservation_expired', label: 'Reservation Expired' },
-    { value: 'system_summary', label: 'System Summary' },
-    { value: 'dividend_distributed', label: 'Dividend Distributed' },
-    { value: 'proposal_created', label: 'Proposal Created' },
-    { value: 'security_alert', label: 'Security Alert' },
+    { value: "all", label: "All Types" },
+    { value: "investment_success", label: "Investment Success" },
+    { value: "treasury_created", label: "Treasury Created" },
+    { value: "tokenization_approved", label: "Tokenization Approved" },
+    { value: "usdc_associated", label: "USDC Associated" },
+    { value: "hedera_account_created", label: "Account Created" },
+    { value: "reservation_expired", label: "Reservation Expired" },
+    { value: "system_summary", label: "System Summary" },
+    { value: "dividend_distributed", label: "Dividend Distributed" },
+    { value: "proposal_created", label: "Proposal Created" },
+    { value: "security_alert", label: "Security Alert" },
   ];
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
-      {/* Header */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => navigate(-1)}
+        className="gap-2 mb-6"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="hidden sm:inline">Back to Dashboard</span>
+      </Button>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Bell className="h-8 w-8 text-primary" />
               All Notifications
             </h1>
             <p className="text-muted-foreground">
@@ -164,7 +168,7 @@ const AllNotifications = () => {
             </p>
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -173,7 +177,7 @@ const AllNotifications = () => {
             className="gap-2"
           >
             <CheckCheck className="h-4 w-4" />
-            Mark All Read
+            <span className="hidden sm:inline">Mark All Read</span>
           </Button>
           <Button
             variant="outline"
@@ -182,7 +186,7 @@ const AllNotifications = () => {
             className="gap-2"
           >
             <Trash2 className="h-4 w-4" />
-            Clear Read
+            <span className="hidden sm:inline">Clear Read</span>
           </Button>
         </div>
       </div>
@@ -233,9 +237,9 @@ const AllNotifications = () => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Notifications ({filteredNotifications.length})</span>
-            {notifications.filter(n => !n.read_at).length > 0 && (
+            {notifications.filter((n) => !n.read_at).length > 0 && (
               <Badge variant="destructive">
-                {notifications.filter(n => !n.read_at).length} unread
+                {notifications.filter((n) => !n.read_at).length} unread
               </Badge>
             )}
           </CardTitle>
@@ -260,24 +264,30 @@ const AllNotifications = () => {
           ) : filteredNotifications.length === 0 ? (
             <div className="p-6 text-center">
               <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No notifications found</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                No notifications found
+              </h3>
               <p className="text-muted-foreground">
-                {searchTerm || filterType !== 'all' || filterStatus !== 'all'
-                  ? 'Try adjusting your filters to see more notifications.'
-                  : 'You have no notifications at the moment.'}
+                {searchTerm || filterType !== "all" || filterStatus !== "all"
+                  ? "Try adjusting your filters to see more notifications."
+                  : "You have no notifications at the moment."}
               </p>
             </div>
           ) : (
             <div className="divide-y divide-border">
               {filteredNotifications.map((notification) => {
-                const Icon = getNotificationIcon(notification.notification_type);
-                const colorClasses = getNotificationColor(notification.notification_type);
-                
+                const Icon = getNotificationIcon(
+                  notification.notification_type
+                );
+                const colorClasses = getNotificationColor(
+                  notification.notification_type
+                );
+
                 return (
                   <div
                     key={notification.id}
                     className={`p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
-                      !notification.read_at ? 'bg-primary/5' : ''
+                      !notification.read_at ? "bg-primary/5" : ""
                     }`}
                     onClick={() => handleMarkAsRead(notification.id)}
                   >
@@ -295,7 +305,10 @@ const AllNotifications = () => {
                               <div className="h-2 w-2 bg-primary rounded-full"></div>
                             )}
                             <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                              {formatDistanceToNow(
+                                new Date(notification.created_at),
+                                { addSuffix: true }
+                              )}
                             </span>
                           </div>
                         </div>

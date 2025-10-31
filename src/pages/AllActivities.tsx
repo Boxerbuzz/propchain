@@ -11,32 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Activity,
-  Search,
-  ArrowLeft,
-  DollarSign,
-  TrendingUp,
-  Building2,
-  Users,
-  Shield,
-  Calendar,
-  AlertTriangle,
-  Info,
-  CheckCircle,
-  Clock,
-  XCircle,
-  CheckCircle2,
-  ArrowUpDown,
-  Wallet,
-  CreditCard,
-  Banknote,
-  Coins,
-} from "lucide-react";
+import { Activity, Search, ArrowLeft } from "lucide-react";
 import { useUnifiedActivityFeed } from "@/hooks/useUnifiedActivityFeed";
-import { useWalletTransactions } from "@/hooks/useWalletTransactions";
-import { useActivityFeed } from "@/hooks/useActivityFeed";
 import { formatDistanceToNow } from "date-fns";
+import {
+  getActivityIcon,
+  getStatusIcon,
+  getActivityTypeColor,
+  getStatusBadgeVariant,
+} from "@/lib/activityIcons";
 
 const AllActivities = () => {
   const navigate = useNavigate();
@@ -50,156 +33,19 @@ const AllActivities = () => {
       maximumFractionDigits: 0,
     }).format(num);
   };
-  const { activities: unifiedActivities, isLoading: unifiedLoading } =
-    useUnifiedActivityFeed(50);
-  const { transactions, isLoading: transactionsLoading } =
-    useWalletTransactions();
-  const { activities: activityLogs, isLoading: activityLoading } =
-    useActivityFeed(50);
+  const { activities: allActivities, isLoading } = useUnifiedActivityFeed(100);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterTimeframe, setFilterTimeframe] = useState("all");
 
-  const getActivityIcon = (type: string, status?: string) => {
-    switch (type) {
-      case "investment":
-        return TrendingUp;
-      case "dividend":
-        return DollarSign;
-      case "property_event":
-        return Building2;
-      case "governance":
-        return Users;
-      case "security":
-        return Shield;
-      case "transaction":
-        return ArrowUpDown;
-      case "wallet":
-        return Wallet;
-      case "payment":
-        return CreditCard;
-      case "deposit":
-        return Banknote;
-      case "withdrawal":
-        return Coins;
-      case "reminder":
-        return Calendar;
-      case "alert":
-        return AlertTriangle;
-      case "info":
-        return Info;
-      case "success":
-        return CheckCircle;
-      default:
-        return Activity;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-      case "success":
-        return CheckCircle2;
-      case "pending":
-        return Clock;
-      case "failed":
-      case "error":
-        return XCircle;
-      default:
-        return Info;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-      case "success":
-        return "text-green-600 bg-green-50";
-      case "pending":
-        return "text-yellow-600 bg-yellow-50";
-      case "failed":
-      case "error":
-        return "text-red-600 bg-red-50";
-      default:
-        return "text-blue-600 bg-blue-50";
-    }
-  };
-
-  const getActivityTypeColor = (type: string) => {
-    switch (type) {
-      case "investment":
-        return "text-blue-600 bg-blue-50";
-      case "dividend":
-        return "text-green-600 bg-green-50";
-      case "property_event":
-        return "text-purple-600 bg-purple-50";
-      case "governance":
-        return "text-orange-600 bg-orange-50";
-      case "security":
-        return "text-red-600 bg-red-50";
-      case "transaction":
-        return "text-gray-600 bg-gray-50";
-      case "wallet":
-        return "text-indigo-600 bg-indigo-50";
-      case "payment":
-        return "text-pink-600 bg-pink-50";
-      default:
-        return "text-gray-600 bg-gray-50";
-    }
-  };
-
-  // Combine all activities
-  const allActivities = [
-    ...unifiedActivities.map((activity) => ({
-      ...activity,
-      source: "unified",
-    })),
-    ...transactions.map((tx) => ({
-      id: `tx-${tx.id}`,
-      type: "transaction",
-      title:
-        tx.type === "investment"
-          ? "Investment"
-          : tx.type === "dividend"
-          ? "Dividend Payment"
-          : tx.type === "withdrawal"
-          ? "Withdrawal"
-          : tx.type === "deposit"
-          ? "Deposit"
-          : "Transaction",
-      description: tx.description || `${tx.type} transaction`,
-      status:
-        tx.status === "completed"
-          ? "completed"
-          : tx.status === "failed"
-          ? "failed"
-          : "pending",
-      timestamp: tx.timestamp,
-      amount: tx.amount,
-      currency: tx.currency,
-      source: "transaction",
-    })),
-    ...activityLogs.map((activity) => ({
-      id: `log-${activity.id}`,
-      type: activity.activity_type?.includes("investment")
-        ? "investment"
-        : "property_event",
-      title:
-        activity.activity_type
-          ?.replace(/_/g, " ")
-          .replace(/\b\w/g, (l: string) => l.toUpperCase()) || "Activity",
-      description: activity.description || "",
-      status: "info",
-      timestamp: activity.created_at,
-      source: "activity_log",
-    })),
-  ].sort(
+  // Filter and sort activities
+  const sortedActivities = [...allActivities].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
-  const filteredActivities = allActivities.filter((activity) => {
+  const filteredActivities = sortedActivities.filter((activity) => {
     const matchesSearch =
       activity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       activity.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -232,7 +78,6 @@ const AllActivities = () => {
   });
 
   const handleActivityClick = (activity: any) => {
-    // Navigate to relevant page based on activity type
     if (activity.type === "investment" || activity.type === "property_event") {
       navigate("/portfolio");
     } else if (activity.type === "transaction") {
@@ -268,25 +113,21 @@ const AllActivities = () => {
     { value: "month", label: "This Month" },
   ];
 
-  const isLoading = unifiedLoading || transactionsLoading || activityLoading;
-
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
-      {/* Header */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => navigate(-1)}
+        className="gap-2 mb-6"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="hidden sm:inline">Back to Dashboard</span>
+      </Button>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Activity className="h-8 w-8 text-primary" />
               All Activities
             </h1>
             <p className="text-muted-foreground">
@@ -296,7 +137,6 @@ const AllActivities = () => {
         </div>
       </div>
 
-      {/* Filters */}
       <Card className="mb-6">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -350,8 +190,6 @@ const AllActivities = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Activities List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -403,13 +241,10 @@ const AllActivities = () => {
           ) : (
             <div className="divide-y divide-border">
               {filteredActivities.map((activity) => {
-                const ActivityIcon = getActivityIcon(
-                  activity.type,
-                  activity.status
-                );
+                const ActivityIcon = getActivityIcon(activity.type);
                 const StatusIcon = getStatusIcon(activity.status);
                 const typeColorClasses = getActivityTypeColor(activity.type);
-                const statusColorClasses = getStatusColor(activity.status);
+                const statusBadge = getStatusBadgeVariant(activity.status);
 
                 return (
                   <div
@@ -453,16 +288,11 @@ const AllActivities = () => {
                             {activity.type.replace("_", " ")}
                           </Badge>
                           <div
-                            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${statusColorClasses}`}
+                            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${statusBadge.className}`}
                           >
                             <StatusIcon className="h-3 w-3" />
                             {activity.status}
                           </div>
-                          {activity.source && (
-                            <Badge variant="secondary" className="text-xs">
-                              {activity.source}
-                            </Badge>
-                          )}
                         </div>
                       </div>
                     </div>

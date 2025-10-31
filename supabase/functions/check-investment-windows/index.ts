@@ -161,13 +161,27 @@ serve(async (req) => {
           .eq('tokenization_id', tokenization.id)
           .eq('payment_status', 'confirmed');
 
+        // Immediately trigger refund processing
+        console.log(`[CHECK-WINDOWS] Triggering refund processing for tokenization ${tokenization.id}`);
+        try {
+          const { data: refundResult, error: refundError } = await supabase.functions.invoke('process-refunds');
+          
+          if (refundError) {
+            console.error(`[CHECK-WINDOWS] Refund processing failed:`, refundError);
+          } else {
+            console.log(`[CHECK-WINDOWS] Refund processing completed:`, refundResult);
+          }
+        } catch (refundErr) {
+          console.error(`[CHECK-WINDOWS] Error invoking refund processing:`, refundErr);
+        }
+
         // Create notification for property owner
         await supabase
           .from('notifications')
           .insert({
             user_id: tokenization.properties.owner_id,
             title: 'Investment Window Closed - Minimum Not Met',
-            message: `The investment window for "${tokenization.properties.title}" has closed. Only ₦${tokenization.current_raise.toLocaleString()} was raised of the ₦${tokenization.minimum_raise.toLocaleString()} minimum required. All investors will be refunded.`,
+            message: `The investment window for "${tokenization.properties.title}" has closed. Only ₦${tokenization.current_raise.toLocaleString()} was raised of the ₦${tokenization.minimum_raise.toLocaleString()} minimum required. All investors are being refunded automatically.`,
             notification_type: 'investment_window_failed',
             action_url: `/property/${tokenization.property_id}`,
             action_data: {
@@ -196,7 +210,7 @@ serve(async (req) => {
             },
             body: JSON.stringify({
               room_id: chatRoom.id,
-              message_text: `🔴 Investment window closed. Minimum raise of ₦${tokenization.minimum_raise.toLocaleString()} not reached. Only ₦${tokenization.current_raise.toLocaleString()} was raised. All investments will be refunded to your wallet within 24-48 hours.`,
+              message_text: `🔴 Investment window closed. Minimum raise of ₦${tokenization.minimum_raise.toLocaleString()} not reached. Only ₦${tokenization.current_raise.toLocaleString()} was raised. All investments are being refunded to your wallet automatically.`,
               message_type: 'system',
               metadata: {
                 event_type: 'window_failed',

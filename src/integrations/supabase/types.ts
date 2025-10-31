@@ -777,6 +777,8 @@ export type Database = {
           amount_ngn: number
           amount_usd: number | null
           created_at: string | null
+          crypto_amount_paid: number | null
+          crypto_currency: string | null
           exchange_rate: number | null
           id: string
           investment_source: string | null
@@ -785,10 +787,13 @@ export type Database = {
           payment_currency: string | null
           payment_method: string | null
           payment_status: string | null
+          payment_tx_id: string | null
           paystack_reference: string | null
           percentage_ownership: number | null
           refund_amount: number | null
           refund_processed_at: string | null
+          refund_tx_reference: string | null
+          refunded_at: string | null
           reservation_expires_at: string | null
           reservation_status: string | null
           terms_accepted_at: string | null
@@ -802,6 +807,8 @@ export type Database = {
           amount_ngn: number
           amount_usd?: number | null
           created_at?: string | null
+          crypto_amount_paid?: number | null
+          crypto_currency?: string | null
           exchange_rate?: number | null
           id?: string
           investment_source?: string | null
@@ -810,10 +817,13 @@ export type Database = {
           payment_currency?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          payment_tx_id?: string | null
           paystack_reference?: string | null
           percentage_ownership?: number | null
           refund_amount?: number | null
           refund_processed_at?: string | null
+          refund_tx_reference?: string | null
+          refunded_at?: string | null
           reservation_expires_at?: string | null
           reservation_status?: string | null
           terms_accepted_at?: string | null
@@ -827,6 +837,8 @@ export type Database = {
           amount_ngn?: number
           amount_usd?: number | null
           created_at?: string | null
+          crypto_amount_paid?: number | null
+          crypto_currency?: string | null
           exchange_rate?: number | null
           id?: string
           investment_source?: string | null
@@ -835,10 +847,13 @@ export type Database = {
           payment_currency?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          payment_tx_id?: string | null
           paystack_reference?: string | null
           percentage_ownership?: number | null
           refund_amount?: number | null
           refund_processed_at?: string | null
+          refund_tx_reference?: string | null
+          refunded_at?: string | null
           reservation_expires_at?: string | null
           reservation_status?: string | null
           terms_accepted_at?: string | null
@@ -2186,6 +2201,113 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      token_distribution_events: {
+        Row: {
+          association_tx_id: string | null
+          attempt_number: number
+          attempted_at: string
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          hedera_account_id: string | null
+          id: string
+          investment_id: string | null
+          kyc_grant_tx_id: string | null
+          metadata: Json | null
+          skip_reason: string | null
+          status: string
+          tokenization_id: string
+          tokens_requested: number
+          tokens_transferred: number
+          transfer_tx_id: string | null
+          user_id: string
+        }
+        Insert: {
+          association_tx_id?: string | null
+          attempt_number?: number
+          attempted_at?: string
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          hedera_account_id?: string | null
+          id?: string
+          investment_id?: string | null
+          kyc_grant_tx_id?: string | null
+          metadata?: Json | null
+          skip_reason?: string | null
+          status: string
+          tokenization_id: string
+          tokens_requested: number
+          tokens_transferred?: number
+          transfer_tx_id?: string | null
+          user_id: string
+        }
+        Update: {
+          association_tx_id?: string | null
+          attempt_number?: number
+          attempted_at?: string
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          hedera_account_id?: string | null
+          id?: string
+          investment_id?: string | null
+          kyc_grant_tx_id?: string | null
+          metadata?: Json | null
+          skip_reason?: string | null
+          status?: string
+          tokenization_id?: string
+          tokens_requested?: number
+          tokens_transferred?: number
+          transfer_tx_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_distribution_events_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "token_distribution_events_tokenization_id_fkey"
+            columns: ["tokenization_id"]
+            isOneToOne: false
+            referencedRelation: "tokenizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      token_distribution_locks: {
+        Row: {
+          expires_at: string
+          locked_at: string
+          locked_by: string
+          tokenization_id: string
+        }
+        Insert: {
+          expires_at?: string
+          locked_at?: string
+          locked_by: string
+          tokenization_id: string
+        }
+        Update: {
+          expires_at?: string
+          locked_at?: string
+          locked_by?: string
+          tokenization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_distribution_locks_tokenization_id_fkey"
+            columns: ["tokenization_id"]
+            isOneToOne: true
+            referencedRelation: "tokenizations"
             referencedColumns: ["id"]
           },
         ]
