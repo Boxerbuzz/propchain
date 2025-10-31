@@ -2,6 +2,8 @@
 
 A comprehensive platform for tokenizing real estate assets on the Hedera network, enabling fractional ownership, automated dividend distributions, and decentralized governance.
 
+<a id="table-of-contents"></a>
+
 ## 📋 Table of Contents
 
 - [Project Overview](#project-overview)
@@ -13,6 +15,8 @@ A comprehensive platform for tokenizing real estate assets on the Hedera network
 - [Smart Contract Integration](#smart-contract-integration)
 - [Testing](#testing)
 - [Architecture Diagrams](#architecture-diagrams)
+
+<a id="project-overview"></a>
 
 ## 🏢 Project Overview
 
@@ -51,6 +55,8 @@ This platform enables property owners to tokenize their real estate assets and i
 - Hedera Token Service (HTS) for tokenization
 - Hedera Consensus Service (HCS) for activity logging
 - Hedera File Service (HFS) for document storage
+
+<a id="system-architecture"></a>
 
 ## 🏗️ System Architecture
 
@@ -96,7 +102,7 @@ graph TB
 
 ### Component Responsibilities
 
-**Frontend (React)**
+### Frontend (React)
 
 - User interface and interaction
 - Form validation and user input
@@ -104,7 +110,7 @@ graph TB
 - Wallet connection via WalletConnect
 - Route-based access control
 
-**Edge Functions (Supabase)**
+### Edge Functions (Supabase)
 
 - Business logic execution
 - Hedera blockchain interactions
@@ -113,7 +119,7 @@ graph TB
 - KYC verification workflows
 - Activity logging to HCS
 
-**Database (PostgreSQL)**
+### Database (PostgreSQL)
 
 - User accounts and profiles
 - Property listings and tokenizations
@@ -122,12 +128,14 @@ graph TB
 - Smart contract configuration
 - Activity logs
 
-**Smart Contracts (Solidity)**
+### Smart Contracts (Solidity)
 
 - Governance proposal execution
 - Dividend distribution management
 - Multi-signature treasury operations
 - Platform escrow for investments
+
+<a id="how-the-system-works"></a>
 
 ## 🔄 How The System Works
 
@@ -504,6 +512,8 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 4. **Failure**: Automatic refunds to investors if target not met
 5. **Protection**: Investor funds protected until successful tokenization
 
+<a id="key-features"></a>
+
 ## 🚀 Key Features
 
 ### KYC System
@@ -552,30 +562,32 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 - **Verifiable Records**: Cryptographically secured event logs
 - **Compliance**: Regulatory compliance through comprehensive logging
 
+<a id="database-schema"></a>
+
 ## 📊 Database Schema
 
 ### Core Tables
 
-**Users & Authentication**
+### Users & Authentication
 
 - `auth.users` - Supabase auth users
 - `kyc_verifications` - KYC status and documents
 - `kyc_drafts` - Draft KYC submissions
 
-**Properties**
+### Properties
 
 - `properties` - Property listings
 - `property_images` - Property photos
 - `property_documents` - Legal documents
 - `tokenizations` - Token configuration per property
 
-**Investments**
+### Investments
 
 - `investments` - Investment records
 - `token_holdings` - Current token balances per user
 - `investment_documents` - Generated investment certificates
 
-**Events**
+### Events
 
 - `property_events` - Parent event records
 - `property_rentals` - Rental income events
@@ -583,34 +595,34 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 - `property_inspections` - Inspection reports
 - `property_purchases` - Sale transactions
 
-**Dividends**
+### Dividends
 
 - `dividend_distributions` - Distribution periods
 - `dividend_payments` - Individual payments to investors
 
-**Governance**
+### Governance
 
 - `governance_proposals` - Proposals for voting
 - `proposal_votes` - Individual votes cast
 
-**Treasury**
+### Treasury
 
 - `property_treasury_transactions` - All treasury movements
 - `treasury_withdrawal_requests` - Multi-sig withdrawal requests
 - `treasury_withdrawal_approvals` - Approval records
 
-**Smart Contracts**
+### Smart Contracts
 
 - `smart_contract_config` - Deployed contract addresses and ABIs
 - `smart_contract_transactions` - Contract interaction logs
 
-**Communication**
+### Communication
 
 - `chat_rooms` - Property discussion channels
 - `chat_participants` - Room membership
 - `chat_messages` - Messages and announcements
 
-**System**
+### System
 
 - `notifications` - User notifications
 - `activity_logs` - General activity tracking
@@ -638,6 +650,8 @@ erDiagram
     chat_participants }o--|| users : includes
     users ||--o| kyc_verifications : verified_by
 ```
+
+<a id="getting-started"></a>
 
 ## 🛠️ Getting Started
 
@@ -712,6 +726,8 @@ npx hardhat run deployment/deploy-testnet.ts --network testnet
 
 Deployed contract addresses can be found in `docs/SMART_CONTRACT_ADDRESSES.md`
 
+<a id="smart-contract-integration"></a>
+
 ## 📝 Smart Contract Integration
 
 ### Deployed Contracts (Testnet)
@@ -764,6 +780,8 @@ Supported events:
 - `WithdrawalExecuted`
 
 See `docs/SMART_CONTRACT_INTEGRATION.md` for detailed API documentation.
+
+<a id="testing"></a>
 
 ## 🧪 Testing
 
@@ -831,6 +849,8 @@ npx hardhat test
 
 5. **Property Event Recording**
    - Record inspection → Upload documents → Verify HCS submission → Check activity feed
+
+<a id="architecture-diagrams"></a>
 
 ## 📖 Architecture Diagrams
 
