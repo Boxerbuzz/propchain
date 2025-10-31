@@ -54,7 +54,7 @@ This platform enables property owners to tokenize their real estate assets and i
 
 ## 🏗️ System Architecture
 
-<lov-mermaid>
+```mermain
 graph TB
     subgraph "Frontend Layer"
         UI[React Application]
@@ -92,7 +92,7 @@ graph TB
     DB -->|Notify| RT
     RT -->|Updates| UI
     SC -->|Events| EF
-</lov-mermaid>
+```
 
 ### Component Responsibilities
 
