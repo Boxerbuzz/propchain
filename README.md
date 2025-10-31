@@ -1,6 +1,8 @@
 # Real Estate Tokenization Platform
 
-A comprehensive platform for tokenizing real estate assets on the Hedera network, enabling fractional ownership, automated dividend distributions, and decentralized governance.
+A comprehensive platform for tokenizing real estate assets on the
+Hedera network, enabling fractional ownership, automated dividend
+ distributions, and decentralized governance.
 
 <a id="table-of-contents"></a>
 
@@ -20,18 +22,25 @@ A comprehensive platform for tokenizing real estate assets on the Hedera network
 
 ## 🏢 Project Overview
 
-This platform enables property owners to tokenize their real estate assets and investors to purchase fractional ownership through blockchain-based tokens. The system handles the complete lifecycle from property registration to token distribution, dividend payments, and governance voting.
+This platform enables property owners to tokenize their real estate
+assets and investors to purchase fractional ownership through
+blockchain-based tokens. The system handles the complete lifecycle
+from property registration to token distribution, dividend payments,
+and governance voting.
 
 ### Core Capabilities
 
 - **Property Tokenization**: Convert real estate assets into fungible tokens on Hedera
-- **Fractional Investment**: Enable investors to purchase property fractions starting from small amounts
+- **Fractional Investment**: Enable investors to purchase property fractions
+starting from small amounts
 - **Automated Dividends**: Distribute rental income and other returns to token holders
-- **Decentralized Governance**: Token holders vote on property decisions (maintenance, sales, etc.)
+- **Decentralized Governance**: Token holders vote on property decisions
+(maintenance, sales, etc.)
 - **Multi-Signature Treasury**: Secure fund management with approval workflows
 - **KYC Compliance**: Tiered verification system with investment limits
 - **Payment Processing**: Support for NGN payments via Paystack
-- **Activity Logging**: Complete audit trail recorded on Hedera Consensus Service (HCS)
+- **Activity Logging**: Complete audit trail recorded on Hedera Consensus
+Service (HCS)
 
 ### Technology Stack
 
@@ -474,7 +483,8 @@ sequenceDiagram
 
 #### Governance Flow
 
-The platform uses the **GovernanceExecutor** smart contract for on-chain proposal management:
+The platform uses the **GovernanceExecutor** smart contract for on-chain
+proposal management:
 
 1. **Proposal Creation**: Token holders create proposals (maintenance, major decisions)
 2. **On-chain Registration**: Proposal registered to smart contract with voting parameters
@@ -504,7 +514,8 @@ The **MultiSigTreasury** contract provides secure fund management:
 
 #### Platform Escrow Flow
 
-The **PlatformEscrowManager** holds investment funds until tokenization goals are met:
+The **PlatformEscrowManager** holds investment funds until tokenization goals
+are met:
 
 1. **Investment**: Funds deposited to escrow contract during investment window
 2. **Target Check**: Contract monitors if funding target reached
@@ -767,7 +778,8 @@ The service handles:
 The system monitors smart contract events in two ways:
 
 1. **Webhook**: Receives real-time events from Hedera (when configured)
-2. **Polling**: `poll-contract-events` edge function queries Mirror Node every 5 minutes
+2. **Polling**: `poll-contract-events` edge function queries Mirror Node
+every 5 minutes
 
 Supported events:
 
@@ -836,19 +848,22 @@ npx hardhat test
 ### Manual Testing Scenarios
 
 1. **Complete Investment Flow**
-   - Create account → Complete KYC → Setup wallet → Invest in property → Verify tokens received
+   - Create account → Complete KYC → Setup wallet → Invest in property → Verify
+   tokens received
 
 2. **Dividend Distribution**
    - Record rental income → Create distribution → Claim dividend → Verify USDC received
 
 3. **Governance Proposal**
-   - Create maintenance proposal → Vote on proposal → Execute if approved → Verify funds locked
+   - Create maintenance proposal → Vote on proposal → Execute if approved →
+   Verify funds locked
 
 4. **Multi-sig Withdrawal**
    - Submit withdrawal request → Collect approvals → Verify automatic execution
 
 5. **Property Event Recording**
-   - Record inspection → Upload documents → Verify HCS submission → Check activity feed
+   - Record inspection → Upload documents → Verify HCS submission →
+   Check activity feed
 
 <a id="architecture-diagrams"></a>
 
@@ -928,10 +943,14 @@ sequenceDiagram
 
 ## 📚 Additional Documentation
 
-- [Smart Contract Integration Guide](docs/SMART_CONTRACT_INTEGRATION.md) - Detailed contract integration patterns
-- [Smart Contract Deployment Guide](docs/SMART_CONTRACT_DEPLOYMENT.md) - Step-by-step deployment instructions
-- [Smart Contract Addresses](docs/SMART_CONTRACT_ADDRESSES.md) - Current deployed contract addresses
-- [Smart Contract Plan](.cursor/plans/smart-contract-integration-558e0044.plan.md) - Original integration plan
+- [Smart Contract Integration Guide](docs/SMART_CONTRACT_INTEGRATION.md) -
+Detailed contract integration patterns
+- [Smart Contract Deployment Guide](docs/SMART_CONTRACT_DEPLOYMENT.md) -
+Step-by-step deployment instructions
+- [Smart Contract Addresses](docs/SMART_CONTRACT_ADDRESSES.md) -
+Current deployed contract addresses
+- [Smart Contract Plan](.cursor/plans/smart-contract-integration-558e0044.plan.md)
+- Original integration plan
 
 ## 🔐 Security Considerations
 
