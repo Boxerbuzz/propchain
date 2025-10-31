@@ -5,7 +5,12 @@ import { supabaseService } from "@/services/supabaseService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -853,6 +858,9 @@ const PropertyView = () => {
       {/* Image Gallery Dialog */}
       <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+          <DialogHeader className="hidden">
+            <DialogTitle></DialogTitle>
+          </DialogHeader>
           {images.length > 0 && (
             <div className="space-y-4">
               <AspectRatio ratio={16 / 10}>

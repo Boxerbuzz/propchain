@@ -32,6 +32,7 @@ This platform enables property owners to tokenize their real estate assets and i
 ### Technology Stack
 
 **Frontend:**
+
 - React 18 with TypeScript
 - Vite for build tooling
 - TailwindCSS + shadcn/ui for styling
@@ -39,11 +40,13 @@ This platform enables property owners to tokenize their real estate assets and i
 - React Router for navigation
 
 **Backend:**
+
 - Supabase (PostgreSQL database + Edge Functions)
 - Hedera SDK for blockchain interactions
 - Smart contracts (Solidity) deployed on Hedera
 
 **Blockchain:**
+
 - Hedera Hashgraph Network
 - Hedera Token Service (HTS) for tokenization
 - Hedera Consensus Service (HCS) for activity logging
@@ -57,7 +60,7 @@ graph TB
         UI[React Application]
         WC[WalletConnect]
     end
-    
+
     subgraph "Backend Layer"
         EF[Supabase Edge Functions]
         DB[(PostgreSQL Database)]
@@ -94,6 +97,7 @@ graph TB
 ### Component Responsibilities
 
 **Frontend (React)**
+
 - User interface and interaction
 - Form validation and user input
 - Real-time data display
@@ -101,6 +105,7 @@ graph TB
 - Route-based access control
 
 **Edge Functions (Supabase)**
+
 - Business logic execution
 - Hedera blockchain interactions
 - Smart contract calls
@@ -109,6 +114,7 @@ graph TB
 - Activity logging to HCS
 
 **Database (PostgreSQL)**
+
 - User accounts and profiles
 - Property listings and tokenizations
 - Investment records and holdings
@@ -117,6 +123,7 @@ graph TB
 - Activity logs
 
 **Smart Contracts (Solidity)**
+
 - Governance proposal execution
 - Dividend distribution management
 - Multi-signature treasury operations
@@ -127,6 +134,7 @@ graph TB
 ### For Investors
 
 #### 1. **Account Creation & KYC**
+
 ```mermaid
 sequenceDiagram
     actor Investor
@@ -174,7 +182,7 @@ sequenceDiagram
     EF->>DB: Update Token Associations
     DB-->>UI: Wallet Ready
     UI->>Investor: Show Wallet Address
-</lov-mermaid>
+```
 
 - Automatic Hedera account creation
 - USDC token association for payments
@@ -182,6 +190,7 @@ sequenceDiagram
 - Wallet balance tracking
 
 #### 3. **Investment Flow**
+
 ```mermaid
 sequenceDiagram
     actor Investor
@@ -211,9 +220,10 @@ sequenceDiagram
     Hedera-->>EF: Transaction Receipt
     EF->>DB: Update Token Holdings
     DB-->>UI: Investment Confirmed
-</lov-mermaid>
+```
 
 **Steps:**
+
 1. Browse properties and view tokenization details
 2. Enter investment amount (respecting KYC limits)
 3. Review terms and accept tokenization agreement
@@ -224,6 +234,7 @@ sequenceDiagram
 8. Investment confirmation and document generation
 
 #### 4. **Portfolio Management**
+
 - View all property holdings
 - Track token balances per property
 - Monitor unrealized returns
@@ -231,6 +242,7 @@ sequenceDiagram
 - View transaction history
 
 #### 5. **Dividend Claiming**
+
 ```mermaid
 sequenceDiagram
     actor Investor
@@ -255,7 +267,7 @@ sequenceDiagram
     EF->>DB: Record Payment
     DB-->>UI: Update Balance
     UI->>Investor: Dividend Received
-</lov-mermaid>
+```
 
 - Property owners record rental income
 - System creates dividend distribution
@@ -264,6 +276,7 @@ sequenceDiagram
 - Automatic USDC transfer to wallet
 
 #### 6. **Governance Voting**
+
 - View active proposals (maintenance, sales, major decisions)
 - Cast votes weighted by token holdings
 - Track proposal status and outcomes
@@ -272,6 +285,7 @@ sequenceDiagram
 ### For Property Owners
 
 #### 1. **Property Registration**
+
 ```mermaid
 sequenceDiagram
     actor Owner
@@ -298,9 +312,10 @@ sequenceDiagram
     EF->>DB: Store Property Record
     DB-->>UI: Property Created
     UI->>Owner: Pending Approval
-</lov-mermaid>
+```
 
 **Steps:**
+
 1. Enter property details (location, size, type, value)
 2. Upload property images
 3. Upload legal documents (title deed, survey, permits)
@@ -309,6 +324,7 @@ sequenceDiagram
 6. Receives approval notification
 
 #### 2. **Tokenization Setup**
+
 ```mermaid
 sequenceDiagram
     actor Owner
@@ -334,9 +350,10 @@ sequenceDiagram
     UI->>EF: Update Tokenization
     EF->>DB: Save Window Dates
     DB-->>UI: Tokenization Active
-</lov-mermaid>
+```
 
 **Configuration:**
+
 - Token symbol and decimals
 - Total token supply
 - Token price (NGN/USD per token)
@@ -346,11 +363,13 @@ sequenceDiagram
 - Use of funds documentation
 
 **Multi-sig Treasury Setup:**
+
 - Define signers (owner + co-signers)
 - Set approval threshold (e.g., 2 of 3)
 - Configure withdrawal limits
 
 #### 3. **Investment Window Management**
+
 - Monitor investment progress in real-time
 - View reserved vs. allocated tokens
 - Track total funds raised
@@ -362,6 +381,7 @@ sequenceDiagram
 Property owners record various events that affect token holders:
 
 **Rental Income:**
+
 ```mermaid
 sequenceDiagram
     actor Owner
@@ -378,9 +398,10 @@ sequenceDiagram
     EF->>DB: Create Treasury Transaction
     EF->>EF: Trigger Dividend Distribution
     DB-->>UI: Event Recorded
-</lov-mermaid>
+```
 
 **Maintenance Events:**
+
 - Create maintenance proposal
 - Token holders vote on approval
 - Execute maintenance with contractor details
@@ -388,17 +409,20 @@ sequenceDiagram
 - Update property condition status
 
 **Inspection Reports:**
+
 - Schedule property inspection
 - Upload inspection photos and reports
 - Record condition assessments
 - Update property valuation
 
 **Purchase/Sale Transactions:**
+
 - Record partial or full property sales
 - Update token holder ownership
 - Distribute sale proceeds
 
 #### 5. **Treasury Management**
+
 ```mermaid
 sequenceDiagram
     actor Owner
@@ -427,9 +451,10 @@ sequenceDiagram
         SC-->>EF: Approval Recorded
         EF->>DB: Update Approvals
     end
-</lov-mermaid>
+```
 
 **Features:**
+
 - Submit withdrawal requests with justification
 - Multi-signature approval workflow
 - Spending limits and controls
@@ -439,6 +464,7 @@ sequenceDiagram
 ### Smart Contract Integration
 
 #### Governance Flow
+
 The platform uses the **GovernanceExecutor** smart contract for on-chain proposal management:
 
 1. **Proposal Creation**: Token holders create proposals (maintenance, major decisions)
@@ -448,6 +474,7 @@ The platform uses the **GovernanceExecutor** smart contract for on-chain proposa
 5. **Completion**: Upon completion, funds are released to executor
 
 #### Dividend Distribution Flow
+
 The **DividendDistributor** smart contract manages automated dividend payouts:
 
 1. **Distribution Creation**: Property owner records income and creates distribution
@@ -457,6 +484,7 @@ The **DividendDistributor** smart contract manages automated dividend payouts:
 5. **Expiry**: Unclaimed dividends after expiry period return to treasury
 
 #### Multi-sig Treasury Flow
+
 The **MultiSigTreasury** contract provides secure fund management:
 
 1. **Withdrawal Request**: Property owner submits withdrawal with details
@@ -466,6 +494,7 @@ The **MultiSigTreasury** contract provides secure fund management:
 5. **Audit Trail**: All actions recorded on blockchain
 
 #### Platform Escrow Flow
+
 The **PlatformEscrowManager** holds investment funds until tokenization goals are met:
 
 1. **Investment**: Funds deposited to escrow contract during investment window
@@ -477,6 +506,7 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 ## 🚀 Key Features
 
 ### KYC System
+
 - **Tiered Verification**: Three levels with increasing investment limits
 - **Document Upload**: ID cards, proof of address, selfie verification
 - **Provider Integration**: Automated verification through KYC providers
@@ -484,6 +514,7 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 - **Status Tracking**: Real-time verification status updates
 
 ### Hedera Integration
+
 - **Token Creation**: Automated HTS token creation for each property
 - **Account Management**: Seamless Hedera account creation for users
 - **Token Association**: Automatic token association workflows
@@ -492,6 +523,7 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 - **Mirror Node Queries**: Transaction history and balance lookups
 
 ### Payment Processing
+
 - **Paystack Integration**: Support for Nigerian bank transfers and cards
 - **Multi-currency**: Handle NGN and USD conversions
 - **Webhook Handling**: Automatic payment confirmation
@@ -499,18 +531,21 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 - **Payment History**: Complete transaction audit trail
 
 ### Real-time Updates
+
 - **Supabase Realtime**: Live updates to investment status
 - **Portfolio Sync**: Automatic balance and holding updates
 - **Notification System**: In-app and email notifications
 - **Activity Feed**: Real-time property event updates
 
 ### Chat & Collaboration
+
 - **Property Chat Rooms**: Dedicated channels for each tokenized property
 - **Investor Discussions**: Token holders communicate about property decisions
 - **Event Announcements**: Automatic system messages for key events
 - **Voting Discussions**: Deliberation on governance proposals
 
 ### Activity Logging
+
 - **HCS Integration**: All events recorded to Hedera Consensus Service
 - **Audit Trail**: Complete history of property events
 - **Verifiable Records**: Cryptographically secured event logs
@@ -521,22 +556,26 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 ### Core Tables
 
 **Users & Authentication**
+
 - `auth.users` - Supabase auth users
 - `kyc_verifications` - KYC status and documents
 - `kyc_drafts` - Draft KYC submissions
 
 **Properties**
+
 - `properties` - Property listings
 - `property_images` - Property photos
 - `property_documents` - Legal documents
 - `tokenizations` - Token configuration per property
 
 **Investments**
+
 - `investments` - Investment records
 - `token_holdings` - Current token balances per user
 - `investment_documents` - Generated investment certificates
 
 **Events**
+
 - `property_events` - Parent event records
 - `property_rentals` - Rental income events
 - `property_maintenance` - Maintenance events
@@ -544,28 +583,34 @@ The **PlatformEscrowManager** holds investment funds until tokenization goals ar
 - `property_purchases` - Sale transactions
 
 **Dividends**
+
 - `dividend_distributions` - Distribution periods
 - `dividend_payments` - Individual payments to investors
 
 **Governance**
+
 - `governance_proposals` - Proposals for voting
 - `proposal_votes` - Individual votes cast
 
 **Treasury**
+
 - `property_treasury_transactions` - All treasury movements
 - `treasury_withdrawal_requests` - Multi-sig withdrawal requests
 - `treasury_withdrawal_approvals` - Approval records
 
 **Smart Contracts**
+
 - `smart_contract_config` - Deployed contract addresses and ABIs
 - `smart_contract_transactions` - Contract interaction logs
 
 **Communication**
+
 - `chat_rooms` - Property discussion channels
 - `chat_participants` - Room membership
 - `chat_messages` - Messages and announcements
 
 **System**
+
 - `notifications` - User notifications
 - `activity_logs` - General activity tracking
 - `system_settings` - Platform configuration
@@ -591,7 +636,7 @@ erDiagram
     chat_rooms ||--o{ chat_participants : contains
     chat_participants }o--|| users : includes
     users ||--o| kyc_verifications : verified_by
-</lov-mermaid>
+```
 
 ## 🛠️ Getting Started
 
@@ -656,6 +701,7 @@ The application will be available at `http://localhost:5173`
 See `docs/SMART_CONTRACT_DEPLOYMENT.md` for detailed deployment instructions.
 
 Quick start:
+
 ```bash
 cd contracts
 npm install
@@ -692,6 +738,7 @@ const result = await smartContractService.createDistributionOnChain({
 ```
 
 The service handles:
+
 - Fetching contract configuration from database
 - Initializing Hedera client
 - Executing contract function calls
@@ -706,6 +753,7 @@ The system monitors smart contract events in two ways:
 2. **Polling**: `poll-contract-events` edge function queries Mirror Node every 5 minutes
 
 Supported events:
+
 - `ProposalRegistered`
 - `ProposalExecuted`
 - `DistributionCreated`
@@ -810,7 +858,7 @@ graph LR
     R --> J
     Q --> S[Create Proposals]
     S --> K
-</lov-mermaid>
+```
 
 ### Investment Window Lifecycle
 
@@ -827,7 +875,7 @@ stateDiagram-v2
     Refunding --> Closed
     Distributed --> [*]
     Closed --> [*]
-</lov-mermaid>
+```
 
 ### Smart Contract Interaction Flow
 
@@ -855,7 +903,7 @@ sequenceDiagram
     Hedera->>EF: Webhook/Polling
     EF->>DB: Process Event
     DB-->>UI: Realtime Update
-</lov-mermaid>
+```
 
 ## 📚 Additional Documentation
 
@@ -925,6 +973,7 @@ Proprietary - All rights reserved
 ## 🆘 Support
 
 For technical support or questions:
+
 - Review the documentation in `docs/`
 - Check Supabase logs for edge function errors
 - Review Hedera Mirror Node for transaction history
@@ -932,6 +981,6 @@ For technical support or questions:
 
 ---
 
-**Project URL**: https://lovable.dev/projects/810b53d8-4fb9-404b-8e36-1a6266da937b
+**Project URL**: propchain-visuals.vercel.app
 
 Built with ❤️ using React, Supabase, and Hedera Hashgraph
