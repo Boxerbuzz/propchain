@@ -154,7 +154,7 @@ sequenceDiagram
     EF->>DB: Update KYC Status
     DB-->>UI: Real-time Update
     UI->>Investor: KYC Approved
-</lov-mermaid>
+```
 
 - User creates account with email/password
 - Submits KYC documents (ID, address proof, selfie)
