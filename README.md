@@ -54,7 +54,7 @@ This platform enables property owners to tokenize their real estate assets and i
 
 ## 🏗️ System Architecture
 
-```mermain
+```mermaid
 graph TB
     subgraph "Frontend Layer"
         UI[React Application]
@@ -165,6 +165,7 @@ sequenceDiagram
   - **Tier 3**: Unlimited investment
 
 #### 2. **Wallet Setup**
+
 ```mermaid
 sequenceDiagram
     actor Investor
