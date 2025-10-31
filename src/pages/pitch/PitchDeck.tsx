@@ -141,57 +141,6 @@ const PitchDeck = () => {
         },
       ],
     },
-    {
-      name: "Chinedu Okafor",
-      role: "CTO",
-      bio: "Blockchain engineer architecting PropChain’s Hedera DLT infrastructure (ex-fintech, 8 yrs).",
-      socials: [
-        {
-          icon: LinkedinLogoIcon,
-          href: "https://linkedin.com",
-          label: "LinkedIn",
-        },
-        {
-          icon: TwitterLogoIcon,
-          href: "https://twitter.com",
-          label: "Twitter",
-        },
-      ],
-    },
-    {
-      name: "Fatima Bello",
-      role: "COO & Legal",
-      bio: "Former Aluko & Oyebode counsel; led SEC crowdfunding compliance teams.",
-      socials: [
-        {
-          icon: LinkedinLogoIcon,
-          href: "https://linkedin.com",
-          label: "LinkedIn",
-        },
-        {
-          icon: WhatsappLogoIcon,
-          href: "https://wa.me/2340000000000",
-          label: "WhatsApp",
-        },
-      ],
-    },
-    {
-      name: "Temi Adeoye",
-      role: "CMO",
-      bio: "Growth marketer (ex-Digital Bank), scaled users 100x via viral campaigns.",
-      socials: [
-        {
-          icon: LinkedinLogoIcon,
-          href: "https://linkedin.com",
-          label: "LinkedIn",
-        },
-        {
-          icon: TwitterLogoIcon,
-          href: "https://twitter.com",
-          label: "Twitter",
-        },
-      ],
-    },
   ];
 
   const advisors = [
