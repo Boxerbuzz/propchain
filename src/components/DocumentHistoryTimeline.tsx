@@ -1,12 +1,14 @@
 import { format } from "date-fns";
-import { FileText, Download, Eye, History } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { History, FileText, FileSignature, Receipt } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-interface DocumentVersion {
+export interface DocumentVersion {
   id: string;
   document_type: string;
   document_number: string;
@@ -18,95 +20,33 @@ interface DocumentVersion {
   superseded_by?: string;
   metadata?: any;
   generated_at: string;
+  document_hash?: string;
+  qr_code_data?: string;
+  investment_id?: string;
+  property_id?: string;
+  tokenization_id?: string;
+  user_id?: string;
 }
 
 interface DocumentHistoryTimelineProps {
   documents: DocumentVersion[];
-  onPreview: (url: string, title: string) => void;
+  onSelectDocument?: (doc: DocumentVersion) => void;
 }
 
 export default function DocumentHistoryTimeline({
   documents,
-  onPreview,
+  onSelectDocument,
 }: DocumentHistoryTimelineProps) {
-  const { toast } = useToast();
-
-  const handleDownload = async (doc: DocumentVersion) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from("investment-documents")
-        .download(doc.document_url);
-
-      if (error) throw error;
-
-      const url = window.URL.createObjectURL(data);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${doc.document_type}-${doc.document_number}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
-      toast({
-        title: "Download Started",
-        description: "Your document is downloading",
-      });
-    } catch (error: any) {
-      console.error("Download error:", error);
-      toast({
-        title: "Download Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handlePreview = async (doc: DocumentVersion) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from("investment-documents")
-        .createSignedUrl(doc.document_url, 3600);
-
-      if (error) throw error;
-
-      if (data?.signedUrl) {
-        onPreview(
-          data.signedUrl,
-          `${doc.document_type.charAt(0).toUpperCase() + doc.document_type.slice(1)} - ${doc.document_number}`
-        );
-      }
-    } catch (error: any) {
-      console.error("Preview error:", error);
-      toast({
-        title: "Preview Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Group documents by type
-  const groupedDocs = documents.reduce((acc, doc) => {
-    if (!acc[doc.document_type]) {
-      acc[doc.document_type] = [];
-    }
-    acc[doc.document_type].push(doc);
-    return acc;
-  }, {} as Record<string, DocumentVersion[]>);
-
-  // Sort documents by version (newest first)
-  Object.keys(groupedDocs).forEach(type => {
-    groupedDocs[type].sort((a, b) => b.version - a.version);
+  const sortedDocs = [...documents].sort((a, b) => {
+    const aDate = new Date(a.version_date || a.generated_at).getTime();
+    const bDate = new Date(b.version_date || b.generated_at).getTime();
+    return bDate - aDate;
   });
 
-  const getDocumentIcon = (type: string) => {
-    return <FileText className="h-5 w-5" />;
-  };
-
-  const getDocumentTitle = (type: string) => {
-    return type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ');
-  };
+  const formatDocumentType = (type: string) =>
+    type
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
 
   if (documents.length === 0) {
     return (
@@ -130,97 +70,99 @@ export default function DocumentHistoryTimeline({
           Document History
         </CardTitle>
         <CardDescription>
-          All versions of your investment documents
+          Versioned records and update provenance for this investment
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          {Object.entries(groupedDocs).map(([type, docs]) => (
-            <div key={type} className="space-y-4">
-              <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
-                {getDocumentIcon(type)}
-                {getDocumentTitle(type)}
-              </h4>
-              <div className="space-y-3 ml-7">
-                {docs.map((doc, index) => (
-                  <div
-                    key={doc.id}
-                    className={`relative border rounded-lg p-4 ${
-                      doc.is_current ? 'border-primary bg-primary/5' : 'border-border'
-                    }`}
-                  >
-                    {/* Timeline connector */}
-                    {index < docs.length - 1 && (
-                      <div className="absolute left-0 top-12 bottom-0 w-px bg-border -ml-4" />
-                    )}
+        <div>
+          {sortedDocs.map((doc, index) => {
+            const isFirst = index === 0;
+            const isLast = index === sortedDocs.length - 1;
+              const subtitleParts = [
+                doc.document_number,
+                format(new Date(doc.version_date || doc.generated_at), "PP, p"),
+              ].filter(Boolean);
 
-                    {/* Timeline dot */}
-                    <div
-                      className={`absolute left-0 top-6 w-2 h-2 rounded-full -ml-5 ${
-                        doc.is_current ? 'bg-primary' : 'bg-muted-foreground'
-                      }`}
-                    />
+              const handleClick = () => {
+                onSelectDocument?.(doc);
+              };
 
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium">Version {doc.version}</span>
-                          {doc.is_current && (
-                            <Badge className="bg-primary text-primary-foreground">
-                              Current
-                            </Badge>
-                          )}
-                          {!doc.is_current && (
-                            <Badge variant="outline">Superseded</Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Document #: {doc.document_number}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Generated: {format(new Date(doc.version_date || doc.generated_at), "PPP 'at' p")}
-                        </p>
-                        {doc.reason_for_update && (
-                          <p className="text-sm text-muted-foreground mt-2">
-                            <span className="font-medium">Reason:</span> {doc.reason_for_update}
-                          </p>
-                        )}
-                        {doc.metadata && (
-                          <div className="text-xs text-muted-foreground mt-2">
-                            {doc.metadata.property_title && (
-                              <p>Property: {doc.metadata.property_title}</p>
-                            )}
-                            {doc.metadata.amount_ngn && (
-                              <p>Amount: ₦{doc.metadata.amount_ngn.toLocaleString()}</p>
-                            )}
-                            {doc.metadata.tokens_held && (
-                              <p>Tokens: {doc.metadata.tokens_held.toLocaleString()}</p>
-                            )}
-                          </div>
-                        )}
+              const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+                if (!onSelectDocument) return;
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onSelectDocument(doc);
+                }
+              };
+
+              const IconComponent =
+                doc.document_type === "agreement"
+                  ? FileSignature
+                  : doc.document_type === "receipt"
+                  ? Receipt
+                  : FileText;
+
+              const content = (
+                <div className="relative pl-14">
+                  <div className="absolute left-4 top-0 bottom-0 flex items-center justify-center">
+                    <div className="flex h-full flex-col items-center">
+                      <div
+                        className={`w-px flex-1 ${
+                          isFirst ? "hidden" : "bg-border/60"
+                        }`}
+                        style={{ marginBottom: isFirst ? 0 : "0.5rem" }}
+                      />
+                      <div
+                        className={`flex aspect-square h-8 w-8 items-center justify-center rounded-full border bg-background text-muted-foreground ${
+                          doc.is_current
+                            ? "border-primary/60 text-primary"
+                            : "border-border/60"
+                        }`}
+                      >
+                        <IconComponent className="h-3.5 w-3.5" />
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handlePreview(doc)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDownload(doc)}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <div
+                        className={`w-px flex-1 ${
+                          isLast ? "hidden" : "bg-border/60"
+                        }`}
+                        style={{ marginTop: isLast ? 0 : "0.5rem" }}
+                      />
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
+                  <p className="ml-6 text-sm font-medium text-foreground">
+                    {formatDocumentType(doc.document_type)} • Version {doc.version}
+                  </p>
+                  <p className="ml-6 text-xs text-muted-foreground">
+                    {subtitleParts.join(" • ")}
+                  </p>
+                </div>
+              );
+
+              const interactive = Boolean(onSelectDocument);
+              const interactiveProps = interactive
+                ? ({ role: "button", tabIndex: 0 } as const)
+                : undefined;
+
+              return (
+                <div
+                  key={doc.id}
+                  className={index < sortedDocs.length - 1 ? "pb-6" : undefined}
+                >
+                  <div
+                    onClick={handleClick}
+                    onKeyDown={handleKeyDown}
+                    {...(interactiveProps || {})}
+                    className={`rounded-md transition ${
+                      interactive
+                        ? "cursor-pointer hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        : ""
+                    }`}
+                  >
+                    {content}
+                  </div>
+                </div>
+              );
+            })}
         </div>
       </CardContent>
     </Card>

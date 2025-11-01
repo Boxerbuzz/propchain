@@ -1,143 +1,126 @@
-import { FileText, Download, Eye, CheckCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, Download, Eye, MoreHorizontal } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import type { DocumentVersion } from "./DocumentHistoryTimeline";
 
 interface InvestmentDocumentCardProps {
-  document: {
-    id: string;
-    document_type: 'agreement' | 'receipt';
-    document_url: string;
-    document_number: string;
-    generated_at: string;
+  document: (DocumentVersion & { document_type: "agreement" | "receipt" }) & {
     metadata?: any;
   };
-  onPreview?: (url: string) => void;
+  onOpenDetails?: (document: DocumentVersion) => void;
 }
 
-export default function InvestmentDocumentCard({ document, onPreview }: InvestmentDocumentCardProps) {
-  const isAgreement = document.document_type === 'agreement';
-  
+export default function InvestmentDocumentCard({
+  document,
+  onOpenDetails,
+}: InvestmentDocumentCardProps) {
+  const isAgreement = document.document_type === "agreement";
+
   const handleDownload = async () => {
     try {
       const { data, error } = await supabase.storage
-        .from('investment-documents')
+        .from("investment-documents")
         .download(document.document_url);
-      
+
       if (error) throw error;
-      
+
       // Create download link
       const url = window.URL.createObjectURL(data);
-      const a = window.document.createElement('a');
+      const a = window.document.createElement("a");
       a.href = url;
       a.download = `${document.document_type}-${document.document_number}.pdf`;
       window.document.body.appendChild(a);
       a.click();
       window.document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      
-      toast.success('Document downloaded successfully');
-    } catch (error: any) {
-      console.error('Download error:', error);
-      toast.error('Failed to download document');
-    }
-  };
 
-  const handlePreview = async () => {
-    try {
-      const { data, error } = await supabase.storage
-        .from('investment-documents')
-        .createSignedUrl(document.document_url, 3600); // 1 hour expiry
-      
-      if (error) throw error;
-      if (data?.signedUrl && onPreview) {
-        onPreview(data.signedUrl);
-      }
+      toast.success("Document downloaded successfully");
     } catch (error: any) {
-      console.error('Preview error:', error);
-      toast.error('Failed to preview document');
+      console.error("Download error:", error);
+      toast.error("Failed to download document");
     }
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${isAgreement ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}`}>
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <CardTitle className="text-base">
-                {isAgreement ? 'Investment Agreement' : 'Investment Receipt'}
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">
-                {document.document_number}
-              </p>
+    <Card className="border border-border/60 shadow-none">
+      <CardContent className="flex items-start justify-between gap-3 p-4">
+        <div className="flex flex-1 items-start gap-3">
+          <div
+            className={`rounded-full border border-border/60 p-2 text-muted-foreground ${
+              isAgreement ? "bg-primary/5" : "bg-emerald-500/5"
+            }`}
+          >
+            <FileText className="h-5 w-5" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-foreground">
+              {isAgreement ? "Investment Agreement" : "Investment Receipt"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {document.document_number}
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span>
+                Generated{" "}
+                {format(new Date(document.generated_at), "MMM dd, yyyy")}
+              </span>
+              {document.metadata?.amount_ngn && (
+                <span>
+                  Amount ₦{document.metadata.amount_ngn.toLocaleString()}
+                </span>
+              )}
+              {isAgreement && document.metadata?.tokens_requested && (
+                <span>
+                  Tokens {document.metadata.tokens_requested.toLocaleString()}
+                </span>
+              )}
+              {!isAgreement && document.metadata?.payment_reference && (
+                <span>
+                  Ref {document.metadata.payment_reference.substring(0, 10)}
+                </span>
+              )}
             </div>
           </div>
-          <Badge variant="outline" className="gap-1">
-            <CheckCircle className="w-3 h-3" />
-            Ready
-          </Badge>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="text-sm space-y-1">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Generated:</span>
-            <span className="font-medium">
-              {format(new Date(document.generated_at), 'MMM dd, yyyy HH:mm')}
-            </span>
-          </div>
-          {document.metadata?.amount_ngn && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Amount:</span>
-              <span className="font-medium">
-                ₦{document.metadata.amount_ngn.toLocaleString()}
-              </span>
-            </div>
-          )}
-          {isAgreement && document.metadata?.tokens_requested && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Tokens:</span>
-              <span className="font-medium">
-                {document.metadata.tokens_requested.toLocaleString()}
-              </span>
-            </div>
-          )}
-          {!isAgreement && document.metadata?.payment_reference && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Reference:</span>
-              <span className="font-medium text-xs">
-                {document.metadata.payment_reference.substring(0, 16)}...
-              </span>
-            </div>
-          )}
-        </div>
-        
-        <div className="flex gap-2 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={handlePreview}
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            Preview
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            className="flex-1"
-            onClick={handleDownload}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Download
-          </Button>
+
+        <div className="flex items-start justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                aria-label="Document actions"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-36 text-xs">
+              <DropdownMenuItem
+                onClick={() => onOpenDetails?.(document)}
+                className="flex items-center gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                Preview
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDownload}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Download
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardContent>
     </Card>

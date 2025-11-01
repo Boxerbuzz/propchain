@@ -290,144 +290,126 @@ const Portfolio = () => {
                   filteredInvestments.map((investment: any) => (
                     <Card
                       key={investment.id}
-                      className="group overflow-hidden transition-all duration-300 border-2 hover:border-primary/20 bg-gradient-to-br from-card to-card/50"
+                      className="border border-border/60 shadow-none"
                     >
-                      <CardContent className="p-0">
-                        {/* Header Section with Image and Quick Stats */}
-                        <div className="relative">
-                          <div className="absolute top-4 right-4 z-10">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col gap-6 md:flex-row md:items-stretch">
+                          <div className="relative w-full overflow-hidden rounded-lg border border-border/60 md:w-48 md:flex-none">
+                            <img
+                              src={investment.imageUrl}
+                              alt={investment.propertyTitle}
+                              className="h-32 w-full object-cover md:h-full"
+                            />
                             <Badge
                               variant={
                                 investment.status === "active"
                                   ? "default"
                                   : "secondary"
                               }
-                              className="shadow-lg"
+                              className="absolute top-3 left-3 text-[11px] font-medium uppercase"
                             >
                               {investment.status}
                             </Badge>
                           </div>
-                          <div className="h-48 bg-gradient-to-br from-primary/10 via-primary/5 to-background overflow-hidden relative">
-                            <img
-                              src={investment.imageUrl}
-                              alt={investment.propertyTitle}
-                              className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-500"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                          </div>
 
-                          {/* Property Title Overlay */}
-                          <div className="absolute bottom-0 left-0 right-0 p-6">
-                            <h3 className="font-bold text-xl text-foreground mb-1 drop-shadow-md">
-                              {investment.propertyTitle}
-                            </h3>
-                            <p className="text-sm text-muted-foreground drop-shadow">
-                              {investment.location}
-                            </p>
-                          </div>
-                        </div>
+                          <div className="flex-1 space-y-5">
+                            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                              <div>
+                                <h3 className="text-lg font-semibold text-foreground">
+                                  {investment.propertyTitle}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {investment.location}
+                                </p>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="md:ml-6"
+                                onClick={() =>
+                                  navigate(
+                                    `/portfolio/${investment.tokenizationId}`
+                                  )
+                                }
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                View details
+                              </Button>
+                            </div>
 
-                        {/* Stats Grid */}
-                        <div className="p-6 space-y-6">
-                          {/* Primary Metrics */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/10">
-                              <div className="flex items-center gap-2 mb-2">
-                                <DollarSign className="h-4 w-4 text-primary" />
-                                <p className="text-xs text-muted-foreground font-medium">
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                              <div className="space-y-1">
+                                <p className="text-xs text-muted-foreground uppercase tracking-wide">
                                   Invested
                                 </p>
-                              </div>
-                              <p className="text-2xl font-bold">
-                                ₦{investment.invested.toLocaleString()}
-                              </p>
-                            </div>
-
-                            <div className="bg-gradient-to-br from-green-500/5 to-green-500/10 rounded-xl p-4 border border-green-500/10">
-                              <div className="flex items-center gap-2 mb-2">
-                                <TrendingUp className="h-4 w-4 text-green-600" />
-                                <p className="text-xs text-muted-foreground font-medium">
-                                  Return
+                                <p className="text-base font-semibold">
+                                  ₦{investment.invested.toLocaleString()}
                                 </p>
                               </div>
-                              <p
-                                className={`text-2xl font-bold ${
-                                  investment.return >= 0
-                                    ? "text-green-600"
-                                    : "text-red-600"
-                                }`}
-                              >
-                                {investment.return >= 0 ? "+" : ""}
-                                {investment.returnPercentage.toFixed(1)}%
-                              </p>
+                              <div className="space-y-1">
+                                <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                                  Current Value
+                                </p>
+                                <p className="text-base font-semibold">
+                                  ₦{investment.currentValue.toLocaleString()}
+                                </p>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                                  Return
+                                </p>
+                                <p
+                                  className={`text-base font-semibold ${
+                                    investment.return >= 0
+                                      ? "text-emerald-600"
+                                      : "text-red-600"
+                                  }`}
+                                >
+                                  {investment.return >= 0 ? "+" : ""}
+                                  {investment.returnPercentage.toFixed(1)}%
+                                </p>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                                  Expected Yield
+                                </p>
+                                <p className="text-base font-semibold">
+                                  {investment.expectedReturn}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              <div className="space-y-1">
+                                <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                                  Tokens Held
+                                </p>
+                                <p className="text-base font-semibold">
+                                  {investment.tokens.toLocaleString()}
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between text-xs uppercase tracking-wide text-muted-foreground">
+                                  <span>Your Ownership</span>
+                                  <span className="text-foreground">
+                                    {(
+                                      (investment.tokens /
+                                        investment.totalTokens) *
+                                      100
+                                    ).toFixed(2)}
+                                    %
+                                  </span>
+                                </div>
+                                <Progress
+                                  value={
+                                    (investment.tokens / investment.totalTokens) *
+                                    100
+                                  }
+                                  className="h-2"
+                                />
+                              </div>
                             </div>
                           </div>
-
-                          {/* Secondary Metrics */}
-                          <div className="grid grid-cols-3 gap-3">
-                            <div className="text-center p-3 rounded-lg bg-muted/50">
-                              <p className="text-xs text-muted-foreground mb-1">
-                                Current Value
-                              </p>
-                              <p className="font-semibold text-sm">
-                                ₦{investment.currentValue.toLocaleString()}
-                              </p>
-                            </div>
-                            <div className="text-center p-3 rounded-lg bg-muted/50">
-                              <p className="text-xs text-muted-foreground mb-1">
-                                Tokens Held
-                              </p>
-                              <p className="font-semibold text-sm">
-                                {investment.tokens.toLocaleString()}
-                              </p>
-                            </div>
-                            <div className="text-center p-3 rounded-lg bg-muted/50">
-                              <p className="text-xs text-muted-foreground mb-1">
-                                Expected Yield
-                              </p>
-                              <p className="font-semibold text-sm">
-                                {investment.expectedReturn}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Ownership Progress */}
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center text-sm">
-                              <span className="text-muted-foreground font-medium">
-                                Your Ownership
-                              </span>
-                              <span className="font-bold text-primary">
-                                {(
-                                  (investment.tokens / investment.totalTokens) *
-                                  100
-                                ).toFixed(3)}
-                                %
-                              </span>
-                            </div>
-                            <div className="relative">
-                              <Progress
-                                value={
-                                  (investment.tokens / investment.totalTokens) *
-                                  100
-                                }
-                                className="h-3 bg-muted"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Action Button */}
-                          <Button
-                            className="w-full transition-all"
-                            onClick={() =>
-                              navigate(
-                                `/portfolio/${investment.tokenizationId}`
-                              )
-                            }
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Full Details
-                          </Button>
                         </div>
                       </CardContent>
                     </Card>

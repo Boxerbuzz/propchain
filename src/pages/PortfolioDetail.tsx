@@ -30,16 +30,139 @@ import {
   BarChart3,
   Share2,
   MessageSquareText,
+  Building2,
+  Receipt,
+  ClipboardList,
+  Sparkles,
+  Wrench,
 } from "lucide-react";
 import InvestmentDocumentCard from "@/components/InvestmentDocumentCard";
 import DocumentPreviewModal from "@/components/DocumentPreviewModal";
 import DocumentHistoryTimeline from "@/components/DocumentHistoryTimeline";
 
 const PortfolioDetail = () => {
+  type ActivityIconRule = {
+    match: (value: string) => boolean;
+    icon: JSX.Element;
+    className?: string;
+  };
+
+  const ACTIVITY_ICON_RULES: ActivityIconRule[] = [
+    {
+      match: (value) => /(maintenance|repair|fix|service)/.test(value),
+      icon: <Wrench className="h-4 w-4" />,
+      className: "text-amber-600",
+    },
+    {
+      match: (value) => /(rent|payment|payout|dividend)/.test(value),
+      icon: <Receipt className="h-4 w-4" />,
+      className: "text-emerald-600",
+    },
+    {
+      match: (value) => /(valuation|appraisal|update)/.test(value),
+      icon: <Sparkles className="h-4 w-4" />,
+      className: "text-purple-600",
+    },
+    {
+      match: (value) => /(vote|governance|ballot)/.test(value),
+      icon: <Vote className="h-4 w-4" />,
+      className: "text-blue-600",
+    },
+    {
+      match: (value) => /(document|upload|signature|agreement)/.test(value),
+      icon: <ClipboardList className="h-4 w-4" />,
+      className: "text-indigo-600",
+    },
+    {
+      match: (value) => /tokens_minted/.test(value),
+      icon: <Sparkles className="h-4 w-4" />,
+      className: "text-primary",
+    },
+    {
+      match: (value) => /tokens_distributed/.test(value),
+      icon: <Receipt className="h-4 w-4" />,
+      className: "text-emerald-600",
+    },
+    {
+      match: (value) => /tokenization_hedera_token_pending/.test(value),
+      icon: <Sparkles className="h-4 w-4" />,
+      className: "text-purple-600",
+    },
+    {
+      match: (value) => /(tenant|lease|resident|occupancy)/.test(value),
+      icon: <Users className="h-4 w-4" />,
+      className: "text-pink-600",
+    },
+    {
+      match: (value) => /(inspection)/.test(value),
+      icon: <ClipboardList className="h-4 w-4" />,
+      className: "text-orange-600",
+    },
+    {
+      match: (value) => /treasury/.test(value),
+      icon: <DollarSign className="h-4 w-4" />,
+      className: "text-green-600",
+    },
+    {
+      match: (value) => /governance_proposal_created/.test(value),
+      icon: <Vote className="h-4 w-4" />,
+      className: "text-blue-600",
+    },
+    {
+      match: (value) => /investment_window_closed/.test(value),
+      icon: <Building2 className="h-4 w-4" />,
+      className: "text-muted-foreground",
+    },
+    {
+      match: (value) => /property_rental/.test(value),
+      icon: <Receipt className="h-4 w-4" />,
+      className: "text-emerald-600",
+    },
+    {
+      match: (value) => /property_maintenance/.test(value),
+      icon: <Wrench className="h-4 w-4" />,
+      className: "text-amber-600",
+    },
+    {
+      match: (value) => /property_inspection/.test(value),
+      icon: <ClipboardList className="h-4 w-4" />,
+      className: "text-orange-600",
+    },
+  ];
+
+  const ActivityIcon = ({ activityType }: { activityType: string }) => {
+    const normalized = activityType?.toLowerCase() ?? "";
+
+    let icon: JSX.Element = <Building2 className="h-4 w-4" />;
+    let toneClass = "text-muted-foreground";
+
+    for (const rule of ACTIVITY_ICON_RULES) {
+      if (rule.match(normalized)) {
+        icon = rule.icon;
+        toneClass = rule.className ?? toneClass;
+        break;
+      }
+    }
+
+    return (
+      <div
+        className={`mt-1 flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background transition ${toneClass}`}
+      >
+        {icon}
+      </div>
+    );
+  };
+
+  const formatActivityTitle = (activityType: string) =>
+    activityType
+      .replace(/_/g, " ")
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   const { tokenizationId } = useParams<{ tokenizationId: string }>();
   const navigate = useNavigate();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewTitle, setPreviewTitle] = useState("");
+  const [selectedDocument, setSelectedDocument] = useState<any | null>(null);
 
   const { data, isLoading, error } = usePortfolioDetail(tokenizationId || "");
 
@@ -59,9 +182,10 @@ const PortfolioDetail = () => {
     enabled: !!tokenizationId,
   });
 
-  const handlePreview = (url: string, title: string) => {
-    setPreviewUrl(url);
-    setPreviewTitle(title);
+  console.log("investmentDocuments", investmentDocuments);
+
+  const handleDocumentDetails = (doc: any) => {
+    setSelectedDocument(doc);
   };
 
   if (isLoading) {
@@ -301,29 +425,6 @@ const PortfolioDetail = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Investment Documents Section */}
-            {investmentDocuments && investmentDocuments.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Investment Documents</h3>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {investmentDocuments.map((doc) => (
-                    <InvestmentDocumentCard
-                      key={doc.id}
-                      document={doc}
-                      onPreview={(url) =>
-                        handlePreview(
-                          url,
-                          doc.document_type === "agreement"
-                            ? "Investment Agreement"
-                            : "Investment Receipt"
-                        )
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
             <div className="grid lg:grid-cols-2 gap-6">
               {/* Property Performance & Financial Metrics */}
               <Card>
@@ -516,53 +617,87 @@ const PortfolioDetail = () => {
           </TabsContent>
 
           <TabsContent value="documents" className="space-y-6">
-            {/* Document History with Versioning */}
-            {investmentDocuments && investmentDocuments.length > 0 && (
-              <DocumentHistoryTimeline
-                documents={investmentDocuments}
-                onPreview={(url, title) => handlePreview(url, title)}
-              />
-            )}
+            <Tabs defaultValue="documents" className="space-y-6">
+              <TabsList className="w-full sm:w-auto">
+                <TabsTrigger value="documents">Documents</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
+              </TabsList>
 
-            {/* Property Documents */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Property Documents</CardTitle>
-                <CardDescription>
-                  Legal and compliance documents
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {documents.length > 0 ? (
-                  <div className="space-y-3">
-                    {documents.map((doc: any) => (
-                      <div
-                        key={doc.id}
-                        className="flex justify-between items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{doc.document_name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {doc.document_type} •{" "}
-                              {format(new Date(doc.uploaded_at), "PPP")}
-                            </p>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+              <TabsContent value="documents" className="space-y-6">
+                {investmentDocuments && investmentDocuments.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">
+                      Investment Documents
+                    </h3>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {investmentDocuments.map((doc) => (
+                        <InvestmentDocumentCard
+                          key={doc.id}
+                          document={doc}
+                          onOpenDetails={handleDocumentDetails}
+                        />
+                      ))}
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    No property documents available
-                  </p>
                 )}
-              </CardContent>
-            </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Property Documents</CardTitle>
+                    <CardDescription>
+                      Legal and compliance documents
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {documents.length > 0 ? (
+                      <div className="space-y-3">
+                        {documents.map((doc: any) => (
+                          <div
+                            key={doc.id}
+                            className="flex justify-between items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <FileText className="h-5 w-5 text-muted-foreground" />
+                              <div>
+                                <p className="font-medium">
+                                  {doc.document_name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {doc.document_type} •{" "}
+                                  {format(new Date(doc.uploaded_at), "PPP")}
+                                </p>
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="sm">
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-8">
+                        No property documents available
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="history" className="space-y-6">
+                {investmentDocuments && investmentDocuments.length > 0 ? (
+                  <DocumentHistoryTimeline
+                    documents={investmentDocuments}
+                    onSelectDocument={handleDocumentDetails}
+                  />
+                ) : (
+                  <Card className="py-12">
+                    <CardContent className="text-center text-muted-foreground">
+                      <p>No document history available.</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-6">
@@ -577,17 +712,22 @@ const PortfolioDetail = () => {
                     {activityLogs.map((log: any) => (
                       <div
                         key={log.id}
-                        className="border-l-2 border-primary pl-4 py-2"
+                        className="relative flex items-start gap-3 rounded-md border border-border/60 bg-card/40 px-4 py-3"
                       >
-                        <h4 className="font-medium">
-                          {log.activity_type.replace(/_/g, " ").toUpperCase()}
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          {log.description}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {format(new Date(log.created_at), "PPP")}
-                        </p>
+                        <ActivityIcon activityType={log.activity_type} />
+                        <div className="flex-1">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h4 className="text-sm font-semibold text-foreground">
+                              {formatActivityTitle(log.activity_type)}
+                            </h4>
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(log.created_at), "PPP • p")}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {log.description}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -604,10 +744,13 @@ const PortfolioDetail = () => {
 
       {/* Document Preview Modal */}
       <DocumentPreviewModal
-        open={!!previewUrl}
-        onOpenChange={(open) => !open && setPreviewUrl(null)}
-        documentUrl={previewUrl || ""}
-        documentTitle={previewTitle}
+        open={!!selectedDocument}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedDocument(null);
+          }
+        }}
+        document={selectedDocument}
       />
     </div>
   );

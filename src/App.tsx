@@ -96,11 +96,14 @@ const App = () => (
               <Route path="/browse" element={<BrowseProperties />} />
               <Route path="/browse/:id" element={<PropertyDetails />} />
               <Route path="/browse/:id/invest" element={<InvestmentFlow />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/security" element={<SecurityPage />} />
-            <Route path="/pitch" element={<PitchDeck />} />
-            <Route path="/verify/:documentNumber" element={<VerifyDocument />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/security" element={<SecurityPage />} />
+              <Route path="/pitch" element={<PitchDeck />} />
+              <Route
+                path="/verify/:documentNumber"
+                element={<VerifyDocument />}
+              />
               {/* Onboarding routes */}
               <Route path="/onboarding/welcome" element={<Welcome />} />
               <Route
@@ -195,9 +198,18 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/risk-disclosure" element={<RiskDisclosure />} />
             <Route path="/regulatory" element={<Regulatory />} />
-            <Route path="/legal/equity-tokenization-terms" element={<EquityTokenizationTerms />} />
-            <Route path="/legal/debt-tokenization-terms" element={<DebtTokenizationTerms />} />
-            <Route path="/legal/revenue-tokenization-terms" element={<RevenueTokenizationTerms />} />
+            <Route
+              path="/legal/equity-tokenization-terms"
+              element={<EquityTokenizationTerms />}
+            />
+            <Route
+              path="/legal/debt-tokenization-terms"
+              element={<DebtTokenizationTerms />}
+            />
+            <Route
+              path="/legal/revenue-tokenization-terms"
+              element={<RevenueTokenizationTerms />}
+            />
             <Route path="/support" element={<SupportCenter />} />
 
             {/* Catch-all route */}
