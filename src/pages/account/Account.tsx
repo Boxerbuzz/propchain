@@ -103,7 +103,9 @@ export default function AccountLayout() {
                 variant="ghost"
                 className={cn(
                   "w-full justify-start",
-                  item.href && isActive(item.href) && "bg-primary text-primary-foreground hover:bg-primary/90"
+                  item.href &&
+                    isActive(item.href) &&
+                    "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
                 onClick={() => {
                   handleNavClick(item);
@@ -116,39 +118,45 @@ export default function AccountLayout() {
                   <ChevronRight
                     className={cn(
                       "h-4 w-4 transition-transform",
-                      item.submenuType === "tokens" && tokensExpanded && "rotate-90"
+                      item.submenuType === "tokens" &&
+                        tokensExpanded &&
+                        "rotate-90"
                     )}
                   />
                 )}
               </Button>
-              
+
               {/* Submenu items (Mobile) */}
-              {isMobile && item.hasSubmenu && item.submenuType === "tokens" && tokensExpanded && (
-                <div className="ml-8 mt-2 space-y-2">
-                  {tokensSubmenu.map((subItem) => (
-                    <Button
-                      key={subItem.name}
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        "w-full justify-start",
-                        isActive(subItem.href) && "bg-primary text-primary-foreground hover:bg-primary/90"
-                      )}
-                      onClick={() => {
-                        navigate(subItem.href);
-                        setTokensExpanded(false);
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      <subItem.icon className="h-4 w-4 mr-3" />
-                      {subItem.name}
-                    </Button>
-                  ))}
-                </div>
-              )}
+              {isMobile &&
+                item.hasSubmenu &&
+                item.submenuType === "tokens" &&
+                tokensExpanded && (
+                  <div className="ml-8 mt-2 space-y-2">
+                    {tokensSubmenu.map((subItem) => (
+                      <Button
+                        key={subItem.name}
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "w-full justify-start",
+                          isActive(subItem.href) &&
+                            "bg-primary text-primary-foreground hover:bg-primary/90"
+                        )}
+                        onClick={() => {
+                          navigate(subItem.href);
+                          setTokensExpanded(false);
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <subItem.icon className="h-4 w-4 mr-3" />
+                        {subItem.name}
+                      </Button>
+                    ))}
+                  </div>
+                )}
             </div>
           ))}
-          </div>
+        </div>
       </nav>
 
       {/* Bottom section */}
@@ -157,27 +165,27 @@ export default function AccountLayout() {
         <p className="text-xs text-muted-foreground text-center font-medium">
           Built on Hedera
         </p>
-          </div>
+      </div>
     </>
-        );
+  );
 
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex w-64 bg-card border-r border-border flex-col fixed left-0 top-16 h-[calc(100vh-4rem)]">
         <SidebarContent />
-          </div>
+      </div>
 
       {/* Mobile Menu Button & Sheet */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetTrigger asChild>
-            <Button
-              variant="outline"
+          <Button
+            variant="outline"
             size="icon"
             className="fixed top-20 left-4 z-50 md:hidden"
-            >
+          >
             <Menu className="h-5 w-5" />
-            </Button>
+          </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
           <div className="flex flex-col h-full">
@@ -211,7 +219,8 @@ export default function AccountLayout() {
                     variant="ghost"
                     className={cn(
                       "w-full justify-start",
-                      isActive(item.href) && "bg-primary text-primary-foreground hover:bg-primary/90"
+                      isActive(item.href) &&
+                        "bg-primary text-primary-foreground hover:bg-primary/90"
                     )}
                     onClick={() => {
                       navigate(item.href);

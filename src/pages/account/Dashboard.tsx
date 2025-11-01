@@ -12,12 +12,9 @@ import {
   Image,
   CircleDollarSign,
   Receipt,
-  Send,
-  Download,
   Check,
   Clock,
   X as XIcon,
-  ArrowLeftRight,
   Settings,
 } from "lucide-react";
 import { useState } from "react";
@@ -28,6 +25,7 @@ import { useWalletTransactions } from "@/hooks/useWalletTransactions";
 import { useTokenHoldings } from "@/hooks/useTokenHoldings";
 import { Separator } from "@/components/ui/separator";
 import { getActivityIcon } from "@/lib/activityIcons";
+import propchainLogo from "@/assets/logo.png";
 
 export default function AccountDashboard() {
   const navigate = useNavigate();
@@ -36,7 +34,8 @@ export default function AccountDashboard() {
   const { balance: hederaBalance, syncBalance, isSyncing } = useWalletBalance();
   const { currency, formatAmount } = useCurrency();
   const { transactions: allTransactions } = useWalletTransactions();
-  const { data: tokenHoldings, isLoading: isLoadingTokens } = useTokenHoldings();
+  const { data: tokenHoldings, isLoading: isLoadingTokens } =
+    useTokenHoldings();
 
   const totalValueNgn =
     (hederaBalance?.balanceNgn || 0) + (hederaBalance?.usdcBalanceNgn || 0);
@@ -235,11 +234,17 @@ export default function AccountDashboard() {
       id: tx.id,
       type: tx.displayType,
       originalType: tx.type,
-      status: tx.status === "completed" ? "completed" : tx.status === "failed" ? "failed" : "pending",
+      status:
+        tx.status === "completed"
+          ? "completed"
+          : tx.status === "failed"
+          ? "failed"
+          : "pending",
       token: tx.currency || "HBAR",
       amount: tx.amount || 0,
       to: tx.displayType === "send" ? tx.description || "Sent" : undefined,
-      from: tx.displayType === "receive" ? tx.description || "Received" : undefined,
+      from:
+        tx.displayType === "receive" ? tx.description || "Received" : undefined,
       timestamp: tx.timestamp,
       hash: tx.hash || tx.reference || tx.explorerUrl || "",
     }))
@@ -628,75 +633,72 @@ export default function AccountDashboard() {
                   </div>
 
                   {/* Property Tokens Section */}
-                  {!isLoadingTokens && tokenHoldings && tokenHoldings.length > 0 && (
-                    <>
-                      <Separator className="my-0" />
-                      <div className="p-4 bg-muted/30">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-sm">Property Tokens</h3>
-                            <Badge variant="secondary" className="text-xs">
-                              {tokenHoldings.length}
-                            </Badge>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate("/portfolio")}
-                            className="text-xs"
-                          >
-                            View All →
-                          </Button>
-                        </div>
-                        <div className="space-y-3">
-                          {tokenHoldings.map((token) => (
-                            <div
-                              key={token.id}
-                              onClick={() => navigate(`/portfolio/${token.tokenization_id}`)}
-                              className="grid grid-cols-[auto_1fr_auto] items-center gap-4 p-3 bg-card rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
-                            >
-                              {/* Column 1: Icon */}
-                              <div className="relative">
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20">
-                                  <span className="text-sm font-bold text-primary">
-                                    {token.token_symbol.substring(0, 2)}
-                                  </span>
-                                </div>
-                              </div>
+                  {!isLoadingTokens &&
+                    tokenHoldings &&
+                    tokenHoldings.length > 0 && (
+                      <>
+                        <Separator className="my-0" />
 
-                              {/* Column 2: Token Info */}
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <p className="font-semibold text-sm truncate">
-                                    {token.token_symbol}
+                        <div className="p-0 bg-muted/30">
+                          <div className="divide-y divide-border/60">
+                            {tokenHoldings.map((token, index) => (
+                              <div
+                                key={token.id}
+                                className={`grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_140px_180px] items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
+                                  index === 0 ? "mt-0" : ""
+                                }`}
+                              >
+                                {/* Column 1: Icon */}
+                                <div className="relative">
+                                  <div className="w-10 h-10 overflow-hidden rounded-full border-2 border-primary/20 bg-background shadow-sm">
+                                    <img
+                                      src={propchainLogo}
+                                      alt="Propchain"
+                                      className="h-full w-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-background bg-white dark:bg-gray-900 shadow-sm">
+                                    <img
+                                      src="/hedera.svg"
+                                      alt="Hedera"
+                                      className="h-2.5 w-2.5"
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Column 2: Token Info */}
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <p className="font-semibold text-sm truncate">
+                                      {token.token_symbol}
+                                    </p>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs h-5 capitalize"
+                                    >
+                                      {token.tokenization_type}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {token.property_title}
                                   </p>
-                                  <Badge 
-                                    variant="outline" 
-                                    className="text-xs h-5 capitalize"
-                                  >
-                                    {token.tokenization_type}
-                                  </Badge>
                                 </div>
-                                <p className="text-xs text-muted-foreground truncate">
-                                  {token.property_title}
-                                </p>
-                              </div>
 
-                              {/* Column 3: Balance & Action */}
-                              <div className="text-right">
-                                <p className="font-semibold text-sm">
-                                  {token.balance.toLocaleString()}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  tokens
-                                </p>
+                                {/* Column 3: Balance & Action */}
+                                <div className="text-right">
+                                  <p className="font-semibold text-sm">
+                                    {token.balance.toLocaleString()}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    tokens
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  )}
+                      </>
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -765,88 +767,88 @@ export default function AccountDashboard() {
                 ) : (
                   <div className="divide-y divide-border">
                     {todayTransactions.map((tx) => (
-                    <div
-                      key={tx.id}
-                      className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_140px_180px] items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
-                      onClick={() => {
-                        if (tx.hash) {
-                          window.open(
-                            `https://hashscan.io/testnet/transaction/${tx.hash}`,
-                            "_blank"
-                          );
-                        }
-                      }}
-                    >
-                      {/* Column 1: Icon with Status Badge */}
-                      <div className="relative flex-shrink-0">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full flex items-center justify-center border border-blue-200 dark:border-blue-700">
-                          {(() => {
-                            const Icon = getActivityIcon(tx.type);
-                            return <Icon className="h-4 w-4" />;
-                          })()}
+                      <div
+                        key={tx.id}
+                        className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_140px_180px] items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          if (tx.hash) {
+                            window.open(
+                              `https://hashscan.io/testnet/transaction/${tx.hash}`,
+                              "_blank"
+                            );
+                          }
+                        }}
+                      >
+                        {/* Column 1: Icon with Status Badge */}
+                        <div className="relative flex-shrink-0">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full flex items-center justify-center border border-blue-200 dark:border-blue-700">
+                            {(() => {
+                              const Icon = getActivityIcon(tx.type);
+                              return <Icon className="h-4 w-4" />;
+                            })()}
+                          </div>
+                          <div className="absolute -bottom-0.5 -right-0.5">
+                            {renderStatusBadge(tx.status)}
+                          </div>
                         </div>
-                        <div className="absolute -bottom-0.5 -right-0.5">
-                          {renderStatusBadge(tx.status)}
+
+                        {/* Column 2: Type & Details */}
+                        <div className="min-w-0">
+                          <p className="font-medium capitalize">{tx.type}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {tx.type === "send"
+                              ? `To: ${tx.to}`
+                              : tx.type === "receive"
+                              ? `From: ${tx.from}`
+                              : ""}
+                          </p>
                         </div>
-                      </div>
 
-                      {/* Column 2: Type & Details */}
-                      <div className="min-w-0">
-                        <p className="font-medium capitalize">{tx.type}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {tx.type === "send"
-                            ? `To: ${tx.to}`
-                            : tx.type === "receive"
-                            ? `From: ${tx.from}`
-                            : ""}
-                        </p>
-                      </div>
+                        {/* Column 3: Timestamp - Hidden on mobile */}
+                        <div className="hidden sm:block text-center">
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(tx.timestamp).toLocaleDateString([], {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(tx.timestamp).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
 
-                      {/* Column 3: Timestamp - Hidden on mobile */}
-                      <div className="hidden sm:block text-center">
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(tx.timestamp).toLocaleDateString([], {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(tx.timestamp).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
-
-                      {/* Column 4: Amount & Token */}
-                      <div className="text-right">
-                        <p
-                          className={`font-semibold ${
-                            tx.type === "receive"
-                              ? "text-green-600"
+                        {/* Column 4: Amount & Token */}
+                        <div className="text-right">
+                          <p
+                            className={`font-semibold ${
+                              tx.type === "receive"
+                                ? "text-green-600"
+                                : tx.type === "send"
+                                ? "text-red-600"
+                                : "text-blue-600"
+                            }`}
+                          >
+                            {tx.type === "receive"
+                              ? "+"
                               : tx.type === "send"
-                              ? "text-red-600"
-                              : "text-blue-600"
-                          }`}
-                        >
-                          {tx.type === "receive"
-                            ? "+"
-                            : tx.type === "send"
-                            ? "-"
-                            : ""}
-                          {showBalances ? (
-                            <>
-                              {tx.amount} {tx.token}
-                            </>
-                          ) : (
-                            <span>••••</span>
-                          )}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {tx.token}
-                        </p>
+                              ? "-"
+                              : ""}
+                            {showBalances ? (
+                              <>
+                                {tx.amount} {tx.token}
+                              </>
+                            ) : (
+                              <span>••••</span>
+                            )}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {tx.token}
+                          </p>
+                        </div>
                       </div>
-                    </div>
                     ))}
                   </div>
                 )}

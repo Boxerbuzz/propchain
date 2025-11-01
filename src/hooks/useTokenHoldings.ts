@@ -36,7 +36,8 @@ export const useTokenHoldings = () => {
             token_name,
             token_symbol,
             token_id,
-            tokenization_type
+            tokenization_type,
+            price_per_token
           ),
           properties!inner (
             title
