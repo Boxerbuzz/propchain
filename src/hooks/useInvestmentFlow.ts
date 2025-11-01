@@ -68,13 +68,9 @@ export const useInvestmentFlow = () => {
       if (variables.payment_method === 'paystack' && result.authorizationUrl) {
         // Redirect to Paystack payment page
         window.location.href = result.authorizationUrl;
-      } else {
-        toast.success('Investment completed successfully!');
-        // Invalidate relevant queries
-        queryClient.invalidateQueries({ queryKey: ['portfolio', user?.id] });
-        queryClient.invalidateQueries({ queryKey: ['dashboard', user?.id] });
-        queryClient.invalidateQueries({ queryKey: ['tokenizations'] });
       }
+      // For wallet payments, let the component handle the success UI
+      // Don't show toast or invalidate queries here - that will happen in the success screen
     },
     onError: (error: Error) => {
       toast.error(`Investment failed: ${error.message}`);
@@ -82,7 +78,7 @@ export const useInvestmentFlow = () => {
   });
 
   return {
-    createInvestment: createInvestment.mutate,
+    createInvestment: createInvestment.mutateAsync,
     isCreating: createInvestment.isPending,
     error: createInvestment.error,
   };

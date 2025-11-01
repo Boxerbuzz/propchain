@@ -23,6 +23,8 @@ import {
   Clock,
   Info,
   Loader2,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useInvestmentFlow } from "@/hooks/useInvestmentFlow";
@@ -31,6 +33,8 @@ import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { supabase } from "@/integrations/supabase/client";
 import InvestmentTermsDisclosure from "@/components/InvestmentTermsDisclosure";
 import ModernInvestmentInput from "@/components/ModernInvestmentInput";
+import { useAuth } from "@/context/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Tokenization {
   id: string;
@@ -60,6 +64,8 @@ interface Tokenization {
 const InvestmentFlow = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
   const [investmentAmount, setInvestmentAmount] = useState(0);
   const [tokenCount, setTokenCount] = useState(0);
@@ -69,6 +75,8 @@ const InvestmentFlow = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [tokenization, setTokenization] = useState<Tokenization | null>(null);
   const [loading, setLoading] = useState(true);
+  const [investmentSuccess, setInvestmentSuccess] = useState(false);
+  const [completedInvestment, setCompletedInvestment] = useState<any>(null);
 
   const { createInvestment, isCreating, error } = useInvestmentFlow();
   const {
@@ -78,6 +86,16 @@ const InvestmentFlow = () => {
   } = useHederaAccount();
   const { balance: walletBalance, isLoading: isLoadingBalance } =
     useWalletBalance();
+
+  // Invalidate queries when investment is successful
+  useEffect(() => {
+    if (investmentSuccess && user?.id) {
+      toast.success('Investment completed successfully!');
+      queryClient.invalidateQueries({ queryKey: ['portfolio', user.id] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', user.id] });
+      queryClient.invalidateQueries({ queryKey: ['tokenizations'] });
+    }
+  }, [investmentSuccess, user?.id, queryClient]);
 
   useEffect(() => {
     const fetchTokenization = async () => {
@@ -125,7 +143,7 @@ const InvestmentFlow = () => {
     };
   };
 
-  const handleInvest = () => {
+  const handleInvest = async () => {
     if (!tokenization) return;
 
     if (step === 1) {
@@ -161,7 +179,7 @@ const InvestmentFlow = () => {
         return;
       }
       setStep(3);
-    } else {
+    } else if (step === 3) {
       // Process investment
       if (!hasAccount) {
         toast.error("Please create a blockchain wallet first");
@@ -180,12 +198,33 @@ const InvestmentFlow = () => {
         }
       }
 
-      createInvestment({
-        tokenization_id: tokenization.id,
-        amount_ngn: investmentAmount,
-        tokens_requested: tokenCount,
-        payment_method: paymentMethod,
-      });
+      // Call the investment creation
+      try {
+        const result = await createInvestment({
+          tokenization_id: tokenization.id,
+          amount_ngn: investmentAmount,
+          tokens_requested: tokenCount,
+          payment_method: paymentMethod,
+        });
+
+        // For wallet payments, show success screen
+        if (result.type === 'wallet') {
+          setCompletedInvestment({
+            ...result,
+            amount: investmentAmount,
+            tokens: tokenCount,
+            paymentMethod,
+            property: tokenization.properties,
+            tokenSymbol: tokenization.token_symbol,
+          });
+          setInvestmentSuccess(true);
+          setStep(4);
+        }
+        // Paystack payments will redirect automatically in the hook
+      } catch (error) {
+        // Error is already handled by the mutation's onError
+        console.error('Investment error:', error);
+      }
     }
   };
 
@@ -231,7 +270,7 @@ const InvestmentFlow = () => {
           <div>
             <h1 className="text-3xl font-bold">Invest in Property</h1>
             <p className="text-muted-foreground">
-              Complete your investment in 3 simple steps
+              {investmentSuccess ? 'Investment Successful!' : 'Complete your investment in 3 simple steps'}
             </p>
           </div>
         </div>
@@ -241,7 +280,7 @@ const InvestmentFlow = () => {
           <div className="lg:col-span-2">
             {/* Progress Steps */}
             <div className="flex items-center gap-4 mb-8">
-              {[1, 2, 3].map((stepNum) => (
+              {[1, 2, 3, 4].map((stepNum) => (
                 <div key={stepNum} className="flex items-center">
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -250,9 +289,13 @@ const InvestmentFlow = () => {
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {stepNum}
+                    {stepNum === 4 && step === 4 ? (
+                      <CheckCircle2 className="h-5 w-5" />
+                    ) : (
+                      stepNum
+                    )}
                   </div>
-                  {stepNum < 3 && (
+                  {stepNum < 4 && (
                     <div
                       className={`w-16 h-0.5 ${
                         stepNum < step ? "bg-primary" : "bg-muted"
@@ -270,11 +313,13 @@ const InvestmentFlow = () => {
                   {step === 1 && "Investment Amount"}
                   {step === 2 && "Payment Method"}
                   {step === 3 && "Confirm Investment"}
+                  {step === 4 && "Investment Successful!"}
                 </CardTitle>
                 <CardDescription>
                   {step === 1 && "Enter the amount you'd like to invest"}
                   {step === 2 && "Choose your preferred payment method"}
                   {step === 3 && "Review and confirm your investment details"}
+                  {step === 4 && "Your investment has been processed successfully"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -587,38 +632,164 @@ const InvestmentFlow = () => {
                   </div>
                 )}
 
-                <div className="flex gap-3 pt-4">
-                  {step > 1 && (
-                    <Button variant="outline" onClick={() => setStep(step - 1)}>
-                      Back
-                    </Button>
-                  )}
-                  <Button
-                    onClick={handleInvest}
-                    className="flex-1"
-                    disabled={
-                      isCreating ||
-                      (step === 3 &&
-                        (!hasAccount ||
-                          !acceptTerms ||
-                          (paymentMethod === "wallet" &&
-                            walletBalance &&
-                            investmentAmount >
-                              (walletBalance.balanceNgn || 0))))
-                    }
-                  >
-                    {isCreating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : step === 3 ? (
-                      "Confirm Investment"
-                    ) : (
-                      "Continue"
+                {step === 4 && completedInvestment && (
+                  <div className="space-y-6">
+                    {/* Success Animation */}
+                    <div className="text-center py-6">
+                      <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mb-4 animate-scale-in">
+                        <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+                      </div>
+                      <h3 className="text-2xl font-bold mb-2">
+                        Congratulations! 🎉
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Your investment has been successfully processed
+                      </p>
+                    </div>
+
+                    {/* Investment Summary */}
+                    <div className="bg-muted/50 p-6 rounded-lg space-y-4">
+                      <h4 className="font-medium">Investment Summary</h4>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                          <span>Property:</span>
+                          <span className="font-medium">
+                            {completedInvestment.property?.title}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Investment Amount:</span>
+                          <span className="font-medium">
+                            ₦{completedInvestment.amount.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Tokens Allocated:</span>
+                          <span className="font-medium">
+                            {completedInvestment.tokens.toLocaleString()} {completedInvestment.tokenSymbol}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Payment Method:</span>
+                          <span className="font-medium capitalize">
+                            {completedInvestment.paymentMethod === "wallet" ? "Wallet" : "Paystack"}
+                          </span>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between">
+                          <span className="text-xs text-muted-foreground">Investment ID:</span>
+                          <span className="text-xs font-mono">
+                            {completedInvestment.investment_id.slice(0, 8)}...
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Token Distribution Info */}
+                    <Alert>
+                      <Info className="h-4 w-4" />
+                      <AlertTitle>Token Distribution</AlertTitle>
+                      <AlertDescription>
+                        Your {completedInvestment.tokenSymbol} tokens will be distributed to your wallet within 24 hours. 
+                        You'll receive a notification once the distribution is complete.
+                      </AlertDescription>
+                    </Alert>
+
+                    {/* Activity Timeline */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-sm">Next Steps</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-start gap-3 text-sm">
+                          <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium">Payment Confirmed</p>
+                            <p className="text-xs text-muted-foreground">
+                              Your payment has been successfully processed
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 text-sm">
+                          <Clock className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium">Token Distribution Pending</p>
+                            <p className="text-xs text-muted-foreground">
+                              Tokens will be sent to your wallet within 24 hours
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 text-sm">
+                          <TrendingUp className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium">Dividend Tracking Active</p>
+                            <p className="text-xs text-muted-foreground">
+                              Start earning returns after token distribution
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-3 pt-4">
+                      <Button
+                        onClick={() => navigate("/portfolio")}
+                        className="w-full"
+                      >
+                        View Portfolio
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => navigate(`/properties/${tokenization?.properties?.id}`)}
+                        className="w-full"
+                      >
+                        View Property Details
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => navigate("/browse-properties")}
+                        className="w-full"
+                      >
+                        Invest in Another Property
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {step < 4 && (
+                  <div className="flex gap-3 pt-4">
+                    {step > 1 && (
+                      <Button variant="outline" onClick={() => setStep(step - 1)}>
+                        Back
+                      </Button>
                     )}
-                  </Button>
-                </div>
+                    <Button
+                      onClick={handleInvest}
+                      className="flex-1"
+                      disabled={
+                        isCreating ||
+                        (step === 3 &&
+                          (!hasAccount ||
+                            !acceptTerms ||
+                            (paymentMethod === "wallet" &&
+                              walletBalance &&
+                              investmentAmount >
+                                (walletBalance.balanceNgn || 0))))
+                      }
+                    >
+                      {isCreating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : step === 3 ? (
+                        "Confirm Investment"
+                      ) : (
+                        "Continue"
+                      )}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
