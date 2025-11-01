@@ -657,117 +657,13 @@ serve(async (req) => {
           });
           continue;
         }
-      }
-      }
-
-      // Update investment status and token holdings
-      await supabase
-        .from('investments')
-        .update({
-          payment_status: 'tokens_distributed',
-          tokens_allocated: investment.tokens_requested,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', investment.id);
-
-      // Update token holdings with actual token ID and transaction ID
-      await supabase
-        .from('token_holdings')
-        .update({
-          token_id: tokenization.token_id,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id)
-        .eq('tokenization_id', tokenization_id);
-
-      // Create success notification
-      await supabase
-        .from('notifications')
-        .insert({
-          user_id: user.id,
-          title: 'Tokens Distributed Successfully!',
-          message: `Congratulations! Your ${investment.tokens_requested} ${tokenization.token_symbol} tokens for "${tokenization.properties.title}" have been distributed to your wallet.`,
-          notification_type: 'tokens_distributed',
-          action_url: '/portfolio',
-          action_data: {
-            investment_id: investment.id,
-            tokenization_id: tokenization_id,
-            token_id: tokenization.token_id,
-            tokens_received: investment.tokens_requested,
-            association_tx: associationTxId,
-            grant_kyc_tx: grantKycTxId,
-            transfer_tx: transferTxId
-          }
-        });
-
-      // Log activity
-      await supabase
-        .from('activity_logs')
-        .insert({
-          user_id: user.id,
-          property_id: tokenization.property_id,
-          tokenization_id: tokenization_id,
-          activity_type: 'tokens_distributed',
-          description: `Received ${investment.tokens_requested} ${tokenization.token_symbol} tokens`,
-          metadata: {
-            investment_id: investment.id,
-            token_id: tokenization.token_id,
-            tokens_received: investment.tokens_requested,
-            association_tx: associationTxId,
-            grant_kyc_tx: grantKycTxId,
-            transfer_tx: transferTxId
-          }
-        });
-
-      results.distributed++;
-      results.details.push({
-        user_id: user.id,
-        investment_id: investment.id,
-        status: 'distributed',
-        tokens: investment.tokens_requested,
-        association_tx: associationTxId,
-        grant_kyc_tx: grantKycTxId,
-        transfer_tx: transferTxId
-      });
-
-      console.log(`[DISTRIBUTE-TOKENS] Successfully distributed tokens to user ${user.id}`);
     }
 
-    // Update tokenization status to distributed if all eligible users received tokens
-    if (results.distributed > 0 && results.failed === 0) {
-      await supabase
-        .from('tokenizations')
-        .update({
-          status: 'distributed',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', tokenization_id);
-
-      // Get associated chat room for this tokenization
-      const { data: chatRoom } = await supabase
-        .from('chat_rooms')
-        .select('id')
-        .eq('tokenization_id', tokenization_id)
-        .single();
-
-      // Send AI system message to chat
-      if (chatRoom) {
-        await supabase.functions.invoke('send-chat-system-message', {
-          body: {
-            room_id: chatRoom.id,
-            message_text: `✅ Token distribution complete! ${results.distributed} investor${results.distributed > 1 ? 's' : ''} received their ${tokenization.token_symbol} tokens. You can now create governance proposals and participate in property decisions.`,
-            message_type: 'system',
-            metadata: {
-              event_type: 'tokens_distributed',
-              tokenization_id: tokenization_id,
-              token_id: tokenization.token_id,
-              investors_count: results.distributed,
-              token_symbol: tokenization.token_symbol
-            }
-          }
-        });
-      }
-    }
+    // Release the lock
+    await supabase
+      .from('token_distribution_locks')
+      .delete()
+      .eq('tokenization_id', tokenization_id);
 
     console.log(`[DISTRIBUTE-TOKENS] Distribution complete. Distributed: ${results.distributed}, Skipped: ${results.skipped}, Failed: ${results.failed}`);
 
