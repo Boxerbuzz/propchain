@@ -64,7 +64,7 @@ export default function Signup() {
         title: "Signup Successful",
         description: "Please check your email to verify your account.",
       });
-      navigate("/auth/verify-email"); // Redirect to a verification message page
+      navigate("/auth/login"); // Redirect to a verification message page
     }
   };
 
