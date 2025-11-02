@@ -641,60 +641,120 @@ export default function AccountDashboard() {
 
                         <div className="p-0 bg-muted/30">
                           <div className="divide-y divide-border/60">
-                            {tokenHoldings.map((token, index) => (
-                              <div
-                                key={token.id}
-                                className={`grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_140px_180px] items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
-                                  index === 0 ? "mt-0" : ""
-                                }`}
-                              >
-                                {/* Column 1: Icon */}
-                                <div className="relative">
-                                  <div className="w-10 h-10 overflow-hidden rounded-full border-2 border-primary/20 bg-background shadow-sm">
+                            {tokenHoldings.map((token: any, index: number) => {
+                              const pricePerToken =
+                                token.price_per_token ??
+                                token.tokenizations?.price_per_token ??
+                                null;
+                              const hasPrice =
+                                typeof pricePerToken === "number" &&
+                                pricePerToken > 0;
+                              const usdToNgn =
+                                hederaBalance?.exchangeRates?.usdToNgn || 1;
+                              const pricePerTokenUsd = hasPrice
+                                ? pricePerToken
+                                : null;
+                              const pricePerTokenNgn = hasPrice
+                                ? pricePerToken * usdToNgn
+                                : null;
+                              const totalValueUsd = hasPrice
+                                ? (pricePerTokenUsd as number) *
+                                  (token.balance || 0)
+                                : null;
+                              const totalValueNgn = hasPrice
+                                ? (pricePerTokenNgn as number) *
+                                  (token.balance || 0)
+                                : null;
+
+                              return (
+                                <div
+                                  key={token.id}
+                                  className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_140px_180px] items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                                >
+                                  {/* Column 1: Icon */}
+                                  <div className="relative">
                                     <img
                                       src={propchainLogo}
-                                      alt="Propchain"
-                                      className="h-full w-full object-cover"
+                                      alt={token.token_symbol}
+                                      className="w-10 h-10"
                                     />
+                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-blue-500 shadow-sm">
+                                      <img
+                                        src="/hedera.svg"
+                                        alt="Hedera"
+                                        className="w-2.5 h-2.5"
+                                      />
+                                    </div>
                                   </div>
-                                  <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-background bg-white dark:bg-gray-900 shadow-sm">
-                                    <img
-                                      src="/hedera.svg"
-                                      alt="Hedera"
-                                      className="h-2.5 w-2.5"
-                                    />
-                                  </div>
-                                </div>
 
-                                {/* Column 2: Token Info */}
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <p className="font-semibold text-sm truncate">
-                                      {token.token_symbol}
+                                  {/* Column 2: Token Info */}
+                                  <div>
+                                    <div className="mb-1 flex items-center gap-2">
+                                      <p className="font-semibold text-sm truncate">
+                                        {token.token_symbol}
+                                      </p>
+                                      <Badge
+                                        variant="outline"
+                                        className="h-5 text-xs capitalize"
+                                      >
+                                        {token.tokenization_type}
+                                      </Badge>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground truncate">
+                                      {token.property_title}
                                     </p>
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs h-5 capitalize"
-                                    >
-                                      {token.tokenization_type}
-                                    </Badge>
                                   </div>
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    {token.property_title}
-                                  </p>
-                                </div>
 
-                                {/* Column 3: Balance & Action */}
-                                <div className="text-right">
-                                  <p className="font-semibold text-sm">
-                                    {token.balance.toLocaleString()}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    tokens
-                                  </p>
+                                  {/* Column 3: Price */}
+                                  <div className="hidden text-right sm:block text-center text-align-left">
+                                    <p className="font-semibold text-sm text-left">
+                                      {showBalances ? (
+                                        hasPrice ? (
+                                          formatAmount(
+                                            pricePerTokenNgn as number,
+                                            pricePerTokenUsd as number
+                                          )
+                                        ) : (
+                                          "—"
+                                        )
+                                      ) : (
+                                        <span>••••</span>
+                                      )}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground text-left">
+                                      Price
+                                    </p>
+                                  </div>
+
+                                  {/* Column 4: Balance & Value */}
+                                  <div className="text-right">
+                                    <p className="font-semibold">
+                                      {showBalances ? (
+                                        hasPrice ? (
+                                          formatAmount(
+                                            totalValueNgn as number,
+                                            totalValueUsd as number
+                                          )
+                                        ) : (
+                                          "—"
+                                        )
+                                      ) : (
+                                        <span>••••••</span>
+                                      )}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {showBalances ? (
+                                        `${token.balance.toLocaleString()} ${
+                                          token.token_symbol
+                                        }`
+                                      ) : (
+                                        <span>••••</span>
+                                      )}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       </>
