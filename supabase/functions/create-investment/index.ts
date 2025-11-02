@@ -237,16 +237,37 @@ serve(async (req) => {
       if (walletError || !walletPayment?.success) {
         console.error('[CREATE-INVESTMENT] Wallet payment failed:', walletError || walletPayment);
         
-        // Rollback token reservation
+        // DO NOT delete the investment - update status for reconciliation
         await supabase
           .from('investments')
-          .delete()
+          .update({ 
+            reservation_status: 'completed',
+            payment_status: 'pending_reconciliation'
+          })
           .eq('id', investment_id);
+
+        // Log activity for debugging
+        await supabase
+          .from('activity_logs')
+          .insert({
+            user_id: investor_id,
+            activity_type: 'wallet_payment_error',
+            description: 'Wallet payment encountered an error - requires reconciliation',
+            metadata: {
+              investment_id,
+              error: walletPayment?.error || walletError?.message,
+              error_stage: 'execute_wallet_payment',
+              amount_ngn
+            }
+          });
         
         return new Response(
           JSON.stringify({ 
-            success: false, 
-            error: walletPayment?.error || 'Wallet payment failed'
+            success: false,
+            error_stage: 'wallet_payment',
+            error: walletPayment?.error || 'Wallet payment failed. Please contact support if funds were deducted.',
+            investment_id,
+            requires_reconciliation: true
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

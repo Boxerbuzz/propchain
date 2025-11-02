@@ -172,16 +172,70 @@ serve(async (req) => {
 
     console.log('Documents uploaded successfully');
 
-    // Submit hashes to HCS for blockchain verification (async, don't wait)
-    submitToHCS(supabase, propertyTopicId, agreementNumber, agreementHash).catch(err => 
-      console.error('HCS submission failed for agreement:', err)
-    );
-    submitToHCS(supabase, propertyTopicId, receiptNumber, receiptHash).catch(err => 
-      console.error('HCS submission failed for receipt:', err)
-    );
-    submitToHCS(supabase, propertyTopicId, certificateNumber, certificateHash).catch(err => 
-      console.error('HCS submission failed for certificate:', err)
-    );
+    // Submit hashes to HCS for blockchain verification and capture sequence numbers
+    let agreementHcsId = null;
+    let receiptHcsId = null;
+    let certificateHcsId = null;
+
+    if (propertyTopicId) {
+      try {
+        const agreementHcs = await submitToHCS(supabase, propertyTopicId, agreementNumber, agreementHash);
+        agreementHcsId = agreementHcs?.data?.sequenceNumber || agreementHcs?.sequenceNumber;
+        console.log('Agreement submitted to HCS:', agreementHcsId);
+      } catch (err) {
+        console.error('HCS submission failed for agreement:', err);
+      }
+
+      try {
+        const receiptHcs = await submitToHCS(supabase, propertyTopicId, receiptNumber, receiptHash);
+        receiptHcsId = receiptHcs?.data?.sequenceNumber || receiptHcs?.sequenceNumber;
+        console.log('Receipt submitted to HCS:', receiptHcsId);
+      } catch (err) {
+        console.error('HCS submission failed for receipt:', err);
+      }
+
+      try {
+        const certificateHcs = await submitToHCS(supabase, propertyTopicId, certificateNumber, certificateHash);
+        certificateHcsId = certificateHcs?.data?.sequenceNumber || certificateHcs?.sequenceNumber;
+        console.log('Certificate submitted to HCS:', certificateHcsId);
+      } catch (err) {
+        console.error('HCS submission failed for certificate:', err);
+      }
+    }
+
+    // Check for existing certificate to implement versioning
+    const { data: existingCert } = await supabase
+      .from('investment_documents')
+      .select('id, version')
+      .eq('user_id', userId)
+      .eq('tokenization_id', investment.tokenization_id)
+      .eq('document_type', 'certificate')
+      .eq('is_current', true)
+      .maybeSingle();
+
+    let certificateVersion = 1;
+    let supersededCertId = null;
+
+    if (existingCert) {
+      // Mark old certificate as superseded
+      certificateVersion = existingCert.version + 1;
+      supersededCertId = existingCert.id;
+      
+      await supabase
+        .from('investment_documents')
+        .update({ is_current: false })
+        .eq('id', existingCert.id);
+    }
+
+    // Calculate cumulative tokens for certificate
+    const { data: allInvestments } = await supabase
+      .from('investments')
+      .select('tokens_requested')
+      .eq('investor_id', userId)
+      .eq('tokenization_id', investment.tokenization_id)
+      .in('payment_status', ['confirmed', 'tokens_distributed']);
+    
+    const cumulativeTokens = allInvestments?.reduce((sum, inv) => sum + inv.tokens_requested, 0) || investment.tokens_requested;
 
     // Create database records with versioning support
     const documents = [
@@ -195,6 +249,7 @@ serve(async (req) => {
         document_number: agreementNumber,
         document_hash: agreementHash,
         qr_code_data: agreementQR,
+        hcs_verification_id: agreementHcsId,
         version: 1,
         version_date: new Date().toISOString(),
         is_current: true,
@@ -216,6 +271,7 @@ serve(async (req) => {
         document_number: receiptNumber,
         document_hash: receiptHash,
         qr_code_data: receiptQR,
+        hcs_verification_id: receiptHcsId,
         version: 1,
         version_date: new Date().toISOString(),
         is_current: true,
@@ -236,25 +292,48 @@ serve(async (req) => {
         document_number: certificateNumber,
         document_hash: certificateHash,
         qr_code_data: certificateQR,
-        version: 1,
+        hcs_verification_id: certificateHcsId,
+        version: certificateVersion,
         version_date: new Date().toISOString(),
         is_current: true,
+        superseded_by: null,
+        reason_for_update: certificateVersion > 1 ? 'Additional investment - updated token holdings' : null,
         metadata: {
           property_title: (investment.tokenizations as any).properties?.title,
-          tokens_held: investment.tokens_requested,
-          ownership_percentage: ((investment.tokens_requested / (investment.tokenizations as any).total_supply) * 100).toFixed(4),
+          tokens_held: cumulativeTokens,
+          ownership_percentage: ((cumulativeTokens / (investment.tokenizations as any).total_supply) * 100).toFixed(4),
           investor_name: `${investment.investor.first_name} ${investment.investor.last_name}`,
+          previous_version: supersededCertId,
+          is_recurring_investment: certificateVersion > 1
         }
       }
     ];
 
-    const { error: dbError } = await supabase
+    // Update superseded certificate with new certificate reference
+    if (supersededCertId) {
+      const newCertId = documents[2].investment_id; // Will be replaced with actual ID after insert
+      // This will be updated after we get the new cert ID
+    }
+
+    const { data: insertedDocs, error: dbError } = await supabase
       .from('investment_documents')
-      .insert(documents);
+      .insert(documents)
+      .select('id, document_type');
 
     if (dbError) {
       console.error('Database insert error:', dbError);
       throw new Error(`Failed to save document records: ${dbError.message}`);
+    }
+
+    // Update superseded certificate reference
+    if (supersededCertId && insertedDocs) {
+      const newCert = insertedDocs.find(d => d.document_type === 'certificate');
+      if (newCert) {
+        await supabase
+          .from('investment_documents')
+          .update({ superseded_by: newCert.id })
+          .eq('id', supersededCertId);
+      }
     }
 
     // Send notification
@@ -330,14 +409,14 @@ async function generateQRCode(url: string): Promise<string> {
 }
 
 // Helper function to submit hash to HCS
-async function submitToHCS(supabase: any, topicId: string | null, documentNumber: string, hash: string): Promise<void> {
+async function submitToHCS(supabase: any, topicId: string | null, documentNumber: string, hash: string): Promise<any> {
   try {
     if (!topicId) {
       console.warn('[SUBMIT-TO-HCS] ⚠️ No HCS topicId provided for', documentNumber);
-      return;
+      return null;
     }
     
-    await supabase.functions.invoke('submit-to-hcs', {
+    const { data, error } = await supabase.functions.invoke('submit-to-hcs', {
       body: {
         topicId: topicId,
         message: JSON.stringify({
@@ -350,9 +429,16 @@ async function submitToHCS(supabase: any, topicId: string | null, documentNumber
         })
       }
     });
+
+    if (error) {
+      console.error('HCS submission error:', error);
+      return null;
+    }
     
-    console.log(`Document hash submitted to HCS topic ${topicId}: ${documentNumber}`);
+    console.log(`Document hash submitted to HCS topic ${topicId}: ${documentNumber}`, data);
+    return data;
   } catch (error) {
-    console.error('HCS submission error:', error);
+    console.error('HCS submission exception:', error);
+    return null;
   }
 }

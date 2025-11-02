@@ -190,8 +190,38 @@ serve(async (req) => {
 
   } catch (error: any) {
     console.error('[WALLET-PAYMENT] Error:', error);
+    
+    // Log detailed error for reconciliation
+    const { investment_id, user_id, amount_ngn } = await req.json().catch(() => ({}));
+    
+    if (investment_id && user_id) {
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      
+      await supabaseClient
+        .from('activity_logs')
+        .insert({
+          user_id: user_id,
+          activity_type: 'wallet_payment_exception',
+          description: `Wallet payment exception: ${error.message}`,
+          metadata: {
+            investment_id,
+            amount_ngn,
+            error_message: error.message,
+            error_stack: error.stack,
+            timestamp: new Date().toISOString()
+          }
+        });
+    }
+    
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        error_code: error.code || 'WALLET_PAYMENT_ERROR'
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

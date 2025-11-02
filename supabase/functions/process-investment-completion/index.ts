@@ -94,26 +94,9 @@ serve(async (req) => {
     const isRecurringInvestor = !!existingHoldings && existingHoldings.balance > 0;
     console.log(`[PROCESS-COMPLETION] Recurring investor: ${isRecurringInvestor}`);
 
-    // Update token holdings using database function
-    console.log("[PROCESS-COMPLETION] Upserting token holdings");
-    const { error: holdingsError } = await supabase.rpc(
-      "upsert_token_holdings",
-      {
-        p_user_id: investment.investor_id,
-        p_tokenization_id: investment.tokenization_id,
-        p_property_id: investment.tokenizations.property_id,
-        p_token_id: investment.tokenizations.token_id || "pending",
-        p_tokens_to_add: investment.tokens_requested,
-        p_amount_invested: investment.amount_ngn,
-      }
-    );
-
-    if (holdingsError) {
-      console.error(
-        "[PROCESS-COMPLETION] Failed to update holdings:",
-        holdingsError
-      );
-    }
+    // NOTE: Token holdings will be updated by distribute-tokens-to-kyc-users
+    // after actual on-chain token transfer. We no longer update holdings here.
+    console.log("[PROCESS-COMPLETION] Token holdings will be updated after distribution");
 
     // Step 3: Create or get chat room for tokenization
     console.log("[PROCESS-COMPLETION] Creating/getting chat room");
@@ -242,7 +225,18 @@ serve(async (req) => {
       console.log("[PROCESS-COMPLETION] Documents generated:", documentsResult);
     }
 
-    // Step 7: Create success notification
+    // Step 7: Trigger token distribution for this investor
+    console.log("[PROCESS-COMPLETION] Triggering token distribution");
+    await supabase.functions.invoke('distribute-tokens-to-kyc-users', {
+      body: {
+        tokenization_id: investment.tokenization_id,
+        target_user_ids: [investment.investor_id]
+      }
+    }).catch(err => {
+      console.error("[PROCESS-COMPLETION] Failed to trigger distribution:", err);
+    });
+
+    // Step 8: Create success notification
     console.log("[PROCESS-COMPLETION] Creating success notification");
     const { error: notificationError } = await supabase
       .from("notifications")
