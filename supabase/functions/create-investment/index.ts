@@ -275,6 +275,19 @@ serve(async (req) => {
 
       console.log('[CREATE-INVESTMENT] Wallet payment successful:', walletPayment.transaction_id);
 
+      // Calculate and store USD amount and exchange rate
+      const exchangeRate = 1500; // TODO: Get from exchange rate service
+      const amountUsd = amount_ngn / exchangeRate;
+
+      await supabase
+        .from('investments')
+        .update({
+          amount_usd: amountUsd,
+          exchange_rate: exchangeRate,
+          payment_currency: 'NGN'
+        })
+        .eq('id', investment_id);
+
       return new Response(
         JSON.stringify({
           success: true,

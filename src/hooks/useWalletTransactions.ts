@@ -54,8 +54,10 @@ export const useWalletTransactions = () => {
         displayType: 'send' as const,
         amount: investment.amount_ngn,
         currency: 'NGN',
-        status: investment.payment_status === 'confirmed' ? 'completed' as const : 
-                investment.payment_status === 'failed' ? 'failed' as const : 'pending' as const,
+      // Status mapping: tokens_distributed = completed, confirmed = completed, failed = failed, others = pending
+      status: investment.payment_status === 'tokens_distributed' ? 'completed' as const :
+              investment.payment_status === 'confirmed' ? 'completed' as const : 
+              investment.payment_status === 'failed' ? 'failed' as const : 'pending' as const,
         timestamp: investment.created_at,
         date: new Date(investment.created_at).toISOString().split('T')[0],
         method: investment.payment_method || 'Bank Transfer',
