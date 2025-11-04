@@ -217,3 +217,10 @@
     z-index: 50 !important;
   }
 }
+
+/* Ensure closed dialog/sheet overlays don't block interactions */
+[data-radix-dialog-overlay][data-state="closed"],
+[data-radix-alert-dialog-overlay][data-state="closed"],
+[data-radix-sheet-overlay][data-state="closed"] {
+  pointer-events: none !important;
+}

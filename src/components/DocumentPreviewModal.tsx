@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -238,9 +239,9 @@ export default function DocumentPreviewModal({
               <DialogTitle className="text-lg font-semibold">
                 {formatDocumentType(document.document_type)}
               </DialogTitle>
-              <p className="text-sm text-muted-foreground">
+              <DialogDescription className="text-sm text-muted-foreground">
                 Document #: {document.document_number}
-              </p>
+              </DialogDescription>
             </div>
             <div className="flex items-center gap-2">
               <Button

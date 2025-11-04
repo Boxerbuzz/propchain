@@ -17,8 +17,16 @@ const DrawerClose = DrawerPrimitive.Close;
 const DrawerOverlay = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DrawerPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-black/80 data-[state=closed]:pointer-events-none", className)} {...props} />
+>(({ className, style, ...props }, ref) => (
+  <DrawerPrimitive.Overlay 
+    ref={ref} 
+    style={{
+      ...style,
+      pointerEvents: props['data-state'] === 'closed' ? 'none' : undefined
+    }}
+    className={cn("fixed inset-0 z-50 bg-black/80", className)} 
+    {...props} 
+  />
 ));
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 

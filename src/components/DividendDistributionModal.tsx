@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,6 +64,9 @@ export default function DividendDistributionModal({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Dividend Distribution Schedule</DialogTitle>
+          <DialogDescription>
+            View the dividend distribution schedule for this property tokenization
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">

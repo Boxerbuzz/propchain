@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Progress } from "@/components/ui/progress";
@@ -858,8 +859,9 @@ const PropertyView = () => {
       {/* Image Gallery Dialog */}
       <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-          <DialogHeader className="hidden">
-            <DialogTitle></DialogTitle>
+          <DialogHeader className="sr-only">
+            <DialogTitle>Property Image Gallery</DialogTitle>
+            <DialogDescription>View property images in full screen</DialogDescription>
           </DialogHeader>
           {images.length > 0 && (
             <div className="space-y-4">
