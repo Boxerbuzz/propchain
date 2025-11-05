@@ -106,7 +106,7 @@ export function PropertyActivitiesPanel({
           <div className="flex items-center gap-2">
             {selectedActivity && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={handleBackToList}
                 className="mr-2"
@@ -162,7 +162,7 @@ export function PropertyActivitiesPanel({
                         onClick={() => handleViewDetails(activity)}
                       >
                         <div className="flex items-start gap-3">
-                          <div className={cn("p-2 rounded-lg", config.bgColor)}>
+                          <div className={cn("p-4 rounded-full", config.bgColor)}>
                             <Icon className={cn("h-5 w-5", config.color)} />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -181,7 +181,7 @@ export function PropertyActivitiesPanel({
                                 {activity.event_status}
                               </Badge>
                             </div>
-                            <p className="font-medium text-sm line-clamp-2">
+                            <p className="text-sm line-clamp-2">
                               {activity.summary}
                             </p>
                             <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
@@ -225,7 +225,7 @@ function ActivityDetails({ activity }: { activity: any }) {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-start gap-4">
-        <div className={cn("p-3 rounded-lg", config.bgColor)}>
+        <div className={cn("p-3 rounded-full", config.bgColor)}>
           <Icon className={cn("h-6 w-6", config.color)} />
         </div>
         <div className="flex-1">
