@@ -214,11 +214,8 @@ const PropertyManagement = () => {
     try {
       setIsProcessingAction(true);
 
-      // TEMPORARILY REMOVED: Close dialog first to prevent overlay from blocking UI
-      // setConfirmDialog((prev) => ({ ...prev, open: false }));
-
-      // TEMPORARILY REMOVED: Wait for dialog animation to complete
-      // await new Promise((resolve) => setTimeout(resolve, 200));
+      // Close dialog before processing action
+      setConfirmDialog((prev) => ({ ...prev, open: false }));
 
       switch (action) {
         case "Approve":
@@ -431,32 +428,52 @@ const PropertyManagement = () => {
           return;
         }
 
-        // TEMPORARILY: Execute action directly without dialog
-        setConfirmDialog((prev) => ({ ...prev, action, propertyId }));
-        handleConfirmedAction();
+        showConfirmDialog(
+          "Approve",
+          propertyId,
+          "Approve Property",
+          "This will approve the property and activate its listing. Continue?",
+          "default"
+        );
         break;
       case "Delist":
-        // TEMPORARILY: Execute action directly without dialog
-        setConfirmDialog((prev) => ({ ...prev, action, propertyId }));
-        handleConfirmedAction();
+        showConfirmDialog(
+          "Delist",
+          propertyId,
+          "Delist Property",
+          "This will remove the property from active listings. Continue?",
+          "default"
+        );
         break;
       case "Reactivate":
-        // TEMPORARILY: Execute action directly without dialog
-        setConfirmDialog((prev) => ({ ...prev, action, propertyId }));
-        handleConfirmedAction();
+        showConfirmDialog(
+          "Reactivate",
+          propertyId,
+          "Relist Property",
+          "This will relist the property and make it visible to investors. Continue?",
+          "default"
+        );
         break;
       case "Tokenize":
         navigate(`/property/${propertyId}/tokenize`);
         break;
       case "ApproveToken":
-        // TEMPORARILY: Execute action directly without dialog
-        setConfirmDialog((prev) => ({ ...prev, action, propertyId }));
-        handleConfirmedAction();
+        showConfirmDialog(
+          "ApproveToken",
+          propertyId,
+          "Approve Tokenization",
+          "This will approve the pending tokenization for this property. Continue?",
+          "default"
+        );
         break;
       case "Delete":
-        // TEMPORARILY: Execute action directly without dialog
-        setConfirmDialog((prev) => ({ ...prev, action, propertyId }));
-        handleConfirmedAction();
+        showConfirmDialog(
+          "Delete",
+          propertyId,
+          "Delete Property",
+          "This action cannot be undone. Are you sure you want to delete this property?",
+          "destructive"
+        );
         break;
       default:
         toast({
@@ -1111,8 +1128,8 @@ const PropertyManagement = () => {
         </div>
       </div>
 
-      {/* Confirmation Dialog - TEMPORARILY REMOVED FOR TESTING */}
-      {/* <AlertDialog
+      {/* Confirmation Dialog */}
+      <AlertDialog
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
       >
@@ -1138,7 +1155,7 @@ const PropertyManagement = () => {
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog> */}
+      </AlertDialog>
     </div>
   );
 };
