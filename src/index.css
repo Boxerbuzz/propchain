@@ -224,3 +224,11 @@
 [data-radix-sheet-overlay][data-state="closed"] {
   pointer-events: none !important;
 }
+
+/* Ensure dialog/sheet content is always clickable and above overlays */
+[data-radix-dialog-content],
+[data-radix-alert-dialog-content],
+[data-radix-sheet-content],
+[data-radix-drawer-content] {
+  pointer-events: auto !important;
+}
