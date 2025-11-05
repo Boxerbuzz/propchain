@@ -688,10 +688,14 @@ const InvestmentFlow = () => {
                     {/* Token Distribution Info */}
                     <Alert>
                       <Info className="h-4 w-4" />
-                      <AlertTitle>Token Distribution</AlertTitle>
+                      <AlertTitle>Token Distribution Timeline</AlertTitle>
                       <AlertDescription>
-                        Your {completedInvestment.tokenSymbol} tokens will be distributed to your wallet within 24 hours. 
-                        You'll receive a notification once the distribution is complete.
+                        <ul className="space-y-1.5 text-sm mt-2">
+                          <li>• Investment window closes: {new Date(tokenization.investment_window_end).toLocaleDateString()}</li>
+                          <li>• Token minting: 2-3 business days after window closes</li>
+                          <li>• Distribution to investors: 4-7 business days after minting</li>
+                          <li>• You'll receive an email notification when tokens are distributed</li>
+                        </ul>
                       </AlertDescription>
                     </Alert>
 
@@ -713,7 +717,7 @@ const InvestmentFlow = () => {
                           <div>
                             <p className="font-medium">Token Distribution Pending</p>
                             <p className="text-xs text-muted-foreground">
-                              Tokens will be sent to your wallet within 24 hours
+                              Tokens will be distributed after the investment window closes on {new Date(tokenization.investment_window_end).toLocaleDateString()}
                             </p>
                           </div>
                         </div>

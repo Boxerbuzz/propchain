@@ -2856,6 +2856,7 @@ export type Database = {
       }
       wallets: {
         Row: {
+          associated_tokens: Json | null
           backup_completed: boolean | null
           balance_hbar: number | null
           balance_ngn: number | null
@@ -2879,6 +2880,7 @@ export type Database = {
           wallet_type: string
         }
         Insert: {
+          associated_tokens?: Json | null
           backup_completed?: boolean | null
           balance_hbar?: number | null
           balance_ngn?: number | null
@@ -2902,6 +2904,7 @@ export type Database = {
           wallet_type: string
         }
         Update: {
+          associated_tokens?: Json | null
           backup_completed?: boolean | null
           balance_hbar?: number | null
           balance_ngn?: number | null

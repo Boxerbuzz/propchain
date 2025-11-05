@@ -22,7 +22,7 @@ import { motion } from "framer-motion";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { useCurrency } from "@/context/CurrencyContext";
 import { useWalletTransactions } from "@/hooks/useWalletTransactions";
-import { useTokenHoldings } from "@/hooks/useTokenHoldings";
+import { useWalletTokenBalances } from "@/hooks/useWalletTokenBalances";
 import { Separator } from "@/components/ui/separator";
 import { getActivityIcon } from "@/lib/activityIcons";
 import propchainLogo from "@/assets/logo.png";
@@ -34,8 +34,8 @@ export default function AccountDashboard() {
   const { balance: hederaBalance, syncBalance, isSyncing } = useWalletBalance();
   const { currency, formatAmount } = useCurrency();
   const { transactions: allTransactions } = useWalletTransactions();
-  const { data: tokenHoldings, isLoading: isLoadingTokens } =
-    useTokenHoldings();
+  const { data: tokenBalances, isLoading: isLoadingTokens } =
+    useWalletTokenBalances();
 
   const totalValueNgn =
     (hederaBalance?.balanceNgn || 0) + (hederaBalance?.usdcBalanceNgn || 0);
@@ -634,48 +634,34 @@ export default function AccountDashboard() {
 
                   {/* Property Tokens Section */}
                   {!isLoadingTokens &&
-                    tokenHoldings &&
-                    tokenHoldings.length > 0 && (
+                    tokenBalances &&
+                    tokenBalances.length > 0 && (
                       <>
                         <Separator className="my-0" />
 
                         <div className="p-0 bg-muted/30">
                           <div className="divide-y divide-border/60">
-                            {tokenHoldings.map((token: any, index: number) => {
-                              const pricePerToken =
-                                token.price_per_token ??
-                                token.tokenizations?.price_per_token ??
-                                null;
-                              const hasPrice =
-                                typeof pricePerToken === "number" &&
-                                pricePerToken > 0;
+                            {tokenBalances.map((token: any, index: number) => {
+                              const hasPrice = token.pricePerToken && token.pricePerToken > 0;
                               const usdToNgn =
                                 hederaBalance?.exchangeRates?.usdToNgn || 1;
                               const pricePerTokenUsd = hasPrice
-                                ? pricePerToken
+                                ? token.pricePerToken
                                 : null;
                               const pricePerTokenNgn = hasPrice
-                                ? pricePerToken * usdToNgn
-                                : null;
-                              const totalValueUsd = hasPrice
-                                ? (pricePerTokenUsd as number) *
-                                  (token.balance || 0)
-                                : null;
-                              const totalValueNgn = hasPrice
-                                ? (pricePerTokenNgn as number) *
-                                  (token.balance || 0)
+                                ? token.pricePerToken * usdToNgn
                                 : null;
 
                               return (
                                 <div
-                                  key={token.id}
+                                  key={token.tokenId}
                                   className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_140px_180px] items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
                                 >
                                   {/* Column 1: Icon */}
                                   <div className="relative">
                                     <img
                                       src={propchainLogo}
-                                      alt={token.token_symbol}
+                                      alt={token.tokenSymbol}
                                       className="w-10 h-10"
                                     />
                                     <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-2 border-blue-500 shadow-sm">
@@ -691,17 +677,19 @@ export default function AccountDashboard() {
                                   <div>
                                     <div className="mb-1 flex items-center gap-2">
                                       <p className="font-semibold text-sm truncate">
-                                        {token.token_symbol}
+                                        {token.tokenSymbol}
                                       </p>
-                                      <Badge
-                                        variant="outline"
-                                        className="h-5 text-xs capitalize"
-                                      >
-                                        {token.tokenization_type}
-                                      </Badge>
+                                      {token.tokenizationType && (
+                                        <Badge
+                                          variant="outline"
+                                          className="h-5 text-xs capitalize"
+                                        >
+                                          {token.tokenizationType}
+                                        </Badge>
+                                      )}
                                     </div>
                                     <p className="text-sm text-muted-foreground truncate">
-                                      {token.property_title}
+                                      {token.propertyTitle || token.tokenName}
                                     </p>
                                   </div>
 
@@ -730,10 +718,10 @@ export default function AccountDashboard() {
                                   <div className="text-right">
                                     <p className="font-semibold">
                                       {showBalances ? (
-                                        hasPrice ? (
+                                        hasPrice && token.totalValueNgn ? (
                                           formatAmount(
-                                            totalValueNgn as number,
-                                            totalValueUsd as number
+                                            token.totalValueNgn,
+                                            token.totalValueUsd || 0
                                           )
                                         ) : (
                                           "—"
@@ -744,9 +732,7 @@ export default function AccountDashboard() {
                                     </p>
                                     <p className="text-sm text-muted-foreground">
                                       {showBalances ? (
-                                        `${token.balance.toLocaleString()} ${
-                                          token.token_symbol
-                                        }`
+                                        `${token.displayBalance} ${token.tokenSymbol}`
                                       ) : (
                                         <span>••••</span>
                                       )}

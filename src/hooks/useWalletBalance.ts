@@ -24,6 +24,7 @@ interface WalletBalance {
     tokenName: string;
     tokenSymbol: string;
     balance: number;
+    decimals: number;
   }>;
 }
 
