@@ -72,6 +72,15 @@ serve(async (req) => {
     let usdcBalanceNgn = 0;
     const tokensOut: Record<string, number> = {};
 
+    // Fetch detailed token information from mirror node
+    const associatedTokens: Array<{
+      tokenId: string;
+      tokenName: string;
+      tokenSymbol: string;
+      balance: number;
+      decimals: number;
+    }> = [];
+
     // Iterate through token map and build serializable tokens object
     if (balance.tokens) {
       for (const [tid, amountLong] of balance.tokens as unknown as Iterable<[any, any]>) {
@@ -82,6 +91,33 @@ serve(async (req) => {
         if (idStr === usdcTokenIdStr) {
           hasUsdc = true;
           usdcMicro = amountMicro;
+        }
+
+        // Fetch token metadata from mirror node
+        try {
+          const tokenInfoResponse = await fetch(
+            `${mirrorNodeUrl}/api/v1/tokens/${idStr}`
+          );
+          if (tokenInfoResponse.ok) {
+            const tokenData = await tokenInfoResponse.json();
+            associatedTokens.push({
+              tokenId: idStr,
+              tokenName: tokenData.name || idStr,
+              tokenSymbol: tokenData.symbol || idStr,
+              balance: amountMicro,
+              decimals: tokenData.decimals || 0,
+            });
+          }
+        } catch (e) {
+          console.warn(`Failed to fetch metadata for token ${idStr}:`, e);
+          // Still add token with minimal info
+          associatedTokens.push({
+            tokenId: idStr,
+            tokenName: idStr,
+            tokenSymbol: idStr,
+            balance: amountMicro,
+            decimals: 0,
+          });
         }
       }
     }
@@ -137,6 +173,7 @@ serve(async (req) => {
           balance_ngn: balanceNgn,
           balance_usdc: usdcBalance,
           usdc_associated: hasUsdc,
+          associated_tokens: associatedTokens,
           last_sync_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -168,6 +205,7 @@ serve(async (req) => {
       },
       lastSyncAt: new Date().toISOString(),
       tokens: tokensOut,
+      associatedTokens: associatedTokens,
     };
 
     console.log('Balance sync completed:', result);
