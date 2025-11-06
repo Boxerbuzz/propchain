@@ -3,10 +3,12 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CustomTokenSelector } from "@/components/account/CustomTokenSelector";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { toast } from "sonner";
 import { Send as SendIcon, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import hederaIcon from "/hedera.svg";
 import usdcIcon from "/usdc.svg";
 
@@ -18,6 +20,7 @@ export default function SendTokens() {
   const [amount, setAmount] = useState("");
   const [selectedToken, setSelectedToken] = useState<"HBAR" | "USDC">("HBAR");
   const { balance } = useWalletBalance();
+  const navigate = useNavigate();
 
   const tokens = [
     {
@@ -51,6 +54,23 @@ export default function SendTokens() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-[500px] mx-auto">
+        <Tabs value="send" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsTrigger value="buy" onClick={() => navigate("/account/tokens/buy")}>
+              Buy
+            </TabsTrigger>
+            <TabsTrigger value="sell" onClick={() => navigate("/account/tokens/sell")}>
+              Sell
+            </TabsTrigger>
+            <TabsTrigger value="swap" onClick={() => navigate("/account/tokens/swap")}>
+              Swap
+            </TabsTrigger>
+            <TabsTrigger value="send" onClick={() => navigate("/account/tokens/send")}>
+              Send
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="send" className="mt-0">
         <Card className="p-6 bg-card border-border">
           {/* Back Button */}
           {cardState !== "main" && (
@@ -183,6 +203,8 @@ export default function SendTokens() {
             </div>
           )}
         </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
