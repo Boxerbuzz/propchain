@@ -6,7 +6,7 @@ import {
   TransferTransaction, 
   Hbar,
   AccountId 
-} from "npm:@hashgraph/sdk@^2.73.1";
+} from "https://esm.sh/@hashgraph/sdk@2.73.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

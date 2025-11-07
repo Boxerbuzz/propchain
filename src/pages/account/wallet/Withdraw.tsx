@@ -97,7 +97,31 @@ export default function WithdrawFunds() {
     },
   ];
 
-  const quickAmounts = [1000, 5000, 10000, 25000, 50000];
+  // Quick amounts in token units (percentage of balance)
+  const getQuickAmounts = () => {
+    const currentBalance =
+      selectedCurrency === "hbar"
+        ? balance?.balanceHbar || 0
+        : balance?.usdcBalance || 0;
+    if (currentBalance === 0) return [];
+    
+    // Calculate 25%, 50%, 75%, 100% of balance
+    return [
+      currentBalance * 0.25,
+      currentBalance * 0.5,
+      currentBalance * 0.75,
+      currentBalance,
+    ].filter((amt) => amt > 0);
+  };
+
+  // Exchange rates for NGN conversion (approximate)
+  const HBAR_TO_NGN_RATE = 262;
+  const USDC_TO_NGN_RATE = 1465;
+  
+  const getNgnEquivalent = (tokenAmount: number) => {
+    const rate = selectedCurrency === "hbar" ? HBAR_TO_NGN_RATE : USDC_TO_NGN_RATE;
+    return tokenAmount * rate;
+  };
 
   const tokens: Token[] = [
     {
@@ -119,7 +143,9 @@ export default function WithdrawFunds() {
     tokens[0];
 
   const processingFee = selectedMethod?.id === "bank_transfer" ? 100 : 0;
-  const netAmount = Number(amount) - processingFee;
+  // Calculate NGN equivalent of token amount, then subtract fee
+  const ngnAmount = amount ? getNgnEquivalent(parseFloat(amount)) : 0;
+  const netAmount = ngnAmount - processingFee;
 
   const handleSelectMethod = (method: WithdrawalMethod) => {
     setSelectedMethod(method);
@@ -169,13 +195,14 @@ export default function WithdrawFunds() {
     setLoading(true);
 
     try {
+      const tokenAmount = parseFloat(amount);
       const { error } = await supabase.functions.invoke(
         "initiate-withdrawal",
         {
           body: {
-            amount_ngn: Number(amount),
+            amount_ngn: getNgnEquivalent(tokenAmount),
             currency_type: selectedCurrency,
-            currency_amount: Number(amount),
+            currency_amount: tokenAmount,
             withdrawal_method: selectedMethod.id,
             bank_details:
               selectedMethod.id === "bank_transfer"
@@ -241,10 +268,17 @@ export default function WithdrawFunds() {
 
           {cardState === "main" && (
             <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Withdraw from Your Wallet</h2>
+                <p className="text-sm text-muted-foreground">
+                  Convert your tokens to fiat currency
+                </p>
+              </div>
+
               {/* Currency Selector */}
               <CustomTokenSelector
                 selectedToken={selectedToken}
-                label="Currency"
+                label="Withdraw from"
                 showBalance={true}
                 onClick={() => setCardState("selectCurrency")}
               />
@@ -266,47 +300,62 @@ export default function WithdrawFunds() {
                         ? "border-destructive"
                         : ""
                     }`}
+                    step="0.0001"
                   />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8"
-                    onClick={() =>
-                      setAmount(
-                        String(
-                          selectedCurrency === "hbar"
-                            ? balance?.balanceHbar || 0
-                            : balance?.usdcBalance || 0
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    <span className="text-sm font-semibold text-muted-foreground">
+                      {selectedCurrency.toUpperCase()}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() =>
+                        setAmount(
+                          String(
+                            selectedCurrency === "hbar"
+                              ? balance?.balanceHbar || 0
+                              : balance?.usdcBalance || 0
+                          )
                         )
-                      )
-                    }
-                  >
-                    Max
-                  </Button>
+                      }
+                    >
+                      Max
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Available:{" "}
-                  {selectedCurrency === "hbar"
-                    ? balance?.balanceHbar.toFixed(2)
-                    : balance?.usdcBalance.toFixed(2)}{" "}
-                  {selectedCurrency.toUpperCase()}
-                </p>
+                <div className="flex justify-between items-center text-sm">
+                  <p className="text-muted-foreground">
+                    Available:{" "}
+                    {selectedCurrency === "hbar"
+                      ? balance?.balanceHbar.toFixed(4)
+                      : balance?.usdcBalance.toFixed(4)}{" "}
+                    {selectedCurrency.toUpperCase()}
+                  </p>
+                  {amount && parseFloat(amount) > 0 && (
+                    <p className="text-muted-foreground">
+                      ≈ ₦{getNgnEquivalent(parseFloat(amount)).toLocaleString()}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Quick Amount Buttons */}
-              <div className="flex gap-2 flex-wrap">
-                {quickAmounts.map((amt) => (
-                  <Button
-                    key={amt}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAmount(amt.toString())}
-                    className="flex-1 min-w-[60px]"
-                  >
-                    ₦{amt.toLocaleString()}
-                  </Button>
-                ))}
-              </div>
+              {getQuickAmounts().length > 0 && (
+                <div className="flex gap-2 flex-wrap">
+                  {getQuickAmounts().map((amt, idx) => (
+                    <Button
+                      key={idx}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAmount(amt.toFixed(4))}
+                      className="flex-1 min-w-[60px]"
+                    >
+                      {amt.toFixed(2)} {selectedCurrency.toUpperCase()}
+                    </Button>
+                  ))}
+                </div>
+              )}
 
               {/* Method Selector */}
               <CustomWithdrawalMethodSelector
@@ -316,14 +365,19 @@ export default function WithdrawFunds() {
               />
 
               {/* Summary Card */}
-              {amount && selectedMethod && (
+              {amount && parseFloat(amount) > 0 && selectedMethod && (
                 <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Amount</span>
-                      <span className="font-semibold text-lg">
-                        ₦{Number(amount).toLocaleString()}
-                      </span>
+                      <div className="text-right">
+                        <span className="font-semibold text-lg">
+                          {parseFloat(amount).toFixed(4)} {selectedCurrency.toUpperCase()}
+                        </span>
+                        <p className="text-xs text-muted-foreground">
+                          ≈ ₦{getNgnEquivalent(parseFloat(amount)).toLocaleString()}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">
@@ -338,6 +392,14 @@ export default function WithdrawFunds() {
                       <span className="font-semibold">You'll Receive</span>
                       <span className="text-2xl font-bold text-primary">
                         ₦{netAmount.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm pt-2 border-t">
+                      <span className="text-muted-foreground">
+                        Withdrawal Method
+                      </span>
+                      <span className="font-medium">
+                        {selectedMethod.name}
                       </span>
                     </div>
                   </div>
@@ -363,9 +425,9 @@ export default function WithdrawFunds() {
           {/* Currency Selection State */}
           {cardState === "selectCurrency" && (
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold mb-2">Select Currency</h3>
+              <h3 className="text-xl font-semibold mb-2">Select Token to Withdraw</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Choose the currency you want to withdraw
+                Choose which token you want to withdraw from your wallet
               </p>
               {tokens.map((token) => (
                 <Card
