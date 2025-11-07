@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts } from "https://cdn.skypack.dev/pdf-lib@1.17.1";
+import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 import { COMPANY_INFO } from '../_shared/company-config.ts';
 import {
   getEquityTerms,
