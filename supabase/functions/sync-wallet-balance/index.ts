@@ -73,6 +73,7 @@ serve(async (req) => {
     const tokensOut: Record<string, number> = {};
 
     // Fetch detailed token information from mirror node
+    const mirrorNodeUrl = Deno.env.get('HEDERA_MIRROR_NODE_URL') || 'https://testnet.mirrornode.hedera.com';
     const associatedTokens: Array<{
       tokenId: string;
       tokenName: string;

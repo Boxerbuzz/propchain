@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.178.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { AccountId, PrivateKey, TransferTransaction, Hbar } from "https://esm.sh/@hashgraph/sdk@2.73.1";
+import { AccountId, PrivateKey, TransferTransaction, Hbar } from "https://esm.sh/@hashgraph/sdk@2.73.2";
 
 const PAYSTACK_SECRET_KEY = Deno.env.get("PAYSTACK_SECRET_KEY");
 const HEDERA_OPERATOR_ID = Deno.env.get("HEDERA_OPERATOR_ID");

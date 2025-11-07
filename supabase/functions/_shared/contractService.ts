@@ -6,7 +6,7 @@ import {
   AccountId,
   PrivateKey,
   Hbar
-} from "https://esm.sh/@hashgraph/sdk@2.73.1";
+} from "https://esm.sh/@hashgraph/sdk@2.73.2";
 
 export interface ContractConfig {
   contract_address: string;

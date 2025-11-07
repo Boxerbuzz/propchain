@@ -7,7 +7,7 @@ import {
   ContractId,
   AccountId,
   PrivateKey
-} from "https://esm.sh/@hashgraph/sdk@2.73.1";
+} from "https://esm.sh/@hashgraph/sdk@2.73.2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

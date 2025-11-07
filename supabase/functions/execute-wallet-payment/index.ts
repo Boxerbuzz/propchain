@@ -5,8 +5,9 @@ import {
   PrivateKey, 
   TransferTransaction, 
   Hbar,
-  AccountId 
-} from "https://esm.sh/@hashgraph/sdk@2.73.1";
+  AccountId,
+  AccountBalanceQuery
+} from "https://esm.sh/@hashgraph/sdk@2.73.2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -70,23 +71,12 @@ serve(async (req) => {
     const usdToNgn = 1550; // You can fetch this from an API
     const hbarToNgn = hbarPriceUsd * usdToNgn;
 
-    // Calculate HBAR amount needed
-    const hbarAmount = amount_ngn / hbarToNgn;
+    // Calculate HBAR amount needed using tinybars for precision
+    const tinybarsRequired = Math.round((amount_ngn / hbarToNgn) * 1e8);
+    const hbarAmount = tinybarsRequired / 1e8;
     
-    console.log(`[WALLET-PAYMENT] Amount: ₦${amount_ngn} = ${hbarAmount.toFixed(2)} HBAR`);
-
-    // Check if user has sufficient HBAR balance
-    if (wallet.balance_hbar < hbarAmount) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Insufficient HBAR balance',
-          required_hbar: hbarAmount,
-          available_hbar: wallet.balance_hbar
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    console.log(`[WALLET-PAYMENT] Exchange rates - HBAR/USD: ${hbarPriceUsd}, USD/NGN: ${usdToNgn}, HBAR/NGN: ${hbarToNgn.toFixed(2)}`);
+    console.log(`[WALLET-PAYMENT] Amount: ₦${amount_ngn} = ${hbarAmount.toFixed(8)} HBAR (${tinybarsRequired} tinybars)`);
 
     // Initialize Hedera client
     const hederaClient = Client.forTestnet();
@@ -94,18 +84,44 @@ serve(async (req) => {
     const operatorKey = PrivateKey.fromStringECDSA(Deno.env.get('HEDERA_OPERATOR_PRIVATE_KEY') ?? '');
     hederaClient.setOperator(operatorId, operatorKey);
 
+    const userAccountId = AccountId.fromString(wallet.hedera_account_id);
+
+    // Query live on-chain balance
+    console.log(`[WALLET-PAYMENT] Querying on-chain balance for ${wallet.hedera_account_id}`);
+    const balanceQuery = new AccountBalanceQuery()
+      .setAccountId(userAccountId);
+    const accountBalance = await balanceQuery.execute(hederaClient);
+    const onChainTinybars = accountBalance.hbars.toTinybars().toNumber();
+    const onChainHbar = onChainTinybars / 1e8;
+    
+    console.log(`[WALLET-PAYMENT] On-chain balance: ${onChainHbar.toFixed(8)} HBAR (${onChainTinybars} tinybars)`);
+
+    // Check if user has sufficient HBAR balance (use on-chain balance)
+    if (onChainTinybars < tinybarsRequired) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Insufficient HBAR balance',
+          required_hbar: hbarAmount,
+          required_tinybars: tinybarsRequired,
+          available_hbar: onChainHbar,
+          available_tinybars: onChainTinybars
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Platform treasury account (receives payments)
     const treasuryAccountId = AccountId.fromString(Deno.env.get('HEDERA_OPERATOR_ID') ?? '');
 
-    // Execute HBAR transfer from user to treasury
+    // Execute HBAR transfer from user to treasury using precise tinybars
     const userPrivateKey = PrivateKey.fromStringECDSA(vaultData);
-    const userAccountId = AccountId.fromString(wallet.hedera_account_id);
 
-    console.log(`[WALLET-PAYMENT] Transferring ${hbarAmount} HBAR from ${userAccountId} to ${treasuryAccountId}`);
+    console.log(`[WALLET-PAYMENT] Transferring ${hbarAmount.toFixed(8)} HBAR (${tinybarsRequired} tinybars) from ${userAccountId} to ${treasuryAccountId}`);
 
     const transferTx = await new TransferTransaction()
-      .addHbarTransfer(userAccountId, Hbar.from(-hbarAmount))
-      .addHbarTransfer(treasuryAccountId, Hbar.from(hbarAmount))
+      .addHbarTransfer(userAccountId, Hbar.fromTinybars(-tinybarsRequired))
+      .addHbarTransfer(treasuryAccountId, Hbar.fromTinybars(tinybarsRequired))
       .freezeWith(hederaClient);
 
     const signedTx = await transferTx.sign(userPrivateKey);
@@ -117,7 +133,15 @@ serve(async (req) => {
     }
 
     const transactionId = txResponse.transactionId.toString();
-    console.log(`[WALLET-PAYMENT] Transfer successful: ${transactionId}`);
+    console.log(`[WALLET-PAYMENT] Transfer Receipt:`, {
+      status: receipt.status.toString(),
+      transactionId: transactionId,
+      hbarAmount: hbarAmount.toFixed(8),
+      tinybars: tinybarsRequired,
+      exchangeRate: hbarToNgn.toFixed(2),
+      fromAccount: userAccountId.toString(),
+      toAccount: treasuryAccountId.toString()
+    });
 
     // Update investment record
     const { error: investmentError } = await supabaseClient
@@ -192,28 +216,42 @@ serve(async (req) => {
     console.error('[WALLET-PAYMENT] Error:', error);
     
     // Log detailed error for reconciliation
-    const { investment_id, user_id, amount_ngn } = await req.json().catch(() => ({}));
-    
-    if (investment_id && user_id) {
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
+    try {
+      const body = await req.clone().json();
+      const { investment_id, user_id, amount_ngn } = body;
       
-      await supabaseClient
-        .from('activity_logs')
-        .insert({
-          user_id: user_id,
-          activity_type: 'wallet_payment_exception',
-          description: `Wallet payment exception: ${error.message}`,
-          metadata: {
-            investment_id,
-            amount_ngn,
-            error_message: error.message,
-            error_stack: error.stack,
-            timestamp: new Date().toISOString()
-          }
-        });
+      if (investment_id && user_id) {
+        const supabaseClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+        
+        // Get wallet info for context
+        const { data: wallet } = await supabaseClient
+          .from('wallets')
+          .select('hedera_account_id')
+          .eq('user_id', user_id)
+          .eq('is_primary', true)
+          .single();
+        
+        await supabaseClient
+          .from('activity_logs')
+          .insert({
+            user_id: user_id,
+            activity_type: 'wallet_payment_exception',
+            description: `Wallet payment exception: ${error.message}`,
+            metadata: {
+              investment_id,
+              amount_ngn,
+              hedera_account_id: wallet?.hedera_account_id,
+              error_message: error.message,
+              error_stack: error.stack,
+              timestamp: new Date().toISOString()
+            }
+          });
+      }
+    } catch (logError) {
+      console.error('[WALLET-PAYMENT] Failed to log error:', logError);
     }
     
     return new Response(
