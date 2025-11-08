@@ -1012,6 +1012,6 @@ For technical support or questions:
 
 ---
 
-**Project URL**: propchain-visuals.vercel.app OR https://propchain-ng.web.app/pitch
+**Project URL**: https://propchain-visuals.vercel.app OR https://propchain-ng.web.app/pitch
 
 Built with ❤️ using React, Supabase, and Hedera Hashgraph
