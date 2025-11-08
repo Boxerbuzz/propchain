@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Send as SendIcon, ArrowLeft, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/context/AuthContext";
 import hederaIcon from "/hedera.svg";
 import usdcIcon from "/usdc.svg";
 
@@ -23,8 +24,17 @@ export default function SendTokens() {
   const [selectedToken, setSelectedToken] = useState<"HBAR" | "USDC">("HBAR");
   const [isSending, setIsSending] = useState(false);
   const { balance } = useWalletBalance();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast.error("Please log in to send tokens");
+      navigate("/auth/login");
+    }
+  }, [isAuthenticated, navigate]);
 
   const tokens = [
     {
@@ -42,6 +52,12 @@ export default function SendTokens() {
   ];
 
   const handleSend = async () => {
+    if (!isAuthenticated || !user) {
+      toast.error("Please log in to send tokens");
+      navigate("/auth/login");
+      return;
+    }
+
     if (!recipient || !amount) {
       toast.error("Please fill in all fields");
       return;
@@ -62,6 +78,15 @@ export default function SendTokens() {
     setIsSending(true);
 
     try {
+      // Check session before making the request
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast.error("Your session has expired. Please log in again.");
+        navigate("/auth/login");
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('send-tokens', {
         body: {
           recipient_address: recipient,
@@ -70,7 +95,10 @@ export default function SendTokens() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to send tokens');
+      }
 
       if (data?.success) {
         const hashscanUrl = `https://hashscan.io/testnet/transaction/${data.transaction_id}`;
@@ -104,7 +132,23 @@ export default function SendTokens() {
       }
     } catch (error: any) {
       console.error('Send error:', error);
-      toast.error(error.message || 'Failed to send tokens. Please try again.');
+      
+      // Show user-friendly error messages
+      let errorMessage = 'Failed to send tokens. Please try again.';
+      if (error.message) {
+        if (error.message.includes('Authentication failed') || error.message.includes('not authenticated')) {
+          errorMessage = 'Your session has expired. Please log in again.';
+          setTimeout(() => navigate("/auth/login"), 2000);
+        } else if (error.message.includes('Insufficient')) {
+          errorMessage = error.message;
+        } else if (error.message.includes('Invalid recipient')) {
+          errorMessage = error.message;
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsSending(false);
     }

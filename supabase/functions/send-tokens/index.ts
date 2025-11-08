@@ -20,20 +20,33 @@ serve(async (req) => {
   }
 
   try {
+    // Log authorization header for debugging
+    const authHeader = req.headers.get('Authorization');
+    console.log('[SEND-TOKENS] Auth header present:', !!authHeader);
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader! },
         },
       }
     );
 
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      throw new Error('Unauthorized');
+    
+    if (userError) {
+      console.error('[SEND-TOKENS] Auth error:', userError);
+      throw new Error(`Authentication failed: ${userError.message}`);
     }
+    
+    if (!user) {
+      console.error('[SEND-TOKENS] No user found in session');
+      throw new Error('User not authenticated. Please log in and try again.');
+    }
+
+    console.log('[SEND-TOKENS] Authenticated user:', user.id);
 
     const { recipient_address, token_type, amount } = await req.json();
 
