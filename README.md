@@ -950,7 +950,7 @@ sequenceDiagram
 
 ## 📎 Pitch Deck & Certifications
 
-- [Pitch Deck](https://propchain-visuals.vercel.app/pitch) — overview of PropChain vision, traction, and roadmap
+- [Pitch Deck](https://propchain-ng.web.app/pitch) — overview of PropChain vision, traction, and roadmap
 - [Hedera Certification](https://drive.google.com/file/d/1X-s1-udqsh5bbc7gDyNpcp_s416Jmw1w/view?usp=drive_link )
 — official Hedera network certification credentials
 
@@ -1012,6 +1012,6 @@ For technical support or questions:
 
 ---
 
-**Project URL**: propchain-visuals.vercel.app
+**Project URL**: propchain-visuals.vercel.app OR https://propchain-ng.web.app/pitch
 
 Built with ❤️ using React, Supabase, and Hedera Hashgraph
