@@ -23,6 +23,7 @@ export default function Footer() {
     { name: "How It Works", href: "/how-it-works" },
     { name: "Security", href: "/security" },
     { name: "Careers", href: "/careers" },
+    { name: "Pitch Deck", href: "/pitch" },
   ];
 
   const legalLinks = [
