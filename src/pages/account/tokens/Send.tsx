@@ -7,8 +7,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CustomTokenSelector } from "@/components/account/CustomTokenSelector";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { toast } from "sonner";
-import { Send as SendIcon, ArrowLeft } from "lucide-react";
+import { Send as SendIcon, ArrowLeft, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import hederaIcon from "/hedera.svg";
 import usdcIcon from "/usdc.svg";
 
@@ -19,8 +21,10 @@ export default function SendTokens() {
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [selectedToken, setSelectedToken] = useState<"HBAR" | "USDC">("HBAR");
+  const [isSending, setIsSending] = useState(false);
   const { balance } = useWalletBalance();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const tokens = [
     {
@@ -37,16 +41,73 @@ export default function SendTokens() {
     },
   ];
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!recipient || !amount) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    // Mock send transaction
-    toast.success(`Sent ${amount} ${selectedToken} to ${recipient}`);
-    setRecipient("");
-    setAmount("");
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    // Validate recipient address format
+    if (!recipient.match(/^0\.0\.\d+$/) && !recipient.match(/^0x[a-fA-F0-9]{40}$/)) {
+      toast.error("Invalid recipient address. Use format 0.0.xxxxx or 0x...");
+      return;
+    }
+
+    setIsSending(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-tokens', {
+        body: {
+          recipient_address: recipient,
+          token_type: selectedToken,
+          amount: parsedAmount
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        const hashscanUrl = `https://hashscan.io/testnet/transaction/${data.transaction_id}`;
+        
+        toast.success(
+          <div className="flex flex-col gap-2">
+            <p className="font-semibold">Transfer Successful!</p>
+            <p className="text-sm">Sent {parsedAmount} {selectedToken} to {recipient}</p>
+            <a 
+              href={hashscanUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-primary hover:underline flex items-center gap-1"
+            >
+              View on HashScan <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>,
+          { duration: 8000 }
+        );
+
+        // Clear form
+        setRecipient("");
+        setAmount("");
+
+        // Invalidate queries to refresh balances
+        queryClient.invalidateQueries({ queryKey: ['wallet-balance'] });
+        queryClient.invalidateQueries({ queryKey: ['wallet-token-balances'] });
+        queryClient.invalidateQueries({ queryKey: ['wallet-transactions'] });
+      } else {
+        throw new Error(data?.error || 'Transfer failed');
+      }
+    } catch (error: any) {
+      console.error('Send error:', error);
+      toast.error(error.message || 'Failed to send tokens. Please try again.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const selectedTokenData = tokens.find((t) => t.symbol === selectedToken);
@@ -160,9 +221,14 @@ export default function SendTokens() {
               </div>
 
               {/* Send Button */}
-              <Button onClick={handleSend} className="w-full" size="lg">
+              <Button 
+                onClick={handleSend} 
+                className="w-full" 
+                size="lg"
+                disabled={isSending || !recipient || !amount}
+              >
                 <SendIcon className="mr-2 h-4 w-4" />
-                Send {selectedToken}
+                {isSending ? 'Sending...' : `Send ${selectedToken}`}
               </Button>
             </div>
           )}

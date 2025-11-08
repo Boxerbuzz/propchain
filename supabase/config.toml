@@ -1,4 +1,6 @@
 project_id = "zjtqptljuggbymcoovey"
+[functions.send-tokens]
+verify_jwt = true
 [functions.upload-to-hfs]
 verify_jwt = false
 [functions.paystack-webhook]
