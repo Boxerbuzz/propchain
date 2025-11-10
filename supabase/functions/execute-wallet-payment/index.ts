@@ -84,7 +84,7 @@ serve(async (req) => {
     // Initialize Hedera client
     const hederaClient = Client.forTestnet();
     const operatorId = AccountId.fromString(Deno.env.get('HEDERA_OPERATOR_ID') ?? '');
-    const operatorKey = PrivateKey.fromStringECDSA(Deno.env.get('HEDERA_OPERATOR_PRIVATE_KEY') ?? '');
+    const operatorKey = PrivateKey.fromString(Deno.env.get('HEDERA_OPERATOR_PRIVATE_KEY') ?? '');
     hederaClient.setOperator(operatorId, operatorKey);
 
     const userAccountId = AccountId.fromString(wallet.hedera_account_id);
@@ -118,7 +118,7 @@ serve(async (req) => {
     const treasuryAccountId = AccountId.fromString(Deno.env.get('HEDERA_OPERATOR_ID') ?? '');
 
     // Execute HBAR transfer from user to treasury using precise tinybars
-    const userPrivateKey = PrivateKey.fromStringECDSA(vaultData);
+    const userPrivateKey = PrivateKey.fromString(vaultData);
 
     console.log(`[WALLET-PAYMENT] Transferring ${hbarAmount.toFixed(8)} HBAR (${tinybarsRequired} tinybars) from ${userAccountId} to ${treasuryAccountId}`);
 
