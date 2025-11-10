@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "relett-invest",
     "source": ".",
     "ignore": [
       "firebase.json",
