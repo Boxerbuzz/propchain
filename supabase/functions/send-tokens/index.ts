@@ -128,9 +128,11 @@ serve(async (req) => {
 
     if (token_type === 'HBAR') {
       const hbarAmount = Hbar.from(amount, 'hbar');
-      const requiredBalance = hbarAmount.toTinybars() + 100000000; // Add 1 HBAR for fees
+      const hbarTinybars = Number(hbarAmount.toTinybars());
+      const feeTinybars = 100000000; // Add 1 HBAR for fees
+      const requiredBalance = hbarTinybars + feeTinybars;
 
-      if (accountBalance.hbars.toTinybars() < requiredBalance) {
+      if (Number(accountBalance.hbars.toTinybars()) < requiredBalance) {
         throw new Error(`Insufficient HBAR balance. Required: ${Hbar.fromTinybars(requiredBalance).toString()}, Available: ${accountBalance.hbars.toString()}`);
       }
 
