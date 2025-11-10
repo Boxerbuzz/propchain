@@ -6,8 +6,7 @@ import {
   TransferTransaction, 
   Hbar,
   AccountId,
-  AccountBalanceQuery,
-  TransactionId
+  AccountBalanceQuery
 } from "https://esm.sh/@hashgraph/sdk@2.73.2";
 
 const corsHeaders = {
@@ -123,14 +122,13 @@ serve(async (req) => {
 
     console.log(`[WALLET-PAYMENT] Transferring ${hbarAmount.toFixed(8)} HBAR (${tinybarsRequired} tinybars) from ${userAccountId} to ${treasuryAccountId}`);
 
-    // Create transfer transaction with user as the transaction payer
+    // Create transfer transaction (operator pays fees, user signs as sender)
     const transferTx = new TransferTransaction()
       .addHbarTransfer(userAccountId, Hbar.fromTinybars(-tinybarsRequired))
       .addHbarTransfer(treasuryAccountId, Hbar.fromTinybars(tinybarsRequired))
-      .setTransactionId(TransactionId.generate(userAccountId))
       .freezeWith(hederaClient);
 
-    // Sign with user's private key (user pays for the transaction)
+    // Sign with user's private key (authorizes the transfer from their account)
     const signedTx = await transferTx.sign(userPrivateKey);
     const txResponse = await signedTx.execute(hederaClient);
     const receipt = await txResponse.getReceipt(hederaClient);
