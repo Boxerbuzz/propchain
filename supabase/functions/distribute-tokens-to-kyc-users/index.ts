@@ -55,9 +55,9 @@ serve(async (req) => {
     const client = Client.forTestnet();
     client.setOperator(
       AccountId.fromString(operatorId),
-      PrivateKey.fromStringECDSA(operatorKey)
+      PrivateKey.fromString(operatorKey)
     );
-    const opPrivKey = PrivateKey.fromStringECDSA(operatorKey);
+    const opPrivKey = PrivateKey.fromString(operatorKey);
     const operatorAccountId = AccountId.fromString(operatorId);
     console.log(
       `[DISTRIBUTE-TOKENS] Starting token distribution for tokenization: ${tokenization_id}`
@@ -152,6 +152,24 @@ serve(async (req) => {
         `[DISTRIBUTE-TOKENS] Treasury has ${availableSupply} tokens available`
       );
 
+      // FIX 1.3: Get already successfully distributed investment IDs to avoid re-processing
+      console.log("[DISTRIBUTE-TOKENS] Checking for already distributed investments...");
+      const { data: successfulDistributions } = await supabase
+        .from("token_distribution_events")
+        .select("investment_id")
+        .eq("tokenization_id", tokenization_id)
+        .eq("status", "success");
+
+      const alreadyDistributedIds = new Set(
+        (successfulDistributions || []).map((d) => d.investment_id)
+      );
+
+      if (alreadyDistributedIds.size > 0) {
+        console.log(
+          `[DISTRIBUTE-TOKENS] Found ${alreadyDistributedIds.size} investments already distributed (idempotency check)`
+        );
+      }
+
       // Get all confirmed investments grouped by user
       let investmentsQuery = supabase
         .from("investments")
@@ -200,14 +218,23 @@ serve(async (req) => {
         throw new Error(investmentError.message);
       }
 
-      if (!investments || investments.length === 0) {
-        console.log("[DISTRIBUTE-TOKENS] No confirmed investments found");
+      // Filter out already distributed investments (idempotency)
+      const investmentsToProcess = (investments || []).filter(
+        (inv) => !alreadyDistributedIds.has(inv.id)
+      );
+
+      if (investmentsToProcess.length === 0) {
+        const skippedCount = (investments || []).length;
+        console.log(
+          `[DISTRIBUTE-TOKENS] No investments to process (${skippedCount} already distributed)`
+        );
         return new Response(
           JSON.stringify({
             success: true,
-            message: "No confirmed investments found for distribution",
+            message: "No new investments to distribute (all already processed)",
             distributed: 0,
-            skipped: 0,
+            skipped: skippedCount,
+            already_distributed: skippedCount,
           }),
           {
             status: 200,
@@ -215,6 +242,10 @@ serve(async (req) => {
           }
         );
       }
+
+      console.log(
+        `[DISTRIBUTE-TOKENS] Processing ${investmentsToProcess.length} investments (${alreadyDistributedIds.size} already distributed)`
+      );
 
       // Aggregate investments by user
       const userAggregates = new Map<
@@ -230,7 +261,7 @@ serve(async (req) => {
         }
       >();
 
-      for (const inv of investments) {
+      for (const inv of investmentsToProcess) {
         const userId = inv.investor_id;
         const user = inv.investor;
 
@@ -645,7 +676,8 @@ serve(async (req) => {
             `[DISTRIBUTE-TOKENS] Marking ${agg.investment_ids.length} investments as tokens_distributed`
           );
 
-          const { error: updateError } = await supabase
+          // FIX 1.2: Throw error if status update fails (prevents re-processing)
+          const { error: updateError, count: updatedCount } = await supabase
             .from("investments")
             .update({
               payment_status: "tokens_distributed",
@@ -657,23 +689,46 @@ serve(async (req) => {
 
           if (updateError) {
             console.error(
-              "[DISTRIBUTE-TOKENS] Failed to update investments:",
+              "[DISTRIBUTE-TOKENS] CRITICAL: Failed to update investments:",
               updateError
+            );
+            throw new Error(
+              `Failed to update investment statuses: ${updateError.message}. Investment IDs: ${agg.investment_ids.join(", ")}`
             );
           }
 
-          // Update token holdings
-          await supabase.from("token_holdings").upsert(
+          console.log(
+            `[DISTRIBUTE-TOKENS] Successfully updated ${agg.investment_ids.length} investment statuses`
+          );
+
+          // FIX 1.1: Use database function to correctly ADD to balance instead of replacing
+          const { error: holdingsError } = await supabase.rpc(
+            "upsert_token_holdings",
             {
-              user_id: userId,
-              tokenization_id,
-              property_id: tokenization.property_id,
-              balance: Number(agg.total_tokens_requested),
-              updated_at: new Date().toISOString(),
-            },
-            {
-              onConflict: "user_id,tokenization_id",
+              p_user_id: userId,
+              p_tokenization_id: tokenization_id,
+              p_property_id: tokenization.property_id,
+              p_token_id: tokenization.token_id,
+              p_tokens_to_add: Number(agg.total_tokens_requested),
+              p_amount_invested: agg.investments.reduce(
+                (sum, inv) => sum + Number(inv.amount_ngn),
+                0
+              ),
             }
+          );
+
+          if (holdingsError) {
+            console.error(
+              "[DISTRIBUTE-TOKENS] CRITICAL: Failed to update token holdings:",
+              holdingsError
+            );
+            throw new Error(
+              `Failed to update token holdings: ${holdingsError.message}. User: ${userId}`
+            );
+          }
+
+          console.log(
+            `[DISTRIBUTE-TOKENS] Successfully updated token holdings for user ${userId}`
           );
 
           // Log activity
