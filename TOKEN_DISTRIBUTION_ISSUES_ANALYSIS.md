@@ -1,14 +1,17 @@
 # Token Distribution Issues - Investigation Report
 
 ## Summary
+
 Investigation into why some investors don't receive tokens while others receive tokens multiple times during token distribution.
 
 ## Critical Issues Found
 
 ### 1. **CRITICAL: Token Holdings Balance Replacement Instead of Addition**
+
 **Location:** `supabase/functions/distribute-tokens-to-kyc-users/index.ts:666-677`
 
 **Problem:**
+
 ```typescript
 await supabase.from("token_holdings").upsert(
   {
@@ -25,26 +28,31 @@ await supabase.from("token_holdings").upsert(
 ```
 
 **Impact:**
+
 - If a user has existing tokens (e.g., 100 tokens from a previous investment), and receives 50 more tokens, the database will show 50 tokens instead of 150.
 - This causes **under-counting** in the database, even though the on-chain balance might be correct.
 - Affects dividend distributions, voting power calculations, and portfolio tracking.
 
 **Expected Behavior:**
 There's a database function `upsert_token_holdings` in `migration/db-functions.sql:404-444` that correctly adds to balance:
+
 ```sql
 ON CONFLICT (user_id, tokenization_id)
 DO UPDATE SET
   balance = token_holdings.balance + p_tokens_to_add, -- ✅ Correctly adds
   ...
 ```
+
 But the distribution function is NOT using this - it's doing a direct upsert which replaces the balance.
 
 ---
 
 ### 2. **Race Condition: Multiple Concurrent Distributions**
+
 **Location:** `supabase/functions/distribute-tokens-to-kyc-users/index.ts:648-656`
 
 **Problem:**
+
 ```typescript
 const { error: updateError } = await supabase
   .from("investments")
@@ -57,6 +65,7 @@ const { error: updateError } = await supabase
 ```
 
 **Impact:**
+
 - If two distribution processes run concurrently (or close together), both could see investments with `payment_status = 'confirmed'`.
 - Both processes could:
   1. Query the same investments (line 176: `.eq("payment_status", "confirmed")`)
@@ -65,6 +74,7 @@ const { error: updateError } = await supabase
   4. Both try to update status, but the second one won't update anything (no rows match after first update)
 
 **Scenario:**
+
 1. Distribution A starts, queries investments with status 'confirmed'
 2. Distribution B starts (before A finishes), also queries investments with status 'confirmed'
 3. Both see the same investments
@@ -73,6 +83,7 @@ const { error: updateError } = await supabase
 6. Distribution B tries to update, but finds no rows (status already changed) → Updates nothing
 
 **Mitigation Attempt:**
+
 - There's a lock mechanism (lines 66-108), but:
   - Lock expires after 10 minutes
   - If lock acquisition fails, it deletes and retries (line 99-107), which could allow concurrent runs
@@ -81,9 +92,11 @@ const { error: updateError } = await supabase
 ---
 
 ### 3. **Incorrect Token Amount Calculation for Users with Existing Holdings**
+
 **Location:** `supabase/functions/distribute-tokens-to-kyc-users/index.ts:521-525`
 
 **Problem:**
+
 ```typescript
 // Calculate tokens to transfer (idempotent: only send the delta)
 const tokensToTransfer =
@@ -93,14 +106,18 @@ const tokensToTransfer =
 ```
 
 **Issue:**
+
 - `agg.total_tokens_requested` (line 254) is calculated from ALL confirmed investments for the user:
+
   ```typescript
   agg.total_tokens_requested += BigInt(inv.tokens_requested);
   ```
+
 - But the query (line 176) only gets investments with `payment_status = 'confirmed'`
 - If an investment was already distributed (status = 'tokens_distributed') but the on-chain balance doesn't reflect it yet (e.g., transaction pending), the calculation could be wrong.
 
 **Scenario:**
+
 1. User has Investment #1: 100 tokens (status: 'confirmed')
 2. Distribution runs, transfers 100 tokens, updates status to 'tokens_distributed'
 3. User makes Investment #2: 50 tokens (status: 'confirmed')
@@ -111,6 +128,7 @@ const tokensToTransfer =
    - `tokensToTransfer = 0` (50 < 100) → **No tokens transferred!**
 
 **However**, if Investment #1's status update failed (database error), both investments would be in the query:
+
 - `agg.total_tokens_requested = 150` (100 + 50)
 - `currentBalance = 100` (on-chain)
 - `tokensToTransfer = 50` → Correct amount, but Investment #1's status might not get updated properly
@@ -118,16 +136,20 @@ const tokensToTransfer =
 ---
 
 ### 4. **Multiple Distribution Triggers for Same Investment**
-**Location:** 
+
+**Location:**
+
 - `supabase/functions/process-investment-completion/index.ts:230-237`
 - `supabase/functions/paystack-webhook/index.ts:67-70`
 
 **Problem:**
+
 - When an investment payment is confirmed, `process-investment-completion` is triggered
 - This function then triggers `distribute-tokens-to-kyc-users` for that specific user (line 230-237)
 - If the webhook is called multiple times (Paystack retries, manual triggers), or if `process-investment-completion` is called multiple times, distribution could be triggered multiple times for the same investment.
 
 **Impact:**
+
 - If the status update (line 648-656) fails or is delayed, the investment remains with status 'confirmed'
 - Subsequent triggers would see it as needing distribution again
 - Could lead to multiple token transfers
@@ -135,14 +157,17 @@ const tokensToTransfer =
 ---
 
 ### 5. **Reconciliation Function Could Cause Duplicate Distributions**
+
 **Location:** `supabase/functions/reconcile-token-distributions/index.ts:141-146`
 
 **Problem:**
+
 - The reconciliation function queries investments with `payment_status = 'confirmed'` (line 73)
 - It then triggers distribution for users with shortfalls
 - If reconciliation runs while a regular distribution is in progress, both could process the same investments
 
 **Scenario:**
+
 1. Regular distribution starts, queries confirmed investments
 2. Reconciliation runs simultaneously, also queries confirmed investments
 3. Both see the same investments
@@ -151,9 +176,11 @@ const tokensToTransfer =
 ---
 
 ### 6. **Status Update Failure Doesn't Prevent Re-processing**
+
 **Location:** `supabase/functions/distribute-tokens-to-kyc-users/index.ts:648-663`
 
 **Problem:**
+
 ```typescript
 const { error: updateError } = await supabase
   .from("investments")
@@ -168,6 +195,7 @@ if (updateError) {
 ```
 
 **Impact:**
+
 - If the status update fails (database error, constraint violation, etc.), the investment remains with status 'confirmed'
 - Tokens were already transferred on-chain
 - Next distribution run will see this investment again and try to distribute again
@@ -176,14 +204,17 @@ if (updateError) {
 ---
 
 ### 7. **Investment Aggregation Doesn't Account for Already Distributed Investments**
+
 **Location:** `supabase/functions/distribute-tokens-to-kyc-users/index.ts:233-257`
 
 **Problem:**
+
 - The aggregation (line 254) adds up tokens from ALL investments in the query result
 - The query (line 176) only gets investments with `payment_status = 'confirmed'`
 - However, if an investment was partially processed (tokens transferred but status not updated), it could be counted multiple times
 
 **Better Approach:**
+
 - Should exclude investments that have successful distribution events in `token_distribution_events`
 - Or use a more robust status check that considers distribution events
 
@@ -192,6 +223,7 @@ if (updateError) {
 ## Recommended Fixes
 
 ### Fix 1: Use Database Function for Token Holdings Update
+
 Replace the direct upsert with a call to the database function that correctly adds to balance:
 
 ```typescript
@@ -207,6 +239,7 @@ await supabase.rpc('upsert_token_holdings', {
 ```
 
 ### Fix 2: Add Transaction/Atomic Status Update
+
 Use a database transaction or check distribution events before updating:
 
 ```typescript
@@ -230,11 +263,13 @@ if (toUpdate.length > 0) {
 ```
 
 ### Fix 3: Improve Lock Mechanism
+
 - Use database-level locks (SELECT FOR UPDATE) instead of application-level locks
 - Add retry logic with exponential backoff
 - Ensure lock is held for the entire distribution process
 
 ### Fix 4: Idempotency Check Before Distribution
+
 Check distribution events before processing:
 
 ```typescript
@@ -251,6 +286,7 @@ const pendingInvestments = investments.filter(inv => !distributedIds.has(inv.id)
 ```
 
 ### Fix 5: Calculate Expected Balance from Database
+
 Instead of relying solely on on-chain balance, also check what the database says the user should have:
 
 ```typescript
@@ -269,6 +305,7 @@ const expectedBalanceFromInvestments = Number(agg.total_tokens_requested);
 ```
 
 ### Fix 6: Add Distribution Event Before Token Transfer
+
 Log the distribution event BEFORE transferring tokens, so if the transfer fails, we can track it:
 
 ```typescript
@@ -320,10 +357,10 @@ await supabase.from("token_distribution_events").insert({
 ## Conclusion
 
 The main issues are:
+
 1. **Token holdings balance is replaced instead of added** (Critical - affects all users with multiple investments)
 2. **Race conditions allow concurrent distributions** (High - causes duplicate distributions)
 3. **Status update failures allow re-processing** (High - causes duplicate distributions)
 4. **Multiple triggers for same investment** (Medium - depends on webhook behavior)
 
 The most critical fix is #1 (token holdings balance), as it affects database consistency and all downstream calculations (dividends, voting, portfolio).
-
