@@ -19,8 +19,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let requestBody: any;
+  
   try {
-    const { investment_id, user_id, amount_ngn } = await req.json();
+    requestBody = await req.json();
+    const { investment_id, user_id, amount_ngn } = requestBody;
 
     if (!investment_id || !user_id || !amount_ngn) {
       return new Response(
@@ -81,7 +84,7 @@ serve(async (req) => {
     // Initialize Hedera client
     const hederaClient = Client.forTestnet();
     const operatorId = AccountId.fromString(Deno.env.get('HEDERA_OPERATOR_ID') ?? '');
-    const operatorKey = PrivateKey.fromStringECDSA(Deno.env.get('HEDERA_OPERATOR_PRIVATE_KEY') ?? '');
+    const operatorKey = PrivateKey.fromString(Deno.env.get('HEDERA_OPERATOR_PRIVATE_KEY') ?? '');
     hederaClient.setOperator(operatorId, operatorKey);
 
     const userAccountId = AccountId.fromString(wallet.hedera_account_id);
@@ -115,15 +118,17 @@ serve(async (req) => {
     const treasuryAccountId = AccountId.fromString(Deno.env.get('HEDERA_OPERATOR_ID') ?? '');
 
     // Execute HBAR transfer from user to treasury using precise tinybars
-    const userPrivateKey = PrivateKey.fromStringECDSA(vaultData);
+    const userPrivateKey = PrivateKey.fromString(vaultData);
 
     console.log(`[WALLET-PAYMENT] Transferring ${hbarAmount.toFixed(8)} HBAR (${tinybarsRequired} tinybars) from ${userAccountId} to ${treasuryAccountId}`);
 
-    const transferTx = await new TransferTransaction()
+    // Create transfer transaction (operator pays fees, user signs as sender)
+    const transferTx = new TransferTransaction()
       .addHbarTransfer(userAccountId, Hbar.fromTinybars(-tinybarsRequired))
       .addHbarTransfer(treasuryAccountId, Hbar.fromTinybars(tinybarsRequired))
       .freezeWith(hederaClient);
 
+    // Sign with user's private key (authorizes the transfer from their account)
     const signedTx = await transferTx.sign(userPrivateKey);
     const txResponse = await signedTx.execute(hederaClient);
     const receipt = await txResponse.getReceipt(hederaClient);
@@ -217,8 +222,7 @@ serve(async (req) => {
     
     // Log detailed error for reconciliation
     try {
-      const body = await req.clone().json();
-      const { investment_id, user_id, amount_ngn } = body;
+      const { investment_id, user_id, amount_ngn } = requestBody || {};
       
       if (investment_id && user_id) {
         const supabaseClient = createClient(

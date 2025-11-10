@@ -111,10 +111,10 @@ serve(async (req) => {
     }
 
     const client = Client.forTestnet();
-    client.setOperator(operatorId, PrivateKey.fromStringECDSA(operatorKey));
+    client.setOperator(operatorId, PrivateKey.fromString(operatorKey));
 
     const senderAccountId = AccountId.fromString(wallet.hedera_account_id);
-    const senderPrivateKey = PrivateKey.fromStringECDSA(vaultData);
+    const senderPrivateKey = PrivateKey.fromString(vaultData);
 
     // Check balance before sending
     const balanceQuery = new AccountBalanceQuery()
@@ -127,12 +127,17 @@ serve(async (req) => {
     let transaction = new TransferTransaction();
 
     if (token_type === 'HBAR') {
-      const hbarAmount = Hbar.from(amount, 'hbar');
-      const requiredBalance = hbarAmount.toTinybars() + 100000000; // Add 1 HBAR for fees
+      // Convert amount to tinybars as integer to avoid decimal issues
+      const hbarTinybars = Math.round(Number(amount) * 100_000_000);
+      const feeTinybars = 100_000_000; // 1 HBAR for fees
+      const requiredBalance = hbarTinybars + feeTinybars;
 
-      if (accountBalance.hbars.toTinybars() < requiredBalance) {
-        throw new Error(`Insufficient HBAR balance. Required: ${Hbar.fromTinybars(requiredBalance).toString()}, Available: ${accountBalance.hbars.toString()}`);
+      if (Number(accountBalance.hbars.toTinybars()) < requiredBalance) {
+        const requiredHbar = requiredBalance / 100_000_000;
+        throw new Error(`Insufficient HBAR balance. Required: ${requiredHbar.toFixed(8)} ℏ, Available: ${accountBalance.hbars.toString()}`);
       }
+
+      const hbarAmount = Hbar.fromTinybars(hbarTinybars);
 
       transaction = transaction
         .addHbarTransfer(senderAccountId, hbarAmount.negated())
