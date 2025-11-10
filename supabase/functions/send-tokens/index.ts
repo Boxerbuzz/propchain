@@ -111,10 +111,10 @@ serve(async (req) => {
     }
 
     const client = Client.forTestnet();
-    client.setOperator(operatorId, PrivateKey.fromStringECDSA(operatorKey));
+    client.setOperator(operatorId, PrivateKey.fromString(operatorKey));
 
     const senderAccountId = AccountId.fromString(wallet.hedera_account_id);
-    const senderPrivateKey = PrivateKey.fromStringECDSA(vaultData);
+    const senderPrivateKey = PrivateKey.fromString(vaultData);
 
     // Check balance before sending
     const balanceQuery = new AccountBalanceQuery()
