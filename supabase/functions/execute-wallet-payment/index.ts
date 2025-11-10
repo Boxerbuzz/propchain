@@ -6,7 +6,8 @@ import {
   TransferTransaction, 
   Hbar,
   AccountId,
-  AccountBalanceQuery
+  AccountBalanceQuery,
+  TransactionId
 } from "https://esm.sh/@hashgraph/sdk@2.73.2";
 
 const corsHeaders = {
@@ -19,8 +20,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let requestBody: any;
+  
   try {
-    const { investment_id, user_id, amount_ngn } = await req.json();
+    requestBody = await req.json();
+    const { investment_id, user_id, amount_ngn } = requestBody;
 
     if (!investment_id || !user_id || !amount_ngn) {
       return new Response(
@@ -119,11 +123,14 @@ serve(async (req) => {
 
     console.log(`[WALLET-PAYMENT] Transferring ${hbarAmount.toFixed(8)} HBAR (${tinybarsRequired} tinybars) from ${userAccountId} to ${treasuryAccountId}`);
 
-    const transferTx = await new TransferTransaction()
+    // Create transfer transaction with user as the transaction payer
+    const transferTx = new TransferTransaction()
       .addHbarTransfer(userAccountId, Hbar.fromTinybars(-tinybarsRequired))
       .addHbarTransfer(treasuryAccountId, Hbar.fromTinybars(tinybarsRequired))
+      .setTransactionId(TransactionId.generate(userAccountId))
       .freezeWith(hederaClient);
 
+    // Sign with user's private key (user pays for the transaction)
     const signedTx = await transferTx.sign(userPrivateKey);
     const txResponse = await signedTx.execute(hederaClient);
     const receipt = await txResponse.getReceipt(hederaClient);
@@ -217,8 +224,7 @@ serve(async (req) => {
     
     // Log detailed error for reconciliation
     try {
-      const body = await req.clone().json();
-      const { investment_id, user_id, amount_ngn } = body;
+      const { investment_id, user_id, amount_ngn } = requestBody || {};
       
       if (investment_id && user_id) {
         const supabaseClient = createClient(
