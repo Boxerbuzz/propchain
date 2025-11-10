@@ -25,13 +25,11 @@ import {
   RocketLaunchIcon,
   ScalesIcon,
   ShieldCheckIcon,
-  StackIcon,
   TargetIcon,
   SunHorizonIcon,
   TrendUpIcon,
   UsersIcon,
   UsersThreeIcon,
-  WhatsappLogoIcon,
   LinkedinLogoIcon,
   TwitterLogoIcon,
 } from "@phosphor-icons/react";
@@ -131,12 +129,29 @@ const PitchDeck = () => {
       socials: [
         {
           icon: LinkedinLogoIcon,
-          href: "https://linkedin.com",
+          href: "https://linkedin.com/in/timothyofie",
           label: "LinkedIn",
         },
         {
           icon: TwitterLogoIcon,
-          href: "https://twitter.com",
+          href: "https://twitter.com/boxerbuzz",
+          label: "Twitter",
+        },
+      ],
+    },
+    {
+      name: "James Olasehinde",
+      role: "COO",
+      bio: "Real estate expert with over 10 years of experience in the industry.",
+      socials: [
+        {
+          icon: LinkedinLogoIcon,
+          href: "https://linkedin.com/in/jamesolasehinde",
+          label: "LinkedIn",
+        },
+        {
+          icon: TwitterLogoIcon,
+          href: "https://twitter.com/jamesolasehinde",
           label: "Twitter",
         },
       ],
@@ -145,8 +160,9 @@ const PitchDeck = () => {
 
   const advisors = [
     "Dr. Roland Igbinoba – Founder, PropCrowdy",
-    "Olumide Soyombo – VC & Crowdfunding Association Chair",
-    "ChainSecure Inc. – Smart Contract Auditors",
+    "Ebuka Arinze – CPO, Kredete.",
+    "Olaoluwa Olaniyi – CEO, ChainSecure Inc.",
+    "Bright Ekhorutomwen – Head finicial transactions, First Bank of Nigeria",
   ];
 
   const roadmap = [
@@ -379,29 +395,32 @@ const PitchDeck = () => {
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-3 text-sm text-muted-foreground">
               <p>
-                Q4 2025 web MVP delivers fractional purchases, escrow-backed
-                transactions, and PropChain custody wallets.
+                Q4 2025 web MVP launches fractional purchase flows,
+                escrow-backed transactions, and PropChain custody wallets built
+                on Hedera.
               </p>
               <p>
-                1,200+ users and ₦80M transacted across pilot properties — Lekki
-                Apartments (₦50M, 100% funded, 180 investors) and Abuja Retail
-                Space (₦30M, 80% funded).
+                Early pilot program onboarding 50+ waitlisted users and ₦10M+ in
+                committed interests across two verified properties — Lekki
+                Apartments (₦5M tranche) and Abuja Retail Units (₦5M tranche).
               </p>
               <p className="font-medium text-foreground">Pilot properties:</p>
               <ul className="space-y-2">
                 <li>
-                  • Lekki Apartments — 10–12% rental yield already distributed.
+                  • Lekki Apartments — verified by registered surveyor; first
+                  test of fractional purchase contracts.
                 </li>
                 <li>
-                  • Abuja Retail Space — onboarding investors with escrow
-                  protection.
+                  • Abuja Retail Units — active investor onboarding with escrow
+                  protection and governance demo.
                 </li>
               </ul>
               <p>
-                SEC-aligned SPV/Trust structure, governance boards, and
-                real-time dashboards keep investors informed.
+                SEC-aligned SPV/Trust structure and real-time investor dashboard
+                in development to ensure transparency from day one.
               </p>
             </div>
+
             <Card className="border-dashed bg-muted/20">
               <CardContent className="space-y-3 p-6 text-sm">
                 <div className="flex items-center gap-2 text-lg font-semibold">
@@ -410,12 +429,12 @@ const PitchDeck = () => {
                     weight="fill"
                     className="text-primary"
                   />
-                  1,200+ users, 25% active investors
+                  150+ early users, 40% onboarding to invest
                 </div>
                 <Separator />
                 <div className="flex items-center gap-2 text-lg font-semibold">
                   <CoinsIcon size={22} weight="fill" className="text-primary" />
-                  ₦80M raised across pilot properties
+                  ₦10M+ committed across pilot properties
                 </div>
                 <Separator />
                 <div className="flex items-center gap-2 text-lg font-semibold">
@@ -424,7 +443,8 @@ const PitchDeck = () => {
                     weight="fill"
                     className="text-primary"
                   />
-                  30% repeat investments — strong product-market fit
+                  Growing waitlist & early repeat interest — strong validation
+                  signals
                 </div>
               </CardContent>
             </Card>
@@ -684,8 +704,8 @@ const PitchDeck = () => {
               <div className="rounded-lg border border-border/60 bg-card/40 p-4">
                 <p className="font-semibold text-foreground">SAM</p>
                 <p className="mt-1 text-sm">
-                  Urban fractional investment opportunity across Lagos/Abuja/PH +
-                  diaspora inflows ($12.5B).
+                  Urban fractional investment opportunity across Lagos/Abuja/PH
+                  + diaspora inflows ($12.5B).
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-card/40 p-4">
@@ -896,21 +916,30 @@ const PitchDeck = () => {
         <Section
           icon={ChartLineIcon}
           title="Traction"
-          subtitle="Validated MVP traction"
+          subtitle="Early validation & pilot onboarding"
         >
           <div className="grid gap-6 md:grid-cols-2">
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• 1,200+ users with 25% conversion to investors.</li>
               <li>
-                • ₦80M transacted across pilot projects; ₦1.2M in early fees.
+                • 150+ early users on waitlist; ~40% started KYC/onboarding.
               </li>
-              <li>• 30% repeat investments indicate stickiness.</li>
-              <li>• ₦200M pipeline via ABC Developers partnership.</li>
               <li>
-                • Selected for Lagos PropTech Incubator 2025 ($20K grant).
+                • ₦10M+ in soft commitments / escrow-intent across two pilots.
               </li>
-              <li>• Average rental yield to investors: 10–12%.</li>
+              <li>• ~20% repeat-intent (survey + second-commit signals).</li>
+              <li>
+                • Active discussions with 2 developers; initial pilot pipeline
+                forming.
+              </li>
+              <li>
+                • SEC-aligned SPV/Trust structure drafted; governance demo in
+                progress.
+              </li>
+              <li>
+                • Target rental yield 8–12% based on comps (not yet realized).
+              </li>
             </ul>
+
             <Card className="border border-border/60 bg-card/40">
               <CardContent className="space-y-3 p-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2 text-base font-semibold text-foreground">
@@ -919,16 +948,14 @@ const PitchDeck = () => {
                     weight="fill"
                     className="text-primary"
                   />
-                  MVP launched with real tenants and payout history
+                  MVP in pilot; investor dashboard alpha live
                 </div>
                 <p>
-                  Users manage holdings via dashboards, receive rent
-                  distributions, and access audited documents.
+                  Users can create wallets, review verified property docs, and
+                  indicate commitments; escrow-backed flows are enabled for
+                  pilot cohorts.
                 </p>
-                <p className="text-xs italic text-primary">
-                  “I never thought ₦50k could make me a landlord. PropChain made
-                  it possible.” – Olamide, 27, Lagos
-                </p>
+
                 <div className="h-56">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart
@@ -954,7 +981,7 @@ const PitchDeck = () => {
                         tick={{ fontSize: 12 }}
                         tickFormatter={(value) => `₦${value}M`}
                         label={{
-                          value: "Investments (₦M)",
+                          value: "Commitments (₦M)",
                           angle: 90,
                           position: "insideRight",
                           offset: -4,
@@ -972,7 +999,7 @@ const PitchDeck = () => {
                         yAxisId="right"
                         type="monotone"
                         dataKey="investments"
-                        name="Investments"
+                        name="Commitments"
                         fill="#22c55e40"
                         stroke="#22c55e"
                         strokeWidth={2}
@@ -1101,7 +1128,10 @@ const PitchDeck = () => {
                         height={36}
                         iconType="circle"
                         iconSize={10}
-                        wrapperStyle={{ fontSize: "12px", paddingBottom: "8px" }}
+                        wrapperStyle={{
+                          fontSize: "12px",
+                          paddingBottom: "8px",
+                        }}
                       />
                       <Bar
                         yAxisId="investments"
@@ -1205,7 +1235,7 @@ const PitchDeck = () => {
           title="Team"
           subtitle="Local insight, technical depth, proven execution"
         >
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 mb-3">
             {team.map((member) => (
               <Card key={member.name} className="border-border/50 bg-card/40">
                 <CardContent className="space-y-3 p-6">
