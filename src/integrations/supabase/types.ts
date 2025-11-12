@@ -2479,6 +2479,7 @@ export type Database = {
           investment_window_end: string
           investment_window_start: string
           investor_count: number | null
+          last_distribution_at: string | null
           loan_term_months: number | null
           ltv_ratio: number | null
           management_fee_percentage: number | null
@@ -2541,6 +2542,7 @@ export type Database = {
           investment_window_end: string
           investment_window_start: string
           investor_count?: number | null
+          last_distribution_at?: string | null
           loan_term_months?: number | null
           ltv_ratio?: number | null
           management_fee_percentage?: number | null
@@ -2603,6 +2605,7 @@ export type Database = {
           investment_window_end?: string
           investment_window_start?: string
           investor_count?: number | null
+          last_distribution_at?: string | null
           loan_term_months?: number | null
           ltv_ratio?: number | null
           management_fee_percentage?: number | null
@@ -3186,6 +3189,10 @@ export type Database = {
           is_current: boolean
           version: number
         }[]
+      }
+      get_investments_for_distribution: {
+        Args: { p_target_user_ids?: string[]; p_tokenization_id: string }
+        Returns: string[]
       }
       get_user_voting_power: {
         Args: { p_property_id: string; p_user_id: string }

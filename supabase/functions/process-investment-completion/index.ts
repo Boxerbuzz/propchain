@@ -225,16 +225,53 @@ serve(async (req) => {
       console.log("[PROCESS-COMPLETION] Documents generated:", documentsResult);
     }
 
-    // Step 7: Trigger token distribution for this investor
-    console.log("[PROCESS-COMPLETION] Triggering token distribution");
-    await supabase.functions.invoke('distribute-tokens-to-kyc-users', {
-      body: {
-        tokenization_id: investment.tokenization_id,
-        target_user_ids: [investment.investor_id]
+    // Step 7: Trigger token distribution for this investor (with cooldown check)
+    console.log("[PROCESS-COMPLETION] Checking distribution cooldown");
+    
+    // FIX 2.3: Check cooldown before triggering distribution
+    const { data: tokenizationData } = await supabase
+      .from('tokenizations')
+      .select('last_distribution_at')
+      .eq('id', investment.tokenization_id)
+      .single();
+
+    const COOLDOWN_SECONDS = 30; // 30 second cooldown for individual investments
+    const now = new Date();
+    const lastDistribution = tokenizationData?.last_distribution_at 
+      ? new Date(tokenizationData.last_distribution_at)
+      : null;
+
+    let distributionTriggered = false;
+    
+    if (lastDistribution) {
+      const secondsSinceLastDistribution = 
+        (now.getTime() - lastDistribution.getTime()) / 1000;
+      
+      if (secondsSinceLastDistribution < COOLDOWN_SECONDS) {
+        const waitSeconds = Math.ceil(COOLDOWN_SECONDS - secondsSinceLastDistribution);
+        console.log(
+          `[PROCESS-COMPLETION] Skipping distribution trigger - last ran ${secondsSinceLastDistribution.toFixed(1)}s ago. Cooldown: ${waitSeconds}s remaining`
+        );
+      } else {
+        distributionTriggered = true;
       }
-    }).catch(err => {
-      console.error("[PROCESS-COMPLETION] Failed to trigger distribution:", err);
-    });
+    } else {
+      distributionTriggered = true;
+    }
+
+    if (distributionTriggered) {
+      console.log("[PROCESS-COMPLETION] Triggering token distribution");
+      await supabase.functions.invoke('distribute-tokens-to-kyc-users', {
+        body: {
+          tokenization_id: investment.tokenization_id,
+          target_user_ids: [investment.investor_id]
+        }
+      }).catch(err => {
+        console.error("[PROCESS-COMPLETION] Failed to trigger distribution:", err);
+      });
+    } else {
+      console.log("[PROCESS-COMPLETION] Distribution will be handled by scheduled job due to cooldown");
+    }
 
     // Step 8: Create success notification
     console.log("[PROCESS-COMPLETION] Creating success notification");

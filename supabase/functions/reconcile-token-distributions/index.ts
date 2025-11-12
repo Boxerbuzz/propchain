@@ -135,6 +135,42 @@ serve(async (req) => {
       if (usersNeedingDistribution.length > 0) {
         console.log(`[RECONCILE] Found ${usersNeedingDistribution.length} users with shortfalls for ${tokenization.token_symbol}`);
         
+        // FIX 2.2: Check cooldown period before triggering distribution
+        // Get tokenization to check last distribution time
+        const { data: tokenizationData } = await supabase
+          .from('tokenizations')
+          .select('last_distribution_at')
+          .eq('id', tokenization.id)
+          .single();
+
+        const COOLDOWN_MINUTES = 5; // 5 minute cooldown between distributions
+        const now = new Date();
+        const lastDistribution = tokenizationData?.last_distribution_at 
+          ? new Date(tokenizationData.last_distribution_at)
+          : null;
+
+        if (lastDistribution) {
+          const minutesSinceLastDistribution = 
+            (now.getTime() - lastDistribution.getTime()) / (1000 * 60);
+          
+          if (minutesSinceLastDistribution < COOLDOWN_MINUTES) {
+            const waitMinutes = Math.ceil(COOLDOWN_MINUTES - minutesSinceLastDistribution);
+            console.log(
+              `[RECONCILE] Skipping ${tokenization.token_symbol} - distribution ran ${minutesSinceLastDistribution.toFixed(1)} minutes ago. Cooldown: ${waitMinutes} minutes remaining`
+            );
+            
+            reconciliationResults.push({
+              tokenization_id: tokenization.id,
+              token_symbol: tokenization.token_symbol,
+              users_with_shortfall: usersNeedingDistribution.length,
+              distribution_triggered: false,
+              cooldown_remaining_minutes: waitMinutes,
+              message: 'Skipped due to cooldown period'
+            });
+            continue;
+          }
+        }
+        
         // Trigger distribution for these users
         const userIds = usersNeedingDistribution.map(u => u.user_id);
         
