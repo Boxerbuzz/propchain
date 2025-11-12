@@ -327,7 +327,7 @@ export default function Landing() {
         <div className="container mx-auto px-4 relative">
           <div className="max-w-6xl mx-auto text-center">
             <Badge
-              className="mb-6 text-sm px-5 py-2 bg-primary/10 hover:bg-primary/20 border-primary/20"
+              className="mb-6 text-sm px-5 py-1 bg-primary/10 hover:bg-primary/20 border-primary/20"
               variant="outline"
             >
               <Sparkles className="w-3.5 h-3.5 mr-2 inline" />

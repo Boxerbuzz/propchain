@@ -164,6 +164,9 @@ export default function Dashboard() {
     );
   }
 
+
+  console.log(selectedActivity?.type, investmentDetail);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -610,9 +613,9 @@ export default function Dashboard() {
           </SheetHeader>
 
           {selectedActivity && (
-            <div className="mt-6 space-y-4">
+            <div className="mt-1 space-y-4">
               {/* Activity Icon and Title */}
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 p-3">
                 {getActivityIconWithCircle(
                   selectedActivity.type,
                   selectedActivity.status
@@ -628,7 +631,7 @@ export default function Dashboard() {
               </div>
 
               {/* Basic Info */}
-              <div className="space-y-3 pt-4 border-t">
+              <div className="space-y-3 pt-4 border-t p-3">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Status</span>
                   {renderStatusBadge(selectedActivity.status)}
