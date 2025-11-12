@@ -63,49 +63,60 @@ serve(async (req) => {
       `[DISTRIBUTE-TOKENS] Starting token distribution for tokenization: ${tokenization_id}`
     );
 
-    // Try to acquire distribution lock
-    const lockId = `dist-${tokenization_id}-${Date.now()}`;
-    const { error: lockError } = await supabase
-      .from("token_distribution_locks")
-      .insert({
-        tokenization_id,
-        locked_by: lockId,
-        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 min
-      });
+    // FIX 2.1: Use PostgreSQL advisory lock (database-level, more reliable)
+    // Advisory lock using tokenization_id hash as lock ID
+    const lockKey = Math.abs(
+      tokenization_id
+        .split("")
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    );
+    console.log(`[DISTRIBUTE-TOKENS] Attempting to acquire advisory lock with key: ${lockKey}`);
 
-    if (lockError) {
-      // Check if lock exists and is not expired
-      const { data: existingLock } = await supabase
-        .from("token_distribution_locks")
-        .select("*")
-        .eq("tokenization_id", tokenization_id)
-        .single();
+    // Try to acquire lock with timeout (30 seconds max wait with exponential backoff)
+    let lockAcquired = false;
+    let retryCount = 0;
+    const maxRetries = 5;
+    
+    while (!lockAcquired && retryCount < maxRetries) {
+      const { data: lockResult, error: lockError } = await supabase.rpc(
+        "pg_try_advisory_lock",
+        { lock_id: lockKey }
+      );
 
-      if (existingLock && new Date(existingLock.expires_at) > new Date()) {
-        console.log("[DISTRIBUTE-TOKENS] Distribution already in progress");
-        return new Response(
-          JSON.stringify({
-            error: "Distribution already in progress",
-            locked_by: existingLock.locked_by,
-          }),
-          {
-            status: 409,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+      if (lockError) {
+        console.error("[DISTRIBUTE-TOKENS] Lock acquisition error:", lockError);
+        throw new Error(`Failed to acquire lock: ${lockError.message}`);
       }
 
-      // Lock expired, delete and retry
-      await supabase
-        .from("token_distribution_locks")
-        .delete()
-        .eq("tokenization_id", tokenization_id);
-      await supabase.from("token_distribution_locks").insert({
-        tokenization_id,
-        locked_by: lockId,
-        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-      });
+      lockAcquired = lockResult;
+
+      if (!lockAcquired) {
+        const waitTime = Math.min(1000 * Math.pow(2, retryCount), 10000); // Exponential backoff, max 10s
+        console.log(
+          `[DISTRIBUTE-TOKENS] Lock not available, waiting ${waitTime}ms (attempt ${retryCount + 1}/${maxRetries})`
+        );
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+        retryCount++;
+      }
     }
+
+    if (!lockAcquired) {
+      console.log(
+        "[DISTRIBUTE-TOKENS] Could not acquire lock after retries - distribution already in progress"
+      );
+      return new Response(
+        JSON.stringify({
+          error: "Distribution already in progress, please try again later",
+          retries: retryCount,
+        }),
+        {
+          status: 409,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    console.log("[DISTRIBUTE-TOKENS] Advisory lock acquired successfully");
 
     try {
       // Get tokenization details
@@ -170,7 +181,39 @@ serve(async (req) => {
         );
       }
 
-      // Get all confirmed investments grouped by user
+      // FIX 2.1: Get all confirmed investments using SELECT FOR UPDATE SKIP LOCKED
+      // This prevents race conditions by locking rows and skipping already locked ones
+      console.log("[DISTRIBUTE-TOKENS] Selecting investments with row-level locks");
+      
+      // First, get the investment IDs with locking to prevent concurrent processing
+      const { data: lockedInvestmentIds, error: lockQueryError } = await supabase
+        .rpc("get_investments_for_distribution", {
+          p_tokenization_id: tokenization_id,
+          p_target_user_ids: target_user_ids || null
+        });
+
+      if (lockQueryError) {
+        console.error("[DISTRIBUTE-TOKENS] Failed to lock investments:", lockQueryError);
+        throw new Error(`Failed to lock investments: ${lockQueryError.message}`);
+      }
+
+      if (!lockedInvestmentIds || lockedInvestmentIds.length === 0) {
+        console.log("[DISTRIBUTE-TOKENS] No unlocked investments available");
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: "No investments available (may be locked by another process)",
+            distributed: 0,
+            skipped: 0,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Now fetch full investment details for the locked IDs
       let investmentsQuery = supabase
         .from("investments")
         .select(
@@ -190,7 +233,7 @@ serve(async (req) => {
           )
         `
         )
-        .eq("tokenization_id", tokenization_id)
+        .in("id", lockedInvestmentIds)
         .eq("payment_status", "confirmed");
 
       // Filter by target users if specified (for remediation)
@@ -834,11 +877,14 @@ serve(async (req) => {
         }
       }
 
-      // Release the lock
+      // Update last distribution timestamp (for cooldown tracking)
       await supabase
-        .from("token_distribution_locks")
-        .delete()
-        .eq("tokenization_id", tokenization_id);
+        .from("tokenizations")
+        .update({ last_distribution_at: new Date().toISOString() })
+        .eq("id", tokenization_id);
+
+      // Release the advisory lock
+      await supabase.rpc("pg_advisory_unlock", { lock_id: lockKey });
 
       console.log(
         `[DISTRIBUTE-TOKENS] Distribution complete. Distributed: ${results.distributed}, Skipped: ${results.skipped}, Failed: ${results.failed}`
@@ -859,11 +905,12 @@ serve(async (req) => {
         }
       );
     } catch (innerError: any) {
-      // Release the lock on error
-      await supabase
-        .from("token_distribution_locks")
-        .delete()
-        .eq("tokenization_id", tokenization_id);
+      // Release the advisory lock on error
+      try {
+        await supabase.rpc("pg_advisory_unlock", { lock_id: lockKey });
+      } catch (unlockError) {
+        console.error("[DISTRIBUTE-TOKENS] Failed to release lock:", unlockError);
+      }
 
       throw innerError;
     }
