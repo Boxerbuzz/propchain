@@ -68,6 +68,7 @@ import VerifyDocument from "./pages/VerifyDocument";
 import PitchDeck from "./pages/pitch/PitchDeck";
 import AllNotifications from "./pages/AllNotifications";
 import AllActivities from "./pages/AllActivities";
+import DistributionMonitoring from "./pages/admin/DistributionMonitoring";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import RouteGuard from "./components/auth/RouteGuard";
@@ -180,6 +181,7 @@ const App = () => (
                 />
                 <Route path="/settings/security" element={<Security />} />
                 <Route path="/system-docs" element={<SystemDocumentation />} />
+                <Route path="/admin/distribution-monitoring" element={<DistributionMonitoring />} />
               </Route>
             </Route>
 
