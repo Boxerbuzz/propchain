@@ -119,9 +119,9 @@ serve(async (req) => {
     console.log('Document hashes generated');
 
     // Generate QR codes for verification
-    const agreementQR = await generateQRCode(`https://propchain.com/verify/${agreementNumber}`);
-    const receiptQR = await generateQRCode(`https://propchain.com/verify/${receiptNumber}`);
-    const certificateQR = await generateQRCode(`https://propchain.com/verify/${certificateNumber}`);
+    const agreementQR = await generateQRCode(`https://invest.relett.com/verify/${agreementNumber}`);
+    const receiptQR = await generateQRCode(`https://invest.relett.com/verify/${receiptNumber}`);
+    const certificateQR = await generateQRCode(`https://invest.relett.com/verify/${certificateNumber}`);
 
     // Upload documents to storage
     const userId = investment.investor_id;

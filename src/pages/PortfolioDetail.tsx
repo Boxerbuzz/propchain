@@ -249,10 +249,14 @@ const PortfolioDetail = () => {
     .filter((d) => d.payment_status === "paid")
     .reduce((sum, d) => sum + (d.amount_ngn || 0), 0);
 
-  // Get primary property image
-  const primaryImage =
-    property.property_images?.find((img: any) => img.is_primary) ||
-    property.property_images?.[0];
+  // Get all property images for staggered grid
+  const propertyImages = property.property_images || [];
+  const sortedImages = [...propertyImages].sort((a, b) => {
+    // Primary image first, then by sort_order
+    if (a.is_primary && !b.is_primary) return -1;
+    if (!a.is_primary && b.is_primary) return 1;
+    return (a.sort_order || 0) - (b.sort_order || 0);
+  });
 
   // Calculate financial metrics
   const propertyValue = property.estimated_value || 0;
@@ -390,15 +394,137 @@ const PortfolioDetail = () => {
           </Card>
         </div>
 
-        {/* Property Image */}
-        {primaryImage && (
+        {/* Property Images - Balanced Grid */}
+        {sortedImages.length > 0 && (
           <Card className="mb-8">
-            <CardContent className="p-0">
-              <img
-                src={primaryImage.image_url}
-                alt={property.title}
-                className="w-full h-64 object-cover rounded-lg"
-              />
+            <CardContent className="p-4">
+              {sortedImages.length === 1 ? (
+                // Single image: full width hero
+                <div className="relative overflow-hidden rounded-lg group cursor-pointer aspect-video">
+                  <img
+                    src={sortedImages[0].image_url}
+                    alt={sortedImages[0].caption || property.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  {sortedImages[0].is_primary && (
+                    <div className="absolute top-3 left-3">
+                      <Badge className="bg-primary/90 text-primary-foreground shadow-md">
+                        Primary
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              ) : sortedImages.length === 2 ? (
+                // Two images: side by side
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {sortedImages.map((image: any) => (
+                    <div
+                      key={image.id}
+                      className="relative overflow-hidden rounded-lg group cursor-pointer aspect-video"
+                    >
+                      <img
+                        src={image.image_url}
+                        alt={image.caption || property.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      {image.is_primary && (
+                        <div className="absolute top-3 left-3">
+                          <Badge className="bg-primary/90 text-primary-foreground shadow-md">
+                            Primary
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : sortedImages.length === 3 ? (
+                // Three images: uniform grid
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {sortedImages.map((image: any) => (
+                    <div
+                      key={image.id}
+                      className="relative overflow-hidden rounded-lg group cursor-pointer aspect-video"
+                    >
+                      <img
+                        src={image.image_url}
+                        alt={image.caption || property.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      {image.is_primary && (
+                        <div className="absolute top-3 left-3">
+                          <Badge className="bg-primary/90 text-primary-foreground shadow-md">
+                            Primary
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : sortedImages.length === 4 ? (
+                // Four images: uniform 2x2 grid
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {sortedImages.map((image: any) => (
+                    <div
+                      key={image.id}
+                      className="relative overflow-hidden rounded-lg group cursor-pointer aspect-video"
+                    >
+                      <img
+                        src={image.image_url}
+                        alt={image.caption || property.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      {image.is_primary && (
+                        <div className="absolute top-3 left-3">
+                          <Badge className="bg-primary/90 text-primary-foreground shadow-md">
+                            Primary
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // Five or more images: 1 large hero + uniform grid
+                <div className="space-y-4">
+                  {/* Hero image */}
+                  <div className="relative overflow-hidden rounded-lg group cursor-pointer aspect-video">
+                    <img
+                      src={sortedImages[0].image_url}
+                      alt={sortedImages[0].caption || property.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    {sortedImages[0].is_primary && (
+                      <div className="absolute top-3 left-3">
+                        <Badge className="bg-primary/90 text-primary-foreground shadow-md">
+                          Primary
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                  {/* Uniform grid for remaining images */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {sortedImages.slice(1).map((image: any) => (
+                      <div
+                        key={image.id}
+                        className="relative overflow-hidden rounded-lg group cursor-pointer aspect-square"
+                      >
+                        <img
+                          src={image.image_url}
+                          alt={image.caption || property.title}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        {image.is_primary && (
+                          <div className="absolute top-2 left-2">
+                            <Badge className="bg-primary/90 text-primary-foreground shadow-md text-xs">
+                              Primary
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -618,7 +744,7 @@ const PortfolioDetail = () => {
 
           <TabsContent value="documents" className="space-y-6">
             <Tabs defaultValue="documents" className="space-y-6">
-              <TabsList className="w-full sm:w-auto">
+              <TabsList className="sm:w-auto">
                 <TabsTrigger value="documents">Documents</TabsTrigger>
                 <TabsTrigger value="history">History</TabsTrigger>
               </TabsList>
@@ -629,7 +755,7 @@ const PortfolioDetail = () => {
                     <h3 className="text-lg font-semibold">
                       Investment Documents
                     </h3>
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-1">
                       {investmentDocuments.map((doc) => (
                         <InvestmentDocumentCard
                           key={doc.id}

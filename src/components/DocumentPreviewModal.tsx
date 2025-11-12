@@ -9,6 +9,13 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -22,10 +29,13 @@ import {
   Building2,
   User,
   FileKey2,
+  Link,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { DocumentVersion } from "./DocumentHistoryTimeline";
+import { Spinner } from "./ui/spinner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DocIdRowProps {
   icon: ComponentType<{ className?: string }>;
@@ -68,7 +78,11 @@ const DocIdRow = ({ icon: Icon, label, value }: DocIdRowProps) => {
                 onClick={handleCopy}
                 aria-label={`Copy ${label}`}
               >
-                {copiedId ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copiedId ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
               </Button>
             )}
             <span className="truncate" title={value || "—"}>
@@ -84,14 +98,16 @@ const DocIdRow = ({ icon: Icon, label, value }: DocIdRowProps) => {
 interface DocumentPreviewModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  document: (DocumentVersion & {
-    investment_id?: string;
-    property_id?: string;
-    tokenization_id?: string;
-    user_id?: string;
-    qr_code_data?: string;
-    document_hash?: string;
-  }) | null;
+  document:
+    | (DocumentVersion & {
+        investment_id?: string;
+        property_id?: string;
+        tokenization_id?: string;
+        user_id?: string;
+        qr_code_data?: string;
+        document_hash?: string;
+      })
+    | null;
 }
 
 const formatDocumentType = (type?: string) =>
@@ -136,6 +152,7 @@ export default function DocumentPreviewModal({
 }: DocumentPreviewModalProps) {
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const isMobile = useIsMobile();
 
   const metadata = document?.metadata ?? {};
   const hashscanUrl = getHashscanUrl(document);
@@ -164,7 +181,10 @@ export default function DocumentPreviewModal({
           label: "Tokenization Type",
           value: capitalize(metadata.tokenization_type),
         },
-        { label: "Payment Reference", value: metadata.payment_reference },
+        {
+          label: "Payment Reference",
+          value: maskIdentifier(metadata.payment_reference),
+        },
         { label: "Network", value: metadata.network },
         { label: "Updated By", value: metadata.updated_by },
       ].filter((item) => item.value),
@@ -221,8 +241,189 @@ export default function DocumentPreviewModal({
     "PPP 'at' p"
   );
 
+  const ContentComponent = () => {
+    return (
+      <div className="space-y-6 px-6 py-6">
+        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+          <Badge variant="secondary" className="bg-primary/10 text-primary">
+            Version {document.version}
+          </Badge>
+          <span className="text-border">•</span>
+          <span>
+            {document.is_current ? "Current version" : "Archived version"}
+          </span>
+          <span className="text-border">•</span>
+          <span>{generatedAt}</span>
+          {document.reason_for_update && (
+            <>
+              <span className="text-border">•</span>
+              <span>Reason: {document.reason_for_update}</span>
+            </>
+          )}
+        </div>
+
+        {(document.document_hash || hashscanUrl) && (
+          <div className="flex flex-wrap items-center gap-3 rounded-md border border-border/60 bg-muted/40 px-4 py-3 text-xs font-mono text-muted-foreground">
+            <span className="text-foreground font-medium flex items-center gap-2">
+              <Hash className="h-4 w-4" /> Hash
+            </span>
+            {document.document_hash && (
+              <span className="break-all font-mono text-muted-foreground">
+                {maskIdentifier(document.document_hash)}
+              </span>
+            )}
+            <div className="flex items-center gap-2">
+              {document.document_hash && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1"
+                  onClick={handleCopyHash}
+                >
+                  {copied ? (
+                    <Check className="h-3 w-3" />
+                  ) : (
+                    <Copy className="h-3 w-3" />
+                  )}
+                  {copied ? "Copied" : "Copy"}
+                </Button>
+              )}
+              {hashscanUrl && (
+                <a
+                  href={hashscanUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                >
+                  <Link className="h-3 w-3" /> View on HashScan
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
+        {detailEntries.length > 0 && (
+          <div className="grid gap-4 md:grid-cols-2">
+            {detailEntries.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-md border border-border/50 bg-card/40 px-4 py-3"
+              >
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {item.label}
+                </p>
+                <p className="text-sm font-medium text-foreground">
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {metadata.notes && (
+          <div className="rounded-md border border-border/50 bg-card/40 px-4 py-3">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Notes
+            </p>
+            <p className="text-sm text-foreground">{metadata.notes}</p>
+          </div>
+        )}
+
+        {document.qr_code_data && (
+          <div className="flex flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border/60 bg-card/30 px-6 py-6">
+            <img
+              src={document.qr_code_data}
+              alt="Document QR code"
+              className="h-40 w-40 rounded-md border border-border/60 bg-white p-2"
+            />
+            <p className="text-xs text-muted-foreground text-center">
+              Scan to verify or share this investment document.
+            </p>
+          </div>
+        )}
+
+        <Separator />
+
+        <div className="grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
+          <DocIdRow
+            icon={Landmark}
+            label="Investment ID"
+            value={document.investment_id}
+          />
+          <DocIdRow
+            icon={FileKey2}
+            label="Tokenization ID"
+            value={document.tokenization_id}
+          />
+          <DocIdRow
+            icon={Building2}
+            label="Property ID"
+            value={document.property_id}
+          />
+          <DocIdRow icon={User} label="User ID" value={document.user_id} />
+        </div>
+      </div>
+    );
+  };
+
+  if (!isMobile) {
+    return (
+      <Dialog
+        open={open}
+        onOpenChange={(next) => {
+          if (!next) {
+            setCopied(false);
+          }
+          onOpenChange(next);
+        }}
+        modal={true}
+      >
+        <DialogContent
+          className="max-w-3xl w-full gap-0 p-0 "
+          showCloseButton={false}
+        >
+          <DialogHeader className="px-6 py-4 border-b">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <DialogTitle className="text-lg font-semibold">
+                  {formatDocumentType(document.document_type)}
+                </DialogTitle>
+                <DialogDescription className="text-sm text-muted-foreground">
+                  {document.document_number}
+                </DialogDescription>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownload}
+                  disabled={downloading}
+                >
+                  <Download className="h-4 w-4" />
+                  {downloading && (
+                    <Spinner size={16} className="text-primary ml-2" />
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onOpenChange(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <ContentComponent />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
-    <Dialog
+    <Drawer
       open={open}
       onOpenChange={(next) => {
         if (!next) {
@@ -230,18 +431,18 @@ export default function DocumentPreviewModal({
         }
         onOpenChange(next);
       }}
-    modal={true}
+      modal={true}
     >
-      <DialogContent className="max-w-3xl w-full gap-0 p-0">
-        <DialogHeader className="px-6 py-4 border-b">
+      <DrawerContent className="max-w-3xl w-full gap-0 p-0 flex flex-col overflow-hidden">
+        <DrawerHeader className="px-6 py-4 border-b flex-shrink-0">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <DialogTitle className="text-lg font-semibold">
+              <DrawerTitle className="text-lg font-semibold">
                 {formatDocumentType(document.document_type)}
-              </DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground">
-                Document #: {document.document_number}
-              </DialogDescription>
+              </DrawerTitle>
+              <DrawerDescription className="text-sm text-muted-foreground">
+                #{document.document_number}
+              </DrawerDescription>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -250,8 +451,10 @@ export default function DocumentPreviewModal({
                 onClick={handleDownload}
                 disabled={downloading}
               >
-                <Download className="mr-2 h-4 w-4" />
-                {downloading ? "Downloading" : "Download"}
+                <Download className="h-4 w-4" />
+                {downloading && (
+                  <Spinner size={16} className="text-primary ml-2" />
+                )}
               </Button>
               <Button
                 variant="ghost"
@@ -262,123 +465,12 @@ export default function DocumentPreviewModal({
               </Button>
             </div>
           </div>
-        </DialogHeader>
+        </DrawerHeader>
 
-        <div className="space-y-6 px-6 py-6">
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <Badge variant="secondary" className="bg-primary/10 text-primary">
-              Version {document.version}
-            </Badge>
-            <span className="text-border">•</span>
-            <span>
-              {document.is_current ? "Current version" : "Archived version"}
-            </span>
-            <span className="text-border">•</span>
-            <span>{generatedAt}</span>
-            {document.reason_for_update && (
-              <>
-                <span className="text-border">•</span>
-                <span>Reason: {document.reason_for_update}</span>
-              </>
-            )}
-          </div>
-
-          {(document.document_hash || hashscanUrl) && (
-            <div className="flex flex-wrap items-center gap-3 rounded-md border border-border/60 bg-muted/40 px-4 py-3 text-xs font-mono text-muted-foreground">
-              <span className="text-foreground font-medium flex items-center gap-2">
-                <Hash className="h-4 w-4" /> Hash
-              </span>
-              {document.document_hash && (
-                <span className="break-all">{document.document_hash}</span>
-              )}
-              <div className="flex items-center gap-2">
-                {document.document_hash && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1"
-                    onClick={handleCopyHash}
-                  >
-                    {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                    {copied ? "Copied" : "Copy"}
-                  </Button>
-                )}
-                {hashscanUrl && (
-                  <a
-                    href={hashscanUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                  >
-                    <Hash className="h-3 w-3" /> View on HashScan
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-
-          {detailEntries.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-2">
-              {detailEntries.map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-md border border-border/50 bg-card/40 px-4 py-3"
-                >
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                    {item.label}
-                  </p>
-                  <p className="text-sm font-medium text-foreground">
-                    {item.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {metadata.notes && (
-            <div className="rounded-md border border-border/50 bg-card/40 px-4 py-3">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Notes
-              </p>
-              <p className="text-sm text-foreground">{metadata.notes}</p>
-            </div>
-          )}
-
-          {document.qr_code_data && (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border/60 bg-card/30 px-6 py-6">
-              <img
-                src={document.qr_code_data}
-                alt="Document QR code"
-                className="h-40 w-40 rounded-md border border-border/60 bg-white p-2"
-              />
-              <p className="text-xs text-muted-foreground text-center">
-                Scan to verify or share this investment document.
-              </p>
-            </div>
-          )}
-
-          <Separator />
-
-          <div className="grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
-            <DocIdRow
-              icon={Landmark}
-              label="Investment ID"
-              value={document.investment_id}
-            />
-            <DocIdRow
-              icon={FileKey2}
-              label="Tokenization ID"
-              value={document.tokenization_id}
-            />
-            <DocIdRow
-              icon={Building2}
-              label="Property ID"
-              value={document.property_id}
-            />
-            <DocIdRow icon={User} label="User ID" value={document.user_id} />
-          </div>
+        <div className="flex-1 overflow-y-auto">
+          <ContentComponent />
         </div>
-      </DialogContent>
-    </Dialog>
+      </DrawerContent>
+    </Drawer>
   );
 }

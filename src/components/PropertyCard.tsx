@@ -76,9 +76,8 @@ export default function PropertyCard({
           alt={title}
           className="w-full h-48 object-cover rounded-lg"
         />
-        <div className="absolute top-3 right-3 flex flex-col gap-2">
+        <div className="absolute top-3 right-3">
           {getTokenizationTypeBadge()}
-          {getStatusBadge()}
         </div>
         <div className="absolute top-3 left-3">
           <FavoriteButton
@@ -87,6 +86,9 @@ export default function PropertyCard({
             size="sm"
             className="bg-white/90 hover:bg-white shadow-sm"
           />
+        </div>
+        <div className="absolute bottom-3 left-3">
+          {getStatusBadge()}
         </div>
       </div>
 

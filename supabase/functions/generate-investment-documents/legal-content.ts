@@ -255,7 +255,7 @@ Platform may update terms for new investments with 30 days notice via email and 
 
 8.2 NOTICES
 All notices shall be sent to:
-- Platform: info@propchain.com
+- Platform: info@relett.com
 - Investor: Email address registered in investor account
 
 Notices deemed received 24 hours after email sent or 7 days after postal mail.

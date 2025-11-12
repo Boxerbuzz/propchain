@@ -1,5 +1,12 @@
 import { format } from "date-fns";
-import { History, FileText, FileSignature, Receipt } from "lucide-react";
+import {
+  History,
+  FileText,
+  FileSignature,
+  Receipt,
+  Download,
+  CheckCircle2,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -7,6 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export interface DocumentVersion {
   id: string;
@@ -44,9 +53,7 @@ export default function DocumentHistoryTimeline({
   });
 
   const formatDocumentType = (type: string) =>
-    type
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+    type.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 
   if (documents.length === 0) {
     return (
@@ -74,20 +81,21 @@ export default function DocumentHistoryTimeline({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div>
-          {sortedDocs.map((doc, index) => {
-            const isFirst = index === 0;
-            const isLast = index === sortedDocs.length - 1;
-              const subtitleParts = [
-                doc.document_number,
-                format(new Date(doc.version_date || doc.generated_at), "PP, p"),
-              ].filter(Boolean);
+        <div className="relative">
+          {/* Timeline line */}
+          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border/40"></div>
+
+          <div className="space-y-6">
+            {sortedDocs.map((doc) => {
+              const date = new Date(doc.version_date || doc.generated_at);
 
               const handleClick = () => {
                 onSelectDocument?.(doc);
               };
 
-              const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+              const handleKeyDown = (
+                event: React.KeyboardEvent<HTMLDivElement>
+              ) => {
                 if (!onSelectDocument) return;
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
@@ -102,67 +110,107 @@ export default function DocumentHistoryTimeline({
                   ? Receipt
                   : FileText;
 
-              const content = (
-                <div className="relative pl-14">
-                  <div className="absolute left-4 top-0 bottom-0 flex items-center justify-center">
-                    <div className="flex h-full flex-col items-center">
-                      <div
-                        className={`w-px flex-1 ${
-                          isFirst ? "hidden" : "bg-border/60"
-                        }`}
-                        style={{ marginBottom: isFirst ? 0 : "0.5rem" }}
-                      />
-                      <div
-                        className={`flex aspect-square h-8 w-8 items-center justify-center rounded-full border bg-background text-muted-foreground ${
-                          doc.is_current
-                            ? "border-primary/60 text-primary"
-                            : "border-border/60"
-                        }`}
-                      >
-                        <IconComponent className="h-3.5 w-3.5" />
-                      </div>
-                      <div
-                        className={`w-px flex-1 ${
-                          isLast ? "hidden" : "bg-border/60"
-                        }`}
-                        style={{ marginTop: isLast ? 0 : "0.5rem" }}
-                      />
-                    </div>
-                  </div>
-                  <p className="ml-6 text-sm font-medium text-foreground">
-                    {formatDocumentType(doc.document_type)} • Version {doc.version}
-                  </p>
-                  <p className="ml-6 text-xs text-muted-foreground">
-                    {subtitleParts.join(" • ")}
-                  </p>
-                </div>
-              );
-
               const interactive = Boolean(onSelectDocument);
-              const interactiveProps = interactive
-                ? ({ role: "button", tabIndex: 0 } as const)
-                : undefined;
 
               return (
-                <div
-                  key={doc.id}
-                  className={index < sortedDocs.length - 1 ? "pb-6" : undefined}
-                >
+                <div key={doc.id} className="relative pl-14">
+                  {/* Timeline node */}
+                  <div className="absolute left-3 top-4 z-10">
+                    <div
+                      className={`flex h-6 w-6 items-center justify-center rounded-full border-2 bg-background shadow-sm ${
+                        doc.is_current
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border/60 text-muted-foreground"
+                      }`}
+                    >
+                      {doc.is_current ? (
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                      ) : (
+                        <IconComponent className="h-3 w-3" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Timeline item content */}
                   <div
                     onClick={handleClick}
                     onKeyDown={handleKeyDown}
-                    {...(interactiveProps || {})}
-                    className={`rounded-md transition ${
+                    role={interactive ? "button" : undefined}
+                    tabIndex={interactive ? 0 : undefined}
+                    className={`relative rounded-lg border bg-card p-4 transition-all ${
                       interactive
-                        ? "cursor-pointer hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        ? "cursor-pointer hover:border-primary/50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
                         : ""
+                    } ${
+                      doc.is_current
+                        ? "border-primary/30 bg-primary/5 shadow-sm"
+                        : "border-border/60"
                     }`}
                   >
-                    {content}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
+                        <IconComponent className="h-4 w-4" />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-semibold text-foreground">
+                            {formatDocumentType(doc.document_type)}
+                          </h4>
+                          <Badge
+                            variant={doc.is_current ? "default" : "secondary"}
+                            className="text-xs"
+                          >
+                            Version {doc.version}
+                          </Badge>
+                          {doc.is_current && (
+                            <Badge
+                              variant="default"
+                              className="text-xs bg-primary"
+                            >
+                              Current
+                            </Badge>
+                          )}
+                        </div>
+
+                        {doc.document_number && (
+                          <p className="text-sm text-muted-foreground mb-1 hidden">
+                            {doc.document_number}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                          <span>{format(date, "MMM dd, yyyy")}</span>
+                          <span>•</span>
+                          <span>{format(date, "h:mm a")}</span>
+                        </div>
+
+                        {doc.reason_for_update && (
+                          <p className="text-xs text-muted-foreground mt-2 italic">
+                            {doc.reason_for_update}
+                          </p>
+                        )}
+                      </div>
+
+                      {interactive && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleClick();
+                          }}
+                          className="flex-shrink-0 hidden"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
             })}
+          </div>
         </div>
       </CardContent>
     </Card>

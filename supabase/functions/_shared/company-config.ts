@@ -10,10 +10,10 @@ export const COMPANY_INFO = {
     postal_code: '100001'
   },
   contact: {
-    email: 'info@propchain.com',
+    email: 'info@relett.com',
     phone: '+234-XXX-XXX-XXXX',
-    website: 'https://propchain.com',
-    support: 'support@propchain.com'
+    website: 'https://invest.relett.com',
+    support: 'support@relett.com'
   },
   legal: {
     vat_number: 'VAT-XXXXXXX',

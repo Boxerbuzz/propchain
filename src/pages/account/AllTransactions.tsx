@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getActivityIcon, getStatusIcon } from "@/lib/activityIcons";
 import { ArrowLeftIcon } from "lucide-react";
+import { formatCurrencyAmount } from "@/lib/currencyConverter";
 
 export default function AllTransactions() {
   const navigate = useNavigate();
@@ -162,7 +163,10 @@ export default function AllTransactions() {
                         }`}
                       >
                         {tx.type === "receive" ? "+" : "-"}
-                        {tx.amount} {tx.token}
+                        {formatCurrencyAmount(
+                          tx.amount,
+                          tx.token as "HBAR" | "USDC" | "NGN" | "USD"
+                        )}
                       </p>
                     </div>
                   </div>
