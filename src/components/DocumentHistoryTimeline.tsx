@@ -135,8 +135,7 @@ export default function DocumentHistoryTimeline({
                   <div
                     onClick={handleClick}
                     onKeyDown={handleKeyDown}
-                    role={interactive ? "button" : undefined}
-                    tabIndex={interactive ? 0 : undefined}
+                    {...(interactive && { role: "button", tabIndex: 0 })}
                     className={`relative rounded-lg border bg-card p-4 transition-all ${
                       interactive
                         ? "cursor-pointer hover:border-primary/50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
