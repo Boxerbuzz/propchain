@@ -67,6 +67,7 @@ import SecurityPage from "./pages/Security";
 import VerifyDocument from "./pages/VerifyDocument";
 import PitchDeck from "./pages/pitch/PitchDeck";
 import AllNotifications from "./pages/AllNotifications";
+import Waitlist from "./pages/Waitlist";
 import AllActivities from "./pages/AllActivities";
 import DistributionMonitoring from "./pages/admin/DistributionMonitoring";
 import MainLayout from "./layouts/MainLayout";
@@ -101,6 +102,7 @@ const App = () => (
               <Route path="/about" element={<AboutUs />} />
               <Route path="/security" element={<SecurityPage />} />
               <Route path="/pitch" element={<PitchDeck />} />
+              <Route path="/waitlist" element={<Waitlist />} />
               <Route
                 path="/verify/:documentNumber"
                 element={<VerifyDocument />}
