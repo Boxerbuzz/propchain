@@ -97,7 +97,6 @@ const App = () => (
               <Route index element={<Landing />} />
               <Route path="/browse" element={<BrowseProperties />} />
               <Route path="/browse/:id" element={<PropertyDetails />} />
-              <Route path="/browse/:id/invest" element={<InvestmentFlow />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/about" element={<AboutUs />} />
               <Route path="/security" element={<SecurityPage />} />
@@ -124,6 +123,7 @@ const App = () => (
 
               {/* Authenticated routes (MainLayout) */}
               <Route element={<RouteGuard />}>
+                <Route path="/browse/:id/invest" element={<InvestmentFlow />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/portfolio" element={<Portfolio />} />
                 <Route
