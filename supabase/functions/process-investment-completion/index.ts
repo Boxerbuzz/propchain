@@ -261,14 +261,64 @@ serve(async (req) => {
 
     if (distributionTriggered) {
       console.log("[PROCESS-COMPLETION] Triggering token distribution");
-      await supabase.functions.invoke('distribute-tokens-to-kyc-users', {
-        body: {
-          tokenization_id: investment.tokenization_id,
-          target_user_ids: [investment.investor_id]
+      
+      // PHASE 3: Log distribution trigger
+      await supabase.from('activity_logs').insert({
+        user_id: investorId,
+        tokenization_id: tokenizationId,
+        activity_type: 'distribution_triggered',
+        activity_category: 'token_distribution',
+        description: `Token distribution triggered for investment ${investmentId}`,
+        metadata: {
+          investment_id: investmentId,
+          tokenization_id: tokenizationId,
+          triggered_by: 'process_investment_completion',
+          trigger_time: new Date().toISOString()
         }
-      }).catch(err => {
-        console.error("[PROCESS-COMPLETION] Failed to trigger distribution:", err);
       });
+
+      const { data: distData, error: distError } = await supabase.functions.invoke('distribute-tokens-to-kyc-users', {
+        body: {
+          tokenization_id: tokenizationId,
+          target_user_ids: [investorId]
+        }
+      });
+
+      if (distError) {
+        console.error("[PROCESS-COMPLETION] Distribution function error:", distError);
+        
+        // PHASE 3: Log distribution failure
+        await supabase.from('activity_logs').insert({
+          user_id: investorId,
+          tokenization_id: tokenizationId,
+          activity_type: 'distribution_failed',
+          activity_category: 'token_distribution',
+          description: `Token distribution failed for investment ${investmentId}`,
+          metadata: {
+            investment_id: investmentId,
+            tokenization_id: tokenizationId,
+            error: distError.message || 'Unknown error',
+            trigger_time: new Date().toISOString()
+          }
+        });
+      } else {
+        console.log("[PROCESS-COMPLETION] Distribution triggered successfully:", distData);
+        
+        // PHASE 3: Log successful distribution trigger
+        await supabase.from('activity_logs').insert({
+          user_id: investorId,
+          tokenization_id: tokenizationId,
+          activity_type: 'distribution_completed',
+          activity_category: 'token_distribution',
+          description: `Token distribution completed for investment ${investmentId}`,
+          metadata: {
+            investment_id: investmentId,
+            tokenization_id: tokenizationId,
+            distribution_result: distData,
+            trigger_time: new Date().toISOString()
+          }
+        });
+      }
     } else {
       console.log("[PROCESS-COMPLETION] Distribution will be handled by scheduled job due to cooldown");
     }

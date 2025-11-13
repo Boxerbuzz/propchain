@@ -564,6 +564,32 @@ serve(async (req) => {
         let grantKycTxId: string | undefined;
         let transferTxId: string | undefined;
 
+        // PHASE 3: Log distribution events with "processing" status BEFORE transfer
+        const distributionEventIds: string[] = [];
+        console.log(`[DISTRIBUTE-TOKENS] Creating processing event logs for ${agg.investment_ids.length} investments`);
+        for (const inv of agg.investments) {
+          const { data: eventData, error: eventError } = await supabase
+            .from("token_distribution_events")
+            .insert({
+              tokenization_id,
+              user_id: userId,
+              investment_id: inv.id,
+              tokens_requested: inv.tokens_requested,
+              tokens_transferred: 0,
+              status: "processing",
+              hedera_account_id: wallet.hedera_account_id,
+              created_at: new Date().toISOString(),
+            })
+            .select("id")
+            .single();
+
+          if (eventError) {
+            console.error(`[DISTRIBUTE-TOKENS] Failed to create processing event for investment ${inv.id}:`, eventError);
+          } else if (eventData) {
+            distributionEventIds.push(eventData.id);
+          }
+        }
+
         try {
           const userPrivKey = PrivateKey.fromStringDer(userPrivateKey);
           const userAccountId = AccountId.fromString(wallet.hedera_account_id);
@@ -802,21 +828,42 @@ serve(async (req) => {
             },
           });
 
-          // Log distribution events
-          for (const inv of agg.investments) {
-            await supabase.from("token_distribution_events").insert({
-              tokenization_id,
-              user_id: userId,
-              investment_id: inv.id,
-              tokens_requested: inv.tokens_requested,
-              tokens_transferred: inv.tokens_requested,
-              status: "success",
-              hedera_account_id: wallet.hedera_account_id,
-              association_tx_id: associationTxId,
-              kyc_grant_tx_id: grantKycTxId,
-              transfer_tx_id: transferTxId,
-              completed_at: new Date().toISOString(),
-            });
+          // PHASE 3: Update distribution events to SUCCESS with full transaction details
+          console.log(`[DISTRIBUTE-TOKENS] Updating ${distributionEventIds.length} distribution events to SUCCESS`);
+          for (let i = 0; i < agg.investments.length; i++) {
+            const inv = agg.investments[i];
+            const eventId = distributionEventIds[i];
+
+            if (eventId) {
+              // Update existing processing event
+              await supabase
+                .from("token_distribution_events")
+                .update({
+                  tokens_transferred: inv.tokens_requested,
+                  status: "success",
+                  association_tx_id: associationTxId,
+                  kyc_grant_tx_id: grantKycTxId,
+                  transfer_tx_id: transferTxId,
+                  completed_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", eventId);
+            } else {
+              // Fallback: create new success event if processing event wasn't created
+              await supabase.from("token_distribution_events").insert({
+                tokenization_id,
+                user_id: userId,
+                investment_id: inv.id,
+                tokens_requested: inv.tokens_requested,
+                tokens_transferred: inv.tokens_requested,
+                status: "success",
+                hedera_account_id: wallet.hedera_account_id,
+                association_tx_id: associationTxId,
+                kyc_grant_tx_id: grantKycTxId,
+                transfer_tx_id: transferTxId,
+                completed_at: new Date().toISOString(),
+              });
+            }
           }
 
           results.distributed++;
@@ -845,22 +892,43 @@ serve(async (req) => {
             errorMessage = "Token not associated with account";
           }
 
-          // Log failure events
-          for (const invId of agg.investment_ids) {
-            await supabase.from("token_distribution_events").insert({
-              tokenization_id,
-              user_id: userId,
-              investment_id: invId,
-              tokens_requested: Number(agg.total_tokens_requested),
-              tokens_transferred: 0,
-              status: "failed",
-              error_message: errorMessage,
-              hedera_account_id: agg.hedera_account_id,
-              association_tx_id: associationTxId,
-              kyc_grant_tx_id: grantKycTxId,
-              transfer_tx_id: transferTxId,
-              completed_at: new Date().toISOString(),
-            });
+          // PHASE 3: Update distribution events to FAILED with error details
+          console.log(`[DISTRIBUTE-TOKENS] Updating ${distributionEventIds.length} distribution events to FAILED`);
+          for (let i = 0; i < agg.investment_ids.length; i++) {
+            const invId = agg.investment_ids[i];
+            const eventId = distributionEventIds[i];
+
+            if (eventId) {
+              // Update existing processing event
+              await supabase
+                .from("token_distribution_events")
+                .update({
+                  status: "failed",
+                  error_message: errorMessage,
+                  association_tx_id: associationTxId,
+                  kyc_grant_tx_id: grantKycTxId,
+                  transfer_tx_id: transferTxId,
+                  completed_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", eventId);
+            } else {
+              // Fallback: create new failed event if processing event wasn't created
+              await supabase.from("token_distribution_events").insert({
+                tokenization_id,
+                user_id: userId,
+                investment_id: invId,
+                tokens_requested: Number(agg.total_tokens_requested) / agg.investment_ids.length,
+                tokens_transferred: 0,
+                status: "failed",
+                error_message: errorMessage,
+                hedera_account_id: agg.hedera_account_id,
+                association_tx_id: associationTxId,
+                kyc_grant_tx_id: grantKycTxId,
+                transfer_tx_id: transferTxId,
+                completed_at: new Date().toISOString(),
+              });
+            }
           }
 
           results.failed++;

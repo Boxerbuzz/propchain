@@ -174,6 +174,28 @@ serve(async (req) => {
         // Trigger distribution for these users
         const userIds = usersNeedingDistribution.map(u => u.user_id);
         
+        // PHASE 3: Log reconciliation trigger
+        console.log(`[RECONCILE] Logging reconciliation trigger for ${tokenization.token_symbol}`);
+        for (const user of usersNeedingDistribution) {
+          await supabase.from('activity_logs').insert({
+            user_id: user.user_id,
+            tokenization_id: tokenization.id,
+            activity_type: 'reconciliation_triggered',
+            activity_category: 'token_distribution',
+            description: `Reconciliation triggered: ${user.shortfall} token shortfall detected`,
+            metadata: {
+              tokenization_id: tokenization.id,
+              token_symbol: tokenization.token_symbol,
+              expected_balance: user.expected,
+              actual_balance: user.actual,
+              shortfall: user.shortfall,
+              hedera_account_id: user.hedera_account_id,
+              triggered_by: 'reconcile_token_distributions',
+              trigger_time: new Date().toISOString()
+            }
+          });
+        }
+        
         const { data, error } = await supabase.functions.invoke('distribute-tokens-to-kyc-users', {
           body: {
             tokenization_id: tokenization.id,
@@ -183,8 +205,44 @@ serve(async (req) => {
 
         if (error) {
           console.error(`[RECONCILE] Failed to trigger distribution for ${tokenization.token_symbol}:`, error);
+          
+          // PHASE 3: Log reconciliation failure
+          for (const user of usersNeedingDistribution) {
+            await supabase.from('activity_logs').insert({
+              user_id: user.user_id,
+              tokenization_id: tokenization.id,
+              activity_type: 'reconciliation_failed',
+              activity_category: 'token_distribution',
+              description: `Reconciliation failed for ${tokenization.token_symbol}`,
+              metadata: {
+                tokenization_id: tokenization.id,
+                token_symbol: tokenization.token_symbol,
+                shortfall: user.shortfall,
+                error: error.message || 'Unknown error',
+                trigger_time: new Date().toISOString()
+              }
+            });
+          }
         } else {
           console.log(`[RECONCILE] Distribution triggered successfully for ${tokenization.token_symbol}:`, data);
+          
+          // PHASE 3: Log reconciliation success
+          for (const user of usersNeedingDistribution) {
+            await supabase.from('activity_logs').insert({
+              user_id: user.user_id,
+              tokenization_id: tokenization.id,
+              activity_type: 'reconciliation_completed',
+              activity_category: 'token_distribution',
+              description: `Reconciliation completed for ${tokenization.token_symbol}`,
+              metadata: {
+                tokenization_id: tokenization.id,
+                token_symbol: tokenization.token_symbol,
+                shortfall_resolved: user.shortfall,
+                distribution_result: data,
+                trigger_time: new Date().toISOString()
+              }
+            });
+          }
         }
 
         reconciliationResults.push({
