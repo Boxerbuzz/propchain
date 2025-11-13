@@ -426,11 +426,11 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="w-full sm:w-80 bg-background border-l border-border"
+          className="w-full sm:w-80 bg-background border-l border-border overflow-hidden"
             >
-              <div className="flex flex-col h-full py-6">
+          <div className="flex h-full flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between px-5 py-6 border-b border-border/60">
                   <div className="flex items-center gap-2">
                     <img src={logo} alt="PropChain" className="h-6 w-auto" />
                     <span className="font-bold text-lg text-foreground">
@@ -439,11 +439,13 @@ export default function Header() {
                   </div>
                 </div>
 
-                {/* Mobile Navigation */}
-                <nav className="flex-1 space-y-2">
-                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                    Main Navigation
-                  </div>
+            <div className="flex-1 overflow-y-auto py-6">
+              {/* Mobile Navigation */}
+              <div className="px-5">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                  Main Navigation
+                </div>
+                <nav className="space-y-2">
                   {navigation.map((item) => {
                     const isActive = isActiveRoute(item.href);
                     return (
@@ -474,55 +476,57 @@ export default function Header() {
                     );
                   })}
                 </nav>
+              </div>
 
-                {/* Mobile User Menu (only when authenticated) */}
-                {isAuthenticated && (
-                  <div className="border-t border-border pt-6 mt-6 space-y-2">
-                    <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                      Account
-                    </div>
-                    {userMenuItems.map((item) => (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          if (item.name === "Logout") {
-                            logout();
-                          }
-                        }}
-                        className="group flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
-                      >
-                        <div className="p-2 rounded-lg bg-muted group-hover:bg-muted-foreground/10 transition-colors">
-                          <item.icon className="h-4 w-4" />
-                        </div>
-                        <span className="flex-1">{item.name}</span>
-                      </Link>
-                    ))}
+              {/* Mobile User Menu (only when authenticated) */}
+              {isAuthenticated && (
+                <div className="border-t border-border pt-6 mt-6 space-y-2 px-5">
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                    Account
                   </div>
-                )}
+                  {userMenuItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        if (item.name === "Logout") {
+                          logout();
+                        }
+                      }}
+                      className="group flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
+                    >
+                      <div className="p-2 rounded-lg bg-muted group-hover:bg-muted-foreground/10 transition-colors">
+                        <item.icon className="h-4 w-4" />
+                      </div>
+                      <span className="flex-1">{item.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
 
-                {/* Mobile Auth Buttons (only when not authenticated) */}
-                {!isAuthenticated && (
-                  <div className="border-t border-border pt-6 mt-6 space-y-4 flex flex-col gap-1">
-                    <Link
-                      to="/auth/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Button variant="outline" className="w-full">
-                        Sign In
-                      </Button>
-                    </Link>
-                    <Link
-                      to="/auth/signup"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Button className="w-full bg-primary hover:bg-primary/90">
-                        Get Started
-                      </Button>
-                    </Link>
-                  </div>
-                )}
+              {/* Mobile Auth Buttons (only when not authenticated) */}
+              {!isAuthenticated && (
+                <div className="border-t border-border pt-6 mt-6 space-y-4 flex flex-col gap-1 px-5">
+                  <Link
+                    to="/auth/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Button variant="outline" className="w-full">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link
+                    to="/auth/signup"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Button className="w-full bg-primary hover:bg-primary/90">
+                      Get Started
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
               </div>
             </SheetContent>
           </Sheet>
