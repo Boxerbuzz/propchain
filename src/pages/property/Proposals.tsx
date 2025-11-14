@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useProposals, useVoteOnProposal } from '@/hooks/useProposals';
+import { useProposals, useVoteOnProposal, useUserVotes } from '@/hooks/useProposals';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,17 @@ export default function Proposals() {
   const voteOnProposal = useVoteOnProposal();
   const [votingProposalId, setVotingProposalId] = useState<string | null>(null);
   const [executingProposal, setExecutingProposal] = useState<string | null>(null);
+
+  const proposalIds = useMemo(() => proposals?.map(p => p.id) || [], [proposals]);
+  const { data: userVotes } = useUserVotes(proposalIds);
+
+  const votesMap = useMemo(() => {
+    const map = new Map();
+    userVotes?.forEach(vote => {
+      map.set(vote.proposal_id, vote);
+    });
+    return map;
+  }, [userVotes]);
 
   const handleVote = async (proposalId: string, voteChoice: 'for' | 'against' | 'abstain') => {
     setVotingProposalId(proposalId);
@@ -117,6 +128,7 @@ export default function Proposals() {
               onVote={handleVote}
               isVoting={votingProposalId === proposal.id}
               userId={user?.id}
+              userVote={votesMap.get(proposal.id)}
               getStatusBadge={getStatusBadge}
               getProposalTypeBadge={getProposalTypeBadge}
               onExecute={handleExecuteProposal}
@@ -133,6 +145,7 @@ export default function Proposals() {
               onVote={handleVote}
               isVoting={votingProposalId === proposal.id}
               userId={user?.id}
+              userVote={votesMap.get(proposal.id)}
               getStatusBadge={getStatusBadge}
               getProposalTypeBadge={getProposalTypeBadge}
               onExecute={handleExecuteProposal}
@@ -149,6 +162,7 @@ export default function Proposals() {
               onVote={handleVote}
               isVoting={votingProposalId === proposal.id}
               userId={user?.id}
+              userVote={votesMap.get(proposal.id)}
               getStatusBadge={getStatusBadge}
               getProposalTypeBadge={getProposalTypeBadge}
               onExecute={handleExecuteProposal}
@@ -165,6 +179,7 @@ export default function Proposals() {
               onVote={handleVote}
               isVoting={votingProposalId === proposal.id}
               userId={user?.id}
+              userVote={votesMap.get(proposal.id)}
               getStatusBadge={getStatusBadge}
               getProposalTypeBadge={getProposalTypeBadge}
               onExecute={handleExecuteProposal}
@@ -182,13 +197,14 @@ interface ProposalCardProps {
   onVote: (proposalId: string, voteChoice: 'for' | 'against' | 'abstain') => void;
   isVoting: boolean;
   userId?: string;
+  userVote?: any;
   getStatusBadge: (status: string) => JSX.Element;
   getProposalTypeBadge: (type: string) => JSX.Element;
   onExecute: (proposalId: string) => void;
   isExecuting: boolean;
 }
 
-function ProposalCard({ proposal, onVote, isVoting, getStatusBadge, getProposalTypeBadge, onExecute, isExecuting }: ProposalCardProps) {
+function ProposalCard({ proposal, onVote, isVoting, userVote, getStatusBadge, getProposalTypeBadge, onExecute, isExecuting }: ProposalCardProps) {
   const totalVotes = Number(proposal.total_votes_cast || 0);
   const votesFor = Number(proposal.votes_for || 0);
   const votesAgainst = Number(proposal.votes_against || 0);
@@ -201,6 +217,7 @@ function ProposalCard({ proposal, onVote, isVoting, getStatusBadge, getProposalT
   const isActive = proposal.status === 'active';
   const votingEnd = new Date(proposal.voting_end);
   const isExpired = votingEnd < new Date();
+  const hasVoted = !!userVote;
 
   return (
     <Card>
@@ -293,7 +310,13 @@ function ProposalCard({ proposal, onVote, isVoting, getStatusBadge, getProposalT
             )}
           </div>
 
-          {isActive && !isExpired && (
+          {hasVoted && (
+            <Badge variant="secondary" className="ml-auto">
+              You voted: {userVote.vote_choice.charAt(0).toUpperCase() + userVote.vote_choice.slice(1)}
+            </Badge>
+          )}
+
+          {isActive && !isExpired && !hasVoted && (
             <div className="flex gap-2">
               <Button
                 size="sm"

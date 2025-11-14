@@ -17,7 +17,7 @@ interface MaintenanceProposalMessageProps {
 export const MaintenanceProposalMessage = ({ metadata, createdAt }: MaintenanceProposalMessageProps) => {
   const { user } = useAuth();
   const [isVoting, setIsVoting] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
+  const [userVote, setUserVote] = useState<any>(null);
   const [liveVotes, setLiveVotes] = useState({
     votes_for: metadata.votes_for || 0,
     votes_against: metadata.votes_against || 0,
@@ -27,6 +27,7 @@ export const MaintenanceProposalMessage = ({ metadata, createdAt }: MaintenanceP
   });
 
   const proposalId = metadata.proposal_id;
+  const hasVoted = !!userVote;
   const totalVotes = liveVotes.total_votes_cast;
   const forPercentage = totalVotes > 0 ? (liveVotes.votes_for / totalVotes) * 100 : 0;
   const againstPercentage = totalVotes > 0 ? (liveVotes.votes_against / totalVotes) * 100 : 0;
@@ -53,7 +54,23 @@ export const MaintenanceProposalMessage = ({ metadata, createdAt }: MaintenanceP
       }
     };
 
+    const fetchUserVote = async () => {
+      if (!user?.id) return;
+      
+      const { data, error } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('proposal_id', proposalId)
+        .eq('voter_id', user.id)
+        .single();
+
+      if (data && !error) {
+        setUserVote(data);
+      }
+    };
+
     fetchProposalData();
+    fetchUserVote();
 
     const channel = supabase
       .channel(`proposal-${proposalId}`)
@@ -123,7 +140,17 @@ export const MaintenanceProposalMessage = ({ metadata, createdAt }: MaintenanceP
       if (error) throw error;
 
       toast.success(`Vote cast: ${choice}`);
-      setHasVoted(true);
+      // Refetch user vote
+      const { data: voteData } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('proposal_id', proposalId)
+        .eq('voter_id', user.id)
+        .single();
+      
+      if (voteData) {
+        setUserVote(voteData);
+      }
     } catch (error: any) {
       console.error('Error voting:', error);
       toast.error(error.message || "Failed to vote");
@@ -272,9 +299,9 @@ export const MaintenanceProposalMessage = ({ metadata, createdAt }: MaintenanceP
             </div>
           )}
 
-          {hasVoted && (
+          {hasVoted && userVote && (
             <div className="text-center p-2 bg-primary/10 rounded-lg text-sm">
-              ✓ You have voted on this proposal
+              ✓ You voted: {userVote.vote_choice.charAt(0).toUpperCase() + userVote.vote_choice.slice(1)}
             </div>
           )}
         </div>
