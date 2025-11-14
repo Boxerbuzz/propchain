@@ -36,6 +36,27 @@ export const useProposals = (propertyId?: string) => {
   });
 };
 
+export const useUserVotes = (proposalIds?: string[]) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['user-votes', user?.id, proposalIds],
+    queryFn: async () => {
+      if (!user?.id || !proposalIds?.length) return [];
+
+      const { data, error } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('voter_id', user.id)
+        .in('proposal_id', proposalIds);
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id && !!proposalIds?.length,
+  });
+};
+
 export const useVoteOnProposal = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
