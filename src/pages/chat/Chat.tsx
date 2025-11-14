@@ -9,6 +9,7 @@ import { MessageCircle, Search, Plus, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUserChatRooms } from "@/hooks/useUserChatRooms";
 import { useAuth } from "@/hooks/useAuth";
+import { formatDistanceToNow } from "date-fns";
 
 const Chat = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,7 +25,7 @@ const Chat = () => {
     name: room.room_name || "Chat Room",
     lastMessage: room.last_message || "No recent messages",
     timestamp: room.last_message_at
-      ? new Date(room.last_message_at).toLocaleDateString()
+      ? formatDistanceToNow(new Date(room.last_message_at), { addSuffix: true })
       : "Recently",
     unread: room.unread_count || 0,
     participants: 0,
